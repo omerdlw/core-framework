@@ -1,6 +1,6 @@
 {
   "name": "@omerdlw/base-framework",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Microkernel engine and first-party declarative UI modules for app-like Next.js products.",
   "type": "module",
   "main": "./dist/index.js",
