@@ -79,6 +79,7 @@
   ],
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
+    "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "check:architecture": "node scripts/check-architecture.mjs",
