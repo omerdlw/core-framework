@@ -1,4 +1,4 @@
-import { defineThemeSpec } from "../theme";
+import { defineThemeSpec } from "@/theme";
 import { type ModalThemeSlot } from "./types";
 
 export const MODAL_POSITIONS = Object.freeze({

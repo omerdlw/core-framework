@@ -9,7 +9,7 @@ import {
   type CSSProperties,
 } from "react";
 import { cn } from "@/utils";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import { backgroundTheme, DEFAULT_COLOR, OBJECT_FITS } from "./constants";
 import {
   getEdgeFadeMask,

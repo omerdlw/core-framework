@@ -1,12 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
 import {
+  getOrCreateGlobalContext,
   useModuleRegistration,
   useRegistryEntries,
   type RegistryMetadata,
 } from "@/kernel";
+
 import { createStore, type ExternalStore } from "@/utils";
 import { MODAL_CHROME } from "./constants";
 import {
@@ -30,9 +32,9 @@ export interface ModalContextValue {
   actions: ModalActions;
   store: ExternalStore<ModalState>;
 }
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
 export const ModalContext = getOrCreateGlobalContext<ModalContextValue | null>(
+
   "ModalContext",
   null,
 );

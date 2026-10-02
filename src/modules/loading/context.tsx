@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -14,12 +14,19 @@ import {
   useStore,
 } from "@/hooks";
 import {
+  getOrCreateGlobalContext,
   useModuleRegistration,
   useRegistryValue,
   type RegistryMetadata,
 } from "@/kernel";
+
 import { createStore } from "@/utils";
-import { DEFAULT_LOADING_STATE, LOADING_REGISTRY_KEY } from "./constants";
+import {
+  DEFAULT_LOADING_STATE,
+  DEFAULT_LOADING_STATE_WITH_PAGE,
+  INERT_LOADING_ACTIONS,
+  LOADING_REGISTRY_KEY,
+} from "./constants";
 import {
   type LoadingActions,
   type LoadingContextValue,
@@ -31,9 +38,9 @@ import {
   type SkeletonValue,
 } from "./types";
 import { normalizeLoadingOptions } from "./utils";
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
 export const LoadingContext =
+
   getOrCreateGlobalContext<LoadingContextValue | null>("LoadingContext", null);
 
 export function useLoadingRegistration(
@@ -215,3 +222,30 @@ export function useLoading(
 
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
+
+const NOOP_LOADING_STORE = createStore<LoadingStateWithPage>(
+  DEFAULT_LOADING_STATE_WITH_PAGE,
+);
+
+export function useOptionalLoadingState(): LoadingStateWithPage;
+export function useOptionalLoadingState<T>(
+  selector: (state: LoadingStateWithPage) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalLoadingState<T = LoadingStateWithPage>(
+  selector?: (state: LoadingStateWithPage) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(LoadingContext);
+  return useStore(
+    ctx?.store ?? NOOP_LOADING_STORE,
+    selector as (state: LoadingStateWithPage) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalLoadingActions(): LoadingActions {
+  const ctx = useContext(LoadingContext);
+  return ctx?.actions ?? INERT_LOADING_ACTIONS;
+}
+

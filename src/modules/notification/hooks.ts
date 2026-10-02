@@ -10,7 +10,7 @@ import { isResult } from "@/result";
 import { toUserMessage } from "@/utils";
 import { EVENT_TYPES } from "@/events";
 import { useGlobalEvent } from "@/hooks";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import {
   TOAST_DURATIONS,
   SESSION_EXPIRED_MESSAGE,

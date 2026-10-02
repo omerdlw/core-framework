@@ -1,4 +1,4 @@
-import { type MediaState } from "./types";
+import { type MediaActions, type MediaState } from "./types";
 
 export const DEFAULT_MEDIA_STATE: MediaState = Object.freeze({
   audibleElement: null,
@@ -9,6 +9,15 @@ export const DEFAULT_MEDIA_STATE: MediaState = Object.freeze({
   loop: false,
   sourceId: null,
 });
+
+export const INERT_MEDIA_ACTIONS: MediaActions = Object.freeze({
+  removeSource: () => {},
+  setMuted: () => {},
+  toggle: () => {},
+  toggleLoop: () => {},
+  upsertSource: () => {},
+});
+
 
 export const MEDIA_SYNC_DRIFT_SECONDS = 0.3;
 

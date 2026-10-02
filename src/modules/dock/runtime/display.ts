@@ -13,7 +13,7 @@ import {
   isSamePath,
   resolveActiveIndex,
 } from "../utils";
-import { useModuleTheme } from "../../theme";
+import { useModuleTheme } from "@/theme";
 import { DOCK_ATTENTION_KIND, dockTheme } from "../constants";
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";

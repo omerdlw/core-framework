@@ -1,4 +1,4 @@
-import { defineThemeSpec } from "../theme";
+import { defineThemeSpec } from "@/theme";
 import { type DockThemeSlot } from "./types";
 
 export const DOCK_STYLE_SECTIONS = Object.freeze([

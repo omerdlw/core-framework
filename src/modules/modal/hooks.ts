@@ -10,7 +10,7 @@ import {
 } from "react";
 import { Z_INDEX } from "@/tokens";
 import { acquireGlobalScrollLock } from "@/utils";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,

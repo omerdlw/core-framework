@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -10,8 +10,14 @@ import {
   type ReactNode,
 } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
+import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
-import { TOAST_DURATIONS } from "./constants";
+
+import {
+  INITIAL_NOTIFICATION_STATE,
+  INERT_NOTIFICATION_ACTIONS,
+  TOAST_DURATIONS,
+} from "./constants";
 import {
   type NotificationActions,
   type NotificationContextValue,
@@ -27,17 +33,14 @@ import {
   normalizeToastOptions,
 } from "./utils";
 
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
-
 export const NotificationContext =
+
   getOrCreateGlobalContext<NotificationContextValue | null>(
     "NotificationContext",
     null,
   );
 
 let notificationIdCounter = 0;
-
-const INITIAL_NOTIFICATION_STATE: NotificationState = { notifications: {} };
 
 function normalizeDuration(value: unknown): number | null {
   if (value === null) return null;
@@ -179,3 +182,36 @@ export function useNotification(): NotificationState & NotificationActions {
   const state = useNotificationState();
   return useMemo(() => ({ ...actions, ...state }), [actions, state]);
 }
+
+const NOOP_NOTIFICATION_STORE = createStore<NotificationState>(
+  INITIAL_NOTIFICATION_STATE,
+);
+
+export function useOptionalNotificationState(): NotificationState;
+export function useOptionalNotificationState<T>(
+  selector: (state: NotificationState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalNotificationState<T = NotificationState>(
+  selector?: (state: NotificationState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(NotificationContext);
+  return useStore(
+    ctx?.store ?? NOOP_NOTIFICATION_STORE,
+    selector as (state: NotificationState) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalNotificationActions(): NotificationActions {
+  const ctx = useContext(NotificationContext);
+  return ctx?.actions ?? INERT_NOTIFICATION_ACTIONS;
+}
+
+export function useNotificationVisible(): boolean {
+  return useOptionalNotificationState(
+    ({ notifications }) => Object.keys(notifications).length > 0,
+  );
+}
+

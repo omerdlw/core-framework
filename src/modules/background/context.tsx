@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  createContext,
+  useContext,
   useEffect,
   useInsertionEffect,
   useMemo,
@@ -15,17 +15,20 @@ import {
   useStore,
 } from "@/hooks";
 import {
-  definePeer,
+  getOrCreateGlobalContext,
   useModuleRegistration,
   useRegistryValue,
-  type ModuleStateOf,
   type RegistryMetadata,
 } from "@/kernel";
+import { useOptionalMediaActions } from "../media";
+
 import { createStore } from "@/utils";
 import {
   BACKGROUND_MEDIA_ID,
   BACKGROUND_REGISTRY_KEY,
   DEFAULT_BACKGROUND,
+  DEFAULT_BACKGROUND_COMPUTED,
+  INERT_BACKGROUND_ACTIONS,
 } from "./constants";
 import {
   type BackgroundActions,
@@ -44,34 +47,15 @@ import {
   normalizeBackgroundInput,
 } from "./utils";
 import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "./youtube/parse";
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
 export const BackgroundContext =
+
   getOrCreateGlobalContext<BackgroundContextValue | null>(
     "BackgroundContext",
     null,
   );
-
-const mediaPeer = definePeer("media", {
-  actions: {
-    removeSource: () => {},
-    setMuted: () => {},
-    toggle: () => {},
-    toggleLoop: () => {},
-    upsertSource: () => {},
-  },
-  store: createStore<ModuleStateOf<"media">>({
-    audibleElement: null,
-    element: null,
-    hasMedia: false,
-    isPlaying: false,
-    kind: null,
-    loop: false,
-    sourceId: null,
-  }),
-});
-
 export function useBackgroundRegistration(
+
   config: BackgroundPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
 ): void {
@@ -272,7 +256,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     };
   }, [overrideStore]);
 
-  const media = mediaPeer.useActions();
+  const media = useOptionalMediaActions();
   const { isPlaying, isVideo, videoElement } = state;
   const isLoop = Boolean(state.videoOptions?.loop);
   useEffect(() => {
@@ -331,3 +315,30 @@ export function useBackground(
 
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
+
+const NOOP_BACKGROUND_STORE = createStore<BackgroundStateComputed>(
+  DEFAULT_BACKGROUND_COMPUTED,
+);
+
+export function useOptionalBackgroundState(): BackgroundStateComputed;
+export function useOptionalBackgroundState<T>(
+  selector: (state: BackgroundStateComputed) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalBackgroundState<T = BackgroundStateComputed>(
+  selector?: (state: BackgroundStateComputed) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(BackgroundContext);
+  return useStore(
+    ctx?.store ?? NOOP_BACKGROUND_STORE,
+    selector as (state: BackgroundStateComputed) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalBackgroundActions(): BackgroundActions {
+  const ctx = useContext(BackgroundContext);
+  return ctx?.actions ?? INERT_BACKGROUND_ACTIONS;
+}
+

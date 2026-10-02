@@ -1,6 +1,10 @@
 import { USER_MESSAGES } from "@/utils";
-import { defineThemeSpec } from "../theme";
-import { type NotificationThemeSlot } from "./types";
+import { defineThemeSpec } from "@/theme";
+import {
+  type NotificationActions,
+  type NotificationState,
+  type NotificationThemeSlot,
+} from "./types";
 
 export const TOAST_DURATIONS = Object.freeze({
   DEFAULT: 2000,
@@ -13,3 +17,14 @@ export const DOCK_STACK_ELEMENT_ID = "dock-card-stack";
 
 export const notificationTheme =
   defineThemeSpec<NotificationThemeSlot>("notification");
+
+export const INITIAL_NOTIFICATION_STATE: NotificationState = Object.freeze({
+  notifications: {},
+});
+
+export const INERT_NOTIFICATION_ACTIONS: NotificationActions = Object.freeze({
+  dismissAllNotifications: () => {},
+  dismissNotification: () => {},
+  showNotification: () => null,
+});
+

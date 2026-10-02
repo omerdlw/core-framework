@@ -1,3 +1,5 @@
+import { stripTrailingSlash } from "./string";
+
 export const isBrowser: boolean = typeof window !== "undefined";
 
 let globalScrollLockCount = 0;
@@ -44,3 +46,15 @@ export function acquireGlobalScrollLock(): () => void {
     globalScrollLockStyles = null;
   };
 }
+
+export function getSiteUrl(): string {
+  return stripTrailingSlash(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  );
+}
+
+export function getCurrentPath(): string {
+  if (!isBrowser) return "/";
+  return `${window.location.pathname}${window.location.search}`;
+}
+

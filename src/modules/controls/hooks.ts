@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import {
   useModuleRegistration,
   useRegistryEntries,

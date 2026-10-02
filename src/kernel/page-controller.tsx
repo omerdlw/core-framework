@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  createContext,
   use,
   useCallback,
   useEffect,
@@ -13,10 +12,12 @@ import {
   type ReactNode,
 } from "react";
 import { useIsomorphicLayoutEffect } from "@/hooks";
+import { getOrCreateGlobalContext } from "./context-registry";
 import { useRegistry, useShallowStable } from "./hooks";
 import { selectModuleSlice, useInstalledModules } from "./installed";
 import { pickRegistryMetadata } from "./schema";
 import { mergeModuleConfigs } from "./utils";
+
 import type {
   PageConfig,
   PageController,
@@ -116,8 +117,6 @@ const fallbackStandaloneStore = createPageControllerStore();
 const noopHook = () => {};
 const PassthroughProvider = ({ children }: { children?: ReactNode }) =>
   children;
-
-import { getOrCreateGlobalContext } from "./context-registry";
 
 const PageControllerContext = getOrCreateGlobalContext<PageController | null>(
   "PageControllerContext",

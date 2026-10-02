@@ -153,5 +153,5 @@ No classes or inline styles in the module. The `loadingTheme` slot `overlay` (st
 
 ## 9. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/atoms` (`Spinner`, `useIsFullscreenStateActive`), `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/atoms` (`Spinner`), `@omerdlw/base-framework/hooks` (`useIsFullscreenStateActive`), `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
 - **Used by:** `src/core/provider.tsx` (installs it); the **dock**, which reads `isLoading` and calls `stopLoading` through `definePeer("loading")` (inert when not installed); pages and features through `useLoading*` / `page.modules.loading`.

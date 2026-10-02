@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  createContext,
   useCallback,
   useMemo,
   useState,
@@ -9,6 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { useRequiredContext } from "@/hooks";
+import { getOrCreateGlobalContext } from "./context-registry";
+
 import type {
   RegistryDefinitions,
   RegistrySchema,
@@ -30,9 +31,9 @@ interface RegistryContextValue {
     "getEntriesSnapshot" | "getSnapshot" | "subscribe"
   >;
 }
-import { getOrCreateGlobalContext } from "./context-registry";
 
 const RegistryContext = getOrCreateGlobalContext<RegistryContextValue | null>(
+
   "RegistryContext",
   null,
 );

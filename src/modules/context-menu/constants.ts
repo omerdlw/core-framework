@@ -1,4 +1,4 @@
-import { defineThemeSpec } from "../theme";
+import { defineThemeSpec } from "@/theme";
 import { type ContextMenuPosition, type ContextMenuThemeSlot } from "./types";
 
 export const contextMenuTheme =

@@ -26,7 +26,7 @@ import {
 } from "../../src/core/kernel/index.ts";
 import { createStore } from "../../src/core/utils/store.ts";
 import { loadingModule } from "../../src/modules/loading/module.tsx";
-import { ThemeProvider } from "../../src/modules/theme.ts";
+import { ThemeProvider } from "../../src/theme.tsx";
 import {
   ambientThemeConfig,
   loadingThemeConfig,
@@ -50,7 +50,7 @@ import {
   useNotificationState,
 } from "../../src/modules/notification/context.tsx";
 import { useToast } from "../../src/modules/notification/hooks.ts";
-import { notificationModule } from "../../src/modules/notification/module.ts";
+import { notificationModule } from "../../src/modules/notification/module.tsx";
 import {
   AmbientProvider,
   useAmbient,

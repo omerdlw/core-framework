@@ -1,9 +1,12 @@
 "use client";
 
-import { createContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
+import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
-import { DEFAULT_MEDIA_STATE } from "./constants";
+
+import { DEFAULT_MEDIA_STATE, INERT_MEDIA_ACTIONS } from "./constants";
+
 import {
   type MediaActions,
   type MediaContextValue,
@@ -22,9 +25,9 @@ import {
   sameElements,
   toggleElement,
 } from "./utils";
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
 export const MediaContext = getOrCreateGlobalContext<MediaContextValue | null>(
+
   "MediaContext",
   null,
 );
@@ -165,3 +168,29 @@ export function useMediaActions(): MediaActions {
   return useRequiredContext(MediaContext, "useMediaActions", "MediaProvider")
     .actions;
 }
+
+const NOOP_MEDIA_STORE = createStore<MediaState>(DEFAULT_MEDIA_STATE);
+
+export function useOptionalMediaState(): MediaState;
+export function useOptionalMediaState<T>(
+  selector: (state: MediaState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalMediaState<T = MediaState>(
+  selector?: (state: MediaState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(MediaContext);
+  return useStore(
+    ctx?.store ?? NOOP_MEDIA_STORE,
+    selector as (state: MediaState) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalMediaActions(): MediaActions {
+  const ctx = useContext(MediaContext);
+  return ctx?.actions ?? INERT_MEDIA_ACTIONS;
+}
+
+

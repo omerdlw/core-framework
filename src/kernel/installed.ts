@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, use, type ComponentType, type ReactNode } from "react";
+import { use, type ComponentType, type ReactNode } from "react";
 import { isObject } from "@/utils";
+import { getOrCreateGlobalContext } from "./context-registry";
 import type {
   AnyCoreModule,
   PageConfig,
@@ -26,10 +27,10 @@ export const EMPTY_MODULES: readonly AnyCoreModule[] = Object.freeze([]);
 
 export const PassthroughBoundary: BoundaryComponent = ({ children }) =>
   children;
-import { getOrCreateGlobalContext } from "./context-registry";
 
 export const ModuleHostContext =
   getOrCreateGlobalContext<ModuleHostValue | null>("ModuleHostContext", null);
+
 
 export function selectModuleSlice(
   coreModule: AnyCoreModule,

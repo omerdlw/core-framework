@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import {
   defineModule,
-  useModuleState,
   type PageConfig,
   type PageModuleApi,
 } from "@/kernel";
+import { useOptionalBackgroundState } from "../background";
 import { AmbientContext, AmbientProvider, useAmbientTheme } from "./context";
 import { resolvePageAmbientTheme } from "./utils";
 import {
@@ -34,10 +34,8 @@ function useAmbientPage(
   slice: AmbientPageSlice | null,
   page: PageModuleApi,
 ): AmbientPageApi {
-  const posterUrl = useModuleState(
-    "background",
+  const posterUrl = useOptionalBackgroundState(
     (background) => background.posterUrl,
-    null,
   );
   const theme = useMemo(
     () => resolvePageAmbientTheme(slice, posterUrl),

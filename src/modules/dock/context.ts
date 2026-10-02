@@ -1,9 +1,22 @@
 "use client";
 
-import { createContext, type ComponentType } from "react";
+import { useContext, type ComponentType } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
-import { definePeer, type ModuleStateOf } from "@/kernel";
+import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore, shallowEqual } from "@/utils";
+import {
+  useOptionalMediaActions,
+  useOptionalMediaState,
+  type MediaActions,
+  type MediaState,
+} from "../media";
+import {
+  useOptionalLoadingActions,
+  useOptionalLoadingState,
+  type LoadingActions,
+  type LoadingStateWithPage,
+} from "../loading";
+import { useNotificationVisible } from "../notification";
 import {
   type DockActions,
   type DockContextValue,
@@ -11,7 +24,6 @@ import {
   type ErrorActionsProps,
   type GuardActionsProps,
 } from "./types";
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
 export const DockContext = getOrCreateGlobalContext<DockContextValue | null>(
   "DockContext",
@@ -73,80 +85,52 @@ export const EMPTY_DOCK_STATE: DockState = Object.freeze({
   surfaceStack: [],
 });
 
-export type DockMediaView = ModuleStateOf<"media">;
+const NOOP_DOCK_STORE = createStore<DockState>(EMPTY_DOCK_STATE);
 
-const mediaPeer = definePeer("media", {
-  actions: Object.freeze({
-    removeSource: () => {},
-    setMuted: () => {},
-    toggle: () => {},
-    toggleLoop: () => {},
-    upsertSource: () => {},
-  }),
-  store: createStore<ModuleStateOf<"media">>({
-    audibleElement: null,
-    element: null,
-    hasMedia: false,
-    isPlaying: false,
-    kind: null,
-    loop: false,
-    sourceId: null,
-  }),
-});
-
-export function useDockMedia(): DockMediaView {
-  return mediaPeer.useState((state) => state, shallowEqual);
-}
-
-const selectHasMedia = (state: ModuleStateOf<"media">): boolean =>
-  state.hasMedia;
-
-export function useDockHasMedia(): boolean {
-  return mediaPeer.useState(selectHasMedia);
-}
-
-export const useDockMediaActions = mediaPeer.useActions;
-
-const loadingPeer = definePeer("loading", {
-  actions: {
-    setLoading: () => {},
-    setSkeleton: () => {},
-    startLoading: () => {},
-    stopLoading: () => {},
-    withLoading: async (task) => (typeof task === "function" ? task() : task),
-  },
-  store: createStore<ModuleStateOf<"loading">>({
-    isLoading: false,
-    isPageLoading: false,
-    message: null,
-    minDuration: 0,
-    showOverlay: false,
-    skeleton: null,
-  }),
-});
-
-export function useDockLoadingState(): ModuleStateOf<"loading"> {
-  return loadingPeer.useState((state) => state);
-}
-
-export const useDockLoadingActions = loadingPeer.useActions;
-
-const notificationPeer = definePeer("notification", {
-  actions: {
-    dismissAllNotifications: () => {},
-    dismissNotification: () => {},
-    showNotification: () => null,
-  },
-  store: createStore<ModuleStateOf<"notification">>({ notifications: {} }),
-});
-
-export function useDockNotificationVisible(): boolean {
-  return notificationPeer.useState(
-    ({ notifications }) => Object.keys(notifications).length > 0,
+export function useOptionalDockState(): DockState;
+export function useOptionalDockState<T>(
+  selector: (state: DockState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalDockState<T = DockState>(
+  selector?: (state: DockState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(DockContext);
+  return useStore(
+    ctx?.store ?? NOOP_DOCK_STORE,
+    selector as (state: DockState) => T,
+    isEqual,
   );
 }
+
+export function useOptionalDockActions(): DockActions | null {
+  const ctx = useContext(DockContext);
+  return ctx?.actions ?? null;
+}
+
+export type DockMediaView = MediaState;
+
+export function useDockMedia(): DockMediaView {
+  return useOptionalMediaState((state) => state, shallowEqual);
+}
+
+export function useDockHasMedia(): boolean {
+  return useOptionalMediaState((state) => state.hasMedia);
+}
+
+export const useDockMediaActions: () => MediaActions = useOptionalMediaActions;
+
+export function useDockLoadingState(): LoadingStateWithPage {
+  return useOptionalLoadingState();
+}
+
+export const useDockLoadingActions: () => LoadingActions = useOptionalLoadingActions;
+
+export const useDockNotificationVisible: () => boolean = useNotificationVisible;
 
 export const statusActionDefaults: {
   error: ComponentType<ErrorActionsProps> | null;
   guard: ComponentType<GuardActionsProps> | null;
 } = { error: null, guard: null };
+

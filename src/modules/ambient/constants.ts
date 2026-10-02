@@ -1,4 +1,4 @@
-import { defineThemeSpec } from "../theme";
+import { defineThemeSpec } from "@/theme";
 import type { AmbientThemeSlot } from "./types";
 
 export const AMBIENT_CSS_VARS = Object.freeze({

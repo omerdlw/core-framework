@@ -4,7 +4,9 @@ export * from "./types";
 
 export { REGISTRY_SOURCES } from "./constants";
 
+export { getOrCreateGlobalContext } from "./context-registry";
 export { hasOwnProperty } from "./utils";
+
 
 export { createRegistryOperations } from "./operations";
 

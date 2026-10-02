@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  createContext,
   createElement,
   useContext,
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { getOrCreateGlobalContext } from "@/kernel";
 
 export interface ThemeSpec<S extends string = string> {
   readonly id: string;
@@ -39,12 +39,11 @@ export function defineTheme<S extends string>(
   return { id: spec.id, config: config as ThemeEntry["config"] };
 }
 
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
-
 const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
 const ThemeContext = getOrCreateGlobalContext<
   ReadonlyMap<string, ThemeEntry["config"]>
 >("ThemeContext", EMPTY);
+
 
 export function ThemeProvider({
   children,
@@ -63,7 +62,7 @@ export function useTheme<S extends string>(
   const config = useContext(ThemeContext).get(spec.id);
   if (!config) {
     throw new Error(
-      `Theme "${spec.id}" is missing. Add its theme file to src/config/ and list it in src/config/index.ts.`,
+      `Theme "${spec.id}" is missing. Ensure its theme configuration is provided to <ThemeProvider themes={[...]}> (e.g. in src/config/ or your theme setup).`,
     );
   }
   return {
@@ -71,3 +70,6 @@ export function useTheme<S extends string>(
     styles: config.styles ?? {},
   } as ResolvedTheme<S>;
 }
+
+export { useTheme as useModuleTheme };
+

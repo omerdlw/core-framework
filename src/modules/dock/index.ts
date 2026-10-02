@@ -37,6 +37,8 @@ export {
   useDockSelector,
   useDockActionClass,
   useDockState,
+  useOptionalDockActions,
+  useOptionalDockState,
   useSurfaceReturn,
 } from "./hooks";
 export { useDockContextActions } from "./runtime/commands";

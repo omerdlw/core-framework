@@ -13,12 +13,9 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { usePathname } from "next/navigation";
-import {
-  useModuleState,
-  useRegistryEntries,
-  type ModuleStateOf,
-} from "@/kernel";
-import { useModuleTheme } from "../theme";
+import { useRegistryEntries } from "@/kernel";
+import { useModuleTheme } from "@/theme";
+import { useOptionalDockState, type DockItem, type DockState } from "../dock";
 import { contextMenuTheme } from "./constants";
 import { useContextMenuActions, useContextMenu } from "./context";
 import { prepareMenu, resolveContextMenu } from "./resolver";
@@ -40,9 +37,7 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
-function selectDockPageCard(
-  dock: ModuleStateOf<"dock">,
-): ModuleStateOf<"dock">["activeItem"] {
+function selectDockPageCard(dock: DockState): DockItem | null {
   const card = dock.activeItem;
   return card && !card.isSurface ? card : null;
 }
@@ -51,7 +46,7 @@ export function useContextMenuListener(): void {
   const menus = useRegistryEntries<"contextMenu", ContextMenuConfig>(
     "contextMenu",
   );
-  const dockCard = useModuleState("dock", selectDockPageCard, null);
+  const dockCard = useOptionalDockState(selectDockPageCard);
   const { openMenu } = useContextMenuActions();
   const pathname = usePathname();
 

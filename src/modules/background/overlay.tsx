@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 import { Spinner } from "@/atoms";
 import { AnimatePresence, motion, type Transition } from "motion/react";
 import { EASING_CURVES } from "@/tokens";
-import { type ResolvedTheme } from "../theme";
+import { type ResolvedTheme } from "@/theme";
 import {
   type BackgroundActions,
   type BackgroundThemeSlot,

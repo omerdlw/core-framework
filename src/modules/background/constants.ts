@@ -1,6 +1,11 @@
 import { type CSSProperties } from "react";
-import { defineThemeSpec } from "../theme";
-import { type BackgroundState, type BackgroundThemeSlot } from "./types";
+import { defineThemeSpec } from "@/theme";
+import {
+  type BackgroundActions,
+  type BackgroundState,
+  type BackgroundStateComputed,
+  type BackgroundThemeSlot,
+} from "./types";
 
 export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   animation: null,
@@ -30,6 +35,27 @@ export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   videoStyle: {},
   width: null,
 });
+
+export const DEFAULT_BACKGROUND_COMPUTED: BackgroundStateComputed = Object.freeze({
+  ...DEFAULT_BACKGROUND,
+  hasBackground: false,
+  isVideo: false,
+  isYouTube: false,
+  posterUrl: null,
+  youtubeVideoId: null,
+});
+
+export const INERT_BACKGROUND_ACTIONS: BackgroundActions = Object.freeze({
+  resetBackground: () => {},
+  setBackground: () => {},
+  setVideoElement: () => {},
+  setVideoMuted: () => {},
+  setVideoPlaying: () => {},
+  toggleLoop: () => {},
+  toggleMute: () => {},
+  toggleVideo: () => {},
+});
+
 
 const objectFit = (value: string): CSSProperties => ({
   objectFit: value as CSSProperties["objectFit"],

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  createContext,
   useEffect,
   useInsertionEffect,
   useMemo,
@@ -11,7 +10,12 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { useRequiredContext, useStore } from "@/hooks";
-import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
+import {
+  getOrCreateGlobalContext,
+  useModuleRegistration,
+  type RegistryMetadata,
+} from "@/kernel";
+
 import { createStore } from "@/utils";
 import { prepareMenu } from "./resolver";
 import { createInitialMenuState, resolveNextOpenState } from "./state";
@@ -27,9 +31,8 @@ import {
   type ContextMenuTrigger,
 } from "./types";
 
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
-
 export const ContextMenuContext =
+
   getOrCreateGlobalContext<ContextMenuProviderValue | null>(
     "ContextMenuContext",
     null,

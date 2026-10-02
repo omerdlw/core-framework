@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode } from "react";
 import { type TargetAndTransition, type Transition } from "motion/react";
 import { type ModuleRuntime, type RegistryMetadata } from "@/kernel";
-import { type ResolvedTheme } from "../theme";
+import { type ResolvedTheme } from "@/theme";
 
 export type YouTubeVideoQuality =
   "auto" | "2160p" | "1440p" | "1080p" | "720p" | "480p" | "360p";

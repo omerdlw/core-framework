@@ -10,9 +10,8 @@ import {
   useReducer,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useRequiredContext, useClickOutside } from "@/hooks";
+import { useRequiredContext, useClickOutside, useIsFullscreenStateActive } from "@/hooks";
 import { normalizePath, shallowEqual } from "@/utils";
-import { useIsFullscreenStateActive } from "@/atoms";
 import {
   MAX_VISIBLE_STACKED_CARDS,
   DOCK_ATTENTION_KIND,

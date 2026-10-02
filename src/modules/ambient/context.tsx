@@ -3,7 +3,7 @@
 import { createContext, use, useEffect, useMemo, useState } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
 import { createStore, shallowEqual } from "@/utils";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import { AMBIENT_DEFAULTS, ambientTheme } from "./constants";
 import type {
   AmbientConfig,
@@ -21,7 +21,7 @@ import {
   resolveAmbientVarMap,
   resolveTargetElement,
 } from "./utils";
-import { getOrCreateGlobalContext } from "@/kernel/context-registry";
+import { getOrCreateGlobalContext } from "@/kernel";
 
 export const AmbientContext =
   getOrCreateGlobalContext<AmbientProviderValue | null>("AmbientContext", null);

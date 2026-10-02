@@ -1,6 +1,6 @@
 import { type ComponentType, type ReactNode } from "react";
 import { type RegistryMetadata } from "@/kernel";
-import { type ResolvedTheme } from "../theme";
+import { type ResolvedTheme } from "@/theme";
 
 export type ControlSide = "left" | "right";
 

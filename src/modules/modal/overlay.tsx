@@ -40,7 +40,7 @@ import {
   useModalLayerModel,
   useModalModel,
 } from "./hooks";
-import { type ResolvedTheme } from "../theme";
+import { type ResolvedTheme } from "@/theme";
 
 type Theme = ResolvedTheme<ModalThemeSlot>;
 

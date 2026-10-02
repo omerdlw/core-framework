@@ -1,7 +1,6 @@
 "use client";
-
-import { useIsFullscreenStateActive } from "@/atoms";
-import { useModuleTheme } from "../theme";
+import { useIsFullscreenStateActive } from "@/hooks";
+import { useModuleTheme } from "@/theme";
 import { useLoadingState } from "./context";
 import { loadingTheme } from "./constants";
 

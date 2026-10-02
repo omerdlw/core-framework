@@ -1,5 +1,10 @@
 export { cn } from "./cn";
-export { isBrowser, acquireGlobalScrollLock } from "./dom";
+export {
+  isBrowser,
+  acquireGlobalScrollLock,
+  getCurrentPath,
+  getSiteUrl,
+} from "./dom";
 export {
   trimToNull,
   stripTrailingSlash,

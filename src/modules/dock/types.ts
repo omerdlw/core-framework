@@ -7,7 +7,7 @@ import {
   type ReactElement,
 } from "react";
 import { type RegistryMetadata } from "@/kernel";
-import { type ResolvedTheme } from "../theme";
+import { type ResolvedTheme } from "@/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
 export type DockComponent = ComponentType<any>;

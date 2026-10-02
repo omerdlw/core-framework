@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 import { useStore, useIsomorphicLayoutEffect } from "@/hooks";
 import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
 import { createStore, shallowEqual, cn } from "@/utils";
-import { useModuleTheme } from "../theme";
+import { useModuleTheme } from "@/theme";
 import { Z_INDEX } from "@/tokens";
 import {
   DockContext,
@@ -24,6 +24,8 @@ import {
   useDockHeight,
   useDockSelector,
   useDockState,
+  useOptionalDockActions,
+  useOptionalDockState,
 } from "./context";
 import {
   isSamePath,
@@ -75,6 +77,8 @@ export {
   useDockHeight,
   useDockSelector,
   useDockState,
+  useOptionalDockActions,
+  useOptionalDockState,
 };
 
 export function useDockTheme() {

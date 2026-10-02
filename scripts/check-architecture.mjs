@@ -1,16 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOTS = [
-  "src/kernel",
-  "src/modules",
-  "src/hooks",
-  "src/tokens",
-  "src/utils",
-  "src/atoms",
-  "src/error",
-].filter((dir) => fs.existsSync(dir));
-
 const files = [];
 const walk = (dir) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -19,8 +9,9 @@ const walk = (dir) => {
     else if (/\.tsx?$/.test(entry.name)) files.push(full);
   }
 };
-ROOTS.forEach(walk);
+if (fs.existsSync("src")) walk("src");
 const fileSet = new Set(files);
+
 
 function resolveImport(from, specifier) {
   let base;
@@ -120,6 +111,12 @@ if (fs.existsSync(modulesDir)) {
           );
         } else {
           read.add(match[3]);
+        }
+      }
+      for (const target of graph.get(file) ?? []) {
+        const moduleMatch = target.replace(/\\/g, "/").match(/^src\/modules\/([^/]+)\//);
+        if (moduleMatch && moduleMatch[1] !== entry.name) {
+          read.add(moduleMatch[1]);
         }
       }
     }

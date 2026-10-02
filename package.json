@@ -1,8 +1,9 @@
 {
   "name": "@omerdlw/base-framework",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Microkernel engine and first-party declarative UI modules for app-like Next.js products.",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -61,6 +62,51 @@
       "import": "./dist/atoms/index.js",
       "default": "./dist/atoms/index.js"
     },
+    "./dock": {
+      "types": "./dist/modules/dock/index.d.ts",
+      "import": "./dist/modules/dock/index.js",
+      "default": "./dist/modules/dock/index.js"
+    },
+    "./modal": {
+      "types": "./dist/modules/modal/index.d.ts",
+      "import": "./dist/modules/modal/index.js",
+      "default": "./dist/modules/modal/index.js"
+    },
+    "./notification": {
+      "types": "./dist/modules/notification/index.d.ts",
+      "import": "./dist/modules/notification/index.js",
+      "default": "./dist/modules/notification/index.js"
+    },
+    "./ambient": {
+      "types": "./dist/modules/ambient/index.d.ts",
+      "import": "./dist/modules/ambient/index.js",
+      "default": "./dist/modules/ambient/index.js"
+    },
+    "./background": {
+      "types": "./dist/modules/background/index.d.ts",
+      "import": "./dist/modules/background/index.js",
+      "default": "./dist/modules/background/index.js"
+    },
+    "./context-menu": {
+      "types": "./dist/modules/context-menu/index.d.ts",
+      "import": "./dist/modules/context-menu/index.js",
+      "default": "./dist/modules/context-menu/index.js"
+    },
+    "./controls": {
+      "types": "./dist/modules/controls/index.d.ts",
+      "import": "./dist/modules/controls/index.js",
+      "default": "./dist/modules/controls/index.js"
+    },
+    "./loading": {
+      "types": "./dist/modules/loading/index.d.ts",
+      "import": "./dist/modules/loading/index.js",
+      "default": "./dist/modules/loading/index.js"
+    },
+    "./media": {
+      "types": "./dist/modules/media/index.d.ts",
+      "import": "./dist/modules/media/index.js",
+      "default": "./dist/modules/media/index.js"
+    },
     "./modules": {
       "types": "./dist/modules/index.d.ts",
       "import": "./dist/modules/index.js",
@@ -80,7 +126,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
+    "build": "rm -rf dist && tsup && tsc --emitDeclarationOnly --outDir dist",
     "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
