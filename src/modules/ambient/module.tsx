@@ -61,7 +61,7 @@ export const ambientModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     ambient: typeof ambientModule;
   }

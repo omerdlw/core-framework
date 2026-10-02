@@ -276,7 +276,7 @@ export const dockModule = defineModule({
   },
 });
 
-declare module "@/events" {
+declare module "@omerdlw/base-framework/events" {
   interface FrameworkEventMap {
     DOCK_NAVIGATE: {
       from: string;
@@ -330,7 +330,7 @@ declare module "@/events" {
   }
 }
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     dock: typeof dockModule;
   }

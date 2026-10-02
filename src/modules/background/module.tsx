@@ -53,7 +53,7 @@ export const backgroundModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     background: typeof backgroundModule;
   }

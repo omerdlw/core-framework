@@ -2,7 +2,7 @@ import { defineConfig, type Options } from "tsup";
 
 const shared: Options = {
   format: ["esm"],
-  dts: true,
+  dts: false,
   clean: false,
   sourcemap: true,
   treeshake: true,

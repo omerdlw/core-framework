@@ -12,7 +12,9 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@omerdlw/base-framework": ["./src/index.ts"],
+      "@omerdlw/base-framework/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"]

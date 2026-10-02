@@ -78,7 +78,7 @@ export const modalModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     modal: typeof modalModule;
   }

@@ -46,7 +46,7 @@ export const mediaModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     media: typeof mediaModule;
   }

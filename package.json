@@ -8,55 +8,68 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./kernel": {
       "types": "./dist/kernel/index.d.ts",
-      "import": "./dist/kernel/index.js"
+      "import": "./dist/kernel/index.js",
+      "default": "./dist/kernel/index.js"
     },
     "./result": {
       "types": "./dist/result.d.ts",
-      "import": "./dist/result.js"
+      "import": "./dist/result.js",
+      "default": "./dist/result.js"
     },
     "./events": {
       "types": "./dist/events.d.ts",
-      "import": "./dist/events.js"
+      "import": "./dist/events.js",
+      "default": "./dist/events.js"
     },
     "./theme": {
       "types": "./dist/theme.d.ts",
-      "import": "./dist/theme.js"
+      "import": "./dist/theme.js",
+      "default": "./dist/theme.js"
     },
     "./tokens": {
       "types": "./dist/tokens/index.d.ts",
-      "import": "./dist/tokens/index.js"
+      "import": "./dist/tokens/index.js",
+      "default": "./dist/tokens/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js"
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./hooks": {
       "types": "./dist/hooks/index.d.ts",
-      "import": "./dist/hooks/index.js"
+      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js"
     },
     "./error": {
       "types": "./dist/error/index.d.ts",
-      "import": "./dist/error/index.js"
+      "import": "./dist/error/index.js",
+      "default": "./dist/error/index.js"
     },
     "./provider": {
       "types": "./dist/provider.d.ts",
-      "import": "./dist/provider.js"
+      "import": "./dist/provider.js",
+      "default": "./dist/provider.js"
     },
     "./atoms": {
       "types": "./dist/atoms/index.d.ts",
-      "import": "./dist/atoms/index.js"
+      "import": "./dist/atoms/index.js",
+      "default": "./dist/atoms/index.js"
     },
     "./modules": {
       "types": "./dist/modules/index.d.ts",
-      "import": "./dist/modules/index.js"
+      "import": "./dist/modules/index.js",
+      "default": "./dist/modules/index.js"
     },
     "./modules/*": {
       "types": "./dist/modules/*/index.d.ts",
-      "import": "./dist/modules/*/index.js"
+      "import": "./dist/modules/*/index.js",
+      "default": "./dist/modules/*/index.js"
     }
   },
   "files": [
@@ -65,7 +78,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"

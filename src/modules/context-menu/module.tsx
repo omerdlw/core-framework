@@ -63,7 +63,7 @@ export const contextMenuModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     contextMenu: typeof contextMenuModule;
   }

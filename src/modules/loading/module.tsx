@@ -70,7 +70,7 @@ export const loadingModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     loading: typeof loadingModule;
   }

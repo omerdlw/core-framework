@@ -72,7 +72,7 @@ export const controlsModule = defineModule({
   },
 });
 
-declare module "@/kernel" {
+declare module "@omerdlw/base-framework/kernel" {
   interface CoreModules {
     controls: typeof controlsModule;
   }
