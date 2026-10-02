@@ -3,33 +3,22 @@ import { afterEach, describe, mock, test } from "node:test";
 import assert from "node:assert/strict";
 import {
   acquireGlobalScrollLock,
-  capitalize,
   clamp,
   cn,
   createScheduler,
   debounce,
-  dedupe,
-  getCurrentPath,
-  getSiteUrl,
-  isEmpty,
   isImageIconSource,
   isObject,
   isPlainObject,
   normalizePath,
-  randomBetween,
   report,
-  safeJsonParse,
-  safeJsonStringify,
   setReportSink,
   shallowEqual,
-  sleep,
-  slugify,
   stripTrailingSlash,
   throttle,
   toArray,
   toFiniteNumber,
   trimToNull,
-  truncate,
 } from "../../src/core/utils/index.ts";
 import { createStore } from "../../src/core/utils/store.ts";
 import {
@@ -70,20 +59,6 @@ describe("helpers", () => {
         assert.equal(isImageIconSource(no), false, String(no));
       }
     });
-
-    test("truncate", () => {
-      assert.equal(truncate("short", 10), "short");
-      assert.equal(truncate("hello world", 5), "hello...");
-      assert.equal(truncate("hello world", 5, "…"), "hello…");
-      assert.equal(truncate(42), "");
-    });
-
-    test("capitalize and slugify", () => {
-      assert.equal(capitalize("ada"), "Ada");
-      assert.equal(capitalize(""), "");
-      assert.equal(slugify("  Hello, World_Again! "), "hello-world-again");
-      assert.equal(slugify(null), "");
-    });
   });
 
   describe("number helpers", () => {
@@ -99,13 +74,6 @@ describe("helpers", () => {
       assert.equal(toFiniteNumber("x", 7), 7);
       assert.equal(toFiniteNumber(Infinity, 1), 1);
     });
-
-    test("randomBetween stays inside the inclusive range", () => {
-      for (let i = 0; i < 200; i++) {
-        const n = randomBetween(2, 4);
-        assert.ok(Number.isInteger(n) && n >= 2 && n <= 4);
-      }
-    });
   });
 
   describe("object helpers", () => {
@@ -118,13 +86,6 @@ describe("helpers", () => {
       assert.equal(isPlainObject(new (class A {})()), false);
     });
 
-    test("isEmpty", () => {
-      for (const empty of [null, undefined, "", [], {}])
-        assert.equal(isEmpty(empty), true);
-      for (const full of ["a", [0], { a: 1 }, 0, false])
-        assert.equal(isEmpty(full), false);
-    });
-
     test("shallowEqual compares one level deep", () => {
       assert.equal(shallowEqual({ a: 1, b: "x" }, { a: 1, b: "x" }), true);
       assert.equal(shallowEqual({ a: { n: 1 } }, { a: { n: 1 } }), false);
@@ -133,59 +94,14 @@ describe("helpers", () => {
       assert.equal(shallowEqual(null, {}), false);
     });
 
-    test("toArray and dedupe", () => {
+    test("toArray", () => {
       assert.deepEqual(toArray(null), []);
       assert.deepEqual(toArray(1), [1]);
       assert.deepEqual(toArray([1, 2]), [1, 2]);
-      assert.deepEqual(dedupe([1, 2, 1, 3, 2]), [1, 2, 3]);
-      assert.deepEqual(
-        dedupe(
-          [
-            { id: 1, v: "a" },
-            { id: 1, v: "b" },
-            { id: 2, v: "c" },
-          ],
-          (x) => x.id,
-        ).map((x) => x.v),
-        ["a", "c"],
-      );
-      assert.deepEqual(dedupe(null as any), []);
-    });
-  });
-
-  describe("json helpers", () => {
-    test("safeJsonParse never throws", () => {
-      assert.deepEqual(safeJsonParse('{"a":1}'), { a: 1 });
-      assert.equal(safeJsonParse("{bad"), null);
-      assert.equal(safeJsonParse("{bad", "fallback"), "fallback");
-      assert.equal(safeJsonParse(undefined), null);
-    });
-
-    test("safeJsonStringify never throws", () => {
-      const circular: Record<string, any> = {};
-      (circular as any).self = circular;
-
-      assert.equal(safeJsonStringify({ a: 1 }), '{"a":1}');
-      assert.equal(safeJsonStringify(circular, "{}"), "{}");
-      assert.equal(safeJsonStringify(undefined, "none"), "none");
     });
   });
 
   describe("timing helpers", () => {
-    test("sleep resolves after the delay", async () => {
-      mock.timers.enable({ apis: ["setTimeout"] });
-      let done = false;
-      const pending = sleep(20).then(() => (done = true));
-
-      mock.timers.tick(19);
-      await Promise.resolve();
-      assert.equal(done, false);
-      mock.timers.tick(1);
-      await pending;
-
-      assert.equal(done, true);
-    });
-
     test("debounce runs once with the last arguments, and can be cancelled", () => {
       mock.timers.enable({ apis: ["setTimeout"] });
       const calls: any[] = [];
@@ -238,21 +154,6 @@ describe("helpers", () => {
   });
 
   describe("dom helpers", () => {
-    afterEach(() => {
-      delete process.env.NEXT_PUBLIC_SITE_URL;
-    });
-
-    test("getSiteUrl uses the env origin without a trailing slash", () => {
-      assert.equal(getSiteUrl(), "http://localhost:3000");
-      process.env.NEXT_PUBLIC_SITE_URL = "https://app.example.com/";
-      assert.equal(getSiteUrl(), "https://app.example.com");
-    });
-
-    test("getCurrentPath includes the query string", () => {
-      window.history.pushState({}, "", "/account?tab=1");
-      assert.equal(getCurrentPath(), "/account?tab=1");
-    });
-
     test("the scroll lock is reference counted and restores previous styles", () => {
       document.body.style.overflow = "auto";
       const releaseA = acquireGlobalScrollLock();

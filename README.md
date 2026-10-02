@@ -1,28 +1,52 @@
 # @omerdlw/base-framework
 
-> Microkernel orchestration engine and first-party declarative UI modules for app-like Next.js 16 (App Router) & React 19 web applications.
+> **Microkernel orchestration engine and first-party declarative UI modules for app-like Next.js 16 (App Router) & React 19 web applications.**
 
 [![npm version](https://img.shields.io/npm/v/@omerdlw/base-framework.svg)](https://www.npmjs.com/package/@omerdlw/base-framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+
+---
+
+## 📖 Complete Documentation Index
+
+For in-depth architecture guides and module-by-module references, explore the [`docs/`](./docs) folder:
+
+### General Architecture Guides
+- 🚀 **[Getting Started & Installation](./docs/getting-started.md)** — Step-by-step setup, Tailwind CSS v4, root layout wiring
+- 🏛️ **[System Architecture Map](./docs/README.md)** — Macro overview, task lookup table, conventions
+- 📐 **[Architecture & 10 Rules](./docs/architecture-and-rules.md)** — Package layer hierarchy, boundaries, decision tree
+- 🎨 **[Theming System Guide](./docs/theming.md)** — Visual customization: defineTheme, ThemeProvider, slot reference
+- 🧩 **[Custom Module Authoring](./docs/custom-modules.md)** — Build custom declarative modules with defineModule & usePage
+- ⚙️ **[Core Engine Deep Dive](./docs/core-engine.md)** — CoreProvider, theme engine, event bus, pure utils & stores
+- 🧪 **[Testing Guide](./docs/testing.md)** — 520+ test suite, test harness, happy-dom, downstream testing
+- 🤖 **[AI Agent Blueprint (`AGENTS.md`)](./templates/AGENTS.md)** — Drop-in rules for AI coding assistants
+
+### Module & Component Reference
+- ⚡ **[Microkernel Engine (`kernel`)](./docs/modules/kernel.md)** — `usePage()`, `defineModule()`, topological registry
+- ⚓ **[Dock Module (`dock`)](./docs/modules/dock.md)** — Floating app chrome, cards, surfaces, flows, HUD, guards
+- 🪟 **[Modal Module (`modal`)](./docs/modules/modal.md)** — Stackable dialogs, focus trap, smooth scroll lock
+- 🔔 **[Notification Module (`notification`)](./docs/modules/notification.md)** — Toasts, `toast.fromResult`, auto 401 listener
+- 🎨 **[Ambient Lighting (`ambient`)](./docs/modules/ambient.md)** — Media color extraction, OKLCH canvas glow
+- 🖼️ **[Background Canvas (`background`)](./docs/modules/background.md)** — Multi-layer video, YouTube loop, cross-fades
+- 🖱️ **[Context Menu (`context-menu`)](./docs/modules/context-menu.md)** — Viewport clamping, declarative menus
+- 🎛️ **[Controls Module (`controls`)](./docs/modules/controls.md)** — Paired HUD action rails beside the dock
+- ⏳ **[Loading & Skeleton (`loading`)](./docs/modules/loading.md)** — Coordinated loading, anti-flicker delay
+- 🎵 **[Media Transport (`media`)](./docs/modules/media.md)** — Session sync, leader vs audible displacement
+- 🔒 **[Result Pattern (`result`)](./docs/modules/result.md)** — Functional `Result<T, E>`, `ok()`, `err()`
+- 🛡️ **[Error Boundary (`error-boundary`)](./docs/modules/error-boundary.md)** — Isolated boundaries, deduplicating reporter
 
 ---
 
 ## ✨ Features
 
-- ⚡ **Microkernel Architecture:** Ultra-lightweight registry, transaction pipelines, and decoupled module lifecycle.
-- 🧩 **First-Party Declarative Modules:**
-  - `dock` — Floating app-like dock with navigation, cards, and state continuity.
-  - `modal` — Stackable, accessible modals with hardware-accelerated animations.
-  - `notification` — Toast notifications with promise and result tracking.
-  - `ambient` — Dynamic background and color extraction from media.
-  - `background` — Video, image, and interactive backgrounds with YouTube support.
-  - `context-menu` — Contextual right-click menus with scope isolation.
-  - `controls` — Route-level HUD controls.
-  - `loading` — Coordinated loading states with skeleton blocks.
-  - `media` — Synchronized media transport controller.
-- 🔒 **Type-Safe Result & Events:** Functional error-handling (`Result<T, E>`) and type-safe decoupled pub/sub events.
-- 🎨 **Theme Engine:** Semantic OKLCH tokens, design slots, and hardware GPU accelerated motion presets.
-- 🛡️ **Guaranteed Context Deduplication:** Cross-bundle resilient React context registry preventing multi-chunk split issues.
+- ⚡ **Microkernel Architecture:** Ultra-lean orchestration host with topological module dependency sorting, transactional multi-source registry, and atomic route lifecycle commits.
+- 🧩 **First-Party Declarative UI Modules:** 9 production-tested modules (`dock`, `modal`, `notification`, `ambient`, `background`, `context-menu`, `controls`, `loading`, `media`) that communicate strictly through typed contracts without tight coupling.
+- 🎯 **Single Route Declaration (`usePage`):** Cleanly declare titles, navigation cards, modals, loading states, and background media in a single atomic hook call.
+- 🔒 **Type-Safe Result Pattern (`Result<T, E>`):** Functional, bulletproof error handling with `ok()`, `err()`, and direct feedback bridging via `toast.fromResult()`.
+- 🛡️ **Cross-Bundle Context Deduplication:** Guarantees stable React Context singletons across Next.js split chunks and monorepo boundaries.
+- 🎨 **Tailwind CSS v4 & OKLCH Ready:** GPU-accelerated motion presets (`translate3d`, `scale`) and semantic color tokens.
 
 ---
 
@@ -32,13 +56,15 @@
 npm install @omerdlw/base-framework motion
 ```
 
+Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.0.0`, `react-dom >= 19.0.0`, `motion >= 12.0.0`).
+
 ---
 
 ## 🚀 Quick Start
 
-### 1. Wrap Your App with `CoreProvider`
+### 1. Configure Providers in Your Next.js App
 
-In your `app/providers.tsx` (Client Component):
+Create your client providers component (e.g. `src/app/providers.tsx`):
 
 ```tsx
 "use client";
@@ -47,19 +73,51 @@ import { CoreProvider } from "@omerdlw/base-framework/provider";
 import { dockModule } from "@omerdlw/base-framework/modules/dock";
 import { modalModule } from "@omerdlw/base-framework/modules/modal";
 import { notificationModule } from "@omerdlw/base-framework/modules/notification";
+import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
+import { backgroundModule } from "@omerdlw/base-framework/modules/background";
+import { loadingModule } from "@omerdlw/base-framework/modules/loading";
 
-const modules = [dockModule, modalModule, notificationModule];
+const modules = [
+  dockModule,
+  modalModule,
+  notificationModule,
+  ambientModule,
+  backgroundModule,
+  loadingModule,
+];
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  return <CoreProvider modules={modules}>{children}</CoreProvider>;
+}
+```
+
+Wrap your root `app/layout.tsx`:
+
+```tsx
+import { Providers } from "./providers";
+import "./globals.css";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CoreProvider modules={modules}>
-      {children}
-    </CoreProvider>
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
 ```
 
-### 2. Configure Route State with `usePage`
+### 2. Tailwind CSS v4 Configuration
+
+Add the package path to your `@source` scanning inside `src/app/globals.css`:
+
+```css
+@import "tailwindcss";
+@source "../node_modules/@omerdlw/base-framework";
+```
+
+### 3. Declare Route State with `usePage`
 
 In any route client component:
 
@@ -68,50 +126,61 @@ In any route client component:
 
 import { usePage } from "@omerdlw/base-framework/kernel";
 
-export default function MyPage() {
-  usePage({
+export default function DashboardPage() {
+  const page = usePage({
+    title: "Analytics Dashboard",
     dock: {
-      title: "Dashboard",
+      description: "Live system metrics and user activity",
       icon: "solar:widget-bold",
     },
-    loading: {
-      isLoading: false,
+    background: {
+      image: "/media/dashboard-bg.webp",
+      overlay: true,
     },
+    loading: false,
   });
 
-  return <main>Page Content</main>;
+  return (
+    <main className="p-8">
+      <h1 className="text-3xl font-bold">Analytics</h1>
+      <button
+        onClick={() => page.modules.notification?.toast("Data refreshed!")}
+        className="mt-4 rounded bg-white px-4 py-2 font-semibold text-black"
+      >
+        Refresh
+      </button>
+    </main>
+  );
 }
-```
-
-### 3. Tailwind CSS v4 Integration
-
-If you use Tailwind CSS v4, include the package in your `@source` scanning inside `globals.css`:
-
-```css
-@import "tailwindcss";
-@source "../node_modules/@omerdlw/base-framework";
 ```
 
 ---
 
-## 📚 Subpath Exports
+## 📚 Subpath Export Directory
 
-| Export Path | Purpose |
-| :--- | :--- |
-| `@omerdlw/base-framework` | Root exports |
-| `@omerdlw/base-framework/kernel` | Microkernel engine, registry hooks, module host |
-| `@omerdlw/base-framework/provider` | `CoreProvider` composition pipeline |
-| `@omerdlw/base-framework/theme` | `ThemeProvider`, `defineTheme`, `useTheme` |
-| `@omerdlw/base-framework/tokens` | Stacking order (`Z_INDEX`), motion timing, easing |
-| `@omerdlw/base-framework/result` | Functional `ok()`, `err()`, safe action wrappers |
-| `@omerdlw/base-framework/events` | Decoupled event bus (`globalEvents`, `EVENT_TYPES`) |
-| `@omerdlw/base-framework/utils` | DOM helpers, string/object helpers, store primitives |
-| `@omerdlw/base-framework/hooks` | React utility hooks |
-| `@omerdlw/base-framework/error` | Global and module-level error boundaries |
-| `@omerdlw/base-framework/modules/*` | Individual domain modules (`dock`, `modal`, etc.) |
+| Subpath                             | Purpose & Key Exports                                             |
+| :---------------------------------- | :---------------------------------------------------------------- |
+| `@omerdlw/base-framework`           | Root exports of all sub-systems                                   |
+| `@omerdlw/base-framework/kernel`    | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`  |
+| `@omerdlw/base-framework/provider`  | `CoreProvider` composition pipeline & `ModuleHost`                |
+| `@omerdlw/base-framework/result`    | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                |
+| `@omerdlw/base-framework/events`    | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)               |
+| `@omerdlw/base-framework/theme`     | `ThemeProvider`, `useTheme`, `defineThemeSpec`                    |
+| `@omerdlw/base-framework/tokens`    | Motion easing, timing presets, z-index hierarchy                  |
+| `@omerdlw/base-framework/atoms`     | Primitive components (`Button`, `Icon`, `Spinner`, `Tooltip`)     |
+| `@omerdlw/base-framework/utils`     | Pure utilities (`cn`, `report`, `createStore`, `createScheduler`) |
+| `@omerdlw/base-framework/hooks`     | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`) |
+| `@omerdlw/base-framework/error`     | Error boundaries and reporter sink                                |
+| `@omerdlw/base-framework/modules/*` | 9 standalone modules (`dock`, `modal`, `notification`, etc.)      |
+
+---
+
+## 🤖 For AI Coding Assistants (Cursor, Antigravity, Claude Code)
+
+When developing a project that consumes `@omerdlw/base-framework`, copy [`templates/AGENTS.md`](./templates/AGENTS.md) into your downstream project root as `AGENTS.md`. This gives the AI assistant instant, complete context over the framework's strict rules, boundaries, and best practices.
 
 ---
 
 ## 📄 License
 
-MIT © [Ömer Dilavever](https://github.com/omerdlw)
+MIT © [Ömer Deliavcı](https://github.com/omerdlw)

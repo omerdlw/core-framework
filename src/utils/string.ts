@@ -25,28 +25,3 @@ export function isImageIconSource(icon: unknown): boolean {
       icon.startsWith("data:image/"))
   );
 }
-
-export function truncate(
-  text: unknown,
-  maxLength: number = 100,
-  suffix: string = "...",
-): string {
-  if (typeof text !== "string") return "";
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength).trimEnd()}${suffix}`;
-}
-
-export function capitalize(str: unknown): string {
-  if (typeof str !== "string" || !str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-export function slugify(str: unknown): string {
-  if (typeof str !== "string" || !str) return "";
-  return str
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}

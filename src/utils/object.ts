@@ -10,14 +10,6 @@ export function isPlainObject(
   return proto === Object.prototype || proto === null;
 }
 
-export function isEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === "string" || Array.isArray(value))
-    return value.length === 0;
-  if (isObject(value)) return Object.keys(value).length === 0;
-  return false;
-}
-
 export function shallowEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (
@@ -52,19 +44,4 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
 export function toArray<T>(value: T | T[] | null | undefined): T[] {
   if (value === null || value === undefined) return [];
   return Array.isArray(value) ? value : [value];
-}
-
-export function dedupe<T>(
-  array: T[],
-  keyFn: ((item: T) => unknown) | null = null,
-): T[] {
-  if (!Array.isArray(array)) return [];
-  if (!keyFn) return [...new Set(array)];
-  const seen = new Set();
-  return array.filter((item) => {
-    const key = keyFn(item);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }

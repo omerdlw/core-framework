@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef } from "react";
 import { globalEvents, type FrameworkEventMap } from "@/events";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 import { UseGlobalEventOptions } from "./types";
@@ -88,74 +88,4 @@ export function useGlobalEvent(
       }
     };
   }, [event, debounceMs, throttleMs]);
-}
-
-export function useEventState<T, K extends keyof FrameworkEventMap>(
-  event: K | null | undefined,
-  initialValue: T,
-  reducer: (prevState: T, payload: FrameworkEventMap[K]) => T,
-): T;
-
-export function useEventState<T, P = unknown>(
-  event: string | null | undefined,
-  initialValue: T,
-  reducer: (prevState: T, payload: P) => T,
-): T;
-
-export function useEventState<T, P = unknown>(
-  event: string | null | undefined,
-  initialValue: T,
-  reducer: (prevState: T, payload: P) => T,
-): T {
-  const storeRef = useRef<{
-    value: T;
-    listeners: Set<() => void>;
-    reducer: (prevState: T, payload: P) => T;
-  } | null>(null);
-
-  if (storeRef.current == null) {
-    storeRef.current = {
-      value: initialValue,
-      listeners: new Set(),
-      reducer,
-    };
-  }
-
-  useIsomorphicLayoutEffect(() => {
-    if (storeRef.current != null) {
-      storeRef.current.reducer = reducer;
-    }
-  });
-
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => {
-      if (!event || !storeRef.current) return () => {};
-      storeRef.current.listeners.add(onStoreChange);
-
-      const unsub = globalEvents.subscribe<P>(event, (payload) => {
-        if (!storeRef.current) return;
-        const next = storeRef.current.reducer(storeRef.current.value, payload);
-        if (!Object.is(storeRef.current.value, next)) {
-          storeRef.current.value = next;
-          storeRef.current.listeners.forEach((listener) => listener());
-        }
-      });
-
-      return () => {
-        storeRef.current?.listeners.delete(onStoreChange);
-        unsub();
-      };
-    },
-    [event],
-  );
-
-  const getSnapshot = useCallback(() => {
-    return storeRef.current?.value ?? initialValue;
-  }, [initialValue]);
-
-  const getServerSnapshot = useCallback(() => {
-    return initialValue;
-  }, [initialValue]);
-
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

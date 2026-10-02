@@ -1,7 +1,3 @@
-export function sleep(ms: number = 0): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function debounce<T extends (...args: never[]) => void>(
   func: T,
   wait: number = 300,
