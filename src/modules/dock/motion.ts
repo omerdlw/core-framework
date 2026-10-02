@@ -12,7 +12,7 @@ import {
   staggerDelay,
   staggerItem,
 } from "@/tokens";
-import { type TargetAndTransition, type Transition } from "motion/react";
+import { type TargetAndTransition, type Transition, type Variants } from "motion/react";
 import { DOCK_CARD_DIMENSIONS, DOCK_SURFACE_PHASE } from "./constants";
 
 export const DOCK_DURATIONS = Object.freeze({
@@ -411,7 +411,7 @@ export const dockMediaVolumeThumbVariants = Object.freeze({
 function buildVariants(
   tierName: keyof typeof DOCK_TIERS,
   { distanceScale = 0 }: { distanceScale?: number } = {},
-) {
+): Variants {
   const tier = DOCK_TIERS[tierName];
   const distance = Math.round(tier.distance * distanceScale);
   const exitDuration = Math.min(tier.duration * 0.7, DOCK_DURATIONS.MODERATE);
