@@ -44,10 +44,13 @@ import {
   normalizeBackgroundInput,
 } from "./utils";
 import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "./youtube/parse";
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const BackgroundContext = createContext<BackgroundContextValue | null>(
-  null,
-);
+export const BackgroundContext =
+  getOrCreateGlobalContext<BackgroundContextValue | null>(
+    "BackgroundContext",
+    null,
+  );
 
 const mediaPeer = definePeer("media", {
   actions: {

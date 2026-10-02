@@ -31,8 +31,10 @@ import {
   type SkeletonValue,
 } from "./types";
 import { normalizeLoadingOptions } from "./utils";
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const LoadingContext = createContext<LoadingContextValue | null>(null);
+export const LoadingContext =
+  getOrCreateGlobalContext<LoadingContextValue | null>("LoadingContext", null);
 
 export function useLoadingRegistration(
   config: LoadingPageConfig | null | undefined,

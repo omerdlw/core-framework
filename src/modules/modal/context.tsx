@@ -30,8 +30,12 @@ export interface ModalContextValue {
   actions: ModalActions;
   store: ExternalStore<ModalState>;
 }
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const ModalContext = createContext<ModalContextValue | null>(null);
+export const ModalContext = getOrCreateGlobalContext<ModalContextValue | null>(
+  "ModalContext",
+  null,
+);
 
 export function useModalRegistration(
   config: ModalPageConfig | null | undefined,

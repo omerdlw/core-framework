@@ -30,8 +30,12 @@ interface RegistryContextValue {
     "getEntriesSnapshot" | "getSnapshot" | "subscribe"
   >;
 }
+import { getOrCreateGlobalContext } from "./context-registry";
 
-const RegistryContext = createContext<RegistryContextValue | null>(null);
+const RegistryContext = getOrCreateGlobalContext<RegistryContextValue | null>(
+  "RegistryContext",
+  null,
+);
 
 export function RegistryProvider({
   children,

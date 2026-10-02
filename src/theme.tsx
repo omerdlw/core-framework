@@ -39,8 +39,12 @@ export function defineTheme<S extends string>(
   return { id: spec.id, config: config as ThemeEntry["config"] };
 }
 
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
+
 const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
-const ThemeContext = createContext(EMPTY);
+const ThemeContext = getOrCreateGlobalContext<
+  ReadonlyMap<string, ThemeEntry["config"]>
+>("ThemeContext", EMPTY);
 
 export function ThemeProvider({
   children,

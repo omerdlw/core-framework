@@ -11,8 +11,12 @@ import {
   type ErrorActionsProps,
   type GuardActionsProps,
 } from "./types";
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const DockContext = createContext<DockContextValue | null>(null);
+export const DockContext = getOrCreateGlobalContext<DockContextValue | null>(
+  "DockContext",
+  null,
+);
 
 export function useDockState(): DockState {
   const { store } = useRequiredContext(

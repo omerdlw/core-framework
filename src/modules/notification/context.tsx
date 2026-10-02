@@ -27,8 +27,13 @@ import {
   normalizeToastOptions,
 } from "./utils";
 
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
+
 export const NotificationContext =
-  createContext<NotificationContextValue | null>(null);
+  getOrCreateGlobalContext<NotificationContextValue | null>(
+    "NotificationContext",
+    null,
+  );
 
 let notificationIdCounter = 0;
 

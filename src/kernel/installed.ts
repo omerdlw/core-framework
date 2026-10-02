@@ -26,8 +26,10 @@ export const EMPTY_MODULES: readonly AnyCoreModule[] = Object.freeze([]);
 
 export const PassthroughBoundary: BoundaryComponent = ({ children }) =>
   children;
+import { getOrCreateGlobalContext } from "./context-registry";
 
-export const ModuleHostContext = createContext<ModuleHostValue | null>(null);
+export const ModuleHostContext =
+  getOrCreateGlobalContext<ModuleHostValue | null>("ModuleHostContext", null);
 
 export function selectModuleSlice(
   coreModule: AnyCoreModule,

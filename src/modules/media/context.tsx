@@ -22,8 +22,12 @@ import {
   sameElements,
   toggleElement,
 } from "./utils";
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const MediaContext = createContext<MediaContextValue | null>(null);
+export const MediaContext = getOrCreateGlobalContext<MediaContextValue | null>(
+  "MediaContext",
+  null,
+);
 
 interface Binding {
   cleanup: () => void;

@@ -27,8 +27,13 @@ import {
   type ContextMenuTrigger,
 } from "./types";
 
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
+
 export const ContextMenuContext =
-  createContext<ContextMenuProviderValue | null>(null);
+  getOrCreateGlobalContext<ContextMenuProviderValue | null>(
+    "ContextMenuContext",
+    null,
+  );
 
 function selectIsOpen(state: ContextMenuState): boolean {
   return state.isOpen;

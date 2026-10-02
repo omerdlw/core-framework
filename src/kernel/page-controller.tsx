@@ -117,11 +117,18 @@ const noopHook = () => {};
 const PassthroughProvider = ({ children }: { children?: ReactNode }) =>
   children;
 
-const PageControllerContext = createContext<PageController | null>(null);
+import { getOrCreateGlobalContext } from "./context-registry";
 
-const PageControllerStoreContext = createContext<PageControllerStore>(
-  fallbackStandaloneStore,
+const PageControllerContext = getOrCreateGlobalContext<PageController | null>(
+  "PageControllerContext",
+  null,
 );
+
+const PageControllerStoreContext =
+  getOrCreateGlobalContext<PageControllerStore>(
+    "PageControllerStoreContext",
+    fallbackStandaloneStore,
+  );
 
 export function PageControllerProvider({ children }: { children?: ReactNode }) {
   const [store] = useState<PageControllerStore>(() =>

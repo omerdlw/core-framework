@@ -21,8 +21,10 @@ import {
   resolveAmbientVarMap,
   resolveTargetElement,
 } from "./utils";
+import { getOrCreateGlobalContext } from "@/kernel/context-registry";
 
-export const AmbientContext = createContext<AmbientProviderValue | null>(null);
+export const AmbientContext =
+  getOrCreateGlobalContext<AmbientProviderValue | null>("AmbientContext", null);
 
 function useStableObject<T extends object | null | undefined>(value: T): T {
   const [stable, setStable] = useState<T>(value);
