@@ -1,28 +1,15 @@
 import { isPlainObject } from "@/utils";
 import { DOCK_SURFACE_PHASE } from "../constants";
 import {
-  isValidComponentType,
   resolveComponentType,
   resolveRenderableContent,
-} from "../utils";
+} from "../helpers";
 import { normalizeExtensions } from "./definition";
 import {
   type ActiveSurfaceStep,
-  type DockComponentProps,
   type DockItem,
-  type NormalizedSurfaceDefinition,
-  type NormalizedSurfaceExtension,
-  type OpenSurfaceOptions,
   type RenderableSurfaceEntry,
-  type SurfaceBuilderDefinition,
-  type SurfaceBuilderFactory,
   type SurfaceDescriptor,
-  type SurfaceFlowContextValue,
-  type SurfaceFlowDefinition,
-  type SurfaceFlowDefinitionInput,
-  type SurfaceFlowSession,
-  type SurfaceFlowState,
-  type SurfaceInput,
   type SurfaceResult,
   type SurfaceStep,
   type SurfaceViewModelOptions,

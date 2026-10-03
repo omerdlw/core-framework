@@ -1,9 +1,17 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
+import { useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "@/atoms";
 import { isImageIconSource } from "@/utils";
-import { createPortal } from "react-dom";
+import {
+  useContextMenu,
+  useContextMenuContentModel,
+  useContextMenuListener,
+} from "./hooks";
+import { joinClassNames } from "./dom";
+import { resolveMenuItems } from "./items";
 import {
   CONTEXT_MENU_ITEM_TAP,
   CONTEXT_MENU_MICRO_SPRING,
@@ -11,23 +19,17 @@ import {
   menuItemVariants,
   menuPopVariants,
 } from "./motion";
-import { joinClassNames, resolveMenuItems } from "./utils";
 import {
   type ContextMenuClasses,
-  type ContextMenuIcon,
-  type ContextMenuResolvedHeader,
-  type ContextMenuResolvedItem,
   type ContextMenuConfig,
   type ContextMenuContextValue,
+  type ContextMenuIcon,
   type ContextMenuPosition,
+  type ContextMenuResolvedHeader,
+  type ContextMenuResolvedItem,
 } from "./types";
-import {
-  useContextMenuContentModel,
-  useContextMenuRendererModel,
-  useContextMenuListener,
-} from "./hooks";
 
-function ContextMenuHeaderIcon({
+export function ContextMenuHeaderIcon({
   classes,
   icon,
 }: {
@@ -138,7 +140,7 @@ const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
   point: { x: 0, y: 0 },
 });
 
-function ContextMenuContent({
+export function ContextMenuContent({
   config,
   items,
   menuContext,
@@ -168,6 +170,7 @@ function ContextMenuContent({
     onClose,
     position,
   });
+
   return (
     <div>
       <div
@@ -232,14 +235,23 @@ function ContextMenuContent({
   );
 }
 
-function ContextMenuRenderer() {
-  const { closeMenu, config, context, isOpen, items, position, isMounted } =
-    useContextMenuRendererModel();
+const emptySubscribe = () => () => {};
+
+export function ContextMenuRenderer() {
+  const { closeMenu, config, context, isOpen, items, position } =
+    useContextMenu();
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
   if (!isMounted) return null;
+
   const menuContext = context ?? EMPTY_MENU_CONTEXT;
   const resolvedItems = items.length
     ? items
     : resolveMenuItems(config, menuContext);
+
   return createPortal(
     <AnimatePresence>
       {isOpen && config && resolvedItems.length > 0 && (

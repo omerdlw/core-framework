@@ -16,20 +16,20 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import { isObject, toArray, clamp, cn } from "@/utils";
 import { useGlobalEvent } from "@/hooks";
-import { Icon } from "@/atoms";
 import { useMotionValue, useSpring } from "motion/react";
+import { isInlineActionPathMatch } from "./paths";
 import {
-  isInlineActionPathMatch,
   isValidBannerUrl,
-  resolveDockHeaderKey,
-} from "./utils";
+  resolveDockVisualStyle,
+  getDockItemCardProps,
+} from "./styles";
+import { useDockTheme } from "./hooks";
 import {
   DockCardBannerProps,
   DockCardItemProps,
   type DockActionDescriptor,
   type DockItem,
   type DockBadgeState,
-  type DockIconSource,
   type DockCardHeaderProps,
   type DockSlotContent,
   type StandardItemContentProps,
@@ -42,14 +42,14 @@ import {
 } from "./constants";
 import { type DockCommandEntry } from "./runtime/commands";
 import {
+  resolveDockHeaderKey,
   shouldRenderInlineAction,
+} from "./runtime/pipeline";
+import {
   getItemMeasurementKey,
   getRouteMeasurementKey,
-  resolveDockVisualStyle,
-  getDockItemCardProps,
-  useDockTheme,
   useElementHeight,
-} from "./hooks";
+} from "./layout";
 import { useDockHasMedia, useDockMedia, useDockMediaActions } from "./context";
 import {
   DOCK_SURFACE_BODY_ENTER_TRANSITION,
@@ -58,8 +58,6 @@ import {
   DOCK_SCRUBBER_TOOLTIP_SPRING,
 } from "./motion";
 import { resolveDockRoutePolicy, useRoutePrefetch } from "./routing/navigation";
-
-/* eslint-disable react-hooks/immutability, react-hooks/set-state-in-effect -- imperative media-element control and ref forwarding sit outside React Compiler's model */
 
 const bannerPreloadCache = new Set<string>();
 

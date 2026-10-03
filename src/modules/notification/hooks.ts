@@ -2,50 +2,91 @@
 
 import {
   useCallback,
+  useContext,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { isResult } from "@/result";
-import { toUserMessage } from "@/utils";
 import { EVENT_TYPES } from "@/events";
-import { useGlobalEvent } from "@/hooks";
+import { useGlobalEvent, useRequiredContext, useStore } from "@/hooks";
 import { useModuleTheme } from "@/theme";
+import { toUserMessage } from "@/utils";
 import {
-  TOAST_DURATIONS,
+  INERT_NOTIFICATION_ACTIONS,
   SESSION_EXPIRED_MESSAGE,
+  TOAST_DURATIONS,
   notificationTheme,
 } from "./constants";
-import { useNotificationActions, useNotificationState } from "./context";
 import {
+  NotificationContext,
+  NOOP_NOTIFICATION_STORE,
+} from "./context";
+import {
+  getActiveNotification,
+  getOutcomeMessage,
+  normalizeToastOptions,
+  resolveMessage,
+  withDefaultDuration,
+} from "./state";
+import {
+  type NotificationActions,
+  type NotificationState,
   type ToastController,
   type ToastOptionsInput,
   type ToastPromiseMessages,
 } from "./types";
-import {
-  normalizeToastOptions,
-  withDefaultDuration,
-  getActiveNotification,
-} from "./utils";
 
 let toastPromiseIdCounter = 0;
 
-function resolveMessage<A>(
-  message: ReactNode | ((arg: A) => ReactNode),
-  arg: A,
-): ReactNode {
-  return typeof message === "function" ? message(arg) : message;
+export function useNotificationActions(): NotificationActions {
+  return useRequiredContext(
+    NotificationContext,
+    "useNotificationActions",
+    "NotificationProvider",
+  ).actions;
 }
 
-function getOutcomeMessage<T, E>(
-  value: unknown,
-  messages: ToastPromiseMessages<T, E>,
-): ReactNode {
-  if (!isResult(value)) return resolveMessage(messages.success, value as T);
-  return value.success
-    ? resolveMessage(messages.success, value.data as T)
-    : resolveMessage(messages.error, value.error as E) ||
-        toUserMessage(value.error);
+export function useNotificationState(): NotificationState {
+  const { store } = useRequiredContext(
+    NotificationContext,
+    "useNotificationState",
+    "NotificationProvider",
+  );
+  return useStore(store);
+}
+
+export function useNotification(): NotificationState & NotificationActions {
+  const actions = useNotificationActions();
+  const state = useNotificationState();
+  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
+}
+
+export function useOptionalNotificationState(): NotificationState;
+export function useOptionalNotificationState<T>(
+  selector: (state: NotificationState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalNotificationState<T = NotificationState>(
+  selector?: (state: NotificationState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(NotificationContext);
+  return useStore(
+    ctx?.store ?? NOOP_NOTIFICATION_STORE,
+    selector as (state: NotificationState) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalNotificationActions(): NotificationActions {
+  const ctx = useContext(NotificationContext);
+  return ctx?.actions ?? INERT_NOTIFICATION_ACTIONS;
+}
+
+export function useNotificationVisible(): boolean {
+  return useOptionalNotificationState(
+    ({ notifications }) => Object.keys(notifications).length > 0,
+  );
 }
 
 export function useToast(defaultDuration?: number | null): ToastController {
@@ -77,10 +118,8 @@ export function useToast(defaultDuration?: number | null): ToastController {
       messages: ToastPromiseMessages<T, E> = {},
       options?: ToastOptionsInput,
     ) => {
-      if (isResult(result)) {
-        const message = getOutcomeMessage(result, messages);
-        if (message) triggerToast(message, options);
-      }
+      const message = getOutcomeMessage(result, messages);
+      if (message) triggerToast(message, options);
       return result;
     },
     [triggerToast],

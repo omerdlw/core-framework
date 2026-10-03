@@ -9,28 +9,31 @@ import {
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
 import { defineModal, modalModule } from "../../src/modules/modal/module.tsx";
-import { useModalState } from "../../src/modules/modal/context.tsx";
+import { useModalState } from "../../src/modules/modal/hooks.ts";
 import {
   getModalIdentity,
-  hasSlotContent,
-  isSidePosition,
-  isVerticalEdgePosition,
-  normalizePosition,
-  resolveActivePosition,
-} from "../../src/modules/modal/utils.ts";
-
-import {
-  dispatchSmoothScrollLock,
-  getFocusableElements,
   getModalLabel,
+} from "../../src/modules/modal/identity.ts";
+import {
   getModalLayout,
   getModalPosition,
   getViewportIsMobile,
   hasHeightConstraint,
+  isSidePosition,
+  isVerticalEdgePosition,
+  normalizePosition,
+  resolveActivePosition,
+} from "../../src/modules/modal/layout.ts";
+import {
+  dispatchSmoothScrollLock,
+  getFocusableElements,
+  trapFocus,
+} from "../../src/modules/modal/dom.ts";
+import {
+  hasSlotContent,
   isHeaderConfig,
   resolveHeaderActions,
-  trapFocus,
-} from "../../src/modules/modal/utils.ts";
+} from "../../src/modules/modal/header.ts";
 import { SMOOTH_SCROLL_LOCK_EVENT } from "../../src/modules/modal/constants.ts";
 
 describe("modal page", () => {

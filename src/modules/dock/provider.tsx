@@ -11,9 +11,10 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { createStore } from "@/utils";
 import { DockContext } from "./context";
-import { useDockRouteReset } from "./hooks";
+import { useDockRouteReset } from "./dom";
 import { BreadcrumbProvider } from "./routing/breadcrumbs";
-import { isSamePath, createDockScheduler } from "./utils";
+import { isSamePath } from "./paths";
+import { createDockScheduler } from "./helpers";
 import { useDockContinuity } from "./routing/continuity";
 import {
   SurfaceExtensionsProvider,

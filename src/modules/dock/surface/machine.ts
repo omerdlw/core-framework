@@ -21,7 +21,8 @@ import {
   type SurfaceTransitionResult,
   type SurfaceTransitionState,
 } from "../types";
-import { normalizeSurfaceFlowSnapshot, createDockScheduler } from "../utils";
+import { normalizeSurfaceFlowSnapshot } from "./helpers";
+import { createDockScheduler } from "../helpers";
 import { DOCK_SURFACE_PHASE, DOCK_LIFECYCLE } from "../constants";
 import { DOCK_SURFACE_CHOREOGRAPHY_TIMINGS } from "../motion";
 import { report } from "@/utils";

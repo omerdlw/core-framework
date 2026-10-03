@@ -33,7 +33,7 @@ import {
   isHudDescriptor,
   resolveComponentType,
   resolveRenderableContent,
-} from "./utils";
+} from "./helpers";
 import { useDockActions } from "./context";
 
 export type DockHudEntries = Record<string, DockHudDescriptor>;

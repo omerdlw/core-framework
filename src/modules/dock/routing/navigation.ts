@@ -11,7 +11,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useRequiredContext } from "@/hooks";
 import { globalEvents } from "@/events";
-import { isSafeInternalHref, isSamePath, getDockLocationKey } from "../utils";
+import { isSafeInternalHref, isSamePath, getDockLocationKey } from "../paths";
 import {
   PrefetchingRouter,
   RoutePrefetchState,
@@ -30,7 +30,7 @@ import {
   useDockLoadingActions as useLoadingActions,
   useDockActions,
 } from "../context";
-import { blurActiveElement } from "../hooks";
+import { blurActiveElement } from "../dom";
 import { openDockGuardConfirmation } from "./guards";
 import { useDockTransactions } from "./transactions";
 import { report } from "@/utils";

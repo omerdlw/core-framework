@@ -3,12 +3,15 @@
 export {
   MediaContext,
   MediaProvider,
+  NOOP_MEDIA_STORE,
+} from "./context";
+export {
+  useMedia,
   useMediaActions,
   useMediaState,
   useOptionalMediaActions,
   useOptionalMediaState,
-} from "./context";
-export { useMedia } from "./hooks";
+} from "./hooks";
 export { mediaModule } from "./module";
 export { MediaOverlay, MediaSource } from "./overlay";
 export {
@@ -18,11 +21,18 @@ export {
   MEDIA_SYNC_DRIFT_SECONDS,
   PAGE_MEDIA_ID,
 } from "./constants";
-
 export {
-  bindFollowers,
   createMediaState,
+  findDisplacedAudio,
+  mediaStatesEqual,
+  mergeMediaSource,
   resolveMediaSession,
   selectPageMedia,
-} from "./utils";
+} from "./session";
+export {
+  bindFollowers,
+  safePlay,
+  sameElements,
+  toggleElement,
+} from "./playback";
 export type * from "./types";

@@ -4,7 +4,6 @@ import {
   useCallback,
   useEffect,
   createContext,
-  isValidElement,
   use,
   useMemo,
   useRef,
@@ -30,22 +29,10 @@ import {
   type SurfaceFlowHandle,
   type SurfaceResult,
   type SurfaceStackEntry,
-  type ActiveSurfaceStep,
-  type DockComponentProps,
   type DockItem,
-  type NormalizedSurfaceDefinition,
   type NormalizedSurfaceExtension,
-  type OpenSurfaceOptions,
-  type RenderableSurfaceEntry,
-  type SurfaceBuilderDefinition,
-  type SurfaceBuilderFactory,
-  type SurfaceDescriptor,
   type SurfaceFlowContextValue,
-  type SurfaceFlowSession,
   type SurfaceFlowState,
-  type SurfaceInput,
-  type SurfaceStep,
-  type SurfaceViewModelOptions,
   type DockIconSource,
 } from "../types";
 import { DOCK_SURFACE_FLOW_STATUS, DOCK_SURFACE_PHASE } from "../constants";
@@ -71,8 +58,8 @@ import {
   SurfaceHeaderActionStore,
   useSurfaceId,
 } from "./context";
-import { normalizeSurfaceExtension } from "../utils";
-import { useDockFocusTrap } from "../hooks";
+import { normalizeSurfaceExtension } from "./helpers";
+import { useDockFocusTrap } from "../dom";
 import {
   DOCK_SURFACE_BODY_ENTER_TRANSITION,
   DOCK_SURFACE_BODY_EXIT_TRANSITION,
@@ -82,8 +69,6 @@ import {
   dockSurfaceBodyRole,
 } from "../motion";
 import { report } from "@/utils";
-
-/* eslint-disable react-hooks/immutability -- the surface shell forwards its element through a caller-supplied ref */
 
 export function useSurfaceFlows({
   closeSurface,

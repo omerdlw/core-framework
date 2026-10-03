@@ -4,13 +4,17 @@ export { LoadingOverlay } from "./overlay";
 export {
   LoadingContext,
   LoadingProvider,
+  NOOP_LOADING_STORE,
+} from "./context";
+export {
   useLoading,
   useLoadingActions,
+  useLoadingOverlayModel,
   useLoadingRegistration,
   useLoadingState,
   useOptionalLoadingActions,
   useOptionalLoadingState,
-} from "./context";
+} from "./hooks";
 export { defineLoading, loadingModule } from "./module";
 export {
   DEFAULT_LOADING_STATE,
@@ -19,5 +23,10 @@ export {
   LOADING_REGISTRY_KEY,
   loadingTheme,
 } from "./constants";
-export { normalizeLoadingOptions, selectPageLoading } from "./utils";
+export {
+  calculateRemainingMinDuration,
+  normalizeLoadingOptions,
+  resolveLoadingState,
+  selectPageLoading,
+} from "./state";
 export type * from "./types";

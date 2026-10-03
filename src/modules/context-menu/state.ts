@@ -1,5 +1,5 @@
-import { toFiniteNumber } from "@/utils";
-import { INITIAL_POSITION } from "./constants";
+import { isBrowser, toFiniteNumber } from "@/utils";
+import { CONTEXT_MENU_VISIBILITY_EVENT, INITIAL_POSITION } from "./constants";
 import { type ContextMenuOpenInput, type ContextMenuState } from "./types";
 
 export function createInitialMenuState(): ContextMenuState {
@@ -29,4 +29,13 @@ export function resolveNextOpenState({
       y: Math.round(toFiniteNumber(position?.y, 0)),
     },
   };
+}
+
+export function emitContextMenuVisibility(isOpen: boolean): void {
+  if (!isBrowser) return;
+  window.dispatchEvent(
+    new CustomEvent(CONTEXT_MENU_VISIBILITY_EVENT, {
+      detail: { isOpen: Boolean(isOpen) },
+    }),
+  );
 }

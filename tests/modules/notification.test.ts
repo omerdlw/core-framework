@@ -5,10 +5,10 @@ import { act, createElement as h } from "react";
 import { renderHook } from "../support/render.ts";
 import {
   NotificationProvider,
-  useNotificationState,
 } from "../../src/modules/notification/context.tsx";
 import {
   NotificationListener,
+  useNotificationState,
   useToast,
 } from "../../src/modules/notification/hooks.ts";
 import { EVENT_TYPES, globalEvents } from "../../src/core/events.ts";
@@ -24,7 +24,7 @@ import {
   normalizeFeedbackText,
   normalizeToastOptions,
   withDefaultDuration,
-} from "../../src/modules/notification/utils.ts";
+} from "../../src/modules/notification/state.ts";
 
 afterEach(() => mock.timers.reset());
 

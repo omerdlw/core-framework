@@ -19,7 +19,7 @@ import {
   OVERLAY_STATUS_STORAGE_KEY,
 } from "../constants";
 import { statusActionDefaults } from "../context";
-import { normalizeUpper } from "../utils";
+import { normalizeUpper } from "../helpers";
 
 export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
 

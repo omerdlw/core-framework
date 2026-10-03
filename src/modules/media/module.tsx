@@ -3,9 +3,10 @@
 import { useMemo } from "react";
 import { defineModule, type PageModuleApi } from "@/kernel";
 import { MEDIA_REGISTRY_KEY } from "./constants";
-import { MediaContext, MediaProvider, useMediaActions } from "./context";
+import { MediaContext, MediaProvider } from "./context";
+import { useMediaActions } from "./hooks";
 import { MediaOverlay } from "./overlay";
-import { selectPageMedia } from "./utils";
+import { selectPageMedia } from "./session";
 import {
   type MediaPageApi,
   type MediaPageConfig,

@@ -146,9 +146,10 @@ No classes or colors in the module apart from the measured position. Slots in `c
 | `index.ts`     | Public barrel.                                                                                                                                               |
 | `types.ts`     | Entries, slots, layout, definition and page-config contracts, theme slots.                                                                                   |
 | `constants.ts` | Edge inset, dock gap, dock element id, side names, `controlsTheme`.                                                                                          |
-| `utils.ts`     | `resolveControlsPairs` (path filter, pairing, ordering), `getControlsLayout` (geometry), `areLayoutsEqual`, `validateControlEntry`, `normalizePageControls`. |
-| `hooks.ts`     | `useControlsLayout` (measurement + observers), `useControls`, `useControlsRegistration`, slot resolution, `useControlsModel`.                                |
-| `overlay.tsx`  | `Controls` and the side rail renderer.                                                                                                                       |
+| `layout.ts`    | `getControlsLayout` (geometry calculation), `areLayoutsEqual`, dock element queries, and `useControlsLayout` (reactive layout measurement + DOM observers).     |
+| `entries.ts`   | `resolveControlsPairs` (path filter, pairing, ordering), `validateControlEntry`, `normalizePageControls`, `resolveSlot`, `isControlSide`.                    |
+| `hooks.ts`     | `useControls`, `useControlsRegistration`, and `useControlsLayout` re-export.                                                                                  |
+| `overlay.tsx`  | `Controls`, `ControlsSide` rail renderer, and internal `useControlsModel`.                                                                                    |
 | `module.tsx`   | `controlsModule`, page API (`set`), `defineControls`, kernel type augmentation.                                                                              |
 
 No `provider.tsx` or `motion.ts`: the module is stateless and does not animate ([README](./README.md#42-why-some-optional-slots-are-absent)).

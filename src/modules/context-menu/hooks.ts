@@ -1,41 +1,101 @@
 "use client";
 
 import {
-  useEffect,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
-  type RefObject,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
+  type RefObject,
 } from "react";
 import { usePathname } from "next/navigation";
-import { useRegistryEntries } from "@/kernel";
-import { useModuleTheme } from "@/theme";
-import { useOptionalDockState, type DockItem, type DockState } from "../dock";
-import { contextMenuTheme } from "./constants";
-import { useContextMenuActions, useContextMenu } from "./context";
-import { prepareMenu, resolveContextMenu } from "./resolver";
+import { useRequiredContext, useStore } from "@/hooks";
 import {
-  isScrollLockKey,
-  resolveContextMenuPageMeta,
+  useModuleRegistration,
+  useRegistryEntries,
+  type RegistryMetadata,
+} from "@/kernel";
+import { useModuleTheme } from "@/theme";
+import { type DockItem, type DockState, useOptionalDockState } from "../dock";
+import { contextMenuTheme } from "./constants";
+import { ContextMenuContext } from "./context";
+import {
   getNextActiveIndex,
+  isScrollLockKey,
   joinClassNames,
   positionMenu,
+} from "./dom";
+import {
+  resolveContextMenuPageMeta,
   resolveMenuHeader,
   safeInvoke,
-} from "./utils";
-import {
-  type ContextMenuConfig,
-  type ContextMenuClassNames,
-  type ContextMenuThemeSlot,
-  type ContextMenuContextValue,
-  type ContextMenuPosition,
-  type ContextMenuResolvedItem,
+} from "./items";
+import { prepareMenu, resolveContextMenu } from "./resolver";
+import type {
+  ContextMenuActions,
+  ContextMenuClassNames,
+  ContextMenuConfig,
+  ContextMenuContextApi,
+  ContextMenuContextValue,
+  ContextMenuPageConfig,
+  ContextMenuPosition,
+  ContextMenuResolvedItem,
+  ContextMenuState,
+  ContextMenuThemeSlot,
 } from "./types";
+
+export function useContextMenuRegistration(
+  config: ContextMenuPageConfig | null | undefined,
+  options?: RegistryMetadata & { enabled?: boolean },
+): void {
+  useModuleRegistration("contextMenu", config, options);
+}
+
+export function useContextMenu(
+  config?: Partial<ContextMenuConfig> | null,
+  options?: RegistryMetadata & { enabled?: boolean },
+): ContextMenuContextApi {
+  useContextMenuRegistration(config || null, options);
+  const { actions, store } = useRequiredContext(
+    ContextMenuContext,
+    "useContextMenu",
+    "ContextMenuProvider",
+  );
+  const state = useStore(store);
+  const ctx = useMemo<ContextMenuContextApi>(
+    () => ({ ...state, ...actions }),
+    [actions, state],
+  );
+
+  return useMemo(() => {
+    if (!config) return ctx;
+    return {
+      ...ctx,
+      bind: (payload?: unknown, configOverride?: Partial<ContextMenuConfig>) =>
+        ctx.bind(payload, { ...config, ...configOverride }),
+    };
+  }, [config, ctx]);
+}
+
+export function useContextMenuActions(): ContextMenuActions {
+  return useRequiredContext(
+    ContextMenuContext,
+    "useContextMenuActions",
+    "ContextMenuProvider",
+  ).actions;
+}
+
+export function useContextMenuState(): ContextMenuState {
+  const { store } = useRequiredContext(
+    ContextMenuContext,
+    "useContextMenuState",
+    "ContextMenuProvider",
+  );
+  return useStore(store);
+}
 
 function selectDockPageCard(dock: DockState): DockItem | null {
   const card = dock.activeItem;
@@ -113,8 +173,6 @@ export function useMenuDismissal(
     };
   }, [menuRef, onClose]);
 }
-
-const emptySubscribe = () => () => {};
 
 export function useContextMenuContentModel({
   config,
@@ -204,16 +262,4 @@ export function useContextMenuContentModel({
     handleItemSelect,
     handleMenuKeyDown,
   };
-}
-
-export function useContextMenuRendererModel() {
-  const { closeMenu, config, context, isOpen, items, position } =
-    useContextMenu();
-  const isMounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-
-  return { closeMenu, config, context, isOpen, items, position, isMounted };
 }

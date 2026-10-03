@@ -6,7 +6,6 @@ import {
   createElement,
   isValidElement,
   Suspense,
-  type CSSProperties,
   type ComponentType,
   type ReactElement,
   type ReactNode,
@@ -113,11 +112,13 @@ import {
   getLineClampStyle,
   splitStyle,
   getImageIconStyle,
+} from "./styles";
+import {
   useDockActionClass,
-  useDockActions,
   useDockTheme,
 } from "./hooks";
-import { isValidComponentType, formatMediaTime } from "./utils";
+import { useDockActions } from "./context";
+import { isValidComponentType, formatMediaTime } from "./helpers";
 import {
   DOCK_HUD_RENDER_MODE,
   DOCK_CARD_LAYOUT,
@@ -1784,9 +1785,7 @@ export const DockMediaControls = memo(function DockMediaControls({
 }) {
   const {
     handleVolumeKeyDown,
-    videoElement,
     toggleLoop,
-    setVideoMuted,
     playbackRate,
     volume,
     isMuted,

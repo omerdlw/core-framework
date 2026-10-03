@@ -1,22 +1,24 @@
 import "../support/dom.ts";
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { safeInvoke } from "../../src/modules/context-menu/utils.ts";
 import { setReportSink } from "../../src/core/utils/index.ts";
 
 import { createElement as h } from "react";
 import {
   extractNodeText,
-  getNextActiveIndex,
-  isScrollLockKey,
-  joinClassNames,
-  positionMenu,
   resolveAsBoolean,
   resolveAsValue,
   resolveContextMenuPageMeta,
   resolveMenuHeader,
   resolveMenuItems,
-} from "../../src/modules/context-menu/utils.ts";
+  safeInvoke,
+} from "../../src/modules/context-menu/items.ts";
+import {
+  getNextActiveIndex,
+  isScrollLockKey,
+  joinClassNames,
+  positionMenu,
+} from "../../src/modules/context-menu/dom.ts";
 import {
   prepareMenu,
   resolveContextMenu,

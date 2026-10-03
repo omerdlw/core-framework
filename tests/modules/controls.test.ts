@@ -4,11 +4,13 @@ import { createElement as h } from "react";
 import {
   areLayoutsEqual,
   getControlsLayout,
+} from "../../src/modules/controls/layout.ts";
+import {
   isControlSide,
   normalizePageControls,
   resolveControlsPairs,
   validateControlEntry,
-} from "../../src/modules/controls/utils.ts";
+} from "../../src/modules/controls/entries.ts";
 import {
   CONTROLS_DOCK_GAP,
   CONTROLS_EDGE_INSET,
@@ -241,5 +243,50 @@ describe("normalizePageControls", () => {
       entries.map((e: any) => e.id),
       ["controls-left"],
     );
+  });
+});
+
+describe("resolveSlot", () => {
+  test("returns null for null, undefined, or false", async () => {
+    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    assert.equal(resolveSlot(null, {}), null);
+    assert.equal(resolveSlot(undefined, {}), null);
+    assert.equal(resolveSlot(false, {}), null);
+  });
+
+  test("returns valid React elements directly", async () => {
+    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    const el = h("div", null, "Hello");
+    assert.equal(resolveSlot(el, {}), el);
+  });
+
+  test("calls functional components with props", async () => {
+    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    const Component = (props: { title: string }) => h("span", null, props.title);
+    const result = resolveSlot(Component, { title: "Test Title" }) as any;
+    assert.equal(result.type, Component);
+    assert.deepEqual(result.props, { title: "Test Title" });
+  });
+
+  test("returns primitive values directly", async () => {
+    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    assert.equal(resolveSlot("plain text", {}), "plain text");
+    assert.equal(resolveSlot(42, {}), 42);
+  });
+});
+
+describe("defineControls", () => {
+  test("returns a frozen definition with id, order, and use hook", async () => {
+    const { defineControls } = await import("../../src/modules/controls/index.ts");
+    const definition = defineControls({
+      id: "header-controls",
+      order: 10,
+      left: "Back",
+    });
+
+    assert.ok(Object.isFrozen(definition));
+    assert.equal(definition.id, "header-controls");
+    assert.equal(definition.order, 10);
+    assert.equal(typeof definition.use, "function");
   });
 });

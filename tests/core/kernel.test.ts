@@ -36,40 +36,46 @@ import {
   useLoadingActions,
   useLoadingRegistration,
   useLoadingState,
-} from "../../src/modules/loading/context.tsx";
+} from "../../src/modules/loading/index.ts";
 import {
   ModalProvider,
+} from "../../src/modules/modal/context.tsx";
+import {
   useModal,
   useModalActions,
   useModalState,
-} from "../../src/modules/modal/context.tsx";
+} from "../../src/modules/modal/hooks.ts";
 import { modalModule } from "../../src/modules/modal/module.tsx";
 import {
   NotificationProvider,
+} from "../../src/modules/notification/context.tsx";
+import {
   useNotificationActions,
   useNotificationState,
-} from "../../src/modules/notification/context.tsx";
-import { useToast } from "../../src/modules/notification/hooks.ts";
+  useToast,
+} from "../../src/modules/notification/index.ts";
 import { notificationModule } from "../../src/modules/notification/module.tsx";
+import { AmbientProvider } from "../../src/modules/ambient/context.tsx";
 import {
-  AmbientProvider,
   useAmbient,
   useAmbientTheme,
-} from "../../src/modules/ambient/context.tsx";
+} from "../../src/modules/ambient/hooks.ts";
 import { ambientModule } from "../../src/modules/ambient/module.tsx";
 import {
   ContextMenuProvider,
+} from "../../src/modules/context-menu/context.tsx";
+import {
   useContextMenu,
   useContextMenuActions,
   useContextMenuState,
-} from "../../src/modules/context-menu/context.tsx";
+} from "../../src/modules/context-menu/hooks.ts";
 import { CONTEXT_MENU_VISIBILITY_EVENT } from "../../src/modules/context-menu/constants.ts";
 import { contextMenuModule } from "../../src/modules/context-menu/module.tsx";
 import { navigationTestState } from "../support/next-navigation.mjs";
 import {
   useBackgroundActions,
   useBackgroundState,
-} from "../../src/modules/background/context.tsx";
+} from "../../src/modules/background/hooks.ts";
 import { backgroundModule } from "../../src/modules/background/module.tsx";
 import {
   builtInModules,

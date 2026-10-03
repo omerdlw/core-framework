@@ -2,30 +2,29 @@
 
 import {
   useEffect,
-  useInsertionEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
-import { useRequiredContext, useStore } from "@/hooks";
 import {
-  getOrCreateGlobalContext,
-  useModuleRegistration,
-  type RegistryMetadata,
-} from "@/kernel";
+  useIsomorphicLayoutEffect,
+  useStore,
+} from "@/hooks";
+import { getOrCreateGlobalContext } from "@/kernel";
 
 import { createStore } from "@/utils";
 import { prepareMenu } from "./resolver";
-import { createInitialMenuState, resolveNextOpenState } from "./state";
-import { emitContextMenuVisibility, safeInvoke } from "./utils";
+import {
+  createInitialMenuState,
+  emitContextMenuVisibility,
+  resolveNextOpenState,
+} from "./state";
+import { safeInvoke } from "./items";
 import {
   type ContextMenuActions,
-  type ContextMenuConfig,
-  type ContextMenuContextApi,
   type ContextMenuContextValue,
-  type ContextMenuPageConfig,
   type ContextMenuProviderValue,
   type ContextMenuState,
   type ContextMenuTrigger,
@@ -52,7 +51,7 @@ export function ContextMenuProvider({ children }: { children?: ReactNode }) {
   const isOpen = useStore(store, selectIsOpen);
 
   const pathnameRef = useRef(pathname);
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     pathnameRef.current = pathname;
   }, [pathname]);
 
@@ -117,52 +116,3 @@ export function ContextMenuProvider({ children }: { children?: ReactNode }) {
   );
 }
 
-export function useContextMenuRegistration(
-  config: ContextMenuPageConfig | null | undefined,
-  options?: RegistryMetadata & { enabled?: boolean },
-): void {
-  useModuleRegistration("contextMenu", config, options);
-}
-
-export function useContextMenu(
-  config?: Partial<ContextMenuConfig> | null,
-  options?: RegistryMetadata & { enabled?: boolean },
-): ContextMenuContextApi {
-  useContextMenuRegistration(config || null, options);
-  const { actions, store } = useRequiredContext(
-    ContextMenuContext,
-    "useContextMenu",
-    "ContextMenuProvider",
-  );
-  const state = useStore(store);
-  const ctx = useMemo<ContextMenuContextApi>(
-    () => ({ ...state, ...actions }),
-    [actions, state],
-  );
-
-  return useMemo(() => {
-    if (!config) return ctx;
-    return {
-      ...ctx,
-      bind: (payload?: unknown, configOverride?: Partial<ContextMenuConfig>) =>
-        ctx.bind(payload, { ...config, ...configOverride }),
-    };
-  }, [config, ctx]);
-}
-
-export function useContextMenuActions(): ContextMenuActions {
-  return useRequiredContext(
-    ContextMenuContext,
-    "useContextMenuActions",
-    "ContextMenuProvider",
-  ).actions;
-}
-
-export function useContextMenuState(): ContextMenuState {
-  const { store } = useRequiredContext(
-    ContextMenuContext,
-    "useContextMenuState",
-    "ContextMenuProvider",
-  );
-  return useStore(store);
-}

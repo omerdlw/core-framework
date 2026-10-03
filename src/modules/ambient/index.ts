@@ -1,25 +1,45 @@
 export {
-  AMBIENT_CSS_VARS,
   AMBIENT_DEFAULTS,
-  COLOR_EXTRACT_CONFIG,
   ambientTheme,
 } from "./constants";
 
 export {
-  extractPaletteFromImage,
+  COLOR_EXTRACT_CONFIG,
+  derivePalette,
   oklchToString,
-  resolvePageAmbientTheme,
   rgbToOklch,
-} from "./utils";
+  srgbToLinear,
+} from "./color";
 
-export { ambientModule, defineAmbient } from "./module";
+export {
+  createDefaultPalette,
+  extractPaletteFromImage,
+  sampleImageData,
+} from "./extractor";
+
+export {
+  AMBIENT_CSS_VARS,
+  applyScopedCssVariables,
+  normalizeColorMap,
+  resolveAmbientVarMap,
+  resolveTargetElement,
+} from "./dom";
+
+export {
+  ambientModule,
+  defineAmbient,
+  resolvePageAmbientTheme,
+} from "./module";
 
 export {
   AmbientContext,
   AmbientProvider,
+} from "./context";
+
+export {
   useAmbient,
   useAmbientColor,
   useAmbientTheme,
-} from "./context";
+} from "./hooks";
 
 export type * from "./types";

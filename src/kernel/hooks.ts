@@ -77,7 +77,6 @@ function resolveRegisterArgsWithInstance(
   return [input.sourceOrOptions, input.optionsArg];
 }
 
-/* eslint-disable react-hooks/refs */
 export function useShallowStable<T extends object>(value: T): T {
   const ref = useRef(value);
   if (ref.current !== value && !shallowEqual(ref.current, value)) {
@@ -85,7 +84,6 @@ export function useShallowStable<T extends object>(value: T): T {
   }
   return ref.current;
 }
-/* eslint-enable react-hooks/refs */
 
 const MAX_STABILIZATION_DEPTH = 64;
 

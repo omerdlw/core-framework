@@ -1,32 +1,19 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useRequiredContext, useStore } from "@/hooks";
-import {
-  getOrCreateGlobalContext,
-  useModuleRegistration,
-  useRegistryEntries,
-  type RegistryMetadata,
-} from "@/kernel";
-
-import { createStore, type ExternalStore } from "@/utils";
+import { getOrCreateGlobalContext } from "@/kernel";
+import { createStore, report, type ExternalStore } from "@/utils";
 import { MODAL_CHROME } from "./constants";
 import {
   type ModalActions,
-  type ModalComponent,
   type ModalEntry,
-  type ModalHookBinding,
-  type ModalHookControls,
-  type ModalInput,
-  type ModalOpenFn,
   type ModalOptions,
-  type ModalPageConfig,
   type ModalProviderProps,
   type ModalState,
 } from "./types";
 import { INITIAL_MODAL_STATE, createModalState } from "./state";
-import { getModalIdentity, normalizePosition } from "./utils";
-import { report } from "@/utils";
+import { getModalIdentity } from "./identity";
+import { normalizePosition } from "./layout";
 
 export interface ModalContextValue {
   actions: ModalActions;
@@ -34,24 +21,9 @@ export interface ModalContextValue {
 }
 
 export const ModalContext = getOrCreateGlobalContext<ModalContextValue | null>(
-
   "ModalContext",
   null,
 );
-
-export function useModalRegistration(
-  config: ModalPageConfig | null | undefined,
-  options?: RegistryMetadata & { enabled?: boolean },
-): void {
-  useModuleRegistration("modal", config, options);
-}
-
-export function useModalRegistryEntries(): {
-  get: (type: string) => ModalComponent | undefined;
-} {
-  const entries = useRegistryEntries<"modal", ModalComponent>("modal");
-  return useMemo(() => ({ get: (type: string) => entries[type] }), [entries]);
-}
 
 interface PendingModal {
   onClose?: ModalOptions["onClose"];
@@ -182,47 +154,3 @@ export function ModalProvider({
   );
 }
 
-export function useModalActions(): ModalActions {
-  return useRequiredContext(ModalContext, "useModalActions", "ModalProvider")
-    .actions;
-}
-
-export function useModalState(): ModalState {
-  const { store } = useRequiredContext(
-    ModalContext,
-    "useModalState",
-    "ModalProvider",
-  );
-  return useStore(store);
-}
-
-export function useModal(): ModalState & ModalActions;
-export function useModal(modalInput: ModalInput): ModalHookBinding;
-export function useModal(
-  modalInput?: ModalInput | null,
-): (ModalState & ModalActions) | ModalHookBinding {
-  const actions = useModalActions();
-  const state = useModalState();
-
-  return useMemo(() => {
-    if (!modalInput) return { ...actions, ...state };
-
-    const { component, type } = getModalIdentity(modalInput);
-    const isOpen = state.modalStack.some(
-      (entry) =>
-        entry.modalType === type ||
-        (component && entry.component === component),
-    );
-    const open: ModalOpenFn = (data, overrides) =>
-      actions.openModal(modalInput, { ...overrides, data });
-    const controls: ModalHookControls = {
-      close: actions.closeModal,
-      closeAll: actions.closeAllModals,
-      isOpen,
-      state,
-    };
-
-    return Object.assign([open, controls], controls, { open });
-  }, [actions, modalInput, state]) as
-    (ModalState & ModalActions) | ModalHookBinding;
-}

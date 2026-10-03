@@ -70,7 +70,7 @@ CheckoutLoading.use(isSubmitting); // boolean | message string | LoadingOptions
 | `defineLoading(def)`                                            | builder   | `defineLoading(options \| message).use(overrides?, options?)` → `LoadingStateWithPage & LoadingActions`.                                  |
 | `LoadingContext`                                                | context   | For tests and the dock's peer reader.                                                                                                     |
 | `DEFAULT_LOADING_STATE`, `LOADING_REGISTRY_KEY`, `loadingTheme` | constants |                                                                                                                                           |
-| `normalizeLoadingOptions(options)`, `selectPageLoading(input)`  | utils     | Coerce loose input; map `boolean` / `string` / object page input to `LoadingOptions`.                                                     |
+| `normalizeLoadingOptions(options)`, `selectPageLoading(input)`  | state     | Coerce loose input; map `boolean` / `string` / object page input to `LoadingOptions`.                                                     |
 | Types                                                           |           | `LoadingState`, `LoadingStateWithPage`, `LoadingOptions`, `LoadingActions`, `LoadingPageConfig`, `DefinedLoading`, …                      |
 
 ### 4.1 `LoadingOptions`
@@ -140,16 +140,16 @@ No classes or inline styles in the module. The `loadingTheme` slot `overlay` (st
 
 ## 8. File map
 
-| File           | Responsibility                                                                                    |
-| :------------- | :------------------------------------------------------------------------------------------------ |
-| `index.ts`     | Public barrel.                                                                                    |
-| `types.ts`     | State, options, actions, definition, page-config and theme contracts.                             |
-| `constants.ts` | `DEFAULT_LOADING_STATE`, registry key, `loadingTheme`.                                            |
-| `utils.ts`     | `normalizeLoadingOptions`, `selectPageLoading`.                                                   |
-| `context.tsx`  | `LoadingProvider` (manual state, min-duration timer, registry merge, store), `useLoading*` hooks. |
-| `hooks.ts`     | `useLoadingOverlayModel` (visibility incl. fullscreen check, theme).                              |
-| `overlay.tsx`  | `LoadingOverlay`.                                                                                 |
-| `module.tsx`   | `loadingModule`, page API, `defineLoading`, kernel type augmentation.                             |
+| File           | Responsibility                                                                                                     |
+| :------------- | :----------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                                     |
+| `types.ts`     | State, options, actions, definition, page-config and theme contracts.                                              |
+| `constants.ts` | `DEFAULT_LOADING_STATE`, registry key, `loadingTheme`.                                                             |
+| `state.ts`     | `normalizeLoadingOptions`, `selectPageLoading`, `resolveLoadingState`, `calculateRemainingMinDuration`.            |
+| `context.tsx`  | `LoadingContext`, `LoadingProvider` (manual state, min-duration timer, registry merge, store).                     |
+| `hooks.ts`     | Public hooks (`useLoading`, `useLoadingState`, `useLoadingActions`, `useLoadingRegistration`) & overlay model hook. |
+| `overlay.tsx`  | `LoadingOverlay`.                                                                                                  |
+| `module.tsx`   | `loadingModule`, page API, `defineLoading`, kernel type augmentation.                                              |
 
 ## 9. Dependencies
 

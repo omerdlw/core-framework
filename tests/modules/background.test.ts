@@ -6,9 +6,11 @@ import { createRoot } from "react-dom/client";
 import { RegistryProvider } from "../../src/core/kernel/index.ts";
 import {
   BackgroundProvider,
+} from "../../src/modules/background/context.tsx";
+import {
   useBackgroundActions,
   useBackgroundState,
-} from "../../src/modules/background/context.tsx";
+} from "../../src/modules/background/hooks.ts";
 import {
   extractYouTubeVideoId,
   isDirectVideoUrl,
@@ -22,7 +24,7 @@ import {
   resolveVideoClassNames,
   resolveVideoOptions,
   selectPageBackground,
-} from "../../src/modules/background/utils.ts";
+} from "../../src/modules/background/index.ts";
 
 describe("background actions", () => {
   class FakeVideo {
@@ -537,6 +539,69 @@ describe("background utils", () => {
     assert.equal(selectPageBackground(null), null);
     assert.deepEqual(selectPageBackground("/a.jpg" as any), {
       image: "/a.jpg",
+    });
+  });
+
+  describe("gradient and fade mask generation", () => {
+    test("generateBaseGradient creates direction-aware linear gradient", async () => {
+      const { generateBaseGradient } = await import("../../src/modules/background/visual.ts");
+      const leftGrad = generateBaseGradient("left", "#111");
+      assert.ok(leftGrad.startsWith("linear-gradient(to right, #111 0%"));
+
+      const rightGrad = generateBaseGradient("right", "#222");
+      assert.ok(rightGrad.startsWith("linear-gradient(to left, #222 0%"));
+    });
+
+    test("generateEdgeGradient creates softened edge gradients", async () => {
+      const { generateEdgeGradient } = await import("../../src/modules/background/visual.ts");
+      const leftGrad = generateEdgeGradient("left", "#000");
+      assert.ok(leftGrad.startsWith("linear-gradient(to right, color-mix(in srgb, #000 95%, transparent) 0%"));
+
+      const rightGrad = generateEdgeGradient("right", "#fff");
+      assert.ok(rightGrad.startsWith("linear-gradient(to left, color-mix(in srgb, #fff 95%, transparent) 0%"));
+    });
+
+    test("generateSmoothstepStops creates smooth perceptual transitions", async () => {
+      const { generateSmoothstepStops } = await import("../../src/modules/background/visual.ts");
+      const inStops = generateSmoothstepStops(25, "in", "black");
+      assert.equal(inStops.length, 7);
+      assert.equal(inStops[0], "transparent 0.0%");
+      assert.equal(inStops[inStops.length - 1], "black 25.0%");
+
+      const outStops = generateSmoothstepStops(30, "out", "black");
+      assert.equal(outStops.length, 7);
+      assert.equal(outStops[outStops.length - 1], "transparent 100.0%");
+    });
+
+    test("getEdgeFadeMask returns undefined when disabled and linear-gradient when enabled", async () => {
+      const { getEdgeFadeMask } = await import("../../src/modules/background/visual.ts");
+      assert.equal(getEdgeFadeMask({ leftPercent: 0, rightPercent: 0 }), undefined);
+
+      const mask = getEdgeFadeMask({ leftPercent: 20, rightPercent: 20, color: "#000" });
+      assert.ok(mask?.startsWith("linear-gradient(to right,"));
+    });
+
+    test("resolveGradientSettings resolves numeric, string, object, and boolean inputs", async () => {
+      const { resolveGradientSettings } = await import("../../src/modules/background/visual.ts");
+      const disabled = resolveGradientSettings({ fadeEdges: false });
+      assert.equal(disabled.enabled, false);
+      assert.equal(disabled.leftPercent, 0);
+
+      const numeric = resolveGradientSettings({ fadeEdges: 25 });
+      assert.equal(numeric.enabled, true);
+      assert.equal(numeric.leftPercent, 25);
+      assert.equal(numeric.rightPercent, 25);
+
+      const str = resolveGradientSettings({ fadeEdges: "18.5" });
+      assert.equal(str.leftPercent, 18.5);
+
+      const obj = resolveGradientSettings({ fadeEdges: { left: 15, right: 35 } });
+      assert.equal(obj.leftPercent, 15);
+      assert.equal(obj.rightPercent, 35);
+
+      const fromSliders = resolveGradientSettings({ leftGradient: 3, rightGradient: 2 });
+      assert.ok(fromSliders.leftPercent > 0);
+      assert.ok(fromSliders.leftOpacity > 0);
     });
   });
 });

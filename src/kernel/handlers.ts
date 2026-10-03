@@ -1,10 +1,9 @@
+import { DEFAULT_SOURCE, REGISTRY_LIFECYCLES } from "./constants";
 import {
-  DEFAULT_SOURCE,
-  REGISTRY_LIFECYCLES,
   normalizeRegistryMetadata,
   validateRegistryMetadata,
 } from "./schema";
-import { isObject } from "./utils";
+import { isObject, report } from "@/utils";
 import type {
   AnyCoreModule,
   PageConfig,
@@ -14,7 +13,6 @@ import type {
   RegistryMetadata,
   RegistryQueue,
 } from "./types";
-import { report } from "@/utils";
 
 type CleanupScope = Map<string, RegistryCleanupTimer>;
 

@@ -2,11 +2,11 @@
 
 import {
   useCallback,
-  useInsertionEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { useIsomorphicLayoutEffect } from "@/hooks";
 import {
   type DockScheduledTaskId,
   type DockScheduler,
@@ -16,7 +16,6 @@ import {
   type SurfaceFlowSession,
   type SurfaceId,
   type SurfaceInput,
-  type SurfacePayload,
   type SurfaceResult,
   type SurfaceStackEntry,
   type SurfaceStep,
@@ -24,8 +23,8 @@ import {
   type SurfaceUrlState,
 } from "../types";
 import { DOCK_SURFACE_PHASE } from "../constants";
-import { focusDockElement, shouldRestoreDockFocus } from "../hooks";
-import { createDockScheduler, isValidComponentType } from "../utils";
+import { focusDockElement, shouldRestoreDockFocus } from "../dom";
+import { createDockScheduler, isValidComponentType } from "../helpers";
 import { createSurfaceEntryDefinition, createSurfaceError } from "./definition";
 import {
   IS_BROWSER,
@@ -91,7 +90,7 @@ export function useSurfaceStack({
     typeof runSurfaceTransition
   > | null>(null);
   const onSurfaceFlowSettledRef = useRef(onSurfaceFlowSettled);
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     onSurfaceFlowSettledRef.current = onSurfaceFlowSettled;
   }, [onSurfaceFlowSettled]);
 

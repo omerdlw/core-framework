@@ -1,25 +1,130 @@
 "use client";
 
-import { memo, type CSSProperties } from "react";
-import { cn } from "@/utils";
-import { Spinner } from "@/atoms";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type CSSProperties,
+} from "react";
+import { cn, report } from "@/utils";
 import { AnimatePresence, motion, type Transition } from "motion/react";
 import { EASING_CURVES } from "@/tokens";
-import { type ResolvedTheme } from "@/theme";
+import { useModuleTheme, type ResolvedTheme } from "@/theme";
+import { backgroundTheme } from "./constants";
+import {
+  DEFAULT_COLOR,
+  OBJECT_FITS,
+  generateBaseGradient,
+  generateEdgeGradient,
+  getEdgeFadeMask,
+  getVisualStyle,
+  resolveGradientSettings,
+  resolveVideoClassNames,
+  resolveVideoOptions,
+} from "./visual";
+import { applyVideoPlaybackState } from "./playback";
+import {
+  getBackgroundMotionConfig,
+  toCssDelay,
+  toCssDuration,
+  toCssEasing,
+} from "./motion";
+import { useBackgroundActions, useBackgroundState } from "./hooks";
+import { parseYouTubeUrlConfig } from "./youtube/parse";
+import { YouTubeBackgroundPlayer } from "./youtube/player";
 import {
   type BackgroundActions,
   type BackgroundThemeSlot,
-  type YouTubeBackgroundPlayerProps,
 } from "./types";
-import {
-  useNativeVideoModel,
-  useYouTubeBackgroundPlayerModel,
-  useBackgroundOverlayModel,
-} from "./hooks";
-import { DEFAULT_COLOR } from "./constants";
-import { generateBaseGradient, generateEdgeGradient } from "./utils";
 
 type Theme = ResolvedTheme<BackgroundThemeSlot>;
+
+export function useNativeVideoModel({
+  corp,
+  isLoop,
+  isMuted,
+  isPlaying,
+  playbackRate,
+  setVideoElement,
+  setVideoPlaying,
+  shouldAutoPlay,
+  src,
+  style: _style,
+  className: _className,
+}: {
+  className: string;
+  corp: number;
+  isLoop: boolean;
+  isMuted: boolean;
+  isPlaying?: boolean;
+  playbackRate: number;
+  setVideoElement: BackgroundActions["setVideoElement"];
+  setVideoPlaying: BackgroundActions["setVideoPlaying"];
+  shouldAutoPlay: boolean;
+  src: string | undefined;
+  style: CSSProperties;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const handleEnded = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.loop) {
+      video.currentTime = 0;
+      video
+        .play()
+        .catch((error) => report("Background loop play", error, "warn"));
+      return;
+    }
+    video.pause();
+    setVideoPlaying(false);
+  }, [setVideoPlaying]);
+  const handleTimeUpdate = useCallback(() => {
+    const video = videoRef.current;
+    if (
+      video?.duration &&
+      corp > 0 &&
+      video.currentTime >= video.duration - corp
+    ) {
+      handleEnded();
+    }
+  }, [corp, handleEnded]);
+  const handleLoadedData = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = playbackRate;
+    if (!shouldAutoPlay) return;
+    if (isMuted) video.muted = true;
+    video
+      .play()
+      .then(() => setVideoPlaying(true))
+      .catch((error) => {
+        report("Background autoplay", error, "warn");
+        setVideoPlaying(false);
+      });
+  };
+  useEffect(() => {
+    const video = videoRef.current;
+    setVideoElement(video);
+    return () => {
+      try {
+        video?.pause();
+      } catch {}
+    };
+  }, [src, setVideoElement]);
+  useEffect(() => () => setVideoElement(null), [setVideoElement]);
+  useEffect(() => {
+    applyVideoPlaybackState({
+      isPlaying,
+      playbackRate,
+      setVideoPlaying,
+      videoElement: videoRef.current,
+    });
+  }, [isPlaying, playbackRate, setVideoPlaying]);
+
+  return { videoRef, handleEnded, handleTimeUpdate, handleLoadedData };
+}
 
 export function NativeVideo({
   corp,
@@ -188,153 +293,139 @@ export const SolidOverlay = memo(function SolidOverlay({
   );
 });
 
-export const YouTubeBackgroundPlayer = memo(function YouTubeBackgroundPlayer({
-  codec = "auto",
-  corp = 0,
-  endTime = 0,
-  forceIframe = false,
-  isLoop = false,
-  isMuted = true,
-  isPlaying = true,
-  playbackRate = 1,
-  posterUrl = null,
-  quality = "1080p",
-  setVideoElement,
-  setVideoPlaying,
-  shouldAutoPlay = true,
-  showPoster = false,
-  showSpinner = true,
-  startTime = 0,
-  theme,
-  videoClasses,
-  videoId,
-  videoStyle,
-}: YouTubeBackgroundPlayerProps) {
+export function useBackgroundOverlayModel() {
   const {
-    useIframeFallback,
-    isFrameReady,
-    setIsBuffering,
-    videoRef,
-    audioRef,
-    iframeHostRef,
-    videoStreamUrl,
-    audioStreamUrl,
-    resolvedPoster,
-    syncCompanionAudio,
-    handleEnded,
-    handleTimeUpdate,
-    handlePlay,
-    handlePlaying,
-    handlePause,
-    handleSeeked,
-    handleCanPlay,
-    handleLoadedMetadata,
-    handleLoadedData,
-    handleError,
-    handleAudioError,
-    isCovered,
-    showSpinnerOverlay,
-  } = useYouTubeBackgroundPlayerModel({
-    codec,
-    corp,
-    endTime,
-    forceIframe,
-    isLoop,
-    isMuted,
+    animation,
+    className,
+    fadeEdges,
+    fit,
+    hasBackground,
+    image,
+    imageStyle,
     isPlaying,
-    playbackRate,
-    posterUrl,
-    quality,
-    setVideoElement,
-    setVideoPlaying,
-    shouldAutoPlay,
-    showPoster,
-    showSpinner,
-    startTime,
-    theme,
-    videoClasses,
-    videoId,
+    isVideo,
+    isYouTube,
+    leftGradient: configuredLeftGradient,
+    noiseStyle,
+    overlay,
+    overlayColor,
+    overlayOpacity,
+    position,
+    rightGradient: configuredRightGradient,
+    video,
+    videoClassName,
+    videoOptions,
     videoStyle,
-  });
-  return (
-    <div className={theme.slots.youtube}>
-      <div data-visible={isCovered} className={theme.slots.youtubeCover} />
-
-      <div
-        data-visible={showSpinnerOverlay}
-        className={theme.slots.youtubeSpinner}
-      >
-        {showSpinner ? (
-          <Spinner size={30} className={theme.slots.youtubeSpinnerIcon} />
-        ) : null}
-      </div>
-
-      {resolvedPoster ? (
-        <div
-          data-visible={isCovered}
-          className={theme.slots.youtubePoster}
-          style={{
-            backgroundImage: `url(${resolvedPoster})`,
-            ...videoStyle,
-          }}
-        />
-      ) : null}
-
-      {useIframeFallback && !isPlaying ? (
-        <div className={theme.slots.youtubeBlackout} />
-      ) : null}
-
-      {useIframeFallback ? (
-        <div
-          data-visible={isFrameReady}
-          className={theme.slots.youtubeFrame}
-          style={videoStyle}
-        >
-          <div ref={iframeHostRef} className={theme.slots.youtubeHost} />
-        </div>
-      ) : (
-        <>
-          <video
-            ref={videoRef}
-            src={videoStreamUrl}
-            data-visible={isFrameReady}
-            className={cn(videoClasses, theme.slots.youtubeVideo)}
-            preload="auto"
-            muted={isMuted}
-            loop={isLoop}
-            playsInline
-            style={videoStyle}
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={handleEnded}
-            onPlay={handlePlay}
-            onWaiting={() => {
-              setIsBuffering(true);
-              syncCompanionAudio(false);
-            }}
-            onPlaying={handlePlaying}
-            onPause={handlePause}
-            onSeeking={() => setIsBuffering(true)}
-            onSeeked={handleSeeked}
-            onCanPlay={handleCanPlay}
-            onLoadedMetadata={handleLoadedMetadata}
-            onLoadedData={handleLoadedData}
-            onError={handleError}
-          />
-          <audio
-            ref={audioRef}
-            src={audioStreamUrl}
-            preload="auto"
-            onCanPlay={() => syncCompanionAudio(true)}
-            onError={handleAudioError}
-          />
-        </>
-      )}
-    </div>
+    width,
+  } = useBackgroundState();
+  const { setVideoElement, setVideoPlaying } = useBackgroundActions();
+  const options = resolveVideoOptions(videoOptions);
+  const { corp, isMuted, playbackRate } = options;
+  const youtubeConfig = useMemo(
+    () => (isYouTube ? parseYouTubeUrlConfig(video) : null),
+    [isYouTube, video],
   );
-});
-
-export function BackgroundOverlay() {
+  const startTime = videoOptions?.startTime ?? youtubeConfig?.startTime ?? 0;
+  const endTime = videoOptions?.endTime ?? youtubeConfig?.endTime ?? 0;
+  const backgroundKey = isVideo
+    ? youtubeConfig
+      ? `youtube:${youtubeConfig.videoId}`
+      : video
+    : image;
+  const motionConfig = useMemo(
+    () => getBackgroundMotionConfig(animation),
+    [animation],
+  );
   const {
+    baseStyle,
+    leftGradient: styleLeft,
+    rightGradient: styleRight,
+  } = useMemo(
+    () => getVisualStyle((isVideo ? videoStyle : imageStyle) || {}),
+    [imageStyle, isVideo, videoStyle],
+  );
+  const leftGradient = configuredLeftGradient ?? styleLeft;
+  const rightGradient = configuredRightGradient ?? styleRight;
+  const {
+    opacity: noiseOpacity,
+    mixBlendMode: noiseBlendMode,
+    ...noiseInlineStyle
+  } = noiseStyle || {};
+  const overlayTransitionStyle = useMemo<CSSProperties>(
+    () => ({
+      transitionDelay: toCssDelay(motionConfig.transition.delay),
+      transitionDuration: toCssDuration(motionConfig.transition.duration),
+      transitionProperty: "opacity",
+      transitionTimingFunction: toCssEasing(motionConfig.transition.ease),
+    }),
+    [motionConfig.transition],
+  );
+  const rawWidth = width ?? videoOptions?.width ?? videoStyle?.width;
+  const resolvedWidth =
+    rawWidth === undefined || rawWidth === null || rawWidth === ""
+      ? undefined
+      : typeof rawWidth === "number"
+        ? `${rawWidth}px`
+        : String(rawWidth);
+  const rawFit = fit ?? videoOptions?.fit ?? videoOptions?.objectFit;
+  const theme = useModuleTheme(backgroundTheme);
+  const fitStyle = useMemo<CSSProperties>(
+    () =>
+      rawFit && OBJECT_FITS.includes(rawFit)
+        ? { objectFit: rawFit as CSSProperties["objectFit"] }
+        : {},
+    [rawFit],
+  );
+  const classNames = resolveVideoClassNames(
+    videoClassName,
+    className,
+    videoOptions?.videoClassName,
+    videoOptions?.className,
+    videoStyle?.className,
+  );
+  const hasCustomWidth = Boolean(resolvedWidth || classNames.width);
+  const gradientSettings = useMemo(
+    () =>
+      resolveGradientSettings({
+        fadeEdges,
+        hasWidth: hasCustomWidth,
+        leftGradient,
+        rightGradient,
+      }),
+    [fadeEdges, hasCustomWidth, leftGradient, rightGradient],
+  );
+  const maskImage = useMemo(
+    () =>
+      gradientSettings.enabled
+        ? getEdgeFadeMask({
+            color: overlayColor || DEFAULT_COLOR,
+            leftPercent: gradientSettings.leftPercent,
+            rightPercent: gradientSettings.rightPercent,
+          })
+        : undefined,
+    [gradientSettings, overlayColor],
+  );
+  const framePosition =
+    position === "left" || position === "right" ? position : "center";
+  const videoClasses = cn(theme.slots.video, classNames.other);
+  const objectPosition = baseStyle.objectPosition || position || undefined;
+  const sharedVideoStyle = useMemo<CSSProperties>(
+    () => ({
+      ...classNames.objectStyle,
+      ...fitStyle,
+      ...(objectPosition ? { objectPosition } : {}),
+      ...(maskImage ? { WebkitMaskImage: maskImage, maskImage } : {}),
+      ...baseStyle,
+    }),
+    [baseStyle, classNames.objectStyle, fitStyle, maskImage, objectPosition],
+  );
+  const exitDurationFactor = Number.isFinite(motionConfig.exitDurationFactor)
+    ? Math.max(0, motionConfig.exitDurationFactor)
+    : 0.6;
+  const exitTransition = motionConfig.exit.transition as
+    { duration?: number; ease?: unknown } | undefined;
+
+  return {
     className,
     hasBackground,
     image,
@@ -376,7 +467,51 @@ export function BackgroundOverlay() {
     exitDurationFactor,
     exitTransition,
     theme,
+  };
+}
+
+export function BackgroundOverlay() {
+  const {
+    hasBackground,
+    image,
+    isPlaying,
+    isVideo,
+    overlay,
+    overlayColor,
+    overlayOpacity,
+    position,
+    video,
+    setVideoElement,
+    setVideoPlaying,
+    options,
+    corp,
+    isMuted,
+    playbackRate,
+    youtubeConfig,
+    startTime,
+    endTime,
+    backgroundKey,
+    motionConfig,
+    baseStyle,
+    leftGradient,
+    rightGradient,
+    noiseOpacity,
+    noiseBlendMode,
+    noiseInlineStyle,
+    overlayTransitionStyle,
+    resolvedWidth,
+    classNames,
+    hasCustomWidth,
+    gradientSettings,
+    maskImage,
+    framePosition,
+    videoClasses,
+    sharedVideoStyle,
+    exitDurationFactor,
+    exitTransition,
+    theme,
   } = useBackgroundOverlayModel();
+
   return (
     <AnimatePresence mode="sync">
       {hasBackground && (

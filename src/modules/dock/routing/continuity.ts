@@ -7,7 +7,7 @@ import {
   DOCK_CONTINUITY_MAX_ENTRIES,
   DOCK_SURFACE_RETURN_MAX_ENTRIES,
 } from "../constants";
-import { isSafeInternalHref } from "../utils";
+import { isSafeInternalHref } from "../paths";
 import {
   type DockContinuityAction,
   type DockContinuityEntry,

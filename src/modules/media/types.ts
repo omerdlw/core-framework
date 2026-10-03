@@ -78,7 +78,6 @@ export interface MediaHandle {
 
 export interface MediaSourceProps extends MediaOptions {}
 
-/** `usePage({ media })`: a file URL, or the options of one audio source. */
 export type MediaPageOptions = Omit<MediaOptions, "enabled" | "id">;
 export type MediaPageConfig =
   string | (MediaPageOptions & { registry?: RegistryMetadata });

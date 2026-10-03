@@ -10,6 +10,8 @@ import {
   DEFAULT_SOURCE,
   REGISTRY_SOURCES,
   REGISTRY_VALIDATION_MODES,
+} from "./constants";
+import {
   validateRegistryMetadata,
   validateRegistryValue,
 } from "./schema";

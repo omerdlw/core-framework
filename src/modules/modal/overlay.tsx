@@ -26,15 +26,17 @@ import {
   type ModalEntry,
 } from "./types";
 import {
-  hasHeightConstraint,
-  hasSlotContent,
-  isHeaderConfig,
-  isSidePosition,
-  resolveHeaderActions,
-  getModalLabel,
   getModalLayout,
   getModalPosition,
-} from "./utils";
+  hasHeightConstraint,
+  isSidePosition,
+} from "./layout";
+import {
+  hasSlotContent,
+  isHeaderConfig,
+  resolveHeaderActions,
+} from "./header";
+import { getModalLabel } from "./identity";
 import {
   useModalContainerModel,
   useModalLayerModel,
@@ -366,7 +368,6 @@ function ModalLayer({
 
 export function Modal() {
   const {
-    modalStack,
     closeModal,
     registry,
     visibleModalStack,

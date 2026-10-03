@@ -55,11 +55,6 @@ export function makeTempDir(label) {
 export function removeDir(dir) {
   fs.rmSync(dir, { force: true, recursive: true });
 }
-
-/**
- * A miniature framework checkout: the real scaffold/sync/validate scripts plus
- * just enough project files for them to act on, committed and tagged v1.0.0.
- */
 export function createFrameworkFixture() {
   const dir = makeTempDir("framework");
   for (const file of [

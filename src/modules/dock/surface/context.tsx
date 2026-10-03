@@ -6,7 +6,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  type ReactNode,
 } from "react";
 import { createStore } from "@/utils";
 import {
@@ -14,7 +13,7 @@ import {
   type DockSlotContent,
   type SurfaceId,
 } from "../types";
-import { normalizeSurfaceExtension } from "../utils";
+import { normalizeSurfaceExtension } from "./helpers";
 
 export type SurfaceKey = SurfaceId | string | null | undefined;
 

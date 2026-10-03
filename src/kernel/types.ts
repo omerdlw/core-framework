@@ -322,11 +322,9 @@ export interface CoreModule<
   readonly page?: ModulePageSpec<TSlice, TController>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- invariant type parameters
 export type AnyCoreModule = CoreModule<string, any, any, any>;
 
 export type ModuleRuntimeOf<M> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches any slice and controller
   M extends CoreModule<string, infer TRuntime, any, any> ? TRuntime : never;
 
 export type ModuleStateOf<K extends ModuleId> =
@@ -335,7 +333,6 @@ export type ModuleStateOf<K extends ModuleId> =
     : never;
 
 type ModuleControllerOf<M> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches any runtime and slice
   M extends CoreModule<string, any, any, infer TController>
     ? TController
     : never;

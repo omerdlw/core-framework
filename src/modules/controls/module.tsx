@@ -7,7 +7,7 @@ import {
   type PageModuleApi,
 } from "@/kernel";
 import { useControls } from "./hooks";
-import { normalizePageControls, validateControlEntry } from "./utils";
+import { normalizePageControls, validateControlEntry } from "./entries";
 import { Controls } from "./overlay";
 import {
   type ControlsPageApi,

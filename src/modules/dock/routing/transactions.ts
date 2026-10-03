@@ -7,7 +7,7 @@ import {
   DOCK_TRANSACTION_STATUS,
   DOCK_TRANSACTION_TIMEOUT_MS,
 } from "../constants";
-import { isSamePath } from "../utils";
+import { isSamePath } from "../paths";
 import {
   type DockTransaction,
   type DockTransactionAction,

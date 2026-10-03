@@ -174,19 +174,21 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 
 ## 11. File map
 
-| File                | Responsibility                                                                                                                                       |
-| :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`          | Public barrel.                                                                                                                                       |
-| `types.ts`          | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots.                                            |
-| `constants.ts`      | `DEFAULT_BACKGROUND`, registry key, media id, token → slot maps, `backgroundTheme`.                                                                  |
-| `utils.ts`          | Input normalization and merging, `selectPageBackground`, video option and class resolution, gradient/edge-fade/mask math, direct-video sync helpers. |
-| `context.tsx`       | `BackgroundProvider`: registry read, scoped override store, computed state store, actions, `media` registration; `useBackground*` hooks.             |
-| `hooks.ts`          | View models: `useBackgroundOverlayModel`, `useNativeVideoModel`, `useYouTubeBackgroundPlayerModel`.                                                  |
-| `overlay.tsx`       | `BackgroundOverlay`, `NativeVideo`, `YouTubeBackgroundPlayer`, gradient / edge / noise / solid layers.                                               |
-| `motion.ts`         | Default and custom motion resolution, CSS duration/easing helpers.                                                                                   |
-| `module.tsx`        | `backgroundModule`, page API (`set` + actions), `defineBackground`, kernel type augmentation.                                                        |
-| `youtube/parse.ts`  | URL/ID parsing, time params, stream/thumbnail URL builders, the `<video>` element proxy.                                                             |
-| `youtube/iframe.ts` | Iframe API loader and player wrapper (fallback path).                                                                                                |
+| File                 | Responsibility                                                                                            |
+| :------------------- | :-------------------------------------------------------------------------------------------------------- |
+| `index.ts`           | Public barrel export.                                                                                     |
+| `types.ts`           | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots. |
+| `constants.ts`       | Registry key, media id, `backgroundTheme` spec, and domain constants.                                     |
+| `state.ts`           | `DEFAULT_BACKGROUND`, normalization, patch merging, scoped override resolution, and computed state.       |
+| `visual.ts`          | Gradient generation, smoothstep edge-fade masks, and video styling/fit options.                           |
+| `playback.ts`        | Direct HTML video DOM controls: play/pause, volume/mute, loop, and playbackRate sync.                     |
+| `overlay.tsx`        | `BackgroundOverlay`, `NativeVideo`, and backdrop overlay layers (solid, noise, gradients).                |
+| `motion.ts`          | Motion animations, transition presets, and CSS duration/easing helpers.                                  |
+| `context.tsx`        | `BackgroundProvider`: store, actions, `media` module bridge, and `useBackground*` hooks.                  |
+| `module.tsx`         | `backgroundModule` definition, `selectPageBackground`, `defineBackground`, and kernel type augmentation.  |
+| `youtube/parse.ts`   | YouTube URL/ID parsing, time params, stream/thumbnail URLs, and video element proxy.                      |
+| `youtube/iframe.ts`  | Iframe API loader and YouTube iframe player controller (fallback path).                                   |
+| `youtube/player.tsx` | Dedicated dual-stream YouTube player component and companion audio synchronization hook.                  |
 
 ## 12. Dependencies
 

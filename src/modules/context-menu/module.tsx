@@ -10,9 +10,11 @@ import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
 import {
   ContextMenuContext,
   ContextMenuProvider,
+} from "./context";
+import {
   useContextMenu,
   useContextMenuActions,
-} from "./context";
+} from "./hooks";
 import { ContextMenuGlobal } from "./overlay";
 import {
   type ContextMenuConfig,

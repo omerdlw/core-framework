@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  useContext,
   useEffect,
-  useInsertionEffect,
   useMemo,
   useRef,
   useState,
@@ -11,56 +9,42 @@ import {
 import { usePathname } from "next/navigation";
 import {
   useIsomorphicLayoutEffect,
-  useRequiredContext,
   useStore,
 } from "@/hooks";
 import {
   getOrCreateGlobalContext,
-  useModuleRegistration,
   useRegistryValue,
-  type RegistryMetadata,
 } from "@/kernel";
 import { useOptionalMediaActions } from "../media";
-
 import { createStore } from "@/utils";
 import {
   BACKGROUND_MEDIA_ID,
   BACKGROUND_REGISTRY_KEY,
-  DEFAULT_BACKGROUND,
-  DEFAULT_BACKGROUND_COMPUTED,
-  INERT_BACKGROUND_ACTIONS,
 } from "./constants";
+import {
+  computeBackgroundState,
+  normalizeBackgroundInput,
+  resolveBackgroundState,
+} from "./state";
+import {
+  syncVideoLoopDirect,
+  syncVideoMutedDirect,
+  triggerVideoPlaybackDirect,
+} from "./playback";
 import {
   type BackgroundActions,
   type BackgroundContextValue,
-  type BackgroundPageConfig,
   type BackgroundProviderProps,
   type BackgroundState,
   type BackgroundStateComputed,
   type ScopedOverride,
 } from "./types";
-import {
-  syncVideoLoopDirect,
-  syncVideoMutedDirect,
-  triggerVideoPlaybackDirect,
-  mergeBackgroundState,
-  normalizeBackgroundInput,
-} from "./utils";
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "./youtube/parse";
 
 export const BackgroundContext =
-
   getOrCreateGlobalContext<BackgroundContextValue | null>(
     "BackgroundContext",
     null,
   );
-export function useBackgroundRegistration(
-
-  config: BackgroundPageConfig | null | undefined,
-  options?: RegistryMetadata & { enabled?: boolean },
-): void {
-  useModuleRegistration("background", config, options);
-}
 
 function useSafePathname(): string | null {
   try {
@@ -68,43 +52,6 @@ function useSafePathname(): string | null {
   } catch {
     return null;
   }
-}
-
-function resolveBackgroundState(
-  registryBackground: Partial<BackgroundState> | null,
-  override: ScopedOverride,
-  pathname: string | null,
-): BackgroundState {
-  const base = registryBackground
-    ? mergeBackgroundState(DEFAULT_BACKGROUND, registryBackground)
-    : DEFAULT_BACKGROUND;
-  const patch = override.pathname === pathname ? override.patch : null;
-  return patch ? mergeBackgroundState(base, patch) : base;
-}
-
-function computeBackgroundState(
-  background: BackgroundState,
-): BackgroundStateComputed {
-  const youtubeVideoId = extractYouTubeVideoId(background.video);
-  const isYouTube = Boolean(youtubeVideoId);
-  const isVideo = Boolean(background.video || isYouTube);
-
-  return {
-    ...background,
-    hasBackground: Boolean(
-      background.image ||
-      isVideo ||
-      background.color ||
-      background.overlay ||
-      (background.noiseStyle &&
-        (background.noiseStyle.opacity === undefined ||
-          (background.noiseStyle.opacity ?? 0) > 0)),
-    ),
-    isVideo,
-    isYouTube,
-    posterUrl: youtubeVideoId ? getYouTubeThumbnailUrl(youtubeVideoId) : null,
-    youtubeVideoId,
-  };
 }
 
 export function BackgroundProvider({ children }: BackgroundProviderProps) {
@@ -124,7 +71,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   const scopedOverride = useStore(overrideStore);
 
   const inputsRef = useRef({ pathname, registryBackground });
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     inputsRef.current = { pathname, registryBackground };
   }, [pathname, registryBackground]);
 
@@ -286,59 +233,3 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
 
   return <BackgroundContext value={value}>{children}</BackgroundContext>;
 }
-
-export function useBackgroundState(): BackgroundStateComputed {
-  const { store } = useRequiredContext(
-    BackgroundContext,
-    "useBackgroundState",
-    "BackgroundProvider",
-  );
-  return useStore(store);
-}
-
-export function useBackgroundActions(): BackgroundActions {
-  return useRequiredContext(
-    BackgroundContext,
-    "useBackgroundActions",
-    "BackgroundProvider",
-  ).actions;
-}
-
-export function useBackground(
-  config?: BackgroundPageConfig | null,
-  options?: RegistryMetadata & { enabled?: boolean },
-): BackgroundStateComputed & BackgroundActions {
-  useBackgroundRegistration(config, options);
-
-  const actions = useBackgroundActions();
-  const state = useBackgroundState();
-
-  return useMemo(() => ({ ...state, ...actions }), [actions, state]);
-}
-
-const NOOP_BACKGROUND_STORE = createStore<BackgroundStateComputed>(
-  DEFAULT_BACKGROUND_COMPUTED,
-);
-
-export function useOptionalBackgroundState(): BackgroundStateComputed;
-export function useOptionalBackgroundState<T>(
-  selector: (state: BackgroundStateComputed) => T,
-  isEqual?: (a: T, b: T) => boolean,
-): T;
-export function useOptionalBackgroundState<T = BackgroundStateComputed>(
-  selector?: (state: BackgroundStateComputed) => T,
-  isEqual?: (a: T, b: T) => boolean,
-): T {
-  const ctx = useContext(BackgroundContext);
-  return useStore(
-    ctx?.store ?? NOOP_BACKGROUND_STORE,
-    selector as (state: BackgroundStateComputed) => T,
-    isEqual,
-  );
-}
-
-export function useOptionalBackgroundActions(): BackgroundActions {
-  const ctx = useContext(BackgroundContext);
-  return ctx?.actions ?? INERT_BACKGROUND_ACTIONS;
-}
-

@@ -216,7 +216,10 @@ Motion (`motion.ts`: backdrop, per-position panel variants/transitions, header/b
 | `types.ts`     | Positions, chrome, entries, state, actions, definitions, container props, theme slots.                                                |
 | `constants.ts` | `MODAL_POSITIONS`, `MODAL_CHROME`, mobile breakpoint, scroll-lock event, focusable selector, height-constraint pattern, `modalTheme`. |
 | `state.ts`     | `createModalState` (stack → state) and the initial state.                                                                             |
-| `utils.ts`     | Identity resolution, position normalization (responsive), focus trap helpers, header-action resolution, labels.                       |
+| `identity.ts`  | Modal identity derivation (`getModalIdentity`) and humanized modal labels (`getModalLabel`).                                           |
+| `layout.ts`    | Position resolution (`getModalPosition`, `getModalLayout`), responsive normalization, viewport checks, height constraints.            |
+| `dom.ts`       | Focus trap helpers (`getFocusableElements`, `trapFocus`) and smooth scroll-lock event dispatch.                                       |
+| `header.ts`    | Header configuration checking (`isHeaderConfig`), slot content validation (`hasSlotContent`), and action resolution.                  |
 | `context.tsx`  | `ModalProvider` (stack, pending promises, actions), `useModal*` hooks, registry lookup.                                               |
 | `hooks.ts`     | View models: `useModalModel` (visibility, viewport, scroll lock), `useModalLayerModel` (focus, Esc), `useModalContainerModel`.        |
 | `overlay.tsx`  | `Modal`, `ModalLayer`, `ModalContainer`, switcher, close button.                                                                      |

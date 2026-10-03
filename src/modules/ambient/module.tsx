@@ -7,30 +7,53 @@ import {
   type PageModuleApi,
 } from "@/kernel";
 import { useOptionalBackgroundState } from "../background";
-import { AmbientContext, AmbientProvider, useAmbientTheme } from "./context";
-import { resolvePageAmbientTheme } from "./utils";
-import {
-  type AmbientDescriptor,
-  type AmbientOverrides,
-  type AmbientPageApi,
-  type AmbientPageConfig,
-  type AmbientPageSlice,
-  type DefineAmbientOptions,
-  type DefinedAmbient,
+import { AmbientContext, AmbientProvider } from "./context";
+import { useAmbientTheme } from "./hooks";
+import type {
+  AmbientConfig,
+  AmbientDescriptor,
+  AmbientOverrides,
+  AmbientPageApi,
+  AmbientPageConfig,
+  AmbientPageSlice,
+  DefineAmbientOptions,
+  DefinedAmbient,
 } from "./types";
 
 const firstString = (...values: unknown[]): string | null =>
   (values.find((value) => typeof value === "string" && value) as string) ??
   null;
 
-function selectPageAmbient(config: PageConfig): AmbientPageSlice {
+export function resolvePageAmbientTheme(
+  slice: AmbientPageSlice | null,
+  posterUrl: string | null,
+): Partial<AmbientConfig> | null {
+  const ambient = slice?.ambient;
+  const banner = slice?.banner ?? null;
+  const defaultImage = banner ?? posterUrl;
+
+  if (ambient === false) return null;
+  if (ambient === true || typeof ambient === "string") {
+    return {
+      image: typeof ambient === "string" ? ambient : defaultImage,
+      tintGlobals: true,
+    };
+  }
+  if (ambient && typeof ambient === "object") {
+    return { image: ambient.image ?? defaultImage, ...ambient };
+  }
+  if (banner && !posterUrl) return { image: banner, tintGlobals: true };
+  return null;
+}
+
+export function selectPageAmbient(config: PageConfig): AmbientPageSlice {
   return {
     ambient: config.ambient,
     banner: firstString(config.dock?.banner, config.dock?.bannerUrl),
   };
 }
 
-function useAmbientPage(
+export function useAmbientPage(
   slice: AmbientPageSlice | null,
   page: PageModuleApi,
 ): AmbientPageApi {

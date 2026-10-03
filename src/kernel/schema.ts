@@ -4,15 +4,10 @@ import {
   REGISTRY_LIFECYCLES,
   REGISTRY_METADATA_KEY_SET,
   REGISTRY_METADATA_KEYS,
-  REGISTRY_SOURCES,
   REGISTRY_VALIDATION_MODES,
 } from "./constants";
-import {
-  getValidString,
-  isObject,
-  isPlainObject,
-  parseFiniteNumber,
-} from "./utils";
+import { isObject, isPlainObject } from "@/utils";
+import { getValidString, parseFiniteNumber } from "./utils";
 import type {
   NormalizedRegistryMetadata,
   RegistryDefinitions,
@@ -21,13 +16,6 @@ import type {
   RegistryValidationMode,
   ValidationResult,
 } from "./types";
-
-export {
-  DEFAULT_SOURCE,
-  REGISTRY_LIFECYCLES,
-  REGISTRY_SOURCES,
-  REGISTRY_VALIDATION_MODES,
-};
 
 function resolveLifecycle(
   metadata: RegistryMetadata | null | undefined,

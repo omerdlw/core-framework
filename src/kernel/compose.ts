@@ -6,12 +6,10 @@ import {
   type ReactNode,
 } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- heterogeneous provider list
 export type ProviderComponent<P = any> = ComponentType<
   P & { children?: ReactNode }
 >;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- heterogeneous provider list
 export type ProviderEntry<P = any> =
   ProviderComponent<P> | readonly [ProviderComponent<P>, P];
 

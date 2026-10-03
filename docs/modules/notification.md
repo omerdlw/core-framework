@@ -146,12 +146,12 @@ No classes or inline styles in the module. `notificationTheme` slots: `layer`, `
 | `index.ts`     | Public barrel.                                                                              |
 | `types.ts`     | Notification data, options, controller, page and theme-slot contracts.                      |
 | `constants.ts` | `TOAST_DURATIONS`, session-expired message, `DOCK_STACK_ELEMENT_ID`, `notificationTheme`.   |
-| `utils.ts`     | Option normalization, default duration, text normalization, active-toast selection, guards. |
-| `context.tsx`  | `NotificationProvider` (store, timers, show/dismiss), `useNotification*` hooks.             |
-| `hooks.ts`     | `useToast` (`promise`, `fromResult`), `NotificationListener`, container view model.         |
+| `state.ts`     | Option normalization, duration resolution, text normalization, entry creation, active toast selection. |
+| `context.tsx`  | `NotificationProvider` (store, timers, show/dismiss actions), `NotificationContext`.         |
+| `hooks.ts`     | Public hooks (`useToast`, `useNotification*`), `NotificationListener`, container view model. |
 | `overlay.tsx`  | `Toast`, `NotificationContainer` (dock/floating portal), `NotificationLayer`.               |
 | `motion.ts`    | Toast variants and transition.                                                              |
-| `module.ts`    | `notificationModule` and the page API (plain `.ts`: it has no JSX).                         |
+| `module.tsx`   | `notificationModule` and the page API.                                                      |
 
 `builder.ts` is absent: toasts are imperative ([README](./README.md#42-why-some-optional-slots-are-absent)).
 

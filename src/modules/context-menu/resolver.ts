@@ -1,6 +1,6 @@
 import { isObject, toArray } from "@/utils";
 import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
-import { resolveMenuItems, resolveAsBoolean, safeInvoke } from "./utils";
+import { resolveMenuItems, resolveAsBoolean, safeInvoke } from "./items";
 import {
   type ContextMenuCandidate,
   type ContextMenuConfig,

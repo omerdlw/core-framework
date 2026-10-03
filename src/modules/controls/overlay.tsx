@@ -1,11 +1,47 @@
 "use client";
 
-import { Fragment, type CSSProperties } from "react";
+import {
+  Fragment,
+  useMemo,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 import { createPortal } from "react-dom";
-import { type ControlsSideProps } from "./types";
-import { useControlsModel } from "./hooks";
+import { usePathname } from "next/navigation";
+import { useRegistryEntries } from "@/kernel";
+import { useModuleTheme } from "@/theme";
+import { controlsTheme } from "./constants";
+import { resolveControlsPairs } from "./entries";
+import { useControlsLayout } from "./hooks";
+import { type ControlEntry, type ControlsSideProps } from "./types";
 
-function ControlsSide({ controls, geometry, side, theme }: ControlsSideProps) {
+const emptySubscribe = () => () => {};
+
+export function useControlsModel() {
+  const portalTarget = useSyncExternalStore(
+    emptySubscribe,
+    () => (typeof document !== "undefined" ? document.body : null),
+    () => null,
+  );
+  const layout = useControlsLayout();
+  const pathname = usePathname();
+  const entries = useRegistryEntries<"controls", ControlEntry>("controls");
+  const { left, right } = useMemo(
+    () => resolveControlsPairs(entries, pathname),
+    [entries, pathname],
+  );
+
+  const theme = useModuleTheme(controlsTheme);
+
+  return { portalTarget, layout, left, right, theme };
+}
+
+export function ControlsSide({
+  controls,
+  geometry,
+  side,
+  theme,
+}: ControlsSideProps) {
   if (controls.length === 0 || !geometry.height || !geometry.maxWidth) {
     return null;
   }

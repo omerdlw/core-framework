@@ -4,14 +4,7 @@ import {
   REGISTRY_SOURCE_RANK,
 } from "./constants";
 import type { RegistryMetadata } from "./types";
-import {
-  isObject,
-  isPlainObject,
-  shallowEqual,
-  trimToNull,
-} from "@/utils";
-
-export { isObject, isPlainObject, shallowEqual };
+import { isObject, trimToNull } from "@/utils";
 
 export function hasOwnProperty(target: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(target, key);

@@ -213,7 +213,6 @@ describe("package hooks", () => {
       el.setAttribute("data-affect-global-state", "true");
       document.body.appendChild(el);
 
-      // Trigger mutation observer
       await act(async () => {
         el.setAttribute("data-fullscreen-state", "active");
       });

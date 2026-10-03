@@ -29,16 +29,19 @@ export { DockDescription, DockTitle } from "./overlay";
 export { DockIcon } from "./overlay";
 export {
   useDockActions,
-  useDockBanner,
-  useDockConfig,
-  useDockDimensions,
   useDockHeight,
-  useDockRegistration,
   useDockSelector,
-  useDockActionClass,
   useDockState,
   useOptionalDockActions,
   useOptionalDockState,
+} from "./context";
+export {
+  useDockActionClass,
+  useDockBanner,
+  useDockConfig,
+  useDockDimensions,
+  useDockRegistration,
+  useDockTheme,
   useSurfaceReturn,
 } from "./hooks";
 export { useDockContextActions } from "./runtime/commands";
@@ -54,7 +57,7 @@ export {
   DOCK_HUD_VARIANT,
   dockTheme,
 } from "./constants";
-export { isValidBannerUrl } from "./utils";
+export { isValidBannerUrl } from "./styles";
 export {
   DOCK_FADE_TRANSITION,
   dockFadeVariants,

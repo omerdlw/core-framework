@@ -7,12 +7,9 @@ import {
   shallowEqual as areShallowCollectionsEqual,
 } from "@/utils";
 import { usePathname } from "next/navigation";
-import {
-  toSearchableText,
-  isPathPrefix,
-  isSamePath,
-  resolveActiveIndex,
-} from "../utils";
+import { toSearchableText } from "../helpers";
+import { isPathPrefix, isSamePath } from "../paths";
+import { resolveActiveIndex } from "./pipeline";
 import { useModuleTheme } from "@/theme";
 import { DOCK_ATTENTION_KIND, dockTheme } from "../constants";
 import { createInlineSurfaceEntry } from "../surface/definition";

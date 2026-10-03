@@ -1,6 +1,7 @@
 "use client";
 
-import { useInsertionEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
+import { useIsomorphicLayoutEffect } from "@/hooks";
 import {
   defineModule,
   type PageConfig,
@@ -10,9 +11,11 @@ import dynamic from "next/dynamic";
 import {
   ModalContext,
   ModalProvider,
+} from "./context";
+import {
   useModal,
   useModalActions,
-} from "./context";
+} from "./hooks";
 import {
   type DefineModalOptions,
   type ModalDefinition,
@@ -20,7 +23,7 @@ import {
   type ModalPageApi,
   type ModalPageConfig,
 } from "./types";
-import { getModalIdentity } from "./utils";
+import { getModalIdentity } from "./identity";
 
 const LazyModal = dynamic(
   () => import("./overlay").then((view) => view.Modal),
@@ -39,7 +42,7 @@ function useModalPage(
 ): ModalPageApi {
   const actions = useModalActions();
   const sliceRef = useRef(slice);
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     sliceRef.current = slice;
   }, [slice]);
 

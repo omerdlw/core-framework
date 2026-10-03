@@ -132,14 +132,18 @@ On cleanup the previous inline values (and priorities) are restored exactly. If 
 
 ## 8. File map
 
-| File           | Responsibility                                                                                                                                                                        |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `index.ts`     | Public barrel.                                                                                                                                                                        |
-| `types.ts`     | Palette, config, descriptor, target/source, page contracts.                                                                                                                           |
-| `constants.ts` | CSS variable names, defaults, extraction tuning, `ambientTheme`.                                                                                                                      |
-| `utils.ts`     | OKLCH conversion, canvas sampling, palette derivation, fetch/cache/extraction, target resolution, scoped CSS-variable application, `resolveAmbientVarMap`, `resolvePageAmbientTheme`. |
-| `context.tsx`  | `AmbientProvider` (shared palette store), `useAmbientColor`, `useAmbientTheme`, `useAmbient`.                                                                                         |
-| `module.tsx`   | `ambientModule`, `useAmbientPage` (applies the page theme), `defineAmbient`, kernel type augmentation.                                                                                |
+| File           | Responsibility                                                                                      |
+| :------------- | :-------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel export.                                                                               |
+| `types.ts`     | Palette, config, descriptor, target/source, page contracts.                                         |
+| `constants.ts` | Default palette constants and `ambientTheme` spec.                                                  |
+| `color.ts`     | Pure OKLCH color math, linear sRGB conversions, string formatting, and palette derivation.          |
+| `extractor.ts` | Canvas 2D pixel histogram sampling, CORS/proxy image fetch, and LRU palette cache.                   |
+| `dom.ts`       | Target element resolution, CSS variable mapping (`AMBIENT_CSS_VARS`), and scoped style restoration. |
+| `hooks.ts`     | React hooks: `useAmbientColor`, `useAmbientTheme`, `useAmbient`, `useStableObject`.                 |
+| `builder.ts`   | Reusable theme factory builder (`defineAmbient`).                                                   |
+| `context.tsx`  | Microkernel global `AmbientContext` and `AmbientProvider` store.                                    |
+| `module.tsx`   | `ambientModule` definition, `resolvePageAmbientTheme`, and kernel type augmentation.                |
 
 No `view.tsx` or `motion.ts`: the module renders nothing, and transitions are CSS classes from the theme ([README](./README.md#42-why-some-optional-slots-are-absent)).
 

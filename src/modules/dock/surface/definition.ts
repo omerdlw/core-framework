@@ -7,35 +7,31 @@ import {
   DOCK_SURFACE_FLOW_STATUS,
 } from "../constants";
 import {
-  isSurfaceDescriptor,
   isValidComponentType,
-  normalizeSurfaceExtension,
   resolveComponentType,
   resolveRenderableContent,
+} from "../helpers";
+import {
   createSurfaceReturnHandshake,
+  isSurfaceDescriptor,
+  normalizeSurfaceExtension,
   normalizeSurfaceFlowSnapshot,
   resolveSurfaceFlowReturnHandshake,
-} from "../utils";
+} from "./helpers";
 import {
-  type ActiveSurfaceStep,
   type DockComponentProps,
-  type DockItem,
   type NormalizedSurfaceDefinition,
   type NormalizedSurfaceExtension,
   type OpenSurfaceOptions,
-  type RenderableSurfaceEntry,
   type SurfaceBuilderDefinition,
   type SurfaceBuilderFactory,
   type SurfaceDescriptor,
-  type SurfaceFlowContextValue,
   type SurfaceFlowDefinition,
   type SurfaceFlowDefinitionInput,
   type SurfaceFlowSession,
-  type SurfaceFlowState,
   type SurfaceInput,
   type SurfaceResult,
   type SurfaceStep,
-  type SurfaceViewModelOptions,
   type BoundSurfaceFactory,
   type DefineStepSurfaceOptions,
   type GeneralSurfaceHandle,

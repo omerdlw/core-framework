@@ -6,10 +6,12 @@ import { LOADING_REGISTRY_KEY } from "./constants";
 import {
   LoadingContext,
   LoadingProvider,
+} from "./context";
+import {
   useLoading,
   useLoadingActions,
-} from "./context";
-import { selectPageLoading } from "./utils";
+} from "./hooks";
+import { selectPageLoading } from "./state";
 import { LoadingOverlay } from "./overlay";
 import {
   type DefinedLoading,

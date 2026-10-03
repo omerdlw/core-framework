@@ -227,19 +227,19 @@ No classes or colors in the module, except the pointer-following `left/top/posit
 
 ## 8. File map
 
-| File           | Responsibility                                                                                                                                             |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Public barrel.                                                                                                                                             |
-| `types.ts`     | Config, item, header, context, state, actions, page and theme-slot contracts.                                                                              |
-| `constants.ts` | Registry keys (`current-page`, `*`), screen margin, visibility event, `contextMenuTheme`.                                                                  |
-| `utils.ts`     | Value resolution, item/header resolution, page metadata from the dock card, safe invocation, positioning, keyboard index helper, visibility event emitter. |
-| `resolver.ts`  | Candidate normalization, path/target/route scoring, context building, `resolveContextMenu`, `prepareMenu`.                                                 |
-| `state.ts`     | Initial and next-open state helpers.                                                                                                                       |
-| `context.tsx`  | `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`), `useContextMenu*` hooks.                                                                   |
-| `hooks.ts`     | `useContextMenuListener`, dismissal, content view model (keyboard, focus, class merging).                                                                  |
-| `overlay.tsx`  | `ContextMenuGlobal`, renderer, content, header, item components.                                                                                           |
-| `motion.ts`    | Pop, content and item variants; tap and spring presets.                                                                                                    |
-| `module.tsx`   | `contextMenuModule`, page API, `defineContextMenu`, kernel type augmentation.                                                                              |
+| File           | Responsibility                                                                                                             |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                                             |
+| `types.ts`     | Config, item, header, context, state, actions, page and theme-slot contracts.                                              |
+| `constants.ts` | Registry keys (`current-page`, `*`), screen margin, visibility event, initial position, `contextMenuTheme`.                |
+| `items.ts`     | Value and boolean resolution, item/header resolution, dock page metadata, safe callback invocation.                       |
+| `dom.ts`       | Menu viewport positioning, keyboard arrow navigation index helper, scroll lock keys detection, class name joining.         |
+| `state.ts`     | Initial and next-open menu state derivation, visibility custom event dispatch.                                             |
+| `resolver.ts`  | Candidate normalization, path/target/route scoring, context building, `resolveContextMenu`, `prepareMenu`.                 |
+| `context.tsx`  | `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`), `useContextMenu*` consumer hooks.                          |
+| `overlay.tsx`  | `ContextMenuGlobal`, portalled renderer, content host, header, item components, and interaction listeners.                |
+| `motion.ts`    | Pop, content and item animation variants; tap and spring presets.                                                          |
+| `module.tsx`   | `contextMenuModule`, page API adapter, `defineContextMenu`, kernel type augmentation.                                     |
 
 ## 9. Dependencies
 

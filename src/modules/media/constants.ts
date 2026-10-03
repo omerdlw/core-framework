@@ -23,5 +23,4 @@ export const MEDIA_SYNC_DRIFT_SECONDS = 0.3;
 
 export const MEDIA_REGISTRY_KEY = "page-media";
 
-/** Id of the audio source registered through `usePage({ media })`. */
 export const PAGE_MEDIA_ID = "page";

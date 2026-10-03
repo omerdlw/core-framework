@@ -3,13 +3,15 @@ import assert from "node:assert/strict";
 import { DEFAULT_MEDIA_STATE } from "../../src/modules/media/constants.ts";
 import {
   bindFollowers,
+  toggleElement,
+} from "../../src/modules/media/playback.ts";
+import {
   createMediaState,
   findDisplacedAudio,
   mergeMediaSource,
   resolveMediaSession,
   selectPageMedia,
-  toggleElement,
-} from "../../src/modules/media/utils.ts";
+} from "../../src/modules/media/session.ts";
 import type { MediaEntry } from "../../src/modules/media/types.ts";
 
 class FakeMedia extends EventTarget {

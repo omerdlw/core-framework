@@ -2,11 +2,11 @@
 
 import {
   isValidElement,
-  useInsertionEffect,
   useMemo,
   useRef,
   type ReactNode,
 } from "react";
+import { useIsomorphicLayoutEffect } from "@/hooks";
 import {
   defineModule,
   type ModulePageContext,
@@ -223,7 +223,7 @@ function useDockPage(
   useDockContextActions(slice?.actions ?? NO_ACTIONS);
 
   const surfacesRef = useRef(slice?.surfaces);
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     surfacesRef.current = slice?.surfaces;
   }, [slice?.surfaces]);
 

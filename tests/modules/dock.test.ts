@@ -16,13 +16,15 @@ import { useDockConfig } from "../../src/modules/dock/hooks.ts";
 import {
   createDockScheduler,
   formatMediaTime,
+  normalizeUpper,
+} from "../../src/modules/dock/helpers.ts";
+import {
   getDockLocationKey,
   isPathPrefix,
   isSafeInternalHref,
   isSamePath,
-  isValidBannerUrl,
-  normalizeUpper,
-} from "../../src/modules/dock/utils.ts";
+} from "../../src/modules/dock/paths.ts";
+import { isValidBannerUrl } from "../../src/modules/dock/styles.ts";
 import {
   PageControllerProvider,
   RegistryProvider,
@@ -57,34 +59,44 @@ import { USER_MESSAGES } from "../../src/core/utils/index.ts";
 import { createElement as hh } from "react";
 import {
   createSurfaceReturnHandshake,
-  findDockItemIndex,
-  getImageIconStyle,
-  getItemKey,
-  getItemMeasurementKey,
-  getLineClampStyle,
-  getRouteMeasurementKey,
-  isEditableDockTarget,
-  isHudDescriptor,
-  isInteractiveTarget,
   isSurfaceDescriptor,
-  isValidComponentType,
   normalizeSurfaceExtension,
   normalizeSurfaceFlowSnapshot,
+  resolveSurfaceFlowReturnHandshake,
+} from "../../src/modules/dock/surface/helpers.ts";
+import {
+  findDockItemIndex,
+  getItemKey,
   removeAncestorDuplicates,
   removeInactiveLoadingItems,
   reorderItemsWithActiveFirst,
   replaceActiveItem,
   resolveActiveIndex,
-  resolveComponentType,
-  resolveDockActionClass,
   resolveDockHeaderKey,
-  resolveRenderableContent,
-  resolveSurfaceFlowReturnHandshake,
-  shouldRestoreDockFocus,
+} from "../../src/modules/dock/runtime/pipeline.ts";
+import {
+  getImageIconStyle,
+  getLineClampStyle,
+  resolveDockActionClass,
   splitStyle,
+} from "../../src/modules/dock/styles.ts";
+import {
+  getItemMeasurementKey,
+  getRouteMeasurementKey,
+} from "../../src/modules/dock/layout.ts";
+import {
+  isEditableDockTarget,
+  isInteractiveTarget,
+  shouldRestoreDockFocus,
+} from "../../src/modules/dock/dom.ts";
+import {
+  isHudDescriptor,
+  isValidComponentType,
+  resolveComponentType,
+  resolveRenderableContent,
   toObject,
   toSearchableText,
-} from "../../src/modules/dock/utils.ts";
+} from "../../src/modules/dock/helpers.ts";
 
 import {
   createInlineSurfaceEntry,
@@ -1061,8 +1073,6 @@ describe("dock status", () => {
         error: new Error("ECONNREFUSED 10.0.0.4:5432"),
       });
 
-      // The card title already says "Something went wrong"; the description
-      // keeps only the actionable part.
       assert.equal(statuses[0].description, "Please try again");
       assert.ok(!String(statuses[0].description).includes("ECONNREFUSED"));
     });

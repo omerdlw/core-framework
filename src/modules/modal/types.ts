@@ -9,7 +9,6 @@ export interface ResponsiveModalPosition {
 
 export type ModalChrome = "panel" | "bare";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the props are the caller's
 export type ModalComponent = ComponentType<any>;
 
 export interface ModalEntry {

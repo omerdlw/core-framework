@@ -4,7 +4,6 @@ import { type ComponentType } from "react";
 import { EVENT_TYPES, globalEvents } from "@/events";
 import { toUserMessage } from "@/utils";
 import {
-  type StatusState,
   type QueuedApiError,
   type ScheduleStatusClearOptions,
 } from "../types";
@@ -13,7 +12,7 @@ import {
   DOCK_EVENTS,
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
-import { normalizeUpper } from "../utils";
+import { normalizeUpper } from "../helpers";
 import {
   StatusSetter,
   StatusUpdate,

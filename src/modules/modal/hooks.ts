@@ -8,6 +8,12 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { useRequiredContext, useStore } from "@/hooks";
+import {
+  useModuleRegistration,
+  useRegistryEntries,
+  type RegistryMetadata,
+} from "@/kernel";
 import { Z_INDEX } from "@/tokens";
 import { acquireGlobalScrollLock } from "@/utils";
 import { useModuleTheme } from "@/theme";
@@ -17,17 +23,89 @@ import {
   MODAL_POSITIONS,
   modalTheme,
 } from "./constants";
-import { type ModalComponent, type ModalEntry } from "./types";
+import { ModalContext } from "./context";
+import { getModalIdentity } from "./identity";
+import {
+  type ModalActions,
+  type ModalComponent,
+  type ModalEntry,
+  type ModalHookBinding,
+  type ModalHookControls,
+  type ModalInput,
+  type ModalOpenFn,
+  type ModalPageConfig,
+  type ModalState,
+} from "./types";
 import {
   dispatchSmoothScrollLock,
   getFocusableElements,
+  trapFocus,
+} from "./dom";
+import {
   getViewportIsMobile,
   isSidePosition,
   isVerticalEdgePosition,
   resolveActivePosition,
-  trapFocus,
-} from "./utils";
-import { useModal, useModalRegistryEntries } from "./context";
+} from "./layout";
+
+export function useModalRegistration(
+  config: ModalPageConfig | null | undefined,
+  options?: RegistryMetadata & { enabled?: boolean },
+): void {
+  useModuleRegistration("modal", config, options);
+}
+
+export function useModalRegistryEntries(): {
+  get: (type: string) => ModalComponent | undefined;
+} {
+  const entries = useRegistryEntries<"modal", ModalComponent>("modal");
+  return useMemo(() => ({ get: (type: string) => entries[type] }), [entries]);
+}
+
+export function useModalActions(): ModalActions {
+  return useRequiredContext(ModalContext, "useModalActions", "ModalProvider")
+    .actions;
+}
+
+export function useModalState(): ModalState {
+  const { store } = useRequiredContext(
+    ModalContext,
+    "useModalState",
+    "ModalProvider",
+  );
+  return useStore(store);
+}
+
+export function useModal(): ModalState & ModalActions;
+export function useModal(modalInput: ModalInput): ModalHookBinding;
+export function useModal(
+  modalInput?: ModalInput | null,
+): (ModalState & ModalActions) | ModalHookBinding {
+  const actions = useModalActions();
+  const state = useModalState();
+
+  return useMemo(() => {
+    if (!modalInput) return { ...actions, ...state };
+
+    const { component, type } = getModalIdentity(modalInput);
+    const isOpen = state.modalStack.some(
+      (entry) =>
+        entry.modalType === type ||
+        (component && entry.component === component),
+    );
+    const open: ModalOpenFn = (data, overrides) =>
+      actions.openModal(modalInput, { ...overrides, data });
+    const controls: ModalHookControls = {
+      close: actions.closeModal,
+      closeAll: actions.closeAllModals,
+      isOpen,
+      state,
+    };
+
+    return Object.assign([open, controls], controls, { open });
+  }, [actions, modalInput, state]) as
+    (ModalState & ModalActions) | ModalHookBinding;
+}
 
 const emptySubscribe = () => () => {};
 

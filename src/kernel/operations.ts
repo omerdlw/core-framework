@@ -3,15 +3,14 @@ import {
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_PRIORITY,
 } from "./constants";
+import { isObject, shallowEqual } from "@/utils";
 import {
   getSourceRank,
   hasOwnProperty,
-  isObject,
   resolveInstanceId,
   resolveRegisterInput,
   resolveScope,
   resolveUnregisterInput,
-  shallowEqual,
 } from "./utils";
 import { validateRegistryKey } from "./schema";
 import type {

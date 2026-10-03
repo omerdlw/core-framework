@@ -1,9 +1,59 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef } from "react";
-import { useMediaActions } from "./context";
-import { toggleElement } from "./utils";
-import { type MediaHandle, type MediaOptions } from "./types";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+} from "react";
+import { useRequiredContext, useStore } from "@/hooks";
+import { INERT_MEDIA_ACTIONS } from "./constants";
+import { MediaContext, NOOP_MEDIA_STORE } from "./context";
+import { toggleElement } from "./playback";
+import {
+  type MediaActions,
+  type MediaHandle,
+  type MediaOptions,
+  type MediaState,
+} from "./types";
+
+export function useMediaState(): MediaState {
+  const { store } = useRequiredContext(
+    MediaContext,
+    "useMediaState",
+    "MediaProvider",
+  );
+  return useStore(store);
+}
+
+export function useMediaActions(): MediaActions {
+  return useRequiredContext(MediaContext, "useMediaActions", "MediaProvider")
+    .actions;
+}
+
+export function useOptionalMediaState(): MediaState;
+export function useOptionalMediaState<T>(
+  selector: (state: MediaState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T;
+export function useOptionalMediaState<T = MediaState>(
+  selector?: (state: MediaState) => T,
+  isEqual?: (a: T, b: T) => boolean,
+): T {
+  const ctx = useContext(MediaContext);
+  return useStore(
+    ctx?.store ?? NOOP_MEDIA_STORE,
+    selector as (state: MediaState) => T,
+    isEqual,
+  );
+}
+
+export function useOptionalMediaActions(): MediaActions {
+  const ctx = useContext(MediaContext);
+  return ctx?.actions ?? INERT_MEDIA_ACTIONS;
+}
 
 export function useMedia(options: MediaOptions): MediaHandle {
   const generatedId = useId();

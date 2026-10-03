@@ -6,10 +6,12 @@ import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import {
   BackgroundContext,
   BackgroundProvider,
+} from "./context";
+import {
   useBackground,
   useBackgroundActions,
-} from "./context";
-import { selectPageBackground } from "./utils";
+} from "./hooks";
+import { normalizeBackgroundInput } from "./state";
 import { BackgroundOverlay } from "./overlay";
 import {
   type BackgroundPageApi,
@@ -17,6 +19,12 @@ import {
   type BackgroundState,
   type DefinedBackground,
 } from "./types";
+
+export function selectPageBackground(
+  background: BackgroundPageConfig | null | undefined,
+): Partial<BackgroundState> | null {
+  return background ? normalizeBackgroundInput(background) : null;
+}
 
 function useBackgroundPage(
   _slice: Partial<BackgroundState> | null,

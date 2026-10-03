@@ -45,12 +45,6 @@ function queryBuilder(
   );
   return proxy;
 }
-
-/**
- * Installs a stand-in for the server Supabase client: an authenticated (or
- * anonymous) session, per-table query results and recorded calls. Every query
- * builder method returns the builder, and awaiting it yields the result.
- */
 export function installFakeSupabase({
   adminDeleteError = null,
   claims = null,

@@ -1,62 +1,21 @@
 "use client";
 
-import {
-  createElement,
-  isValidElement,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useModuleTheme } from "@/theme";
-import {
-  useModuleRegistration,
-  useRegistryEntries,
-  type RegistryMetadata,
-} from "@/kernel";
-import { CONTROLS_DOCK_ELEMENT_ID, controlsTheme } from "./constants";
+import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
 import {
   type ControlEntry,
-  type ControlSlot,
   type ControlsLayout,
   type ControlsPageConfig,
   type ControlsUseOptions,
   type DefineControlsOptions,
 } from "./types";
+import { normalizePageControls, resolveSlot } from "./entries";
 import {
   areLayoutsEqual,
-  getControlsLayout,
-  normalizePageControls,
-  resolveControlsPairs,
-} from "./utils";
-
-function getDockStackElement(): HTMLElement | null {
-  return document.getElementById(CONTROLS_DOCK_ELEMENT_ID);
-}
-
-function getDockElement(): Element | null {
-  return (
-    document.querySelector('[data-controls-anchor="true"]') ??
-    getDockStackElement()
-  );
-}
-
-function measureLayout(): ControlsLayout | null {
-  const dockElement = getDockElement();
-  if (!dockElement) return null;
-  const layout = getControlsLayout(dockElement.getBoundingClientRect(), {
-    height: window.innerHeight,
-    width: window.innerWidth,
-  });
-  return (
-    layout && {
-      ...layout,
-      isHidden: getDockStackElement()?.dataset.controlsHidden === "true",
-    }
-  );
-}
+  getDockElement,
+  measureLayout,
+} from "./layout";
 
 export function useControlsLayout(): ControlsLayout | null {
   const [layout, setLayout] = useState<ControlsLayout | null>(null);
@@ -114,16 +73,6 @@ export function useControlsLayout(): ControlsLayout | null {
   return layout;
 }
 
-function resolveSlot(
-  slot: ControlSlot | undefined,
-  props: Record<string, unknown>,
-): ReactNode {
-  if (slot == null || slot === false) return null;
-  if (isValidElement(slot)) return slot;
-  if (typeof slot === "function") return createElement(slot, props);
-  return slot;
-}
-
 export function useControlsRegistration(
   config: ControlsPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -154,25 +103,4 @@ export function useControls(
 
   useControlsRegistration(entries, options);
   return useControlsLayout();
-}
-
-const emptySubscribe = () => () => {};
-
-export function useControlsModel() {
-  const portalTarget = useSyncExternalStore(
-    emptySubscribe,
-    () => (typeof document !== "undefined" ? document.body : null),
-    () => null,
-  );
-  const layout = useControlsLayout();
-  const pathname = usePathname();
-  const entries = useRegistryEntries<"controls", ControlEntry>("controls");
-  const { left, right } = useMemo(
-    () => resolveControlsPairs(entries, pathname),
-    [entries, pathname],
-  );
-
-  const theme = useModuleTheme(controlsTheme);
-
-  return { portalTarget, layout, left, right, theme };
 }

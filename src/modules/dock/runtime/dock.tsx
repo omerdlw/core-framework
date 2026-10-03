@@ -6,11 +6,15 @@ import {
   useEffect,
   useRef,
   useState,
-  useInsertionEffect,
   useReducer,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useRequiredContext, useClickOutside, useIsFullscreenStateActive } from "@/hooks";
+import {
+  useRequiredContext,
+  useClickOutside,
+  useIsFullscreenStateActive,
+  useIsomorphicLayoutEffect,
+} from "@/hooks";
 import { normalizePath, shallowEqual } from "@/utils";
 import {
   MAX_VISIBLE_STACKED_CARDS,
@@ -22,12 +26,14 @@ import {
 } from "../constants";
 import {
   findDockItemIndex,
+  getIsItemActive,
+  getItemKey,
   isSameItem,
   removeAncestorDuplicates,
   removeInactiveLoadingItems,
   reorderItemsWithActiveFirst,
   replaceActiveItem,
-} from "../utils";
+} from "./pipeline";
 import {
   type DockItem,
   type DockNavigateOptions,
@@ -37,13 +43,13 @@ import {
   type DockViewBridge,
 } from "../types";
 import {
+  useDockKeyboard,
   useDockRouteReset,
-  getIsItemActive,
-  getItemKey,
+} from "../dom";
+import {
   useDockHeightController,
   useDockViewport,
-  useDockKeyboard,
-} from "../hooks";
+} from "../layout";
 import {
   DockContext,
   useDockActions,
@@ -282,7 +288,7 @@ export function useDockOperationState() {
   );
   const operationIdRef = useRef(0);
   const operationStateRef = useRef(operationState);
-  useInsertionEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     operationStateRef.current = operationState;
   }, [operationState]);
 
@@ -359,7 +365,6 @@ export function useDockOperationState() {
   );
   const operationHud = useMemo(
     () =>
-      // eslint-disable-next-line react-hooks/refs
       createDockOperationHud(activeOperation, {
         onCancel: cancel,
         pendingCount,

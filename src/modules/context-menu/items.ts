@@ -1,43 +1,13 @@
 import { isValidElement, type ReactNode } from "react";
-import { isBrowser, isObject, toArray, toFiniteNumber } from "@/utils";
-import {
-  CONTEXT_MENU_VISIBILITY_EVENT,
-  INITIAL_POSITION,
-  MENU_SCREEN_MARGIN,
-} from "./constants";
+import { isObject, report, toArray } from "@/utils";
 import {
   type ContextMenuConfig,
   type ContextMenuContextValue,
   type ContextMenuItem,
-  type ContextMenuOpenInput,
   type ContextMenuPageMeta,
-  type ContextMenuPosition,
   type ContextMenuResolvedHeader,
   type ContextMenuResolvedItem,
-  type ContextMenuState,
 } from "./types";
-import { report } from "@/utils";
-
-export function joinClassNames(
-  ...classes: (string | boolean | null | undefined)[]
-): string {
-  return classes.filter(Boolean).join(" ");
-}
-
-const SCROLL_LOCK_KEYS = new Set([
-  "ArrowDown",
-  "ArrowUp",
-  "End",
-  "Home",
-  "PageDown",
-  "PageUp",
-  " ",
-  "Spacebar",
-]);
-
-export function isScrollLockKey(event: { key: string }): boolean {
-  return SCROLL_LOCK_KEYS.has(event.key);
-}
 
 export function extractNodeText(value: unknown): string {
   if (typeof value === "string") return value;
@@ -52,8 +22,9 @@ export function extractNodeText(value: unknown): string {
       .replace(/\s+/g, " ")
       .trim();
   }
-  if (isValidElement(value))
+  if (isValidElement(value)) {
     return extractNodeText((value.props as { children?: ReactNode })?.children);
+  }
   return "";
 }
 
@@ -89,15 +60,6 @@ export function resolveAsValue<T = unknown>(
     }
   }
   return value === undefined ? (fallback as T) : (value as T);
-}
-
-export function emitContextMenuVisibility(isOpen: boolean): void {
-  if (!isBrowser) return;
-  window.dispatchEvent(
-    new CustomEvent(CONTEXT_MENU_VISIBILITY_EVENT, {
-      detail: { isOpen: Boolean(isOpen) },
-    }),
-  );
 }
 
 export function safeInvoke<T = unknown>(
@@ -152,22 +114,6 @@ export function resolveContextMenuPageMeta(
       (typeof dockItem.name === "string" ? dockItem.name : "") ||
       "",
   };
-}
-
-export function positionMenu(
-  menuElement: HTMLElement | null,
-  position?: ContextMenuPosition | null,
-): void {
-  if (!menuElement) return;
-  const { height, width } = menuElement.getBoundingClientRect();
-  const maxX = window.innerWidth - width - MENU_SCREEN_MARGIN;
-  const maxY = window.innerHeight - height - MENU_SCREEN_MARGIN;
-
-  const x = Math.min(Number(position?.x) || 0, maxX);
-  const y = Math.min(Number(position?.y) || 0, maxY);
-
-  menuElement.style.left = `${Math.round(Math.max(MENU_SCREEN_MARGIN, x))}px`;
-  menuElement.style.top = `${Math.round(Math.max(MENU_SCREEN_MARGIN, y))}px`;
 }
 
 function resolveItem(
@@ -271,20 +217,4 @@ export function resolveMenuHeader(
     title,
     titleText: extractNodeText(title),
   };
-}
-
-export function getNextActiveIndex(
-  items: ContextMenuResolvedItem[],
-  current: number,
-  direction: 1 | -1,
-): number {
-  const count = items.length;
-  const start =
-    current < 0 ? (direction === 1 ? 0 : count - 1) : current + direction;
-
-  for (let step = 0; step < count; step++) {
-    const index = (((start + step * direction) % count) + count) % count;
-    if (items[index].type === "action" && !items[index].disabled) return index;
-  }
-  return current;
 }
