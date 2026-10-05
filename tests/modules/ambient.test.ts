@@ -204,6 +204,63 @@ describe("ambient page", () => {
       assert.ok(sampled.l > 0.5 && sampled.l < 0.7);
       assert.ok(sampled.c > 0.1);
     });
+
+    const makeImage = (pixels: [number, number, number][]) => {
+      const buffer = new Uint8ClampedArray(pixels.length * 4);
+      pixels.forEach(([r, g, b], index) => {
+        buffer.set([r, g, b, 255], index * 4);
+      });
+      return { data: buffer } as unknown as ImageData;
+    };
+    const fill = (count: number, rgb: [number, number, number]) =>
+      Array.from({ length: count }, () => rgb);
+
+    test("a black and white image resolves to a neutral, never a blue", async () => {
+      const { sampleImageData, derivePalette } = await import(
+        "../../src/modules/ambient/index.ts"
+      );
+      const sampled = sampleImageData(
+        makeImage([
+          ...fill(40, [20, 20, 20]),
+          ...fill(30, [128, 128, 128]),
+          ...fill(30, [235, 235, 235]),
+        ]),
+      );
+      assert.equal(sampled.c, 0);
+
+      const palette = derivePalette(sampled);
+      assert.match(palette.primary, /^oklch\(\S+ 0\.000 /);
+      assert.match(palette.black, /^oklch\(\S+ 0\.000 /);
+    });
+
+    test("a fully transparent image resolves to a neutral", async () => {
+      const { sampleImageData } = await import("../../src/modules/ambient/index.ts");
+      const sampled = sampleImageData({
+        data: new Uint8ClampedArray(16),
+      } as unknown as ImageData);
+      assert.equal(sampled.c, 0);
+    });
+
+    test("a vivid minority beats a larger muddy majority", async () => {
+      const { sampleImageData } = await import("../../src/modules/ambient/index.ts");
+      const sampled = sampleImageData(
+        makeImage([
+          ...fill(60, [120, 100, 85]), // muted brown
+          ...fill(25, [230, 40, 60]), // vivid red
+        ]),
+      );
+      assert.ok(sampled.c > 0.12);
+      assert.ok(sampled.h < 40 || sampled.h > 340);
+    });
+
+    test("derivePalette follows the source instead of forcing one look", async () => {
+      const { derivePalette } = await import("../../src/modules/ambient/index.ts");
+      const chromaOf = (value: string) => Number(value.split(" ")[1]);
+      const muted = derivePalette({ l: 0.5, c: 0.04, h: 60 });
+      const vivid = derivePalette({ l: 0.7, c: 0.22, h: 60 });
+      assert.ok(chromaOf(muted.primary.slice(6)) < chromaOf(vivid.primary.slice(6)));
+      assert.notEqual(muted.primary, vivid.primary);
+    });
   });
 
   describe("defineAmbient", () => {

@@ -51,10 +51,10 @@ useAmbientTheme({
 
 | Variable                       | Set when                                     | Value                                                        |
 | :----------------------------- | :------------------------------------------- | :----------------------------------------------------------- |
-| `--primary`                    | an `image` is given and extracted            | bright OKLCH colour (lightness 0.74, chroma 0.15–0.24)       |
+| `--primary`                    | an `image` is given and extracted            | bright OKLCH colour; lightness 0.60–0.86 and chroma 0–0.24 follow the image (neutral images give a neutral, chroma 0)       |
 | `--color-ambient-glow`         | same                                         | same as `--primary`                                          |
 | `--color-primary`              | same **and** `tintGlobals` is true (default) | same as `--primary`                                          |
-| `--black`                      | an `image` is given and extracted            | deep, slightly tinted OKLCH (lightness 0.15, chroma ≤ 0.055) |
+| `--black`                      | an `image` is given and extracted            | deep OKLCH (lightness ≈ 0.15, chroma ≤ 0.055, tint scales with the image; 0 for neutral images) |
 | any variable named in `colors` | `colors` is set                              | the literal value                                            |
 
 `colors` keys are mapped as: `primary` → `--primary`, `black` → `--black`, `white` → `--white`, `ambientGlow` → `--color-ambient-glow`, `colorPrimary` → `--color-primary`; a key starting with `--` is used verbatim; anything else becomes `--color-<key>`. `colors` always wins over extracted values.
@@ -109,8 +109,8 @@ On cleanup the previous inline values (and priorities) are restored exactly. If 
 
 - **Source loading.** Remote (`http…`) images are first fetched with `cors=1` and `mode: "cors"`, then through `/api/ambient/proxy?url=…`; the blob is read from an object URL (revoked afterwards). Same-origin or non-http sources are loaded directly (with `crossOrigin="anonymous"` when no object URL was needed).
 - **The proxy** only serves `image/*` (415 otherwise), blocks unsafe/internal URLs with `isSafeUrl` (including on every redirect, up to 5), and caches responses for a day. Do not point it at anything but images.
-- **Sampling.** The image is drawn to a 32×32 canvas. Pixels with alpha < 128 are skipped; near-black, near-white and low-chroma pixels are counted as neutral. Remaining pixels go into 24 hue bins; the densest bin plus half-weighted neighbours gives the hue, chroma and lightness. An all-neutral image yields a muted blue (`h 252`).
-- **Derivation.** Chroma is clamped to `0.03–0.28`; `primary` uses lightness `0.74` with chroma `max(0.15, min(0.24, max(chroma × 1.15, 0.18)))`; `black` uses lightness `0.15` with chroma `min(0.055, max(0.025, chroma × 0.35))`.
+- **Sampling.** The image is drawn to a 64×64 canvas. Pixels with alpha < 128 are skipped; near-black and near-white pixels (unreliable hue) are ignored, and pixels with chroma < 0.03 count as neutral. Remaining pixels vote into 36 hue bins with weight `chroma² × lightness-usability`, so vivid mid-tone pixels beat muddy or very dark/light ones. The best bin plus half-weighted neighbours gives hue, chroma and lightness (weighted). If coloured pixels are under 4% of the colourable ones, or there are none, the result is a **neutral** (`c 0`, lightness = image average); a small accent on a mostly neutral image is kept but subdued.
+- **Derivation.** A source chroma < `0.012` is treated as neutral (no hue is invented). Otherwise chroma is clamped to `≤ 0.28`. `primary` chroma is `0.24 × (1 − e^(−chroma × 9.4))` and lightness is `0.74 + (L − 0.6) × 0.5` clamped to `0.60–0.86`; `black` chroma is `min(0.055, chroma × 0.35)` and lightness is `0.15 + (L − 0.6) × 0.06` clamped to `0.12–0.18`.
 - **Cache.** Up to 100 palettes (`cacheLimit`, oldest evicted) and concurrent requests for the same URL share one promise.
 - **Stability.** `colors`, `options` and `initialPalette` are stabilized with `shallowEqual`, so passing fresh object literals each render does **not** re-apply the theme. (A test forbids `JSON.stringify` for this.)
 - **Failure.** Any failure resolves the fallback palette (`initialPalette` → `fallbackPalette` → defaults). It never throws.

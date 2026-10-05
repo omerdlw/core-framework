@@ -7,91 +7,107 @@ import type {
   OklchColor,
 } from "./types";
 
-export function sampleImageData(imageData: ImageData): OklchColor {
-  const data = imageData.data;
-  const len = data.length;
-  const numBins = 24;
-  const binAngle = 360 / numBins;
+interface HueBin {
+  cos: number;
+  sin: number;
+  sumC: number;
+  sumL: number;
+  weight: number;
+}
 
-  const bins = Array.from({ length: numBins }, () => ({
-    count: 0,
+/**
+ * Picks the most representative accent of an image.
+ *
+ * Pixels vote for their hue with a weight that grows with chroma (vivid pixels
+ * beat muddy ones) and fades toward very dark / very light pixels. Images
+ * without meaningful colour resolve to a neutral (`c: 0`) instead of an
+ * invented hue.
+ */
+export function sampleImageData(imageData: ImageData): OklchColor {
+  const { hueBins, minPixelChroma, minPresence } = COLOR_EXTRACT_CONFIG;
+  const data = imageData.data;
+  const binAngle = 360 / hueBins;
+
+  const bins: HueBin[] = Array.from({ length: hueBins }, () => ({
+    cos: 0,
+    sin: 0,
     sumC: 0,
-    sumCos: 0,
     sumL: 0,
-    sumSin: 0,
+    weight: 0,
   }));
 
-  let neutralCount = 0;
-  let neutralSumL = 0;
+  let opaqueCount = 0;
+  let opaqueSumL = 0;
   let chromaticCount = 0;
+  let midNeutralCount = 0;
 
-  for (let i = 0; i < len; i += 4) {
-    const alpha = data[i + 3];
-    if (alpha < 128) continue;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
 
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
+    const { c, h, l } = rgbToOklch(data[i], data[i + 1], data[i + 2]);
+    opaqueCount++;
+    opaqueSumL += l;
 
-    const oklch = rgbToOklch(r, g, b);
+    // Near-black / near-white pixels carry unreliable hue, ignore them.
+    if (l < 0.06 || l > 0.96) continue;
 
-    if (oklch.l < 0.04 || oklch.l > 0.96 || oklch.c < 0.02) {
-      neutralCount++;
-      neutralSumL += oklch.l;
+    if (c < minPixelChroma) {
+      midNeutralCount++;
       continue;
     }
 
-    const binIndex = Math.floor(oklch.h / binAngle) % numBins;
-    const rad = oklch.h * (Math.PI / 180);
+    const usable = 1 - 0.7 * Math.min(1, Math.abs(l - 0.62) / 0.62);
+    const weight = c * c * usable;
+    const rad = h * (Math.PI / 180);
+    const bin = bins[Math.floor(h / binAngle) % hueBins];
 
-    const bin = bins[binIndex];
-    bin.count++;
-    bin.sumL += oklch.l;
-    bin.sumC += oklch.c;
-    bin.sumCos += Math.cos(rad);
-    bin.sumSin += Math.sin(rad);
+    bin.weight += weight;
+    bin.sumC += c * weight;
+    bin.sumL += l * weight;
+    bin.cos += Math.cos(rad) * weight;
+    bin.sin += Math.sin(rad) * weight;
     chromaticCount++;
   }
 
-  if (chromaticCount === 0) {
-    const avgL = neutralCount > 0 ? neutralSumL / neutralCount : 0.55;
-    return { c: 0.03, h: 252, l: avgL };
-  }
+  const averageL = opaqueCount > 0 ? opaqueSumL / opaqueCount : 0.5;
+  const neutral: OklchColor = { c: 0, h: 0, l: Number(averageL.toFixed(3)) };
+
+  // Share of coloured pixels among the pixels that could have been coloured.
+  const presence = chromaticCount / Math.max(1, chromaticCount + midNeutralCount);
+  if (chromaticCount === 0 || presence < minPresence) return neutral;
 
   let bestIndex = 0;
-  let maxWindowCount = -1;
-
-  for (let i = 0; i < numBins; i++) {
-    const prev = bins[(i - 1 + numBins) % numBins];
-    const curr = bins[i];
-    const next = bins[(i + 1) % numBins];
-    const windowCount = prev.count * 0.5 + curr.count + next.count * 0.5;
-
-    if (windowCount > maxWindowCount) {
-      maxWindowCount = windowCount;
+  let bestScore = -1;
+  for (let i = 0; i < hueBins; i++) {
+    const prev = bins[(i - 1 + hueBins) % hueBins];
+    const next = bins[(i + 1) % hueBins];
+    const score = prev.weight * 0.5 + bins[i].weight + next.weight * 0.5;
+    if (score > bestScore) {
+      bestScore = score;
       bestIndex = i;
     }
   }
 
-  const prev = bins[(bestIndex - 1 + numBins) % numBins];
-  const curr = bins[bestIndex];
-  const next = bins[(bestIndex + 1) % numBins];
+  const window = [
+    bins[(bestIndex - 1 + hueBins) % hueBins],
+    bins[bestIndex],
+    bins[(bestIndex + 1) % hueBins],
+  ];
+  const weight = window.reduce((sum, bin) => sum + bin.weight, 0);
+  if (weight === 0) return neutral;
 
-  const totalCount = prev.count + curr.count + next.count;
-  if (totalCount === 0) {
-    return { c: 0.19, h: 252, l: 0.55 };
-  }
+  const sumC = window.reduce((sum, bin) => sum + bin.sumC, 0);
+  const sumL = window.reduce((sum, bin) => sum + bin.sumL, 0);
+  const sin = window.reduce((sum, bin) => sum + bin.sin, 0);
+  const cos = window.reduce((sum, bin) => sum + bin.cos, 0);
 
-  const avgL = (prev.sumL + curr.sumL + next.sumL) / totalCount;
-  const avgC = (prev.sumC + curr.sumC + next.sumC) / totalCount;
-  const avgSin = prev.sumSin + curr.sumSin + next.sumSin;
-  const avgCos = prev.sumCos + curr.sumCos + next.sumCos;
-  const avgH = (Math.atan2(avgSin, avgCos) * (180 / Math.PI) + 360) % 360;
+  // A small coloured accent on a mostly neutral image is kept, but subdued.
+  const dilution = 0.45 + 0.55 * Math.min(1, presence / 0.3);
 
   return {
-    c: Number(avgC.toFixed(3)),
-    h: Number(avgH.toFixed(1)),
-    l: Number(avgL.toFixed(3)),
+    c: Number(((sumC / weight) * dilution).toFixed(3)),
+    h: Number(((Math.atan2(sin, cos) * (180 / Math.PI) + 360) % 360).toFixed(1)),
+    l: Number((sumL / weight).toFixed(3)),
   };
 }
 

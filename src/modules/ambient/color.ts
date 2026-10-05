@@ -2,13 +2,18 @@ import type { AmbientPalette, OklchColor } from "./types";
 
 export const COLOR_EXTRACT_CONFIG = Object.freeze({
   blackChromaFactor: 0.35,
-  primaryLightness: 0.74,
-  maxBlackChroma: 0.055,
   blackLightness: 0.15,
   cacheLimit: 100,
+  chromaGain: 9.4,
+  hueBins: 36,
+  maxBlackChroma: 0.055,
   maxChroma: 0.28,
-  minChroma: 0.03,
-  sampleSize: 32,
+  maxPrimaryChroma: 0.24,
+  minPixelChroma: 0.03,
+  minPresence: 0.04,
+  neutralChroma: 0.012,
+  primaryLightness: 0.74,
+  sampleSize: 64,
 } as const);
 
 export function srgbToLinear(c: number): number {
@@ -59,27 +64,40 @@ export function oklchToString(
   return `oklch(${safeL} ${safeC} ${safeH})`;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 export function derivePalette(sampled: OklchColor): AmbientPalette {
   const {
     blackChromaFactor,
     blackLightness,
+    chromaGain,
     maxBlackChroma,
     maxChroma,
-    minChroma,
+    maxPrimaryChroma,
+    neutralChroma,
     primaryLightness,
   } = COLOR_EXTRACT_CONFIG;
-  const chroma = Math.max(minChroma, Math.min(maxChroma, sampled.c));
-  const blackChroma = Math.min(
-    maxBlackChroma,
-    Math.max(0.025, chroma * blackChromaFactor),
-  );
-  const primaryChroma = Math.max(
-    0.15,
-    Math.min(0.24, Math.max(chroma * 1.15, 0.18)),
+
+  // Neutral sources stay neutral: no hue is invented for them.
+  const chroma = sampled.c < neutralChroma ? 0 : clamp(sampled.c, 0, maxChroma);
+  const hue = chroma === 0 ? 0 : sampled.h;
+
+  // Saturating curve: muted images give muted accents, vivid ones stay vivid.
+  const primaryChroma =
+    maxPrimaryChroma * (1 - Math.exp(-chroma * chromaGain));
+  const primaryL = clamp(
+    primaryLightness + (sampled.l - 0.6) * 0.5,
+    0.6,
+    0.86,
   );
 
+  const blackChroma = Math.min(maxBlackChroma, chroma * blackChromaFactor);
+  const blackL = clamp(blackLightness + (sampled.l - 0.6) * 0.06, 0.12, 0.18);
+
   return {
-    black: oklchToString(blackLightness, blackChroma, sampled.h),
-    primary: oklchToString(primaryLightness, primaryChroma, sampled.h),
+    black: oklchToString(blackL, blackChroma, hue),
+    primary: oklchToString(primaryL, primaryChroma, hue),
   };
 }

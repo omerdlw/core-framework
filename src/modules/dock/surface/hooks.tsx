@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
   useId,
   useState,
+  type ComponentType,
   type RefObject,
   type ReactNode,
 } from "react";
@@ -21,6 +22,7 @@ import {
 } from "motion/react";
 import {
   DockSurfaceShellProps,
+  type DockComponentProps,
   type DockScheduledTaskId,
   type DockScheduler,
   type DockSurfaceActions,
@@ -69,6 +71,7 @@ import {
   dockSurfaceBodyRole,
 } from "../motion";
 import { report } from "@/utils";
+import { useIsomorphicLayoutEffect } from "@/hooks";
 
 export function useSurfaceFlows({
   closeSurface,
@@ -415,7 +418,7 @@ export function useDockSurfaceControlsModel({
       phase === DOCK_SURFACE_PHASE.OPEN
     : true;
   const actionStore = use(SurfaceExtensionsContext)?.headerActions ?? null;
-  const surfaceId = activeItem?.surfaceId || "global";
+  const surfaceId = activeItem?.surfaceId || "active";
   const subscribeAction = useCallback(
     (onStoreChange: () => void) =>
       actionStore ? actionStore.subscribe(onStoreChange) : () => {},
@@ -455,15 +458,19 @@ export function useDockSurfaceExtension({
   align = "left",
   children,
   className = "",
+  component,
   id,
   order = 0,
+  props: extensionProps,
   unstyled = false,
 }: {
   align?: string;
   children?: ReactNode;
   className?: string;
+  component?: ComponentType<DockComponentProps> | null;
   id?: string;
   order?: number;
+  props?: DockComponentProps;
   unstyled?: boolean;
 }) {
   const store = use(SurfaceExtensionsContext)?.extensions ?? null;
@@ -471,21 +478,32 @@ export function useDockSurfaceExtension({
   const generatedId = useId();
   const effectiveId = id || `dock-surface-ext-${generatedId}`;
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!store) return;
-    store.setExtension(surfaceId, {
+    const extension = {
       align,
       className,
+      component: component ?? null,
       content: children,
       id: effectiveId,
       order,
+      props: extensionProps ?? {},
       unstyled,
-    });
+    };
+    store.setExtension(surfaceId, extension);
+    if (surfaceId && surfaceId !== "active") {
+      store.setExtension("active", extension);
+    }
   });
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     return () => {
-      if (store) store.removeExtension(surfaceId, effectiveId);
+      if (store) {
+        store.removeExtension(surfaceId, effectiveId);
+        if (surfaceId && surfaceId !== "active") {
+          store.removeExtension("active", effectiveId);
+        }
+      }
     };
   }, [store, surfaceId, effectiveId]);
 }
@@ -494,7 +512,7 @@ export function useIsSurfaceExtensionsVisible(
   activeItem: DockItem | null | undefined,
 ): boolean {
   const store = use(SurfaceExtensionsContext)?.extensions ?? null;
-  const surfaceId = activeItem?.surfaceId || "global";
+  const surfaceId = activeItem?.surfaceId || "active";
   const isSurface = Boolean(activeItem?.isSurface);
   const phase = activeItem?.surfacePhase;
   const isBodyVisible =
@@ -518,7 +536,8 @@ export function useIsSurfaceExtensionsVisible(
   }, [activeItem?.surfaceExtensions, activeItem?.extensions]);
 
   return Boolean(
-    isSurface && isBodyVisible && (dynamicCount > 0 || descriptorCount > 0),
+    isSurface &&
+      ((isBodyVisible && dynamicCount > 0) || descriptorCount > 0),
   );
 }
 
@@ -528,7 +547,7 @@ export function useDockSurfaceExtensionsBarModel({
   activeItem?: DockItem | null;
 }) {
   const store = use(SurfaceExtensionsContext)?.extensions ?? null;
-  const surfaceId = activeItem?.surfaceId || "global";
+  const surfaceId = activeItem?.surfaceId || "active";
   const subscribe = useCallback(
     (onStoreChange: () => void) =>
       store ? store.subscribe(onStoreChange) : () => {},

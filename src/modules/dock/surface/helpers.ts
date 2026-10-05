@@ -48,9 +48,9 @@ export function normalizeSurfaceExtension(
     ? extension.component
     : null;
   const content =
-    isValidElement(extension.content) ||
-    typeof extension.content === "string" ||
-    typeof extension.content === "number"
+    (isValidElement(extension.content) ||
+      (typeof extension.content === "string" && extension.content !== "") ||
+      typeof extension.content === "number")
       ? extension.content
       : null;
 

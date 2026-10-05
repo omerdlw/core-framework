@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
 } from "react";
+import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
 import {
   type NormalizedSurfaceExtension,
@@ -17,15 +18,15 @@ import { normalizeSurfaceExtension } from "./helpers";
 
 export type SurfaceKey = SurfaceId | string | null | undefined;
 
-export const SurfaceExtensionsContext = createContext<{
+export const SurfaceExtensionsContext = getOrCreateGlobalContext<{
   extensions: SurfaceExtensionsStore;
   headerActions: SurfaceHeaderActionStore;
-} | null>(null);
+} | null>("SurfaceExtensionsContext", null);
 
-export const SurfaceItemContext = createContext<{
+export const SurfaceItemContext = getOrCreateGlobalContext<{
   id: SurfaceKey;
   width: number | string | null;
-}>({
+}>("SurfaceItemContext", {
   id: null,
   width: null,
 });
@@ -83,13 +84,13 @@ export class SurfaceHeaderActionStore {
   subscribe = (listener: () => void) => this.store.subscribe(listener);
 
   getAction = (surfaceId: SurfaceKey) => {
-    const sId = surfaceId != null ? String(surfaceId) : "global";
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     const { actionsBySurface } = this.store.getSnapshot();
-    return actionsBySurface[sId] ?? actionsBySurface.global ?? null;
+    return actionsBySurface[sId] ?? actionsBySurface.active ?? actionsBySurface.global ?? null;
   };
 
   setAction = (surfaceId: SurfaceKey, action: DockSlotContent) => {
-    const sId = surfaceId != null ? String(surfaceId) : "global";
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     const current = this.store.getSnapshot();
     if (current.actionsBySurface[sId] === action) return;
     this.store.setState({
@@ -102,7 +103,7 @@ export class SurfaceHeaderActionStore {
   };
 
   removeAction = (surfaceId: SurfaceKey) => {
-    const sId = surfaceId != null ? String(surfaceId) : "global";
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     const current = this.store.getSnapshot();
     if (!(sId in current.actionsBySurface)) return;
     const { [sId]: _, ...nextActions } = current.actionsBySurface;
@@ -137,20 +138,44 @@ export class SurfaceExtensionsStore {
   getExtensionsForSurface = (
     surfaceId: SurfaceKey,
   ): NormalizedSurfaceExtension[] => {
-    const sId = surfaceId != null ? String(surfaceId) : "global";
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     if (this.cachedListBySurface.has(sId))
       return this.cachedListBySurface.get(sId)!;
 
     const globalExts = this.extensionsBySurface.get("global");
-    const surfaceExts = this.extensionsBySurface.get(sId);
+    const activeExts = this.extensionsBySurface.get("active");
+    const surfaceExts =
+      sId !== "global" && sId !== "active"
+        ? this.extensionsBySurface.get(sId)
+        : undefined;
 
-    if (!globalExts && !surfaceExts) {
+    let fallbackExts: Map<string, NormalizedSurfaceExtension> | undefined;
+    if (
+      !globalExts &&
+      !activeExts &&
+      !surfaceExts &&
+      this.extensionsBySurface.size > 0
+    ) {
+      for (const map of this.extensionsBySurface.values()) {
+        if (map.size > 0) {
+          fallbackExts = map;
+          break;
+        }
+      }
+    }
+
+    if (!globalExts && !activeExts && !surfaceExts && !fallbackExts) {
       const empty: NormalizedSurfaceExtension[] = [];
       this.cachedListBySurface.set(sId, empty);
       return empty;
     }
 
-    const merged = new Map([...(globalExts || []), ...(surfaceExts || [])]);
+    const merged = new Map([
+      ...(globalExts || []),
+      ...(activeExts || []),
+      ...(surfaceExts || []),
+      ...(fallbackExts || []),
+    ]);
     const result = Array.from(merged.values()).sort(
       (a, b) => a.order - b.order,
     );
@@ -163,7 +188,7 @@ export class SurfaceExtensionsStore {
     const normalized = normalizeSurfaceExtension(extension);
     if (!normalized) return;
 
-    const sId = surfaceId != null ? String(surfaceId) : "global";
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     let surfaceMap = this.extensionsBySurface.get(sId);
     if (!surfaceMap) {
       surfaceMap = new Map();
@@ -189,19 +214,24 @@ export class SurfaceExtensionsStore {
 
   removeExtension = (surfaceId: SurfaceKey, extensionId: string) => {
     if (!extensionId) return;
-    const sId = surfaceId != null ? String(surfaceId) : "global";
-    const surfaceMap = this.extensionsBySurface.get(sId);
-    if (!surfaceMap || !surfaceMap.has(extensionId)) return;
-
-    surfaceMap.delete(extensionId);
-    if (surfaceMap.size === 0) this.extensionsBySurface.delete(sId);
-    this.notify();
+    const sId = surfaceId != null ? String(surfaceId) : "active";
+    let removed = false;
+    for (const [key, map] of this.extensionsBySurface.entries()) {
+      if (key === sId || key === "active" || key === "global") {
+        if (map.has(extensionId)) {
+          map.delete(extensionId);
+          if (map.size === 0) this.extensionsBySurface.delete(key);
+          removed = true;
+        }
+      }
+    }
+    if (removed) this.notify();
   };
 
   clearSurface = (surfaceId: SurfaceKey) => {
-    const sId = surfaceId != null ? String(surfaceId) : "global";
-    if (!this.extensionsBySurface.has(sId)) return;
+    const sId = surfaceId != null ? String(surfaceId) : "active";
     this.extensionsBySurface.delete(sId);
+    this.extensionsBySurface.delete("active");
     this.notify();
   };
 }
