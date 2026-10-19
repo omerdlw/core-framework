@@ -100,6 +100,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
+Wrap `CoreProvider` in `<ThemeProvider themes={…} motion={…}>`. Your themes style every module, and the modules that animate (dock, modal, notification, context menu, background) also take their **motion** from those themes. Copy the framework's `templates/motion/` into your app to start from its original motion, and see [`theming.md` §4–5](./theming.md#5-motion-your-app-owns-every-animation).
+
 Then wrap your Root Layout in `src/app/layout.tsx`:
 
 ```tsx
@@ -183,12 +185,12 @@ export default function HomePage() {
 | `@omerdlw/base-framework/modules/*` | 9 UI modules | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc. |
 | `@omerdlw/base-framework/result` | Functional error handling | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()` |
 | `@omerdlw/base-framework/events` | Cross-cutting event bus | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap` |
-| `@omerdlw/base-framework/theme` | Declarative theme engine | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()` |
+| `@omerdlw/base-framework/theme` | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()` |
 | `@omerdlw/base-framework/atoms` | Unstyled accessible UI atoms | `Button`, `Icon`, `Spinner`, `Tooltip` |
 | `@omerdlw/base-framework/hooks` | Universal React hooks | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()` |
 | `@omerdlw/base-framework/utils` | Pure runtime utilities | `cn()`, `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()` |
 | `@omerdlw/base-framework/error` | Isolated error boundaries | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()` |
-| `@omerdlw/base-framework/tokens` | Design & motion tokens | `DURATION_TOKENS`, `EASING_CURVES`, `SPRING_PRESETS`, `Z_INDEX` |
+| `@omerdlw/base-framework/tokens` | Design & motion tokens | `defineMotion`, `Z_INDEX`, `gpuTransform`, motion builders |
 
 ---
 

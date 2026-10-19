@@ -3,6 +3,7 @@ import { defineThemeSpec } from "@/theme";
 import {
   type NotificationActions,
   type NotificationState,
+  type NotificationMotion,
   type NotificationThemeSlot,
 } from "./types";
 
@@ -16,7 +17,7 @@ export const SESSION_EXPIRED_MESSAGE = USER_MESSAGES.unauthorized;
 export const DOCK_STACK_ELEMENT_ID = "dock-card-stack";
 
 export const notificationTheme =
-  defineThemeSpec<NotificationThemeSlot>("notification");
+  defineThemeSpec<NotificationThemeSlot, NotificationMotion>("notification");
 
 export const INITIAL_NOTIFICATION_STATE: NotificationState = Object.freeze({
   notifications: {},

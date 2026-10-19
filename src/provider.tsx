@@ -3,6 +3,7 @@
 import { useMemo, type JSX, type ReactNode } from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { GlobalError, GlobalErrorListener, ModuleError } from "@/error";
+import { ModuleMotionConfig } from "@/theme";
 import {
   Compose,
   ModuleHost,
@@ -20,6 +21,22 @@ interface CoreProviderSlots {
   afterContent?: ReactNode;
   beforeContent?: ReactNode;
   overlays?: ReactNode;
+}
+
+// Every module's backdrop and overlay plays under the app's reduced-motion
+// policy; app content outside the modules keeps its own motion settings.
+function ModuleBoundary({
+  children,
+  name,
+}: {
+  children?: ReactNode;
+  name?: string;
+}): JSX.Element {
+  return (
+    <ModuleError name={name}>
+      <ModuleMotionConfig>{children}</ModuleMotionConfig>
+    </ModuleError>
+  );
 }
 
 export interface CoreProviderProps {
@@ -60,7 +77,7 @@ export function CoreProvider({
       ...(tooltipConfig
         ? [[TooltipPrimitive.Provider, tooltipConfig] as const]
         : []),
-      [ModuleHost, { boundary: ModuleError, modules, registryEntries }],
+      [ModuleHost, { boundary: ModuleBoundary, modules, registryEntries }],
       ...(providers ?? []),
     ],
     [modules, providers, registryEntries, tooltipConfig],

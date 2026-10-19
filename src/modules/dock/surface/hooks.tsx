@@ -62,14 +62,7 @@ import {
 } from "./context";
 import { normalizeSurfaceExtension } from "./helpers";
 import { useDockFocusTrap } from "../dom";
-import {
-  DOCK_SURFACE_BODY_ENTER_TRANSITION,
-  DOCK_SURFACE_BODY_EXIT_TRANSITION,
-  DOCK_SURFACE_BODY_STEP_TRANSITION,
-  DOCK_SURFACE_DRAG_INTERPOLATION,
-  DOCK_SURFACE_DRAG_THRESHOLDS,
-  dockSurfaceBodyRole,
-} from "../motion";
+import { DOCK_SURFACE_DRAG_THRESHOLDS, useDockMotion } from "../motion";
 import { report } from "@/utils";
 import { useIsomorphicLayoutEffect } from "@/hooks";
 
@@ -580,12 +573,6 @@ export function useDockSurfaceExtensionsBarModel({
   return { allExtensions };
 }
 
-const DRAG_RANGE = [...DOCK_SURFACE_DRAG_INTERPOLATION.DRAG_RANGE];
-
-const OPACITY_RANGE = [...DOCK_SURFACE_DRAG_INTERPOLATION.OPACITY_RANGE];
-
-const SCALE_RANGE = [...DOCK_SURFACE_DRAG_INTERPOLATION.SCALE_RANGE];
-
 export function useDockSurfaceShellModel({
   ref,
   title = "",
@@ -616,9 +603,18 @@ export function useDockSurfaceShellModel({
   const isFullyOpen = surfacePhase === DOCK_SURFACE_PHASE.OPEN;
   const titleId =
     surfaceId == null ? undefined : `dock-surface-title-${surfaceId}`;
+  const dockMotion = useDockMotion();
+  const dragRanges = useMemo(
+    () => ({
+      opacity: [...dockMotion.drag.opacity],
+      range: [...dockMotion.drag.range],
+      scale: [...dockMotion.drag.scale],
+    }),
+    [dockMotion.drag],
+  );
   const dragY = useMotionValue(0);
-  const dragOpacity = useTransform(dragY, DRAG_RANGE, OPACITY_RANGE);
-  const dragScale = useTransform(dragY, DRAG_RANGE, SCALE_RANGE);
+  const dragOpacity = useTransform(dragY, dragRanges.range, dragRanges.opacity);
+  const dragScale = useTransform(dragY, dragRanges.range, dragRanges.scale);
   useDockFocusTrap({
     containerRef: surfaceElementRef,
     enabled: isActive && isFullyOpen,
@@ -665,23 +661,24 @@ export function useDockSurfaceShellModel({
     surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY ||
     surfacePhase === DOCK_SURFACE_PHASE.OPEN;
   const resolvedSurfaceId = surfaceId || "active";
-  const bodyVariants = useMemo(
-    () => ({
-      hidden: dockSurfaceBodyRole.hidden,
+  const bodyVariants = useMemo(() => {
+    const { surfaceBody } = dockMotion.variants;
+    const { surfaceEnter, surfaceExit, surfaceStep } = dockMotion.transitions;
+    return {
+      hidden: surfaceBody.hidden,
       visible: {
-        ...dockSurfaceBodyRole.visible,
+        ...(surfaceBody.visible as object),
         transition:
           surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY
-            ? DOCK_SURFACE_BODY_ENTER_TRANSITION
-            : DOCK_SURFACE_BODY_STEP_TRANSITION,
+            ? surfaceEnter
+            : surfaceStep,
       },
       exit: {
-        ...dockSurfaceBodyRole.exit,
-        transition: DOCK_SURFACE_BODY_EXIT_TRANSITION,
+        ...(surfaceBody.exit as object),
+        transition: surfaceExit,
       },
-    }),
-    [surfacePhase],
-  );
+    };
+  }, [dockMotion, surfacePhase]);
   const surfaceItemValue = useMemo(
     () => ({ id: resolvedSurfaceId, width: surfaceWidth }),
     [resolvedSurfaceId, surfaceWidth],

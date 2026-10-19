@@ -191,7 +191,7 @@ No classes or colors in the module except the two z-indexes. Slots in `modalThem
 
 `data-layout` is one of `center`, `top`, `bottom`, `left`, `right`, `top-mobile`, `bottom-mobile`, `side-mobile` (`getModalLayout`), so each position/viewport combination is a single selector.
 
-Motion (`motion.ts`: backdrop, per-position panel variants/transitions, header/body/footer variants) is derived from `@omerdlw/base-framework/tokens` ([Rule 4](../architecture-and-rules.md)). Use `Z_INDEX` for anything layered above or below a modal ([Rule 5](../architecture-and-rules.md)).
+Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): the `backdrop`, and the `content`, `header` and `footer` rows of a `ModalContainer`, plus `positions`, the dialog's variants per position (`center`, `top`, `right`, `bottom`, `left`) with an optional own `transition` (the starter gives `center` a spring). A theme without motion throws `Motion for theme "modal" is missing…`. Start from `templates/motion/modal.ts`. Use `Z_INDEX` for anything layered above or below a modal ([Rule 5](../architecture-and-rules.md)).
 
 ## 8. Recipes and gotchas
 
@@ -223,7 +223,7 @@ Motion (`motion.ts`: backdrop, per-position panel variants/transitions, header/b
 | `context.tsx`  | `ModalProvider` (stack, pending promises, actions), `useModal*` hooks, registry lookup.                                               |
 | `hooks.ts`     | View models: `useModalModel` (visibility, viewport, scroll lock), `useModalLayerModel` (focus, Esc), `useModalContainerModel`.        |
 | `overlay.tsx`  | `Modal`, `ModalLayer`, `ModalContainer`, switcher, close button.                                                                      |
-| `motion.ts`    | Backdrop, panel, header, content and footer motion.                                                                                   |
+| `motion.ts`    | `useModalMotion`, `getModalPositionMotion`, compositor hints. The values come from the app's modal theme.                             |
 | `module.tsx`   | `modalModule`, lazy renderer, page API, `defineModal`, kernel type augmentation.                                                      |
 
 ## 10. Dependencies

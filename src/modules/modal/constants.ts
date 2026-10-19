@@ -1,5 +1,5 @@
 import { defineThemeSpec } from "@/theme";
-import { type ModalThemeSlot } from "./types";
+import { type ModalMotion, type ModalThemeSlot } from "./types";
 
 export const MODAL_POSITIONS = Object.freeze({
   BOTTOM: "bottom",
@@ -25,4 +25,4 @@ export const FOCUSABLE_SELECTOR =
 
 export const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
 
-export const modalTheme = defineThemeSpec<ModalThemeSlot>("modal");
+export const modalTheme = defineThemeSpec<ModalThemeSlot, ModalMotion>("modal");

@@ -65,7 +65,15 @@ registerHooks({
     }
 
     let basePath = null;
-    if (specifier.startsWith("@/core/")) {
+    // The starter templates import the framework the way an app does.
+    if (specifier === "@omerdlw/base-framework") {
+      basePath = path.join(SRC_ROOT, "index");
+    } else if (specifier.startsWith("@omerdlw/base-framework/")) {
+      basePath = path.join(
+        SRC_ROOT,
+        specifier.slice("@omerdlw/base-framework/".length),
+      );
+    } else if (specifier.startsWith("@/core/")) {
       basePath = path.join(SRC_ROOT, specifier.slice(7));
     } else if (specifier.startsWith("@/")) {
       basePath = path.join(SRC_ROOT, specifier.slice(2));

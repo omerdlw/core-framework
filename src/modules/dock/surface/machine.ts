@@ -20,11 +20,11 @@ import {
   type SurfaceTransitionEvent,
   type SurfaceTransitionResult,
   type SurfaceTransitionState,
+  type DockSurfaceTimings,
 } from "../types";
 import { normalizeSurfaceFlowSnapshot } from "./helpers";
 import { createDockScheduler } from "../helpers";
 import { DOCK_SURFACE_PHASE, DOCK_LIFECYCLE } from "../constants";
-import { DOCK_SURFACE_CHOREOGRAPHY_TIMINGS } from "../motion";
 import { report } from "@/utils";
 
 export interface SurfaceRecord {
@@ -373,12 +373,13 @@ function createTransitionResult(
   return { state, effects: [...effects] };
 }
 
+// Phase timings are the app's, in seconds; the scheduler counts whole ms.
 function createScheduledTransition(
-  delayMs: number,
+  seconds: number,
   label: string,
 ): SurfaceTransitionEffect {
   return {
-    delayMs: Math.max(0, Number(delayMs) || 0),
+    delayMs: Math.max(0, Math.round((Number(seconds) || 0) * 1000)),
     event: { type: SURFACE_TRANSITION_EVENTS.ADVANCE },
     label,
     type: SURFACE_TRANSITION_EFFECTS.SCHEDULE,
@@ -432,7 +433,8 @@ export function createSurfaceTransitionState(
 
 export function transitionSurface(
   currentState: Partial<SurfaceTransitionState> | null,
-  event: Partial<SurfaceTransitionEvent> = {},
+  event: Partial<SurfaceTransitionEvent>,
+  timings: DockSurfaceTimings,
 ): SurfaceTransitionResult {
   const state = createSurfaceTransitionState(currentState);
   switch (event.type) {
@@ -455,13 +457,12 @@ export function transitionSurface(
           ? DOCK_LIFECYCLE.OPEN
           : DOCK_LIFECYCLE.OPENING,
       });
-      const holdMs = event.skipActionDismiss
-        ? DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.ANTICIPATION_LEAD_MS
-        : DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.ACTION_DISMISS_MS -
-          DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.ACTION_DISMISS_OVERLAP_MS;
+      const hold = event.skipActionDismiss
+        ? timings.anticipation
+        : timings.dismissAction;
       const effects = isStacked
         ? [Object.freeze({ surfaceId, type: SURFACE_TRANSITION_EFFECTS.MOUNT })]
-        : [createScheduledTransition(holdMs, "surface:dismiss-action")];
+        : [createScheduledTransition(hold, "surface:dismiss-action")];
       return createTransitionResult(nextState, effects);
     }
 
@@ -497,7 +498,7 @@ export function transitionSurface(
         }),
         [
           createScheduledTransition(
-            DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.ANTICIPATION_LEAD_MS,
+            timings.anticipation,
             "surface:close-anticipation",
           ),
         ],
@@ -516,7 +517,7 @@ export function transitionSurface(
             }),
             [
               createScheduledTransition(
-                DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.ANTICIPATION_LEAD_MS,
+                timings.anticipation,
                 "surface:close-all-anticipation",
               ),
             ],
@@ -531,8 +532,7 @@ export function transitionSurface(
           }),
           [
             createScheduledTransition(
-              DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_EXIT_MS +
-                DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_COLLAPSE_SETTLE_MS,
+              timings.collapseBody,
               "surface:collapse-body",
             ),
           ],
@@ -551,7 +551,7 @@ export function transitionSurface(
               type: SURFACE_TRANSITION_EFFECTS.MOUNT,
             }),
             createScheduledTransition(
-              DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_ENTER_MS,
+              timings.expandBody,
               "surface:expand-body",
             ),
           ],
@@ -568,7 +568,7 @@ export function transitionSurface(
       }
       if (
         state.phase === DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
-        DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS > 0
+        timings.restoreHeader > 0
       ) {
         return createTransitionResult(
           freezeSurfaceTransitionState({
@@ -577,7 +577,7 @@ export function transitionSurface(
           }),
           [
             createScheduledTransition(
-              DOCK_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS,
+              timings.restoreHeader,
               "surface:restore-header",
             ),
           ],
@@ -621,6 +621,7 @@ export function runSurfaceTransition({
   onTransition = () => {},
   scheduler = createDockScheduler(),
   state,
+  timings,
 }: {
   event?: SurfaceTransitionEvent;
   onEffect?: (
@@ -633,7 +634,8 @@ export function runSurfaceTransition({
   ) => void;
   scheduler?: DockScheduler;
   state?: Partial<SurfaceTransitionState> | null;
-} = {}) {
+  timings: DockSurfaceTimings;
+}) {
   let currentState = createSurfaceTransitionState(state ?? null);
   let pendingEvent: SurfaceTransitionEvent | null = null;
   let pendingTaskId: DockScheduledTaskId | null = null;
@@ -650,7 +652,7 @@ export function runSurfaceTransition({
     synchronous = false,
   ) => {
     if (stopped || !nextEvent) return currentState;
-    const result = transitionSurface(currentState, nextEvent);
+    const result = transitionSurface(currentState, nextEvent, timings);
     currentState = result.state;
     onTransition(currentState, nextEvent);
 

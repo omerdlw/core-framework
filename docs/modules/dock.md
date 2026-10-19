@@ -220,7 +220,7 @@ Everything below is exported from `@omerdlw/base-framework/modules/dock`. Anythi
 | `DockCardHeader`, `DockCardBanner`, `DockIcon`, `DockTitle`, `DockDescription`              | The same pieces the route card uses.                                                                                                                                                                                                                                                                                      |
 | `useDockActionClass()`                                                                      | Returns `(options?) ⇒ className` for buttons that must look like dock actions (`variant`, `className`, `tone`). Needs the theme.                                                                                                                                                                                          |
 | `isValidBannerUrl(value)`                                                                   | Banner URL guard (rejects unsafe/empty values).                                                                                                                                                                                                                                                                           |
-| `DOCK_FADE_TRANSITION`, `dockFadeVariants`, `dockListItemVariants`, `textCrossfadeVariants` | The only motion presets surface content should use ([Rule 4](../architecture-and-rules.md)).                                                                                                                                                                                                                              |
+| `useDockMotion()`                                                                           | The app's dock motion (retimed by its tempo, or reduced), for surface content that should move like the dock: `useDockMotion().variants.fade`, `.transitions.text`, …                                                                                                                                                     |
 | `dockTheme`                                                                                 | The theme spec (for `defineTheme`).                                                                                                                                                                                                                                                                                       |
 | Types                                                                                       | `DockItem`, `DockPageConfig`, `DockPageApi`, `DockActions`, `DockState`, `DockActionDescriptor`, `SurfaceDescriptor` / `SurfaceEntry`, `SurfaceStep`, `SurfaceResult`, `SurfaceFlowDefinitionInput`, `DockHudDescriptor`, `DockOperation`, `DockGuardDefinition`, `BreadcrumbConfig`, … (`export type * from "./types"`). |
 
@@ -409,12 +409,13 @@ Imperative equivalents on `DockActions`: `openSurfaceFlow(def, input)`, `restore
 
 ```tsx
 function InviteForm({ close }) {
+  const dockMotion = useDockMotion();
   return (
     <>
       <DockSurfaceHeaderButton icon="solar:question-circle-bold" onClick={openHelp} />
       <DockSurfaceExtension id="invite-tabs" align="center"><Tabs … /></DockSurfaceExtension>
       <DockSurfaceAction><Button onClick={() => close({ success: true })}>Send</Button></DockSurfaceAction>
-      <motion.ul variants={dockFadeVariants} initial="hidden" animate="visible">…</motion.ul>
+      <motion.ul variants={dockMotion.variants.fade} initial="hidden" animate="visible">…</motion.ul>
     </>
   );
 }
@@ -663,7 +664,9 @@ Reserve space with `useDockHeight().padding` or `padding-bottom: var(--dock-h)`.
 
 The module contains **no design classes**. Every slot comes from `dockTheme` (`src/config/dock.module.theme.ts`, 101 slots, named after the component that renders them): `stack`, `backdrop`, `card*`, `banner*`, `header*`, `title*`, `description*`, `icon*` (incl. `iconBadge`, `iconOverlay*`), `command*`, `status*`, `surface*`, `control*` (incl. `controlHeaderButton`), `extension*`, `scrubber*`, `media*`, `breadcrumbs*`, `loading*`, `action*`. State variants are `data-*` modifiers on the slot itself (`data-placement`, `data-blur`, `data-shelf`, `data-anchored`, `data-ghost`, `data-fill`, `data-active`, `data-banner`, `data-multiline`, `data-interactive`, `data-text`); the header of `src/config/dock.module.theme.ts` lists them. `styles` can add inline CSS per slot (z-index, banner masks, stack size/radius).
 
-Stays in code: stack motion (offsets, scale, opacity), measured geometry, per-position z-index (`Z_INDEX.DOCK_CARD_STACK_BASE − position`), compositor hints, the skeleton pulse class. All motion presets derive from `@omerdlw/base-framework/tokens` ([Rule 4](../architecture-and-rules.md)). The theme is **required**: a missing theme throws `Theme "dock" is missing…`.
+The theme also carries the dock's **motion** (`motion: DockMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): every transition and variant, the deck's elevation, compression, peek and card exit, the swipe-to-dismiss feel, the skeleton class, and `timings`, which hold how long each surface phase lasts (`dismissAction`, `anticipation`, `expandBody`, `collapseBody`, `restoreHeader`) plus the card staggers, in seconds. The surface state machine schedules its phases from those timings, so they follow the app's tempo with everything else. Start from `templates/motion/dock.ts`, the dock's original motion.
+
+Stays in code: measured geometry and stack layout (card offsets and scales per position, the breadcrumb lift), per-position z-index (`Z_INDEX.DOCK_CARD_STACK_BASE − position`), compositor hints, swipe thresholds, and which of the app's transitions each state uses. The theme and its motion are **required**: a missing theme throws `Theme "dock" is missing…` and a theme without motion throws `Motion for theme "dock" is missing…`. `DockProvider` on its own (no dock theme) still runs; its surface phases advance immediately.
 
 Per-card overrides use `style` on the card (see [§6.1](#61-dockpageconfig-the-dock-key-of-usepage)). Custom buttons inside surfaces should use `useDockActionClass()` so they match.
 
@@ -687,7 +690,7 @@ Gotchas:
 - A flow `snapshot` must be a plain object; anything else becomes `null`.
 - Status events are global: remember to emit `DOCK_STATUS_CLEAR` for sticky (`duration: 0`) statuses.
 - Guards registered by an unmounted page disappear with it; `clearDockGuards()` drops every guard, including other pages'.
-- No arbitrary durations or `z-*` classes in surface content: use the exported motion presets and `Z_INDEX` ([Rules 4 and 5](../architecture-and-rules.md)).
+- No arbitrary durations or `z-*` classes in surface content: use your app's motion (`useDockMotion()`, or your own tokens) and `Z_INDEX` ([Rules 4 and 5](../architecture-and-rules.md)).
 
 ## 19. File map
 
@@ -711,7 +714,7 @@ Gotchas:
 | `overlay.tsx`             | `Dock` and every rendered piece: cards, header, banner, command bar, surface shell/controls/extensions, HUD view, media controls and scrubber, breadcrumbs card, `ErrorActions`, `GuardActions`.                          |
 | `cards.tsx`               | View models for the card components (banner, header, command bar, item, media controls/scrubber), `applyMediaAction`, action-slot resolution.                                                                             |
 | `hud.ts`                  | HUD descriptors, registry hook, `defineHud`, `useHud`, `useDockHud`, HUD lifecycle and view model, operation HUD.                                                                                                         |
-| `motion.ts`               | Dock durations, springs, transitions, variants and factories, all derived from `@omerdlw/base-framework/tokens`.                                                                                                                           |
+| `motion.ts`               | `useDockMotion`, `useDockSurfaceTimings`, and helpers that pick from the app's dock motion by state (stack, cards, media, backdrop). No motion values.                                                                                     |
 | `runtime/dock.tsx`        | `useDock` (view controller), `useDockModel`, layout ordering, expansion, operation state, route bridge.                                                                                                                   |
 | `runtime/display.ts`      | Item pipeline: registry entries → filtered items → active item (applies surface / status / media).                                                                                                                        |
 | `runtime/pipeline.ts`     | Item identity, active item detection, ancestor deduplication, loading item cleanup, and stacking reorder.                                                                                                                |

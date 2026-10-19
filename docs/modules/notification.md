@@ -116,7 +116,7 @@ String messages are trimmed and **trailing periods/whitespace are removed** (`"S
 
 ## 7. Theming
 
-No classes or inline styles in the module. `notificationTheme` slots: `layer`, `toast`, `toastDocked`, `toastMessage` (Tailwind classes, all required) plus optional inline `styles` per slot. A missing theme throws a descriptive error. Motion (`toastVariants`, `NOTIFICATION_TRANSITION`) stays in `motion.ts`.
+No classes or inline styles in the module. `notificationTheme` slots: `layer`, `toast`, `toastDocked`, `toastMessage` (Tailwind classes, all required) plus optional inline `styles` per slot. A missing theme throws a descriptive error. The toast's motion comes from the theme as well (`motion: NotificationMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): `toast` variants (`hidden` → `visible` → `exit`) and its `transition`. Start from `templates/motion/notification.ts`.
 
 ## 8. Writing toast copy
 
@@ -150,7 +150,7 @@ No classes or inline styles in the module. `notificationTheme` slots: `layer`, `
 | `context.tsx`  | `NotificationProvider` (store, timers, show/dismiss actions), `NotificationContext`.         |
 | `hooks.ts`     | Public hooks (`useToast`, `useNotification*`), `NotificationListener`, container view model. |
 | `overlay.tsx`  | `Toast`, `NotificationContainer` (dock/floating portal), `NotificationLayer`.               |
-| `motion.ts`    | Toast variants and transition.                                                              |
+| `motion.ts`    | `useNotificationMotion`, compositor hints. The values come from the app's notification theme.|
 | `module.tsx`   | `notificationModule` and the page API.                                                      |
 
 `builder.ts` is absent: toasts are imperative ([README](./README.md#42-why-some-optional-slots-are-absent)).

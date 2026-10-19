@@ -43,7 +43,7 @@ Every first-party module inside `src/modules/<name>/` strictly adheres to a cano
 | `state.ts` | Initial state factory, pure reducers, state transition functions. | Optional |
 | `hooks.ts` | Component view-models (e.g. `useDockOverlayModel`). | Optional |
 | `overlay.tsx` | Pure visual JSX presentation (consumes view-models; defines no state or refs). | Optional |
-| `motion.ts` | Module-specific animation presets derived from `@omerdlw/base-framework/tokens`. | Optional |
+| `motion.ts` | The module's `use*Motion()` hook and helpers that choose from the app's motion by state. No motion values: the module's motion contract lives in `types.ts`, the values in the app's theme. | Optional |
 
 ---
 
@@ -65,9 +65,10 @@ The foundation entries (`@omerdlw/base-framework/utils`, `tokens`, `result`, `ev
 - ✅ Keep utility functions pure, deterministic, and testable without a DOM.
 
 ### Rule 4: Motion Token Singularity
-Never hardcode inline animation durations (`duration: 0.3`) or custom bezier curves inside UI components. Use universal tokens from `@omerdlw/base-framework/tokens`.
+Never hardcode inline animation durations (`duration: 0.3`) or custom bezier curves inside UI components. In an app, take them from your own motion tokens (`defineMotion`, [theming §5](./theming.md#5-motion-your-app-owns-every-animation)). In a first-party module, take them from the app: a module declares a motion contract and reads it with `useModuleMotion(spec)`, never shipping values of its own.
 - ❌ `<motion.div transition={{ duration: 0.35, ease: "easeInOut" }} />`
-- ✅ `<motion.div transition={SPRING_PRESETS.GENTLE} />` or `transition={{ duration: DURATION_TOKENS.FAST, ease: EASING_CURVES.OUT_QUART }}`
+- ✅ `<motion.div transition={{ duration: motion.durations.fast, ease: motion.easings.enter }} />` in app code
+- ✅ `<motion.div variants={dockMotion.variants.fade} />` in a module (`const dockMotion = useDockMotion()`)
 
 ### Rule 5: Z-Index Token Contract
 Never use arbitrary stacking classes like `z-50`, `z-[99]`, or `z-[9999]`.

@@ -11,7 +11,7 @@ import {
   type ReactNode,
   type ReactPortal,
 } from "react";
-import { motion, AnimatePresence, MotionConfig } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn, isImageIconSource } from "@/utils";
 import { Tooltip, Button, Icon, Icon as Iconify, Spinner } from "@/atoms";
 import Link from "next/link";
@@ -28,50 +28,20 @@ import {
 } from "./surface/hooks";
 import {
   DOCK_COMPOSITOR_STYLE,
-  DOCK_FADE_TRANSITION,
-  getDockActionMotionProps,
-  DOCK_BADGE_TRANSITION,
-  dockBadgeVariants,
-  dockCommandBarSwapVariants,
-  DOCK_TEXT_ENTER_TRANSITION,
-  getDockDescriptionVariants,
-  dockFadeVariants,
-  DOCK_ICON_TRANSITION,
-  dockIconVariants,
-  DOCK_HEADER_SWAP_TRANSITION,
-  dockHeaderSwapVariants,
-  DOCK_SCRUBBER_TOOLTIP_TRANSITION,
-  dockScrubberTooltipVariants,
-  dockSurfaceControlsActionVariants,
-  dockSurfaceControlsBackVariants,
-  dockSurfaceControlsCloseVariants,
-  dockSurfaceControlsContainerVariants,
   DOCK_SURFACE_DRAG_CONSTRAINTS,
-  DOCK_SURFACE_DRAG_ELASTIC,
   dockSurfaceDragTransformTemplate,
-  DOCK_HUD_TRANSITION,
-  DOCK_SKELETON_PULSE_CLASS,
-  dockHudVariants,
-  DOCK_ACTION_DISMISS_TRANSITION,
-  DOCK_BUTTON_TRANSITION,
-  DOCK_SURFACE_ANTICIPATION_HIDE_TRANSITION,
-  DOCK_TAP_SCALE,
+  getDockActionMotionProps,
+  getDockBackdropTransition,
   getDockCardContentAnimateProps,
   getDockItemAnimateValues,
   getDockItemExitValues,
   getDockItemTransition,
-  dockActionDismissVariants,
-  dockExtensionShelfVariants,
-  textCrossfadeVariants,
   getDockMediaVolumeFillTransition,
   getDockMediaVolumeThumbAnimateProps,
   getDockMediaVolumeThumbPositionTransition,
-  DOCK_CARD_EXPAND_TRANSITION,
-  dockBreadcrumbsVariants,
-  getDockBackdropTransition,
   getDockStackAnimateProps,
   getDockStackTransformTransition,
-  dockBackdropVariants,
+  useDockMotion,
 } from "./motion";
 import {
   DockCardBannerProps,
@@ -142,6 +112,7 @@ export const DockCardBanner = memo(function DockCardBanner({
   style,
   className,
 }: DockCardBannerProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const { bannerObj, rawUrl, isValid } = useDockCardBannerModel({
     banner,
@@ -179,7 +150,7 @@ export const DockCardBanner = memo(function DockCardBanner({
       animate={{
         opacity: isVisible ? 1 : 0,
       }}
-      transition={DOCK_FADE_TRANSITION}
+      transition={dockMotion.transitions.fade}
       style={{ ...DOCK_COMPOSITOR_STYLE, ...theme.styles.bannerRoot }}
       className={cn("dock-banner", theme.slots.bannerRoot)}
     >
@@ -235,6 +206,7 @@ const DockCommand = memo(function DockCommand({
   action: DockCommandEntry;
   hasBanner: boolean;
 }) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   return (
     <Tooltip
@@ -242,7 +214,7 @@ const DockCommand = memo(function DockCommand({
       text={action.tooltip ?? undefined}
     >
       <motion.button
-        {...getDockActionMotionProps({ disabled: action.disabled })}
+        {...getDockActionMotionProps(dockMotion, { disabled: action.disabled })}
         data-banner={hasBanner}
         className={theme.slots.command}
         onClick={(event) => {
@@ -259,11 +231,11 @@ const DockCommand = memo(function DockCommand({
           {action.badge && (
             <motion.span
               key={action.badge}
-              variants={dockBadgeVariants}
+              variants={dockMotion.variants.badge}
               initial="hidden"
               animate="visible"
               exit="exit"
-              transition={DOCK_BADGE_TRANSITION}
+              transition={dockMotion.transitions.badge}
               className={theme.slots.commandBadge}
             >
               {action.badge}
@@ -284,6 +256,7 @@ export const DockCommandBar = memo(function DockCommandBar({
   contextCommands?: DockActionDescriptor[];
   hasBanner?: boolean;
 }) {
+  const dockMotion = useDockMotion();
   const { actions, currentPath, isExiting, handleExitComplete } =
     useDockCommandBarModel({ activeItem, contextCommands, hasBanner });
   const theme = useDockTheme();
@@ -294,7 +267,7 @@ export const DockCommandBar = memo(function DockCommandBar({
         {actions.map((action, index) => (
           <motion.div
             key={`${currentPath}-${action.key || action.icon || `dock-action-${index}`}`}
-            variants={dockCommandBarSwapVariants}
+            variants={dockMotion.variants.commandBar}
             style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
             custom={index}
             initial="hidden"
@@ -315,6 +288,7 @@ export const DockDescription = memo(function DockDescription({
   maxLines = 1,
   animated = true,
 }: DockDescriptionProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   if (text == null || text === "") return null;
 
@@ -349,11 +323,11 @@ export const DockDescription = memo(function DockDescription({
           key={
             typeof text === "string" || typeof text === "number" ? text : "desc"
           }
-          variants={getDockDescriptionVariants(targetOpacity)}
+          variants={dockMotion.variants.description(targetOpacity)}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_TEXT_ENTER_TRANSITION}
+          transition={dockMotion.transitions.text}
           className={sharedClass}
           data-multiline={isMultiline}
           style={sharedStyle}
@@ -370,6 +344,7 @@ export const DockTitle = memo(function DockTitle({
   style,
   animated = true,
 }: DockTitleProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const { className, inlineStyle } = splitStyle(style);
   const sharedClass = cn(theme.slots.title, className);
@@ -394,11 +369,11 @@ export const DockTitle = memo(function DockTitle({
               : "title"
           }
           className={sharedClass}
-          variants={dockFadeVariants}
+          variants={dockMotion.variants.fade}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_TEXT_ENTER_TRANSITION}
+          transition={dockMotion.transitions.text}
           style={inlineStyle}
         >
           {text}
@@ -413,17 +388,18 @@ export const Badge = memo(function Badge({
 }: {
   badge?: DockBadgeState;
 }) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   return (
     <AnimatePresence mode="wait">
       {badge?.visible ? (
         <motion.div
           key={badge.value}
-          variants={dockBadgeVariants}
+          variants={dockMotion.variants.badge}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_BADGE_TRANSITION}
+          transition={dockMotion.transitions.badge}
           className={theme.slots.iconBadge}
           style={theme.styles.iconBadge}
         >
@@ -437,6 +413,7 @@ export const Badge = memo(function Badge({
 const DockIconOverlay = memo(function DockIconOverlay({
   overlay,
 }: DockIconOverlayProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   if (!overlay?.icon) return null;
   const { icon, onClick, title = "" } = overlay;
@@ -465,11 +442,11 @@ const DockIconOverlay = memo(function DockIconOverlay({
           }}
           title={title || undefined}
           aria-label={title || "Action"}
-          variants={dockBadgeVariants}
+          variants={dockMotion.variants.badge}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_BADGE_TRANSITION}
+          transition={dockMotion.transitions.badge}
           data-interactive={isInteractive}
           className={theme.slots.iconOverlay}
           style={theme.styles.iconOverlay}
@@ -481,11 +458,11 @@ const DockIconOverlay = memo(function DockIconOverlay({
           key={typeof icon === "string" ? icon : "icon-node"}
           title={title || undefined}
           aria-label={title || undefined}
-          variants={dockBadgeVariants}
+          variants={dockMotion.variants.badge}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_BADGE_TRANSITION}
+          transition={dockMotion.transitions.badge}
           data-interactive={isInteractive}
           className={theme.slots.iconOverlay}
           style={theme.styles.iconOverlay}
@@ -505,6 +482,7 @@ export const DockIcon = memo(function DockIcon({
   ariaLabel = undefined,
   animated = true,
 }: DockIconProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const { className, inlineStyle } = splitStyle(style);
   const { size = 24, ...iconStyle } = inlineStyle;
@@ -528,11 +506,11 @@ export const DockIcon = memo(function DockIcon({
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={iconKey}
-        variants={dockIconVariants}
+        variants={dockMotion.variants.icon}
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={DOCK_ICON_TRANSITION}
+        transition={dockMotion.transitions.icon}
         className={theme.slots.iconMotion}
       >
         {iconContent}
@@ -546,7 +524,7 @@ export const DockIcon = memo(function DockIcon({
     <div className={theme.slots.icon}>
       {typeof onClick === "function" ? (
         <motion.button
-          {...getDockActionMotionProps()}
+          {...getDockActionMotionProps(dockMotion)}
           type="button"
           className={theme.slots.iconButton}
           onClick={onClick}
@@ -577,6 +555,7 @@ export const DockCardHeader = memo(function DockCardHeader({
   isTop = false,
   contextCommands = [],
 }: DockCardHeaderProps) {
+  const dockMotion = useDockMotion();
   const { item, hasBanner, headerKey } = useDockCardHeaderModel({
     item: propItem,
     link,
@@ -598,11 +577,11 @@ export const DockCardHeader = memo(function DockCardHeader({
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={headerKey}
-          variants={dockHeaderSwapVariants}
+          variants={dockMotion.variants.headerSwap}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_HEADER_SWAP_TRANSITION}
+          transition={dockMotion.transitions.headerSwap}
           className={theme.slots.headerRow}
           style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
         >
@@ -820,6 +799,7 @@ export const DockMediaScrubber = memo(function DockMediaScrubber({
   className?: string;
   showTimeOnHover?: boolean;
 }) {
+  const dockMotion = useDockMotion();
   const {
     hasMedia,
     videoElement,
@@ -869,11 +849,11 @@ export const DockMediaScrubber = memo(function DockMediaScrubber({
       <AnimatePresence>
         {isHovered && showTimeOnHover && duration > 0 && (
           <motion.div
-            variants={dockScrubberTooltipVariants}
+            variants={dockMotion.variants.scrubberTooltip}
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={DOCK_SCRUBBER_TOOLTIP_TRANSITION}
+            transition={dockMotion.transitions.scrubberTooltip}
             className={theme.slots.scrubberTooltip}
             style={{ left: smoothHoverX }}
           >
@@ -996,6 +976,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
   className?: string;
   surfacePhase?: string;
 }) {
+  const dockMotion = useDockMotion();
   const { isBodyVisible, dynamicAction } = useDockSurfaceControlsModel({
     activeItem,
     hasExtensions,
@@ -1050,7 +1031,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
         <motion.div
           key="dock-surface-controls-container"
           custom={targetY}
-          variants={dockSurfaceControlsContainerVariants}
+          variants={dockMotion.variants.controlsContainer}
           initial="hidden"
           animate="visible"
           exit="exit"
@@ -1061,7 +1042,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
             {hasHeaderAction && (
               <motion.div
                 key="dock-surface-custom-action"
-                variants={dockSurfaceControlsActionVariants}
+                variants={dockMotion.variants.controlsAction}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -1091,7 +1072,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
             {hasBack && (
               <motion.div
                 key="dock-surface-back"
-                variants={dockSurfaceControlsBackVariants}
+                variants={dockMotion.variants.controlsBack}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -1120,7 +1101,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
               <motion.div
                 key="dock-surface-close"
                 layout="position"
-                variants={dockSurfaceControlsCloseVariants}
+                variants={dockMotion.variants.controlsClose}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -1166,6 +1147,7 @@ export function DockSurfaceShell({
   surfacePhase = DOCK_SURFACE_PHASE.OPEN,
   surfaceWidth = null,
 }: DockSurfaceShellProps) {
+  const dockMotion = useDockMotion();
   const {
     setSurfaceElementRef,
     titleId,
@@ -1224,7 +1206,7 @@ export function DockSurfaceShell({
         dragControls={dragControls}
         dragListener={false}
         dragConstraints={DOCK_SURFACE_DRAG_CONSTRAINTS}
-        dragElastic={DOCK_SURFACE_DRAG_ELASTIC}
+        dragElastic={dockMotion.drag.elastic}
         onPointerDown={handleSurfacePointerDown}
         onDragEnd={handleDragEnd}
         onAnimationComplete={onAnimationComplete ?? undefined}
@@ -1264,18 +1246,19 @@ export function DockSurfaceShell({
 }
 
 export const LoadingItemContent = memo(function LoadingItemContent() {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   return (
     <div className={theme.slots.loading}>
-      <div className={cn(theme.slots.loadingIcon, DOCK_SKELETON_PULSE_CLASS)} />
+      <div className={cn(theme.slots.loadingIcon, dockMotion.skeleton)} />
       <div className={theme.slots.loadingText}>
         <div
-          className={cn(theme.slots.loadingTitle, DOCK_SKELETON_PULSE_CLASS)}
+          className={cn(theme.slots.loadingTitle, dockMotion.skeleton)}
         />
         <div
           className={cn(
             theme.slots.loadingDescription,
-            DOCK_SKELETON_PULSE_CLASS,
+            dockMotion.skeleton,
           )}
         />
       </div>
@@ -1407,6 +1390,7 @@ export function StandardItemContent({
   contextCommands = [],
   pathname,
 }: StandardItemContentProps) {
+  const dockMotion = useDockMotion();
   const {
     item,
     isPlaying,
@@ -1436,11 +1420,11 @@ export function StandardItemContent({
       {isTop && isHudActive ? (
         <motion.div
           key={`dock-hud:${hud?.id || "active"}`}
-          variants={dockHudVariants}
+          variants={dockMotion.variants.hud}
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={DOCK_HUD_TRANSITION}
+          transition={dockMotion.transitions.hud}
           style={DOCK_COMPOSITOR_STYLE}
           className={theme.slots.cardHud}
         >
@@ -1453,11 +1437,11 @@ export function StandardItemContent({
       ) : (
         <motion.div
           key="dock-standard-content"
-          variants={dockFadeVariants}
+          variants={dockMotion.variants.fade}
           initial={false}
           animate="visible"
           exit="exit"
-          transition={DOCK_TEXT_ENTER_TRANSITION}
+          transition={dockMotion.transitions.text}
           style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
           className={theme.slots.cardBody}
         >
@@ -1513,6 +1497,7 @@ export const DockCardItem = memo(function DockCardItem({
   clearHud = null,
   contextCommands = [],
 }: DockCardItemProps) {
+  const dockMotion = useDockMotion();
   const {
     item,
     pathname,
@@ -1578,20 +1563,20 @@ export const DockCardItem = memo(function DockCardItem({
         className={cardClassName}
         style={cardStyle}
         initial={false}
-        animate={getDockItemAnimateValues({
+        animate={getDockItemAnimateValues(dockMotion, {
           motionValues,
           expanded,
           isStackHovered,
           isSurfaceActive,
           position,
         })}
-        transition={getDockItemTransition({
+        transition={getDockItemTransition(dockMotion, {
           expanded,
           isStackHovered,
           position,
           delay: cardDelay,
         })}
-        exit={getDockItemExitValues({ motionValues, position })}
+        exit={getDockItemExitValues(dockMotion, { motionValues, position })}
       />
     );
   }
@@ -1603,14 +1588,14 @@ export const DockCardItem = memo(function DockCardItem({
       data-controls-anchor={isTop ? "true" : undefined}
       style={cardStyle}
       initial={false}
-      animate={getDockItemAnimateValues({
+      animate={getDockItemAnimateValues(dockMotion, {
         motionValues,
         expanded,
         isStackHovered,
         isSurfaceActive,
         position,
       })}
-      transition={getDockItemTransition({
+      transition={getDockItemTransition(dockMotion, {
         expanded,
         isStackHovered,
         position,
@@ -1619,12 +1604,12 @@ export const DockCardItem = memo(function DockCardItem({
       whileTap={
         !item.isOverlay && !item.isStatus && !isCollapsedBackgroundCard
           ? {
-              scale: (motionValues?.scale || 1) * DOCK_TAP_SCALE,
-              transition: DOCK_BUTTON_TRANSITION,
+              scale: (motionValues?.scale || 1) * dockMotion.deck.tapScale,
+              transition: dockMotion.transitions.press,
             }
           : undefined
       }
-      exit={getDockItemExitValues({ motionValues, position })}
+      exit={getDockItemExitValues(dockMotion, { motionValues, position })}
       role={hasNestedInteractiveContent ? "group" : "button"}
       aria-hidden={isCollapsedBackgroundCard ? "true" : undefined}
       tabIndex={
@@ -1657,12 +1642,12 @@ export const DockCardItem = memo(function DockCardItem({
         ref={cardContentRef}
         data-shelf={isExtensionShelf}
         className={theme.slots.cardContent}
-        animate={getDockCardContentAnimateProps({
+        animate={getDockCardContentAnimateProps(dockMotion, {
           expanded,
           position,
           isExtensionShelf,
         })}
-        transition={DOCK_TEXT_ENTER_TRANSITION}
+        transition={dockMotion.transitions.text}
         style={{
           ...DOCK_COMPOSITOR_STYLE,
           willChange: "transform",
@@ -1677,11 +1662,11 @@ export const DockCardItem = memo(function DockCardItem({
           item.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER ? (
             <motion.div
               key="surface-content-layer"
-              variants={dockHeaderSwapVariants}
+              variants={dockMotion.variants.headerSwap}
               initial="hidden"
               animate="visible"
               exit="exit"
-              transition={DOCK_HEADER_SWAP_TRANSITION}
+              transition={dockMotion.transitions.headerSwap}
               style={DOCK_COMPOSITOR_STYLE}
               className={theme.slots.cardSurface}
             >
@@ -1690,11 +1675,11 @@ export const DockCardItem = memo(function DockCardItem({
           ) : isExtensionShelf ? (
             <motion.div
               key="extension-shelf-layer"
-              variants={dockExtensionShelfVariants}
+              variants={dockMotion.variants.extensionShelf}
               initial="hidden"
               animate="visible"
               exit="exit"
-              transition={DOCK_HEADER_SWAP_TRANSITION}
+              transition={dockMotion.transitions.headerSwap}
               style={DOCK_COMPOSITOR_STYLE}
               className={theme.slots.cardShelf}
             >
@@ -1713,8 +1698,8 @@ export const DockCardItem = memo(function DockCardItem({
               exit="exit"
               transition={
                 item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION
-                  ? DOCK_SURFACE_ANTICIPATION_HIDE_TRANSITION
-                  : DOCK_HEADER_SWAP_TRANSITION
+                  ? dockMotion.transitions.anticipation
+                  : dockMotion.transitions.headerSwap
               }
               style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
               className={theme.slots.cardStandard}
@@ -1741,11 +1726,11 @@ export const DockCardItem = memo(function DockCardItem({
                         DOCK_SURFACE_PHASE.DISMISSING_ACTION ? (
                           <motion.div
                             key="dock-action-component-dismiss"
-                            variants={dockActionDismissVariants}
+                            variants={dockMotion.variants.actionDismiss}
                             initial="visible"
                             animate="exit"
                             exit="exit"
-                            transition={DOCK_ACTION_DISMISS_TRANSITION}
+                            transition={dockMotion.transitions.actionDismiss}
                             className={theme.slots.cardAction}
                             onClick={stopPropagationOnly}
                           >
@@ -1754,11 +1739,11 @@ export const DockCardItem = memo(function DockCardItem({
                         ) : (
                           <motion.div
                             key="dock-action-component"
-                            variants={textCrossfadeVariants}
+                            variants={dockMotion.variants.textCrossfade}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
-                            transition={DOCK_FADE_TRANSITION}
+                            transition={dockMotion.transitions.fade}
                             className={theme.slots.cardAction}
                             onClick={stopPropagationOnly}
                           >
@@ -1783,6 +1768,7 @@ export const DockMediaControls = memo(function DockMediaControls({
 }: {
   className?: string;
 }) {
+  const dockMotion = useDockMotion();
   const {
     handleVolumeKeyDown,
     toggleLoop,
@@ -1815,7 +1801,7 @@ export const DockMediaControls = memo(function DockMediaControls({
     <div className={cn(theme.slots.media, className)}>
       <div className={theme.slots.mediaGroup}>
         <motion.button
-          {...getDockActionMotionProps()}
+          {...getDockActionMotionProps(dockMotion)}
           type="button"
           onClick={handleCycleSpeed}
           data-active={playbackRate !== 1}
@@ -1827,7 +1813,7 @@ export const DockMediaControls = memo(function DockMediaControls({
         </motion.button>
 
         <motion.button
-          {...getDockActionMotionProps()}
+          {...getDockActionMotionProps(dockMotion)}
           type="button"
           onClick={handleSkipBackward}
           className={theme.slots.mediaSkip}
@@ -1838,7 +1824,7 @@ export const DockMediaControls = memo(function DockMediaControls({
         </motion.button>
 
         <motion.button
-          {...getDockActionMotionProps()}
+          {...getDockActionMotionProps(dockMotion)}
           type="button"
           onClick={handleSkipForward}
           className={theme.slots.mediaSkip}
@@ -1851,7 +1837,7 @@ export const DockMediaControls = memo(function DockMediaControls({
 
       <div className={theme.slots.mediaGroup}>
         <motion.div
-          {...getDockActionMotionProps({ disabled: isDraggingVolume })}
+          {...getDockActionMotionProps(dockMotion, { disabled: isDraggingVolume })}
           data-active={isDraggingVolume}
           className={theme.slots.mediaVolume}
         >
@@ -1887,7 +1873,7 @@ export const DockMediaControls = memo(function DockMediaControls({
                 className={theme.slots.mediaVolumeFill}
                 style={{
                   width: `${effectiveVolume * 100}%`,
-                  transition: getDockMediaVolumeFillTransition({
+                  transition: getDockMediaVolumeFillTransition(dockMotion, {
                     isDragging: isDraggingVolume,
                   }),
                 }}
@@ -1897,13 +1883,13 @@ export const DockMediaControls = memo(function DockMediaControls({
               ref={volumeThumbRef}
               data-active={isDraggingVolume}
               className={theme.slots.mediaVolumeThumb}
-              animate={getDockMediaVolumeThumbAnimateProps({
+              animate={getDockMediaVolumeThumbAnimateProps(dockMotion, {
                 isDragging: isDraggingVolume,
               })}
-              transition={DOCK_BUTTON_TRANSITION}
+              transition={dockMotion.transitions.press}
               style={{
                 left: `${effectiveVolume * 100}%`,
-                transition: getDockMediaVolumeThumbPositionTransition({
+                transition: getDockMediaVolumeThumbPositionTransition(dockMotion, {
                   isDragging: isDraggingVolume,
                 }),
               }}
@@ -1913,7 +1899,7 @@ export const DockMediaControls = memo(function DockMediaControls({
 
         {isPipSupported && (
           <motion.button
-            {...getDockActionMotionProps()}
+            {...getDockActionMotionProps(dockMotion)}
             type="button"
             onClick={handleTogglePip}
             data-active={isPipActive}
@@ -1932,7 +1918,7 @@ export const DockMediaControls = memo(function DockMediaControls({
         )}
 
         <motion.button
-          {...getDockActionMotionProps()}
+          {...getDockActionMotionProps(dockMotion)}
           type="button"
           onClick={toggleLoop}
           data-active={isLoop}
@@ -1956,6 +1942,7 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
   maxItems?: number;
   onNavigate?: (href: string) => unknown;
 }) {
+  const dockMotion = useDockMotion();
   const { breadcrumbs } = useDockBreadcrumbsCardModel({
     className,
     maxItems,
@@ -1973,11 +1960,11 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
       : breadcrumbs;
   return (
     <motion.div
-      variants={dockBreadcrumbsVariants}
+      variants={dockMotion.variants.breadcrumbs}
       initial="hidden"
       animate="visible"
       exit="exit"
-      transition={DOCK_CARD_EXPAND_TRANSITION}
+      transition={dockMotion.transitions.expand}
       style={{ ...DOCK_COMPOSITOR_STYLE, ...theme.styles.breadcrumbs }}
       className={cn(theme.slots.breadcrumbs, className)}
       onClick={stopPropagationOnly}
@@ -2042,6 +2029,7 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
 });
 
 export function Dock(): ReactPortal | null {
+  const dockMotion = useDockMotion();
   const {
     activeItem,
     dockItems,
@@ -2062,77 +2050,75 @@ export function Dock(): ReactPortal | null {
   } = useDockModel();
   const theme = useDockTheme();
   const dockContent = (
-    <MotionConfig reducedMotion="user">
-      <>
+    <>
+      <AnimatePresence>
+        {isBackdropVisible && (
+          <motion.div
+            key="dock-backdrop"
+            variants={dockMotion.variants.backdrop}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={getDockBackdropTransition(dockMotion, {
+              expanded,
+              isSurface: isOverlayActive,
+            })}
+            className={theme.slots.backdrop}
+            style={theme.styles.backdrop}
+          />
+        )}
+      </AnimatePresence>
+      <motion.div
+        id="dock-card-stack"
+        ref={dockRef}
+        className={theme.slots.stack}
+        data-controls-hidden={
+          expanded || activeItem?.isSurface ? "true" : "false"
+        }
+        style={{
+          ...theme.styles.stack,
+          transformOrigin: "50% 100%",
+        }}
+        initial={false}
+        animate={getDockStackAnimateProps(dockMotion, {
+          width: stackWidth,
+          height: containerHeight,
+          isBreadcrumbsVisible: isSubCardVisible,
+          isExtensionsVisible,
+          isFullscreen: isFullscreenStateActive,
+          isSurfaceActive: Boolean(
+            activeItem?.isSurface &&
+            activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
+            activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
+          ),
+          surfacePhase: activeItem?.isSurface
+            ? activeItem?.surfacePhase
+            : null,
+        })}
+        transition={{
+          default: dockStackTransition,
+          transform: getDockStackTransformTransition(dockMotion, 
+            activeItem?.isSurface ? activeItem?.surfacePhase : null,
+            dockStackTransition,
+          ),
+        }}
+      >
+        <DockSurfaceControls
+          activeItem={activeItem}
+          hasExtensions={isExtensionsVisible}
+        />
         <AnimatePresence>
-          {isBackdropVisible && (
-            <motion.div
-              key="dock-backdrop"
-              variants={dockBackdropVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={getDockBackdropTransition({
-                expanded,
-                isSurface: isOverlayActive,
-              })}
-              className={theme.slots.backdrop}
-              style={theme.styles.backdrop}
-            />
+          {isBreadcrumbsCardVisible && (
+            <DockBreadcrumbsCard onNavigate={navigate} />
           )}
         </AnimatePresence>
-        <motion.div
-          id="dock-card-stack"
-          ref={dockRef}
-          className={theme.slots.stack}
-          data-controls-hidden={
-            expanded || activeItem?.isSurface ? "true" : "false"
-          }
-          style={{
-            ...theme.styles.stack,
-            transformOrigin: "50% 100%",
-          }}
-          initial={false}
-          animate={getDockStackAnimateProps({
-            width: stackWidth,
-            height: containerHeight,
-            isBreadcrumbsVisible: isSubCardVisible,
-            isExtensionsVisible,
-            isFullscreen: isFullscreenStateActive,
-            isSurfaceActive: Boolean(
-              activeItem?.isSurface &&
-              activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
-              activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
-            ),
-            surfacePhase: activeItem?.isSurface
-              ? activeItem?.surfacePhase
-              : null,
-          })}
-          transition={{
-            default: dockStackTransition,
-            transform: getDockStackTransformTransition(
-              activeItem?.isSurface ? activeItem?.surfacePhase : null,
-              dockStackTransition,
-            ),
-          }}
-        >
-          <DockSurfaceControls
-            activeItem={activeItem}
-            hasExtensions={isExtensionsVisible}
-          />
-          <AnimatePresence>
-            {isBreadcrumbsCardVisible && (
-              <DockBreadcrumbsCard onNavigate={navigate} />
-            )}
-          </AnimatePresence>
-          <AnimatePresence initial={false}>
-            {dockCardProps.map(({ key, ...cardProps }) => (
-              <DockCardItem key={key} {...cardProps} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </>
-    </MotionConfig>
+        <AnimatePresence initial={false}>
+          {dockCardProps.map(({ key, ...cardProps }) => (
+            <DockCardItem key={key} {...cardProps} />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+    </>
   );
   if (!portalTarget || !dockItems?.length) return null;
   return createPortal(dockContent, portalTarget);
@@ -2147,16 +2133,17 @@ export function ErrorActions({
   refreshText,
   className = "",
 }: ErrorActionsProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const actionClass = useDockActionClass();
   const effectiveRetry = retryLabel || retryText || "Retry";
   const effectiveRefresh = refreshLabel || refreshText || "Refresh";
   return (
     <motion.div
-      variants={textCrossfadeVariants}
+      variants={dockMotion.variants.textCrossfade}
       initial="hidden"
       animate="visible"
-      transition={DOCK_FADE_TRANSITION}
+      transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
       <Button
@@ -2198,16 +2185,17 @@ export function GuardActions({
   confirmText,
   className = "",
 }: GuardActionsProps) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const actionClass = useDockActionClass();
   const effectiveCancel = cancelLabel || cancelText || "Stay";
   const effectiveConfirm = confirmLabel || confirmText || "Leave";
   return (
     <motion.div
-      variants={textCrossfadeVariants}
+      variants={dockMotion.variants.textCrossfade}
       initial="hidden"
       animate="visible"
-      transition={DOCK_FADE_TRANSITION}
+      transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
       <Button
@@ -2241,16 +2229,17 @@ export function GuardActions({
 }
 
 export function NotFoundActions({ className = "" }: { className?: string }) {
+  const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const actionClass = useDockActionClass();
   const router = useRouter();
   const { navigate } = useDockActions();
   return (
     <motion.div
-      variants={textCrossfadeVariants}
+      variants={dockMotion.variants.textCrossfade}
       initial="hidden"
       animate="visible"
-      transition={DOCK_FADE_TRANSITION}
+      transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
       <Button

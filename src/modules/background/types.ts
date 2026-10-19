@@ -33,6 +33,21 @@ export interface FadeEdges {
   right?: number | string;
 }
 
+/** How the page background comes and goes, written by the app in its background theme. */
+export interface BackgroundMotion {
+  initial: TargetAndTransition;
+  animate: TargetAndTransition;
+  /** Its `transition` times the exit. */
+  exit: TargetAndTransition;
+  /** The arrival; it also fades the colour overlay. */
+  transition: Transition;
+  /**
+   * The exit's length as a share of the arrival's, for a page whose own
+   * `animation.exit` brings no transition.
+   */
+  exitDurationFactor: number;
+}
+
 export interface BackgroundAnimationConfig {
   animate?: TargetAndTransition;
   exit?: TargetAndTransition;

@@ -9,13 +9,9 @@ import { createPortal } from "react-dom";
 import { ModuleBoundary } from "@/kernel";
 import { MODAL_POSITIONS } from "./constants";
 import {
-  MODAL_CONTENT_VARIANTS,
-  MODAL_FOOTER_VARIANTS,
-  MODAL_HEADER_VARIANTS,
   MODAL_COMPOSITOR_STYLE,
-  getModalPositionVariants,
-  getModalTransition,
-  modalBackdropVariants,
+  getModalPositionMotion,
+  useModalMotion,
 } from "./motion";
 import {
   type ModalContainerFooterConfig,
@@ -149,6 +145,7 @@ export function ModalContainer({
   position = null,
 }: ModalContainerProps) {
   const { theme } = useModalContainerModel();
+  const modalMotion = useModalMotion();
   const headerRow =
     header === false ? null : resolveHeader(header, close, theme);
   const shouldRenderHeader =
@@ -183,7 +180,7 @@ export function ModalContainer({
     >
       {shouldRenderHeader && (
         <SlotRow
-          variants={MODAL_HEADER_VARIANTS}
+          variants={modalMotion.header}
           left={headerRow.left}
           center={headerRow.center}
           right={headerRow.right}
@@ -193,7 +190,7 @@ export function ModalContainer({
       )}
 
       <motion.div
-        variants={MODAL_CONTENT_VARIANTS}
+        variants={modalMotion.content}
         initial="hidden"
         animate="visible"
         data-lenis-prevent
@@ -205,7 +202,7 @@ export function ModalContainer({
 
       {shouldRenderFooter && (
         <SlotRow
-          variants={MODAL_FOOTER_VARIANTS}
+          variants={modalMotion.footer}
           left={footerLeft}
           center={footerCenter}
           right={footerRight}
@@ -289,8 +286,13 @@ function ModalLayer({
     registry,
     stackIndex,
   });
+  const modalMotion = useModalMotion();
   if (!ActiveModalComponent) return null;
   const layout = getModalLayout(activePosition, isMobileViewport);
+  const positionMotion = getModalPositionMotion(
+    modalMotion.positions,
+    activePosition,
+  );
   return (
     <div
       role="dialog"
@@ -307,11 +309,11 @@ function ModalLayer({
     >
       <motion.div
         ref={modalRef}
-        variants={getModalPositionVariants(activePosition)}
+        variants={positionMotion.variants}
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={getModalTransition(activePosition)}
+        transition={positionMotion.transition}
         data-active={isTopModal}
         data-layout={layout}
         className={theme.slots.frame}
@@ -379,6 +381,7 @@ export function Modal() {
     setIsTopExitSettling,
     theme,
   } = useModalModel();
+  const modalMotion = useModalMotion();
   if (!mounted) return null;
   return createPortal(
     <>
@@ -386,7 +389,7 @@ export function Modal() {
         {isModalVisible && (
           <motion.div
             key="global-modal-backdrop"
-            variants={modalBackdropVariants}
+            variants={modalMotion.backdrop}
             initial="hidden"
             animate="visible"
             exit="exit"

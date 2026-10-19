@@ -146,16 +146,13 @@ Who listens to what: the dock turns `APP_ERROR` / critical `API_ERROR` into stat
 
 ## 7. Motion & design tokens (`@omerdlw/base-framework/tokens`)
 
-Rule 4 in practice: **never** write a literal duration/ease in a component.
+Rule 4 in practice: **never** write a literal duration/ease in a component. The framework ships no motion values of its own: first-party modules play what the app's theme gives them ([theming §5](./theming.md#5-motion-your-app-owns-every-animation)), and the builders below take every duration, easing and spring as an argument.
 
-- **GPU compositor only.** Animate `transform` (`translate3d`, `scale`) and `opacity`. Animating layout properties (`height`, `top`, `left`) is forbidden. `gpuTransform(y, scale, x)` builds the canonical `translate3d(...) scale(...)` string; `COMPOSITOR_GPU_STYLE` supplies `backface-visibility`/`will-change` hints.
-- **Durations (`DURATION_TOKENS`, seconds):** `INSTANT` 0.08 · `MICRO` 0.18 · `FAST` 0.28 · `BASE` 0.36 · `MODERATE` 0.44 · `SLOW` 0.58 · `CINEMATIC` 0.86. The same steps exist as `duration-*` utility classes in `globals.css` (`duration-micro` is the default transition duration).
-- **Easings (`EASING_CURVES`):** `OUT_EXPO`, `OUT_QUART` (default CSS easing), `OUT_QUINT`, `IN_OUT_CUBIC`, `IN_CUBIC`, `OUT_BACK` (also `ease-out-expo`, … classes). `MOTION_EASINGS`: `ENTER` (= OUT_QUART), `ENTER_EMPHASIZED` (= OUT_EXPO), `EXIT` (= IN_CUBIC).
-- **Springs (`SPRING_PRESETS`):** `MICRO`, `SNAPPY`, `GENTLE`, `BOUNCY` (`{ type: "spring", stiffness, damping, mass }`).
-- **Tiers (`MOTION_TIERS`):** `MICRO` (4 px), `FAST` (9 px), `STANDARD` (18 px), `SURFACE` (28 px): distance, duration, ease and scale delta per step; dock and modal both use them.
-- **Reduced motion:** `REDUCED_MOTION_TRANSITION` (`INSTANT`, linear). The dock wraps its tree in `MotionConfig reducedMotion="user"` so Framer Motion honours the OS setting; CSS-driven motion uses `motion-safe:` / `motion-reduce:` variants.
-- **Variant builders** (return frozen Framer Motion variants): `contentSwap`, `overlaySurface`, `staggerItem` / `staggerDelay`, `chip`, `press` (`TAP_SCALE_SUBTLE` = 0.97), `dragDismiss`, `contentSwapTransitions`, `surfaceResizeTransition(distancePx)` / `durationForDistance` (longer moves take a bit longer, clamped).
-- **Module motion files** (`modules/*/motion.ts`) compose these into named presets; they are the only place besides `tokens/` where timing literals are tolerated by lint.
+- **App motion (`defineMotion`).** `defineMotion({ tempo, reducedMotion, durations, easings, springs })` returns the app's frozen motion tokens for `<ThemeProvider motion>`. `retime(tree, { tempo, reduced })` stretches every transition in a motion tree by `tempo` (springs keep their damping ratio) or collapses it to `REDUCED_MOTION_TRANSITION`. `retimeModuleMotion` does the same and also treats a top-level `timings` table as seconds. `cssTransition(property, tween)` writes a CSS `transition` value; `cssEasing(ease)` writes the easing alone.
+- **GPU compositor only.** Animate `transform` (`translate3d`, `scale`) and `opacity`. Animating layout properties (`height`, `top`, `left`) is forbidden. `gpuTransform(y, scale, x)` builds the canonical `translate3d(...) scale(...)` string.
+- **Reduced motion:** `REDUCED_MOTION_TRANSITION` (0.08 s, linear). When the app's policy is in effect, every module transition collapses to it, and `CoreProvider` wraps each module backdrop and overlay in `ModuleMotionConfig` (`MotionConfig` with the app's policy). CSS-driven motion uses `motion-safe:` / `motion-reduce:` variants.
+- **Variant builders** (return frozen Framer Motion variants; timing always passed in): `contentSwap`, `contentSwapTransitions`, `overlaySurface`, `chip`, `press({ tapScale, spring })`, `staggerDelay(index, { base, cap })`, `surfaceResizeTransition(distancePx, { base, min, max, ease })` / `durationForDistance` (longer moves take a bit longer, clamped to the bounds you give).
+- **Module motion files** (`modules/*/motion.ts`) hold mechanics only: the module's `use*Motion()` hook (the app's motion, retimed) and helpers that pick from it by state. The values live in the app's theme files; the framework's originals are in `templates/motion/`.
 
 ### Z-index layers (`Z_INDEX`)
 

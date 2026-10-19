@@ -10,7 +10,7 @@
 - **Engine:** Next.js 16 (App Router), React 19
 - **Core Framework:** `@omerdlw/base-framework` (Microkernel & Declarative UI Modules)
 - **Styling:** Tailwind CSS v4 (`@theme`, OKLCH semantic color tokens, `.center`, `.skeleton-block`)
-- **Motion:** Motion (v13) with hardware GPU acceleration (`translate3d`, `scale`)
+- **Motion:** Motion (v13) with hardware GPU acceleration (`translate3d`, `scale`). Framework modules ship no animation of their own: the dock, modal, toast, context-menu and background motion lives in this app's theme files (`motion` next to `slots`), with tempo and vocabulary from `defineMotion`. Change module animation there, never in the framework.
 - **Icons:** `@iconify-icon/react` via `<Icon icon="solar:..." />`
 
 ---

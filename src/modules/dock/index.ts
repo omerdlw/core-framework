@@ -58,9 +58,4 @@ export {
   dockTheme,
 } from "./constants";
 export { isValidBannerUrl } from "./styles";
-export {
-  DOCK_FADE_TRANSITION,
-  dockFadeVariants,
-  dockListItemVariants,
-  textCrossfadeVariants,
-} from "./motion";
+export { useDockMotion } from "./motion";

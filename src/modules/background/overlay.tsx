@@ -9,9 +9,13 @@ import {
   type CSSProperties,
 } from "react";
 import { cn, report } from "@/utils";
-import { AnimatePresence, motion, type Transition } from "motion/react";
-import { EASING_CURVES } from "@/tokens";
-import { useModuleTheme, type ResolvedTheme } from "@/theme";
+import { AnimatePresence, motion } from "motion/react";
+import { retime } from "@/tokens";
+import {
+  useModuleTheme,
+  useMotionTokens,
+  type ResolvedTheme,
+} from "@/theme";
 import { backgroundTheme } from "./constants";
 import {
   DEFAULT_COLOR,
@@ -26,10 +30,12 @@ import {
 } from "./visual";
 import { applyVideoPlaybackState } from "./playback";
 import {
+  getBackgroundExitTransition,
   getBackgroundMotionConfig,
   toCssDelay,
   toCssDuration,
   toCssEasing,
+  useBackgroundMotion,
 } from "./motion";
 import { useBackgroundActions, useBackgroundState } from "./hooks";
 import { parseYouTubeUrlConfig } from "./youtube/parse";
@@ -332,9 +338,16 @@ export function useBackgroundOverlayModel() {
       ? `youtube:${youtubeConfig.videoId}`
       : video
     : image;
+  const backgroundMotion = useBackgroundMotion();
+  const { reduced, tempo } = useMotionTokens();
+  // A page's own animation is app motion too: it follows the same tempo.
   const motionConfig = useMemo(
-    () => getBackgroundMotionConfig(animation),
-    [animation],
+    () =>
+      getBackgroundMotionConfig(
+        backgroundMotion,
+        retime(animation, { reduced, tempo }),
+      ),
+    [animation, backgroundMotion, reduced, tempo],
   );
   const {
     baseStyle,
@@ -354,11 +367,14 @@ export function useBackgroundOverlayModel() {
   const overlayTransitionStyle = useMemo<CSSProperties>(
     () => ({
       transitionDelay: toCssDelay(motionConfig.transition.delay),
-      transitionDuration: toCssDuration(motionConfig.transition.duration),
+      transitionDuration: toCssDuration(
+        motionConfig.transition.duration,
+        backgroundMotion.transition.duration,
+      ),
       transitionProperty: "opacity",
       transitionTimingFunction: toCssEasing(motionConfig.transition.ease),
     }),
-    [motionConfig.transition],
+    [backgroundMotion.transition.duration, motionConfig.transition],
   );
   const rawWidth = width ?? videoOptions?.width ?? videoStyle?.width;
   const resolvedWidth =
@@ -419,11 +435,10 @@ export function useBackgroundOverlayModel() {
     }),
     [baseStyle, classNames.objectStyle, fitStyle, maskImage, objectPosition],
   );
-  const exitDurationFactor = Number.isFinite(motionConfig.exitDurationFactor)
-    ? Math.max(0, motionConfig.exitDurationFactor)
-    : 0.6;
-  const exitTransition = motionConfig.exit.transition as
-    { duration?: number; ease?: unknown } | undefined;
+  const exitTransition = useMemo(
+    () => getBackgroundExitTransition(backgroundMotion, motionConfig),
+    [backgroundMotion, motionConfig],
+  );
 
   return {
     className,
@@ -464,7 +479,6 @@ export function useBackgroundOverlayModel() {
     framePosition,
     videoClasses,
     sharedVideoStyle,
-    exitDurationFactor,
     exitTransition,
     theme,
   };
@@ -507,7 +521,6 @@ export function BackgroundOverlay() {
     framePosition,
     videoClasses,
     sharedVideoStyle,
-    exitDurationFactor,
     exitTransition,
     theme,
   } = useBackgroundOverlayModel();
@@ -520,17 +533,7 @@ export function BackgroundOverlay() {
           initial={motionConfig.initial}
           animate={motionConfig.animate}
           transition={motionConfig.transition}
-          exit={{
-            ...motionConfig.exit,
-            transition: {
-              ...motionConfig.transition,
-              delay: 0,
-              duration:
-                exitTransition?.duration ??
-                (motionConfig.transition.duration ?? 0.6) * exitDurationFactor,
-              ease: exitTransition?.ease ?? EASING_CURVES.IN_CUBIC,
-            } as Transition,
-          }}
+          exit={{ ...motionConfig.exit, transition: exitTransition }}
           className={theme.slots.root}
           style={{
             willChange: "transform, opacity, filter",

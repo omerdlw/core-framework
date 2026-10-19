@@ -1,8 +1,14 @@
 import { defineThemeSpec } from "@/theme";
-import { type ContextMenuPosition, type ContextMenuThemeSlot } from "./types";
+import {
+  type ContextMenuMotion,
+  type ContextMenuPosition,
+  type ContextMenuThemeSlot,
+} from "./types";
 
-export const contextMenuTheme =
-  defineThemeSpec<ContextMenuThemeSlot>("context-menu");
+export const contextMenuTheme = defineThemeSpec<
+  ContextMenuThemeSlot,
+  ContextMenuMotion
+>("context-menu");
 
 export const CURRENT_PAGE_KEY = "current-page";
 export const GLOBAL_MENU_KEY = "*";

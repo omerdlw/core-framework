@@ -96,6 +96,7 @@ Whether you are a software architect or an AI Pair Programmer (Antigravity, Curs
 | Dynamically tint the canvas based on an image | [`ambient.md`](./modules/ambient.md) |
 | Add action buttons beside the floating dock | [`controls.md`](./modules/controls.md) |
 | Attach a contextual right-click menu | [`context-menu.md`](./modules/context-menu.md) |
+| Change how the dock, modals, toasts, menus or background animate (tempo, curves, reduced motion) | [`theming.md §5`](./theming.md#5-motion-your-app-owns-every-animation) |
 | Animate an element with hardware GPU acceleration | [`core-engine.md §6`](./core-engine.md#6-motion--design-tokens-omerdlwbase-frameworktokens), [Rule 4](./architecture-and-rules.md#rule-4-motion-token-singularity) |
 | Write a robust, type-safe Server Action | [`result.md`](./modules/result.md) |
 | Run tests or write a new unit/integration test | [`testing.md`](./testing.md) |

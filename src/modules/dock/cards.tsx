@@ -16,7 +16,11 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import { isObject, toArray, clamp, cn } from "@/utils";
 import { useGlobalEvent } from "@/hooks";
-import { useMotionValue, useSpring } from "motion/react";
+import {
+  useMotionValue,
+  useSpring,
+  type TargetAndTransition,
+} from "motion/react";
 import { isInlineActionPathMatch } from "./paths";
 import {
   isValidBannerUrl,
@@ -51,12 +55,7 @@ import {
   useElementHeight,
 } from "./layout";
 import { useDockHasMedia, useDockMedia, useDockMediaActions } from "./context";
-import {
-  DOCK_SURFACE_BODY_ENTER_TRANSITION,
-  getDockCardDelay,
-  dockHeaderRestoreVariants,
-  DOCK_SCRUBBER_TOOLTIP_SPRING,
-} from "./motion";
+import { getDockCardDelay, useDockMotion } from "./motion";
 import { resolveDockRoutePolicy, useRoutePrefetch } from "./routing/navigation";
 
 const bannerPreloadCache = new Set<string>();
@@ -509,20 +508,22 @@ export function useDockCardItemModel({
   const hasNestedInteractiveContent = Boolean(
     renderedActionSlot || (item.isSurface && !isHeaderRestoring),
   );
-  const headerRestoreVariants = useMemo(
-    () => ({
-      hidden: dockHeaderRestoreVariants.hidden,
+  const dockMotion = useDockMotion();
+  const headerRestoreVariants = useMemo(() => {
+    const { headerRestore } = dockMotion.variants;
+    const visible = headerRestore.visible as TargetAndTransition;
+    return {
+      hidden: headerRestore.hidden,
       visible: {
-        ...dockHeaderRestoreVariants.visible,
+        ...visible,
         transition:
           item.surfacePhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY
-            ? DOCK_SURFACE_BODY_ENTER_TRANSITION
-            : dockHeaderRestoreVariants.visible.transition,
+            ? dockMotion.transitions.surfaceEnter
+            : visible.transition,
       },
-      exit: dockHeaderRestoreVariants.exit,
-    }),
-    [item.surfacePhase],
-  );
+      exit: headerRestore.exit,
+    };
+  }, [dockMotion, item.surfacePhase]);
   useElementHeight(
     onContentHeightChange,
     cardContentRef,
@@ -609,8 +610,8 @@ export function useDockCardItemModel({
     hasExtensions,
   });
   const cardDelay = useMemo(
-    () => getDockCardDelay({ expanded, isStackHovered, position }),
-    [expanded, isStackHovered, position],
+    () => getDockCardDelay(dockMotion, { expanded, isStackHovered, position }),
+    [dockMotion, expanded, isStackHovered, position],
   );
 
   return {
@@ -1003,7 +1004,8 @@ export function useDockMediaScrubberModel({
   const [isHovered, setIsHovered] = useState(false);
   const [hoverTime, setHoverTime] = useState(0);
   const hoverX = useMotionValue(0);
-  const smoothHoverX = useSpring(hoverX, DOCK_SCRUBBER_TOOLTIP_SPRING);
+  const { scrubberFollow } = useDockMotion().transitions;
+  const smoothHoverX = useSpring(hoverX, scrubberFollow);
   const scrubberRef = useRef<HTMLDivElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
   const rAFRef = useRef<number | null>(null);

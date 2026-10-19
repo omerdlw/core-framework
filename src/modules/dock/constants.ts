@@ -1,5 +1,5 @@
 import { defineThemeSpec } from "@/theme";
-import { type DockThemeSlot } from "./types";
+import { type DockMotion, type DockThemeSlot } from "./types";
 
 export const DOCK_STYLE_SECTIONS = Object.freeze([
   "card",
@@ -214,4 +214,4 @@ export const DOCK_HEIGHT_BUFFER = 16;
 export const HEIGHT_EPSILON = 0.5;
 export const MAX_VISIBLE_STACKED_CARDS = 3;
 
-export const dockTheme = defineThemeSpec<DockThemeSlot>("dock");
+export const dockTheme = defineThemeSpec<DockThemeSlot, DockMotion>("dock");

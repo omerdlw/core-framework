@@ -71,7 +71,7 @@ usePage({
 | Edge fades                     | `fadeEdges` (`number`, `"20"`, `{ left, right }`, `false`), `leftGradient` / `rightGradient` (strength 1–n). A custom `width` implies a 20 % fade unless `fadeEdges: false`.                                                                  |
 | Film grain                     | `noiseStyle: { opacity, mixBlendMode }`.                                                                                                                                                                                                      |
 | Layout                         | `width` (number px or CSS length) places a video frame left/right/center via `position`; `fit` / `videoOptions.fit` (`cover contain fill none scale-down`); `bg-*` class tokens in `className`/`videoClassName` map to object-position slots. |
-| Custom transition              | `animation: { initial, animate, exit, transition, exitDurationFactor }` (defaults: opacity fade with `DURATION_TOKENS.SLOW`; exit factor 0.6).                                                                                                |
+| Custom transition              | `animation: { initial, animate, exit, transition, exitDurationFactor }`, field by field over the app's background motion (`motion: BackgroundMotion` in the theme; the starter fades opacity over 0.58 s, exit factor 0.6). It follows the app's tempo.|
 | Programmatic control           | `useBackgroundActions()` / `page.modules.background`.                                                                                                                                                                                         |
 | Dock media controls            | Automatic through the `media` module ([§8](#8-media-integration)).                                                                                                                                                                            |
 
@@ -155,7 +155,7 @@ return <MediaSource src="/audio/city.mp3" follow={BACKGROUND_MEDIA_ID} />;
 
 ## 9. Theming
 
-All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`): layer slots (`root`, `image`, `solid`, `gradient`, `edge`, `noise`), direct video slots (`video`, `videoFrame`) and YouTube player slots (`youtube*`). Variants are `data-*` modifiers on the slot (`data-side`, `data-position`, `data-width`, `data-visible`). `fit` and `bg-*` tokens are translated to inline `object-fit` / `object-position` by the module, not by theme slots. Stays in code: compositor hints (`will-change`), mask/gradient math (`generateBaseGradient`, `generateEdgeGradient`, `getEdgeFadeMask`), and motion (defaults derive from `DURATION_TOKENS` / `EASING_CURVES`, [Rule 4](../architecture-and-rules.md)). The module deliberately has **no presets** (a test bans `BACKGROUND_PRESETS`): pass a URL or a state object, or build your own with `defineBackground`.
+All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`): layer slots (`root`, `image`, `solid`, `gradient`, `edge`, `noise`), direct video slots (`video`, `videoFrame`) and YouTube player slots (`youtube*`). Variants are `data-*` modifiers on the slot (`data-side`, `data-position`, `data-width`, `data-visible`). `fit` and `bg-*` tokens are translated to inline `object-fit` / `object-position` by the module, not by theme slots. Motion is the app's: `motion: BackgroundMotion` in the theme ([theming §5](../theming.md#5-motion-your-app-owns-every-animation), starter in `templates/motion/background.ts`) gives the default `initial`, `animate`, `exit` and `transition`, plus `exitDurationFactor` for a page exit without its own transition. Stays in code: compositor hints (`will-change`) and mask/gradient math (`generateBaseGradient`, `generateEdgeGradient`, `getEdgeFadeMask`). The module deliberately has **no presets** (a test bans `BACKGROUND_PRESETS`): pass a URL or a state object, or build your own with `defineBackground`.
 
 ## 10. Recipes and gotchas
 
@@ -183,7 +183,7 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 | `visual.ts`          | Gradient generation, smoothstep edge-fade masks, and video styling/fit options.                           |
 | `playback.ts`        | Direct HTML video DOM controls: play/pause, volume/mute, loop, and playbackRate sync.                     |
 | `overlay.tsx`        | `BackgroundOverlay`, `NativeVideo`, and backdrop overlay layers (solid, noise, gradients).                |
-| `motion.ts`          | Motion animations, transition presets, and CSS duration/easing helpers.                                  |
+| `motion.ts`          | `useBackgroundMotion`, how a page's `animation` merges over the app's motion, the exit fallback, and CSS duration/easing helpers.|
 | `context.tsx`        | `BackgroundProvider`: store, actions, `media` module bridge, and `useBackground*` hooks.                  |
 | `module.tsx`         | `backgroundModule` definition, `selectPageBackground`, `defineBackground`, and kernel type augmentation.  |
 | `youtube/parse.ts`   | YouTube URL/ID parsing, time params, stream/thumbnail URLs, and video element proxy.                      |

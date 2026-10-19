@@ -6,6 +6,12 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
+import {
+  type SpringOptions,
+  type TargetAndTransition,
+  type Transition,
+  type Variants,
+} from "motion/react";
 import { type RegistryMetadata } from "@/kernel";
 import { type ResolvedTheme } from "@/theme";
 
@@ -1529,3 +1535,142 @@ export type DockThemeSlot =
   | "actionSurface";
 
 export type DockTheme = ResolvedTheme<DockThemeSlot>;
+
+/** A card leaving the deck: where it rests now, by layout. */
+export interface DockCardExitInput {
+  /** Its resting offset in the deck, in px. */
+  y: number;
+  /** Its resting scale, when known. */
+  scale: number | null;
+  /** Its place in the deck; the front card is 0. */
+  position: number;
+}
+
+/** How long each phase of a surface opening or closing holds, in seconds. */
+export interface DockSurfaceTimings {
+  /** The inline action leaving before the body grows. */
+  dismissAction: number;
+  /** The beat before a surface opens without an action, or before one closes. */
+  anticipation: number;
+  /** The surface body growing in. */
+  expandBody: number;
+  /** The surface body leaving and the deck settling. */
+  collapseBody: number;
+  /** The card header coming back once the body is gone; 0 skips the phase. */
+  restoreHeader: number;
+}
+
+/**
+ * Everything the dock animates, written by the app in its dock theme.
+ * Values are at tempo 1; the app's tempo stretches all of them.
+ */
+export interface DockMotion {
+  /** Transitions the dock gives its parts' own `transition`. */
+  transitions: {
+    /** The deck resizing and settling at rest. */
+    stack: Transition;
+    /** The deck, backdrop and breadcrumbs while expanded or holding a surface. */
+    expand: Transition;
+    /** The deck's size while an open surface changes height, by how far it moves. */
+    surfaceResize: (distancePx: number) => Transition;
+    /** The deck's transform while a surface body grows in. */
+    surfaceArrival: Transition;
+    /** The deck and header just before a surface opens or closes. */
+    anticipation: Transition;
+    /** A surface body growing in; also the card header returning as a surface collapses. */
+    surfaceEnter: Transition;
+    /** A surface body changing between steps. */
+    surfaceStep: Transition;
+    /** A surface body leaving. */
+    surfaceExit: Transition;
+    /** A card settling in the collapsed deck. */
+    card: Transition;
+    /** A card moving in the expanded deck. */
+    cardExpanded: Transition;
+    /** A card behind the front one lifting while the deck is hovered. */
+    cardPeek: Transition;
+    /** Banners and short text crossfades. */
+    fade: Transition;
+    /** Titles, descriptions and card content. */
+    text: Transition;
+    /** The card header changing. */
+    headerSwap: Transition;
+    /** The inline action leaving as a surface opens. */
+    actionDismiss: Transition;
+    icon: Transition;
+    badge: Transition;
+    hud: Transition;
+    /** Buttons and cards being pressed. */
+    press: Transition;
+    scrubberTooltip: Transition;
+    /** How the scrubber's hover tooltip follows the pointer. */
+    scrubberFollow: SpringOptions;
+    /** The media volume fill and thumb, played as CSS transitions. */
+    mediaVolume: Transition;
+  };
+  /** Variant sets, each `hidden` → `visible` → `exit` unless noted. */
+  variants: {
+    fade: Variants;
+    textCrossfade: Variants;
+    /** Card descriptions, shown at the given opacity. */
+    description: (opacity: number) => Variants;
+    headerSwap: Variants;
+    /** The card header returning after a surface. */
+    headerRestore: Variants;
+    extensionShelf: Variants;
+    actionDismiss: Variants;
+    /** Command bar entries; `visible` receives the entry index. */
+    commandBar: Variants;
+    icon: Variants;
+    badge: Variants;
+    hud: Variants;
+    scrubberTooltip: Variants;
+    breadcrumbs: Variants;
+    backdrop: Variants;
+    surfaceBody: Variants;
+    /** Surface controls; each state receives the controls' resting y. */
+    controlsContainer: Variants;
+    controlsAction: Variants;
+    controlsBack: Variants;
+    controlsClose: Variants;
+    /** `idle`, `hover` and `tap` for every dock button. */
+    press: Variants;
+    mediaVolumeThumb: { idle: TargetAndTransition; dragging: TargetAndTransition };
+    /** A card's content while it is behind the front card, and in front. */
+    cardContent: { hidden: TargetAndTransition; visible: TargetAndTransition };
+  };
+  deck: {
+    /** The deck's shadow at rest and while holding a surface. */
+    elevation: { rest: string; elevated: string };
+    /** The deck's scale just before a surface opens and closes. */
+    compress: { open: number; close: number };
+    /**
+     * How far up (px) and how much larger (×) a card behind the front one
+     * moves while the deck is hovered.
+     */
+    peek: (position: number) => { lift: number; scale: number };
+    /** Where a removed card goes. */
+    exit: (card: DockCardExitInput) => TargetAndTransition;
+    /** A pressed card's scale, relative to its resting scale. */
+    tapScale: number;
+  };
+  /** How a surface follows a swipe down before it is dismissed. */
+  drag: {
+    elastic: { top: number; bottom: number };
+    /** Swipe distance (px) mapped onto the opacity and scale ranges. */
+    range: readonly [number, number];
+    opacity: readonly [number, number];
+    scale: readonly [number, number];
+  };
+  /** Class for loading skeletons (a CSS animation). */
+  skeleton: string;
+  /** Seconds; the app's tempo stretches them with everything else. */
+  timings: DockSurfaceTimings & {
+    /** Card delays in the expanded deck: per step, and at most. */
+    expandStagger: number;
+    expandStaggerCap: number;
+    /** Card delays while the deck is hovered: per step, and at most. */
+    peekStagger: number;
+    peekStaggerCap: number;
+  };
+}

@@ -48,7 +48,7 @@ import {
   runSurfaceTransition,
   transitionSurface,
 } from "../../src/modules/dock/surface/machine.ts";
-import { DOCK_SURFACE_CHOREOGRAPHY_TIMINGS as T } from "../../src/modules/dock/motion.ts";
+import { dockMotion } from "../../templates/motion/dock.ts";
 import {
   subscribeToApiErrorStatusEvents,
   subscribeToApplicationErrorStatusEvents,
@@ -675,8 +675,15 @@ describe("dock reducers", () => {
 });
 
 describe("surface transitions", () => {
-  const OPEN_HOLD_MS = T.ACTION_DISMISS_MS - T.ACTION_DISMISS_OVERLAP_MS;
-  const COLLAPSE_MS = T.BODY_EXIT_MS + T.BODY_COLLAPSE_SETTLE_MS;
+  const TIMINGS = dockMotion.timings;
+  const ms = (seconds: number) => Math.round(seconds * 1000);
+  const T = {
+    ANTICIPATION_LEAD_MS: ms(TIMINGS.anticipation),
+    BODY_ENTER_MS: ms(TIMINGS.expandBody),
+    HEADER_RESTORE_MS: ms(TIMINGS.restoreHeader),
+  };
+  const OPEN_HOLD_MS = ms(TIMINGS.dismissAction);
+  const COLLAPSE_MS = ms(TIMINGS.collapseBody);
 
   const open = (surfaceId, extra = {}) => ({
     type: EVENT.OPEN,
@@ -692,7 +699,7 @@ describe("surface transitions", () => {
     const effects: any[] = [];
     let state = initialState;
     for (const event of events) {
-      const result = transitionSurface(state, event);
+      const result = transitionSurface(state, event, TIMINGS);
       state = result.state;
       states.push(state);
       effects.push(result.effects);
@@ -728,7 +735,7 @@ describe("surface transitions", () => {
 
     test("the input state is never mutated", () => {
       const input = { phase: "idle", surfaceIds: [] as any[] };
-      transitionSurface(input, open(1));
+      transitionSurface(input, open(1), TIMINGS);
       assert.deepEqual(input, { phase: "idle", surfaceIds: [] as any[] });
     });
   });
@@ -784,7 +791,7 @@ describe("surface transitions", () => {
         phase: "open",
       });
       for (const event of [open(1), open(null), { type: EVENT.OPEN }]) {
-        const result = transitionSurface(base, event);
+        const result = transitionSurface(base, event, TIMINGS);
         assert.deepEqual(result.state, base);
         assert.deepEqual(result.effects, []);
       }
@@ -842,9 +849,9 @@ describe("surface transitions", () => {
         surfaceIds: [1],
         phase: "open",
       });
-      assert.deepEqual(transitionSurface(base, close(9)).effects, []);
+      assert.deepEqual(transitionSurface(base, close(9), TIMINGS).effects, []);
       assert.deepEqual(
-        transitionSurface(createSurfaceTransitionState(), CLOSE_ALL).effects,
+        transitionSurface(createSurfaceTransitionState(), CLOSE_ALL, TIMINGS).effects,
         [],
       );
     });
@@ -852,7 +859,7 @@ describe("surface transitions", () => {
     test("advance is a no-op in resting phases", () => {
       for (const input of [{}, { surfaceIds: [1], phase: "open" }]) {
         const base = createSurfaceTransitionState(input);
-        const result = transitionSurface(base, ADVANCE);
+        const result = transitionSurface(base, ADVANCE, TIMINGS);
         assert.deepEqual(result.state, base);
         assert.deepEqual(result.effects, []);
       }
@@ -867,6 +874,7 @@ describe("surface transitions", () => {
       const phases: any[] = [];
       const mounted: any[] = [];
       const runner = runSurfaceTransition({
+        timings: TIMINGS,
         event: open(1),
         onEffect: (effect) =>
           effect.type === EFFECT.MOUNT && mounted.push(effect.surfaceId),
@@ -887,6 +895,7 @@ describe("surface transitions", () => {
       const released: any[] = [];
       const scheduler = createDockScheduler();
       const runner = runSurfaceTransition({
+        timings: TIMINGS,
         event: close(1),
         scheduler,
         state: { surfaceIds: [1], phase: "open" },
@@ -911,6 +920,7 @@ describe("surface transitions", () => {
     test("dispatch settles the in-flight transition before applying the next event", () => {
       const released: any[] = [];
       const runner = runSurfaceTransition({
+        timings: TIMINGS,
         event: close(1),
         state: { surfaceIds: [1], phase: "open" },
         onEffect: (effect) =>
@@ -928,6 +938,7 @@ describe("surface transitions", () => {
     test("cancel stops the timeline and ignores later dispatches", () => {
       const phases: any[] = [];
       const runner = runSurfaceTransition({
+        timings: TIMINGS,
         event: open(1),
         onTransition: (state) => phases.push(state.phase),
       });

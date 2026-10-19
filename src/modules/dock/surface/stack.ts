@@ -48,6 +48,7 @@ import {
   type SurfaceRuntimeRefs,
 } from "./machine";
 import { useSurfaceFlows, useSurfaceLifecycleEffects } from "./hooks";
+import { useDockSurfaceTimings } from "../motion";
 import { report } from "@/utils";
 
 export function useSurfaceStack({
@@ -66,6 +67,7 @@ export function useSurfaceStack({
   setExpanded: (expanded: boolean) => void;
   setSearchQuery: (query: string) => void;
 }) {
+  const timings = useDockSurfaceTimings();
   const [surfaceState, setSurfaceState] = useState(initialSurfaceState);
   const [surfaceLifecycleState, setSurfaceLifecycleState] = useState(
     createSurfaceLifecycleState,
@@ -188,6 +190,7 @@ export function useSurfaceStack({
         event,
         scheduler: runtimeScheduler,
         state: transitionState,
+        timings,
         onTransition(nextState) {
           const activeSurfaceIds = new Set(nextState.surfaceIds);
           const nextStack = stackRef.current.filter((s) =>
@@ -215,7 +218,7 @@ export function useSurfaceStack({
       transitionRunnerRef.current = runner;
       return runner;
     },
-    [finalizeSurfaceClose, payloads, runtimeScheduler],
+    [finalizeSurfaceClose, payloads, runtimeScheduler, timings],
   );
 
   const pushStep = useCallback(

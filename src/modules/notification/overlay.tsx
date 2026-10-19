@@ -7,11 +7,7 @@ import { type CSSProperties } from "react";
 import { cn } from "@/utils";
 import { DOCK_STACK_ELEMENT_ID } from "./constants";
 import { type NotificationEntry } from "./types";
-import {
-  NOTIFICATION_COMPOSITOR_STYLE,
-  NOTIFICATION_TRANSITION,
-  toastVariants,
-} from "./motion";
+import { NOTIFICATION_COMPOSITOR_STYLE, useNotificationMotion } from "./motion";
 import { useNotificationContainerModel, NotificationListener } from "./hooks";
 
 function Toast({
@@ -29,6 +25,7 @@ function Toast({
   polite?: boolean;
   style?: CSSProperties;
 }) {
+  const toastMotion = useNotificationMotion();
   return (
     <motion.div
       role="alert"
@@ -36,11 +33,11 @@ function Toast({
       aria-live={polite ? "polite" : undefined}
       aria-keyshortcuts="Escape"
       tabIndex={0}
-      variants={toastVariants}
+      variants={toastMotion.toast}
       initial="hidden"
       animate="visible"
       exit="exit"
-      transition={NOTIFICATION_TRANSITION}
+      transition={toastMotion.transition}
       style={{ ...NOTIFICATION_COMPOSITOR_STYLE, ...style }}
       className={className}
       onClick={(event: MouseEvent<HTMLElement>) => {

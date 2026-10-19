@@ -12,13 +12,7 @@ import {
 } from "./hooks";
 import { joinClassNames } from "./dom";
 import { resolveMenuItems } from "./items";
-import {
-  CONTEXT_MENU_ITEM_TAP,
-  CONTEXT_MENU_MICRO_SPRING,
-  menuContentVariants,
-  menuItemVariants,
-  menuPopVariants,
-} from "./motion";
+import { useContextMenuMotion } from "./motion";
 import {
   type ContextMenuClasses,
   type ContextMenuConfig,
@@ -97,6 +91,7 @@ export function ContextMenuItem({
   onSelect: (item: ContextMenuResolvedItem, event: React.MouseEvent) => void;
   setButtonRef: (node: HTMLButtonElement | null) => void;
 }) {
+  const menuMotion = useContextMenuMotion();
   if (item.type === "separator") {
     return <div className={classes.separator} role="separator" />;
   }
@@ -116,8 +111,8 @@ export function ContextMenuItem({
       disabled={item.disabled}
       role="menuitem"
       type="button"
-      whileTap={CONTEXT_MENU_ITEM_TAP}
-      transition={CONTEXT_MENU_MICRO_SPRING}
+      whileTap={menuMotion.itemTap}
+      transition={menuMotion.itemTransition}
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
     >
@@ -170,6 +165,7 @@ export function ContextMenuContent({
     onClose,
     position,
   });
+  const menuMotion = useContextMenuMotion();
 
   return (
     <div>
@@ -182,7 +178,7 @@ export function ContextMenuContent({
       <motion.div
         ref={menuRef}
         data-context-menu-ignore
-        variants={menuPopVariants}
+        variants={menuMotion.pop}
         initial="hidden"
         animate="visible"
         exit="exit"
@@ -199,7 +195,7 @@ export function ContextMenuContent({
         onKeyDown={handleMenuKeyDown}
       >
         <motion.div
-          variants={menuContentVariants}
+          variants={menuMotion.content}
           initial="hidden"
           animate="visible"
         >
@@ -209,7 +205,7 @@ export function ContextMenuContent({
         {items.map((item, index) => (
           <motion.div
             key={item.key || `menu-item-${index}`}
-            variants={menuItemVariants}
+            variants={menuMotion.item}
             custom={index}
             initial="hidden"
             animate="visible"

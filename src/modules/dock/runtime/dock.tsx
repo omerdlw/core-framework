@@ -71,12 +71,7 @@ import {
 } from "../state";
 import { useDockBreadcrumbs } from "../routing/breadcrumbs";
 import { useIsSurfaceExtensionsVisible } from "../surface/hooks";
-import {
-  DOCK_CARD_EXPAND_TRANSITION,
-  DOCK_STACK_TRANSITION,
-  DOCK_SURFACE_RESIZE_TRANSITION,
-  getDockSurfaceResizeTransition,
-} from "../motion";
+import { getDockStackTransition, useDockMotion } from "../motion";
 import { report } from "@/utils";
 
 export function useDockLayout({
@@ -611,26 +606,16 @@ export function useDockModel() {
       onContentHeightChange: isTop ? handleContentHeightChange : null,
     };
   });
-  const dockStackTransition = useMemo(() => {
-    if (activeItem?.surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY) {
-      return DOCK_CARD_EXPAND_TRANSITION;
-    }
-    if (
-      activeItem?.surfacePhase === DOCK_SURFACE_PHASE.OPEN ||
-      activeItem?.surfacePhase === DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION
-    ) {
-      return surfaceResizeDistance > 0
-        ? getDockSurfaceResizeTransition(surfaceResizeDistance)
-        : DOCK_SURFACE_RESIZE_TRANSITION;
-    }
-    if (
-      activeItem?.surfacePhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY ||
-      activeItem?.surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER
-    ) {
-      return DOCK_CARD_EXPAND_TRANSITION;
-    }
-    return expanded ? DOCK_CARD_EXPAND_TRANSITION : DOCK_STACK_TRANSITION;
-  }, [activeItem?.surfacePhase, expanded, surfaceResizeDistance]);
+  const dockMotion = useDockMotion();
+  const dockStackTransition = useMemo(
+    () =>
+      getDockStackTransition(dockMotion, {
+        expanded,
+        resizeDistance: surfaceResizeDistance,
+        surfacePhase: activeItem?.surfacePhase ?? null,
+      }),
+    [activeItem?.surfacePhase, dockMotion, expanded, surfaceResizeDistance],
+  );
 
   return {
     activeItem,
