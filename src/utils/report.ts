@@ -6,13 +6,22 @@ export type ReportSink = (
   level: ReportLevel,
 ) => void;
 
-let sink: ReportSink | null = null;
+// The sink lives on globalThis so every bundled copy of this module (the
+// server-safe and client builds each carry one) reads the sink that
+// GlobalErrorListener installs.
+const GLOBAL_SINK_KEY = Symbol.for("__base_framework_report_sink__");
+type GlobalWithSink = typeof globalThis & {
+  [GLOBAL_SINK_KEY]?: ReportSink | null;
+};
+
+const _global = globalThis as GlobalWithSink;
 
 export function report(
   scope: string,
   error: unknown,
   level: ReportLevel = "error",
 ): void {
+  const sink = _global[GLOBAL_SINK_KEY];
   if (sink) {
     try {
       sink(scope, error, level);
@@ -27,8 +36,8 @@ export function report(
 }
 
 export function setReportSink(next: ReportSink): () => void {
-  sink = next;
+  _global[GLOBAL_SINK_KEY] = next;
   return () => {
-    if (sink === next) sink = null;
+    if (_global[GLOBAL_SINK_KEY] === next) _global[GLOBAL_SINK_KEY] = null;
   };
 }

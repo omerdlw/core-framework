@@ -6,7 +6,9 @@ const shared: Options = {
   clean: false,
   sourcemap: true,
   treeshake: true,
-  splitting: false,
+  // Code shared by entries goes to chunks, so an app importing several
+  // subpaths (e.g. "/modules" and "/modules/dock") loads it once.
+  splitting: true,
   external: [
     "react",
     "react-dom",
