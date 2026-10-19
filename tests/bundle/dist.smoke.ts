@@ -98,6 +98,24 @@ describe("dist bundle", () => {
     assert.equal(files.length, 1, `dock found in: ${files.join(", ")}`);
   });
 
+  test("declarations use no internal path alias", () => {
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (
+          entry.name.endsWith(".d.ts") &&
+          /(\bfrom\s+|\bimport\(\s*)["']@\//.test(fs.readFileSync(full, "utf8"))
+        ) {
+          offenders.push(path.relative("dist", full));
+        }
+      }
+    };
+    walk(path.resolve("dist"));
+    assert.deepEqual(offenders, []);
+  });
+
   test('"use client" heads every client entry and no server-safe entry', () => {
     const head = (file: string) =>
       fs.readFileSync(path.join("dist", file), "utf8").slice(0, 13);

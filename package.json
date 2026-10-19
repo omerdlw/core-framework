@@ -136,7 +136,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && ./node_modules/.bin/tsup && ./node_modules/.bin/tsc --emitDeclarationOnly --outDir dist",
+    "build": "rm -rf dist && ./node_modules/.bin/tsup && ./node_modules/.bin/tsc --emitDeclarationOnly --outDir dist && node scripts/rewrite-dts-aliases.mjs",
     "prepublishOnly": "npm run build && npm run test:dist",
     "dev": "./node_modules/.bin/tsup --watch",
     "type-check": "./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/tsc -p templates",
