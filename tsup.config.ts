@@ -34,6 +34,8 @@ export default defineConfig([
       events: "src/events.ts",
       "tokens/index": "src/tokens/index.ts",
       "utils/index": "src/utils/index.ts",
+      "modules/ambient/server/index": "src/modules/ambient/server/index.ts",
+      "modules/ambient/worker/index": "src/modules/ambient/worker/index.ts",
     },
   },
   // 2. Client-Only Entries (WITH "use client"; banner)

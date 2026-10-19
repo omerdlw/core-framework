@@ -1,12 +1,28 @@
-import type { AmbientImageSource, AmbientTarget } from "./types";
+import { AMBIENT_REGIONS, AMBIENT_ROLES, getAmbientSettings } from "./settings";
+import type {
+  AmbientCssVarConfig,
+  AmbientCssVarNames,
+  AmbientImageSource,
+  AmbientPalette,
+  AmbientTarget,
+  AmbientTone,
+} from "./types";
 
-export const AMBIENT_CSS_VARS = Object.freeze({
-  ambientGlow: "--color-ambient-glow",
-  colorPrimary: "--color-primary",
-  primary: "--primary",
-  black: "--black",
-  white: "--white",
-} as const);
+export type ResolvedCssVars = AmbientCssVarNames & {
+  tones: readonly AmbientTone[] | false;
+};
+
+export function resolveCssVarNames(
+  overrides?: AmbientCssVarConfig | null,
+): ResolvedCssVars {
+  const base = getAmbientSettings().cssVars;
+  return overrides ? { ...base, ...overrides } : base;
+}
+
+const fill = (template: string, values: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
 
 export function resolveTargetElement(
   target: AmbientTarget,
@@ -19,19 +35,14 @@ export function resolveTargetElement(
   return "current" in target ? target.current : target;
 }
 
+/** `colors` keys are custom property names; a bare name gets `--color-`. */
 export function normalizeColorMap(
   colors: Record<string, string>,
 ): Record<string, string> {
-  const cssVars = AMBIENT_CSS_VARS as Record<string, string>;
   const result: Record<string, string> = {};
   for (const [key, value] of Object.entries(colors)) {
     if (!value) continue;
-    const name =
-      cssVars[key] ||
-      (key.startsWith("--")
-        ? key
-        : cssVars[key.toLowerCase()] || `--color-${key}`);
-    result[name] = value;
+    result[key.startsWith("--") ? key : `--color-${key}`] = value;
   }
   return result;
 }
@@ -58,31 +69,46 @@ export function applyScopedCssVariables(
   };
 }
 
+/** Every variable a palette writes: shadow, roles, `on` colours, ramps, regions. */
+export function paletteVarMap(
+  palette: AmbientPalette | null | undefined,
+  names: ResolvedCssVars = resolveCssVarNames(),
+): Record<string, string> {
+  const varMap: Record<string, string> = {};
+  if (!palette) return varMap;
+  if (names.shadow) varMap[names.shadow] = palette.shadow;
+  for (const role of AMBIENT_ROLES) {
+    const swatch = palette.roles[role];
+    if (names.role) varMap[fill(names.role, { role })] = swatch.color;
+    if (names.on) varMap[fill(names.on, { role })] = swatch.on;
+    if (names.tone && names.tones) {
+      for (const tone of names.tones) {
+        varMap[fill(names.tone, { role, tone })] = swatch.ramp[tone];
+      }
+    }
+  }
+  if (names.region) {
+    for (const region of AMBIENT_REGIONS) {
+      varMap[fill(names.region, { region })] = palette.regions[region].color;
+    }
+  }
+  return varMap;
+}
+
 export function resolveAmbientVarMap({
   colors = null,
-  extractedBlack = "",
-  extractedPrimary = "",
+  cssVars = null,
   image = null,
-  tintGlobals = true,
+  palette = null,
 }: {
   colors?: Record<string, string> | null;
-  extractedBlack?: string;
-  extractedPrimary?: string;
+  cssVars?: AmbientCssVarConfig | null;
   image?: AmbientImageSource;
-  tintGlobals?: boolean;
+  palette?: AmbientPalette | null;
 }): Record<string, string> {
-  const varMap: Record<string, string> = {};
-
-  if (image) {
-    if (extractedPrimary) {
-      varMap[AMBIENT_CSS_VARS.primary] = extractedPrimary;
-      varMap[AMBIENT_CSS_VARS.ambientGlow] = extractedPrimary;
-      if (tintGlobals) varMap[AMBIENT_CSS_VARS.colorPrimary] = extractedPrimary;
-    }
-    if (extractedBlack) varMap[AMBIENT_CSS_VARS.black] = extractedBlack;
-  }
-
+  const varMap: Record<string, string> = image
+    ? paletteVarMap(palette, resolveCssVarNames(cssVars))
+    : {};
   if (colors) Object.assign(varMap, normalizeColorMap(colors));
-
   return varMap;
 }

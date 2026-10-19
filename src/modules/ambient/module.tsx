@@ -34,15 +34,12 @@ export function resolvePageAmbientTheme(
 
   if (ambient === false) return null;
   if (ambient === true || typeof ambient === "string") {
-    return {
-      image: typeof ambient === "string" ? ambient : defaultImage,
-      tintGlobals: true,
-    };
+    return { image: typeof ambient === "string" ? ambient : defaultImage };
   }
   if (ambient && typeof ambient === "object") {
     return { image: ambient.image ?? defaultImage, ...ambient };
   }
-  if (banner && !posterUrl) return { image: banner, tintGlobals: true };
+  if (banner && !posterUrl) return { image: banner };
   return null;
 }
 

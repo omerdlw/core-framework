@@ -13,6 +13,8 @@ const SERVER_SAFE_ENTRIES = [
   "events.js",
   "tokens/index.js",
   "utils/index.js",
+  "modules/ambient/server/index.js",
+  "modules/ambient/worker/index.js",
 ];
 
 if (!fs.existsSync(path.resolve("dist/index.js"))) {
@@ -55,6 +57,17 @@ describe("dist bundle", () => {
 
     assert.equal(barrel.dockModule, dock.dockModule);
     assert.equal(barrel.loadingModule.context, loading.LoadingContext);
+  });
+
+  test("ambient settings are one store across the client and server entries", async () => {
+    const client = await import(`${PKG}/ambient`);
+    const server = await import(`${PKG}/ambient/server`);
+    const restore = server.configureAmbient({ proxy: "/dist-smoke?u=" });
+    try {
+      assert.equal(client.getAmbientSettings().proxy, "/dist-smoke?u=");
+    } finally {
+      restore();
+    }
   });
 
   test("the event bus is one emitter across entries", async () => {

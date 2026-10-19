@@ -1,27 +1,38 @@
-export {
-  AMBIENT_DEFAULTS,
-  ambientTheme,
-} from "./constants";
+export { ambientTheme } from "./constants";
 
 export {
-  COLOR_EXTRACT_CONFIG,
-  derivePalette,
-  oklchToString,
-  rgbToOklch,
-  srgbToLinear,
-} from "./color";
+  AMBIENT_REGIONS,
+  AMBIENT_ROLES,
+  AMBIENT_TONES,
+  DEFAULT_ANALYSIS,
+  DEFAULT_CSS_VAR_NAMES,
+  configureAmbient,
+  getAmbientSettings,
+} from "./settings";
 
 export {
-  createDefaultPalette,
+  contrastRatio,
+  formatOklch,
+  maxChroma,
+  onColorFor,
+  srgbToOklab,
+  toneOf,
+} from "./oklab";
+
+export { analyzeAmbientPixels, findContentBounds } from "./analyze";
+
+export {
   extractPaletteFromImage,
-  sampleImageData,
+  getCachedAmbientPalette,
+  primeAmbientPalette,
 } from "./extractor";
 
 export {
-  AMBIENT_CSS_VARS,
   applyScopedCssVariables,
   normalizeColorMap,
+  paletteVarMap,
   resolveAmbientVarMap,
+  resolveCssVarNames,
   resolveTargetElement,
 } from "./dom";
 

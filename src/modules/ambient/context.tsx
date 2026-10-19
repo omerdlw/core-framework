@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { createStore } from "@/utils";
 import { getOrCreateGlobalContext } from "@/kernel";
-import { AMBIENT_DEFAULTS } from "./constants";
 import type {
   AmbientProviderProps,
   AmbientProviderValue,
@@ -19,7 +18,7 @@ export function AmbientProvider({
 }: AmbientProviderProps) {
   const [store] = useState(() =>
     createStore<AmbientState>(
-      { isExtracting: false, palette: initialPalette || AMBIENT_DEFAULTS },
+      { isExtracting: false, palette: initialPalette },
       { freezeSnapshots: false },
     ),
   );

@@ -1110,7 +1110,7 @@ describe("page runtime", () => {
   });
 
   describe("ambient: theme users are isolated from the shared palette", () => {
-    const PAGE_PALETTE = { black: "#000000", primary: "#112233" };
+    const PAGE_PALETTE = { shadow: "#000000", source: "/page.jpg" };
 
     test("usePage does not re-render when the shared palette changes", async () => {
       const ambient = createProbe(() => useAmbient());
@@ -1122,12 +1122,12 @@ describe("page runtime", () => {
 
       await act(async () =>
         (ambient.latest! as any).setPalette({
-          black: "#010101",
-          primary: "#abcdef",
+          shadow: "#010101",
+          source: "/abcdef.jpg",
         }),
       );
       await act(async () => (ambient.latest! as any).setIsExtracting(true));
-      assert.equal((ambient.latest! as any).palette.primary, "#abcdef");
+      assert.equal((ambient.latest! as any).palette.source, "/abcdef.jpg");
       assert.equal((ambient.latest! as any).isExtracting, true);
 
       assert.equal(page.renders, 1, "the page does not re-render");
@@ -1139,7 +1139,7 @@ describe("page runtime", () => {
       const ambient = createProbe(() => useAmbient());
       const themed = createProbe(() =>
         useAmbientTheme({
-          colors: { primary: PAGE_PALETTE.primary },
+          colors: { "--ambient-shadow": PAGE_PALETTE.shadow },
           initialPalette: PAGE_PALETTE,
           transition: false,
         }),
@@ -1154,10 +1154,10 @@ describe("page runtime", () => {
       );
       assert.deepEqual(
         [
-          (ambient.latest! as any).palette.primary,
-          (ambient.latest! as any).palette.black,
+          (ambient.latest! as any).palette.source,
+          (ambient.latest! as any).palette.shadow,
         ],
-        [PAGE_PALETTE.primary, PAGE_PALETTE.black],
+        [PAGE_PALETTE.source, PAGE_PALETTE.shadow],
       );
       assert.equal(themed.renders, 1, "the theme user renders once");
       await view.unmount();
@@ -1171,10 +1171,10 @@ describe("page runtime", () => {
       await act(async () =>
         (ambient.latest! as any).setPalette((prev) => ({
           ...prev,
-          primary: "#fedcba",
+          source: "/fedcba.jpg",
         })),
       );
-      assert.equal((ambient.latest! as any).palette.primary, "#fedcba");
+      assert.equal((ambient.latest! as any).palette.source, "/fedcba.jpg");
 
       const renders = ambient.renders;
       await act(async () =>

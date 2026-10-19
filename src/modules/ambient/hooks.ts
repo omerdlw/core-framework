@@ -4,9 +4,9 @@ import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
 import { shallowEqual } from "@/utils";
 import { useModuleTheme } from "@/theme";
-import { AMBIENT_DEFAULTS, ambientTheme } from "./constants";
+import { ambientTheme } from "./constants";
 import { AmbientContext } from "./context";
-import { extractPaletteFromImage } from "./extractor";
+import { extractPaletteFromImage, primeAmbientPalette } from "./extractor";
 import {
   applyScopedCssVariables,
   resolveAmbientVarMap,
@@ -32,56 +32,49 @@ export function useStableObject<T extends object | null | undefined>(value: T): 
 export function useAmbientColor(
   imageSource: AmbientImageSource,
   options: AmbientExtractOptions | null = null,
-): { isExtracting: boolean; palette: AmbientPalette } {
+): { isExtracting: boolean; palette: AmbientPalette | null } {
   const stableOptions = useStableObject(options);
-  const initialPalette = useStableObject(
-    options?.initialPalette || options?.fallbackPalette || null,
-  );
-
-  const [extractedData, setExtractedData] = useState<AmbientPalette | null>(
-    () => initialPalette,
-  );
+  const initialPalette = useStableObject(options?.initialPalette ?? null);
 
   const srcKey =
     typeof imageSource === "string" ? imageSource : imageSource?.src;
 
-  const isExtracting = Boolean(
-    imageSource && (!extractedData || extractedData.source !== srcKey),
-  );
+  // A palette made for this very image (on the server, say) is used as is.
+  const seeded =
+    srcKey && initialPalette?.source === srcKey ? initialPalette : null;
+
+  // The outcome of the last extraction: `palette` is null when it failed.
+  const [result, setResult] = useState<{
+    palette: AmbientPalette | null;
+    source: string;
+  } | null>(null);
+
+  const settled = result?.source === srcKey ? result : null;
+  const isExtracting = Boolean(imageSource && !seeded && !settled);
 
   useEffect(() => {
-    if (!imageSource) return;
+    if (seeded && srcKey) primeAmbientPalette(srcKey, seeded);
+  }, [seeded, srcKey]);
+
+  useEffect(() => {
+    if (!imageSource || !srcKey || seeded) return;
 
     let active = true;
 
-    void extractPaletteFromImage(imageSource, {
-      fallbackPalette: initialPalette,
-      ...(stableOptions || {}),
-    })
-      .then((extracted) => {
-        if (active) {
-          setExtractedData({ ...extracted, source: srcKey });
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setExtractedData({
-            black: initialPalette?.black || AMBIENT_DEFAULTS.black,
-            primary: initialPalette?.primary || AMBIENT_DEFAULTS.primary,
-            source: srcKey,
-          });
-        }
+    void extractPaletteFromImage(imageSource, stableOptions ?? {})
+      .catch(() => null)
+      .then((palette) => {
+        if (active) setResult({ palette, source: srcKey });
       });
 
     return () => {
       active = false;
     };
-  }, [imageSource, initialPalette, srcKey, stableOptions]);
+  }, [imageSource, seeded, srcKey, stableOptions]);
 
-  const palette =
-    imageSource && extractedData && extractedData.source === srcKey
-      ? extractedData
-      : initialPalette || AMBIENT_DEFAULTS;
+  const palette = imageSource
+    ? (seeded ?? settled?.palette ?? initialPalette)
+    : initialPalette;
 
   return { isExtracting, palette };
 }
@@ -95,17 +88,18 @@ export function useAmbientTheme(
 
   const {
     colors = null,
+    cssVars = null,
     image = null,
     initialPalette = null,
     options = null,
     scope = null,
-    tintGlobals = true,
     transition = true,
   } = normalizedConfig;
 
   const stableInitialPalette = useStableObject(initialPalette);
   const stableOptions = useStableObject(options);
   const stableColors = useStableObject(colors);
+  const stableCssVars = useStableObject(cssVars);
 
   const resolvedOptions = useMemo<AmbientExtractOptions>(
     () => ({
@@ -130,9 +124,6 @@ export function useAmbientTheme(
     );
   }, [ambientActions, extractedPalette, hasActiveConfig, isExtracting]);
 
-  const extractedPrimary = extractedPalette?.primary || "";
-  const extractedBlack = extractedPalette?.black || "";
-
   const transitionClasses = useModuleTheme(ambientTheme)
     .slots.transition.split(/\s+/)
     .filter(Boolean);
@@ -142,12 +133,11 @@ export function useAmbientTheme(
     () =>
       resolveAmbientVarMap({
         colors: stableColors,
-        extractedBlack,
-        extractedPrimary,
+        cssVars: stableCssVars,
         image,
-        tintGlobals,
+        palette: extractedPalette,
       }),
-    [extractedBlack, extractedPrimary, image, stableColors, tintGlobals],
+    [extractedPalette, image, stableColors, stableCssVars],
   );
 
   useEffect(() => {

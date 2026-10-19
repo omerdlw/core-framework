@@ -1,215 +1,233 @@
-import { COLOR_EXTRACT_CONFIG, derivePalette, rgbToOklch } from "./color";
-import { AMBIENT_DEFAULTS } from "./constants";
+import { analyzeAmbientPixels } from "./analyze";
+import {
+  extractHere,
+  fetchImageBlob,
+  readPixels,
+  type AmbientExtractRequest,
+  type AmbientExtractResult,
+} from "./pipeline";
+import {
+  getAmbientSettings,
+  resolveAnalysis,
+  resolveProxyUrl,
+} from "./settings";
+import {
+  AMBIENT_WORKER_REQUEST,
+  AMBIENT_WORKER_RESPONSE,
+} from "./worker/index";
 import type {
   AmbientExtractOptions,
   AmbientImageSource,
   AmbientPalette,
-  OklchColor,
 } from "./types";
 
-interface HueBin {
-  cos: number;
-  sin: number;
-  sumC: number;
-  sumL: number;
-  weight: number;
-}
-
-/**
- * Picks the most representative accent of an image.
- *
- * Pixels vote for their hue with a weight that grows with chroma (vivid pixels
- * beat muddy ones) and fades toward very dark / very light pixels. Images
- * without meaningful colour resolve to a neutral (`c: 0`) instead of an
- * invented hue.
- */
-export function sampleImageData(imageData: ImageData): OklchColor {
-  const { hueBins, minPixelChroma, minPresence } = COLOR_EXTRACT_CONFIG;
-  const data = imageData.data;
-  const binAngle = 360 / hueBins;
-
-  const bins: HueBin[] = Array.from({ length: hueBins }, () => ({
-    cos: 0,
-    sin: 0,
-    sumC: 0,
-    sumL: 0,
-    weight: 0,
-  }));
-
-  let opaqueCount = 0;
-  let opaqueSumL = 0;
-  let chromaticCount = 0;
-  let midNeutralCount = 0;
-
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue;
-
-    const { c, h, l } = rgbToOklch(data[i], data[i + 1], data[i + 2]);
-    opaqueCount++;
-    opaqueSumL += l;
-
-    // Near-black / near-white pixels carry unreliable hue, ignore them.
-    if (l < 0.06 || l > 0.96) continue;
-
-    if (c < minPixelChroma) {
-      midNeutralCount++;
-      continue;
-    }
-
-    const usable = 1 - 0.7 * Math.min(1, Math.abs(l - 0.62) / 0.62);
-    const weight = c * c * usable;
-    const rad = h * (Math.PI / 180);
-    const bin = bins[Math.floor(h / binAngle) % hueBins];
-
-    bin.weight += weight;
-    bin.sumC += c * weight;
-    bin.sumL += l * weight;
-    bin.cos += Math.cos(rad) * weight;
-    bin.sin += Math.sin(rad) * weight;
-    chromaticCount++;
-  }
-
-  const averageL = opaqueCount > 0 ? opaqueSumL / opaqueCount : 0.5;
-  const neutral: OklchColor = { c: 0, h: 0, l: Number(averageL.toFixed(3)) };
-
-  // Share of coloured pixels among the pixels that could have been coloured.
-  const presence = chromaticCount / Math.max(1, chromaticCount + midNeutralCount);
-  if (chromaticCount === 0 || presence < minPresence) return neutral;
-
-  let bestIndex = 0;
-  let bestScore = -1;
-  for (let i = 0; i < hueBins; i++) {
-    const prev = bins[(i - 1 + hueBins) % hueBins];
-    const next = bins[(i + 1) % hueBins];
-    const score = prev.weight * 0.5 + bins[i].weight + next.weight * 0.5;
-    if (score > bestScore) {
-      bestScore = score;
-      bestIndex = i;
-    }
-  }
-
-  const window = [
-    bins[(bestIndex - 1 + hueBins) % hueBins],
-    bins[bestIndex],
-    bins[(bestIndex + 1) % hueBins],
-  ];
-  const weight = window.reduce((sum, bin) => sum + bin.weight, 0);
-  if (weight === 0) return neutral;
-
-  const sumC = window.reduce((sum, bin) => sum + bin.sumC, 0);
-  const sumL = window.reduce((sum, bin) => sum + bin.sumL, 0);
-  const sin = window.reduce((sum, bin) => sum + bin.sin, 0);
-  const cos = window.reduce((sum, bin) => sum + bin.cos, 0);
-
-  // A small coloured accent on a mostly neutral image is kept, but subdued.
-  const dilution = 0.45 + 0.55 * Math.min(1, presence / 0.3);
-
-  return {
-    c: Number(((sumC / weight) * dilution).toFixed(3)),
-    h: Number(((Math.atan2(sin, cos) * (180 / Math.PI) + 360) % 360).toFixed(1)),
-    l: Number((sumL / weight).toFixed(3)),
-  };
-}
-
-export function createDefaultPalette(
-  fallback?: AmbientPalette | null,
-): AmbientPalette {
-  return {
-    black: fallback?.black || AMBIENT_DEFAULTS.black,
-    primary: fallback?.primary || AMBIENT_DEFAULTS.primary,
-  };
-}
+const WORKER_PATIENCE = 15_000;
 
 const paletteCache = new Map<string, AmbientPalette>();
 const inFlight = new Map<string, Promise<AmbientPalette | null>>();
 
-async function fetchObjectUrl(src: string): Promise<string | null> {
-  if (typeof fetch !== "function" || !src.startsWith("http")) return null;
-
-  const corsUrl = src.includes("cors=")
-    ? src
-    : `${src}${src.includes("?") ? "&" : "?"}cors=1`;
-  const attempts: [string, RequestInit?][] = [
-    [corsUrl, { mode: "cors" }],
-    [`/api/ambient/proxy?url=${encodeURIComponent(src)}`],
-  ];
-
-  for (const [url, init] of attempts) {
-    try {
-      const response = await fetch(url, init);
-      if (response.ok) return URL.createObjectURL(await response.blob());
-    } catch {}
+function cachePalette(key: string, palette: AmbientPalette): void {
+  paletteCache.delete(key);
+  const limit = Math.max(1, getAmbientSettings().cacheLimit);
+  while (paletteCache.size >= limit) {
+    const oldest = paletteCache.keys().next().value;
+    if (oldest === undefined) break;
+    paletteCache.delete(oldest);
   }
-  return null;
+  paletteCache.set(key, palette);
 }
 
-function loadImage(
-  url: string,
-  crossOrigin: boolean,
-): Promise<HTMLImageElement | null> {
+/**
+ * Seeds the client cache with a palette computed elsewhere (usually on the
+ * server), so the same image is never extracted again in this tab.
+ */
+export function primeAmbientPalette(src: string, palette: AmbientPalette): void {
+  if (src && palette) cachePalette(src, { ...palette, source: src });
+}
+
+export function getCachedAmbientPalette(src: string): AmbientPalette | null {
+  return paletteCache.get(src) ?? null;
+}
+
+// ─── Worker ──────────────────────────────────────────────────────────────
+
+interface WorkerSlot {
+  factory: () => Worker;
+  next: number;
+  pending: Map<number, (result: AmbientExtractResult | null) => void>;
+  worker: Worker;
+}
+
+let slot: WorkerSlot | null = null;
+const brokenFactories = new WeakSet<() => Worker>();
+
+function dropWorker(target: WorkerSlot): void {
+  if (slot === target) slot = null;
+  target.worker.terminate();
+  for (const resolve of target.pending.values()) resolve(null);
+  target.pending.clear();
+}
+
+function workerSlot(factory: () => Worker): WorkerSlot | null {
+  if (slot?.factory === factory) return slot;
+  if (slot) dropWorker(slot);
+  if (brokenFactories.has(factory)) return null;
+  let worker: Worker;
+  try {
+    worker = factory();
+  } catch {
+    brokenFactories.add(factory);
+    return null;
+  }
+  const created: WorkerSlot = { factory, next: 1, pending: new Map(), worker };
+  worker.addEventListener("message", (event: MessageEvent) => {
+    const message = event.data as (AmbientExtractResult & { id: number; type: string }) | null;
+    if (message?.type !== AMBIENT_WORKER_RESPONSE) return;
+    created.pending.get(message.id)?.(message);
+    created.pending.delete(message.id);
+  });
+  worker.addEventListener("error", () => {
+    brokenFactories.add(factory);
+    dropWorker(created);
+  });
+  slot = created;
+  return created;
+}
+
+function extractInWorker(
+  factory: () => Worker,
+  request: AmbientExtractRequest,
+): Promise<AmbientExtractResult | null> {
+  const target = workerSlot(factory);
+  if (!target) return Promise.resolve(null);
+  const id = target.next++;
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      target.pending.delete(id);
+      resolve(null);
+    }, WORKER_PATIENCE);
+    target.pending.set(id, (result) => {
+      clearTimeout(timer);
+      resolve(result);
+    });
+    target.worker.postMessage({ ...request, id, type: AMBIENT_WORKER_REQUEST });
+  });
+}
+
+// ─── Main thread ─────────────────────────────────────────────────────────
+
+function loadImageElement(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const image = new Image();
-    if (crossOrigin) image.crossOrigin = "anonymous";
     image.onload = () => resolve(image);
     image.onerror = () => resolve(null);
     image.src = url;
   });
 }
 
-function readPalette(image: HTMLImageElement): AmbientPalette | null {
-  const size = COLOR_EXTRACT_CONFIG.sampleSize;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  if (!context) return null;
+async function extractOnMainThread(
+  request: AmbientExtractRequest,
+): Promise<AmbientPalette | null> {
+  const result = await extractHere(request);
+  if (result.supported) return result.palette;
 
-  context.drawImage(image, 0, 0, size, size);
-  return derivePalette(sampleImageData(context.getImageData(0, 0, size, size)));
-}
-
-async function extractPalette(src: string): Promise<AmbientPalette | null> {
-  const objectUrl = await fetchObjectUrl(src);
+  // No createImageBitmap: decode through an <img> instead.
+  const blob = await fetchImageBlob(request.src, request.proxyUrl);
+  if (!blob || typeof URL.createObjectURL !== "function") return null;
+  const objectUrl = URL.createObjectURL(blob);
   try {
-    const image = await loadImage(objectUrl ?? src, !objectUrl);
-    return image ? readPalette(image) : null;
+    const image = await loadImageElement(objectUrl);
+    const pixels =
+      image &&
+      readPixels(
+        image,
+        image.naturalWidth,
+        image.naturalHeight,
+        request.analysis.sampleSize,
+      );
+    return pixels ? analyzeAmbientPixels(pixels, request.analysis) : null;
   } catch {
     return null;
   } finally {
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    URL.revokeObjectURL(objectUrl);
   }
 }
 
-function cachePalette(src: string, palette: AmbientPalette): void {
-  if (paletteCache.size >= COLOR_EXTRACT_CONFIG.cacheLimit) {
-    const oldest = paletteCache.keys().next().value;
-    if (oldest) paletteCache.delete(oldest);
+// ─── Public ──────────────────────────────────────────────────────────────
+
+function absoluteUrl(src: string): string {
+  try {
+    return new URL(src, globalThis.location?.href).href;
+  } catch {
+    return src;
   }
-  paletteCache.set(src, palette);
 }
 
+const isCrossOrigin = (url: string) => {
+  try {
+    return new URL(url).origin !== globalThis.location?.origin;
+  } catch {
+    return false;
+  }
+};
+
+async function extractPalette(
+  src: string,
+  options: AmbientExtractOptions,
+): Promise<AmbientPalette | null> {
+  const settings = getAmbientSettings();
+  const strategy = options.strategy ?? settings.strategy;
+  const absolute = absoluteUrl(src);
+  const proxy = options.proxy === undefined ? settings.proxy : options.proxy;
+  const request: AmbientExtractRequest = {
+    analysis: resolveAnalysis(options.analysis),
+    proxyUrl: isCrossOrigin(absolute)
+      ? (() => {
+          const proxied = resolveProxyUrl(proxy, absolute);
+          return proxied ? absoluteUrl(proxied) : null;
+        })()
+      : null,
+    src: absolute,
+  };
+
+  if (strategy !== "main" && settings.worker && typeof Worker === "function") {
+    const result = await extractInWorker(settings.worker, request);
+    if (result?.supported) return result.palette;
+  }
+  if (strategy === "worker") return null;
+  return extractOnMainThread(request);
+}
+
+/**
+ * Extracts the palette of an image (cached, with concurrent requests for the
+ * same image shared). Resolves `null` on any failure and never throws.
+ */
 export async function extractPaletteFromImage(
   imageSource: AmbientImageSource,
   options: AmbientExtractOptions = {},
-): Promise<AmbientPalette> {
-  const fallback = createDefaultPalette(
-    options.initialPalette || options.fallbackPalette,
-  );
+): Promise<AmbientPalette | null> {
   const src = typeof imageSource === "string" ? imageSource : imageSource?.src;
-  if (!src || typeof window === "undefined") return fallback;
+  if (!src || typeof window === "undefined") return null;
 
-  const cached = paletteCache.get(src);
+  const strategy = options.strategy ?? getAmbientSettings().strategy;
+  if (strategy === "none") return getCachedAmbientPalette(src);
+
+  const key = options.analysis ? `${src}#${JSON.stringify(options.analysis)}` : src;
+  const cached = paletteCache.get(key);
   if (cached) return cached;
 
-  let pending = inFlight.get(src);
+  let pending = inFlight.get(key);
   if (!pending) {
-    pending = extractPalette(src)
+    pending = extractPalette(src, options)
+      .catch(() => null)
       .then((palette) => {
-        if (palette) cachePalette(src, palette);
-        return palette;
+        if (!palette) return null;
+        const sourced = { ...palette, source: src };
+        cachePalette(key, sourced);
+        return sourced;
       })
-      .finally(() => inFlight.delete(src));
-    inFlight.set(src, pending);
+      .finally(() => inFlight.delete(key));
+    inFlight.set(key, pending);
   }
-  return (await pending) ?? fallback;
+  return pending;
 }
