@@ -42,6 +42,13 @@ export const DOCK_COMPOSITOR_STYLE = Object.freeze({
   transform: "translateZ(0)",
 } as const);
 
+// A layer leaving a card whose content is out of sight goes at once. Played,
+// its exit would show through as the card's content comes into light.
+export const DOCK_UNSEEN_EXIT = Object.freeze({
+  opacity: 0,
+  transition: Object.freeze({ duration: 0 }),
+});
+
 export const DOCK_SURFACE_DRAG_CONSTRAINTS = Object.freeze({
   top: 0,
   bottom: 0,

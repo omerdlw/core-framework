@@ -772,6 +772,8 @@ export interface DockItemSurfaceFields {
   onClose?: ((result?: SurfaceResult) => void) | null;
   popStep?: (() => void) | null;
   pushStep?: ((step: SurfaceStep) => void) | null;
+  /** The page's action, under a surface: shown while the card faces the page. */
+  restingAction?: DockSlotContent | null;
   restingWidth?: number | string | null;
   stepIndex?: number;
   steps?: SurfaceStep[] | null;
@@ -1248,6 +1250,8 @@ export interface StandardItemContentProps {
   badge?: DockBadgeState;
   isActive?: boolean;
   footerNode?: ReactNode;
+  /** The action is leaving in place as a surface opens from this card. */
+  isActionDismissed?: boolean;
   isHudActive?: boolean;
   hud?: DockHudDescriptor | null;
   clearHud?: ((id?: string) => void) | null;

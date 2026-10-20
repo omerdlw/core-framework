@@ -2258,3 +2258,42 @@ describe("dock display", () => {
     }
   });
 });
+
+describe("surface card facing the page", () => {
+  const Panel = () => null;
+
+  test("the card shows the surface only between the page's leaving and return", async () => {
+    const { isSurfaceLayerShown } = await import(
+      "../../src/modules/dock/cards.tsx"
+    );
+    const { DOCK_SURFACE_PHASE } = await import(
+      "../../src/modules/dock/constants.ts"
+    );
+    const shows = (surfacePhase: string) =>
+      isSurfaceLayerShown({ isSurface: true, surfacePhase });
+
+    assert.equal(shows(DOCK_SURFACE_PHASE.DISMISSING_ACTION), false);
+    assert.equal(shows(DOCK_SURFACE_PHASE.EXPANDING_BODY), true);
+    assert.equal(shows(DOCK_SURFACE_PHASE.OPEN), true);
+    assert.equal(shows(DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION), true);
+    assert.equal(shows(DOCK_SURFACE_PHASE.COLLAPSING_BODY), false);
+    assert.equal(shows(DOCK_SURFACE_PHASE.RESTORING_HEADER), false);
+    assert.equal(isSurfaceLayerShown({ isSurface: false }), false);
+    assert.equal(isSurfaceLayerShown(null), false);
+  });
+
+  test("a surface keeps the page's action for the phases it faces the page", async () => {
+    const { applySurfaceToDockItem } = await import(
+      "../../src/modules/dock/surface/view-model.ts"
+    );
+    const action = { label: "Where to watch?" };
+    const item: any = applySurfaceToDockItem(
+      { action, name: "movie", path: "/movie/1" } as any,
+      { component: Panel, id: "providers", showAction: false } as any,
+    );
+
+    assert.equal(item.isSurface, true);
+    assert.equal(item.action, null);
+    assert.equal(item.restingAction, action);
+  });
+});

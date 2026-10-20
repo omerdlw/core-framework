@@ -339,7 +339,7 @@ The dock itself closes surfaces with these reasons: `"dock"` (route change, prog
 
 Focus returns to the element that opened the surface after the last surface closes, except for `browser-back`, `dock`, `unmount`.
 
-Lifecycle phases (`DOCK_SURFACE_PHASE`): `idle → dismissing_action → expanding_body → open → closing_anticipation → collapsing_body → restoring_header → idle`. They drive animation and height locking and are exposed as `surfacePhase` in `DockState`.
+Lifecycle phases (`DOCK_SURFACE_PHASE`): `idle → dismissing_action → expanding_body → open → closing_anticipation → collapsing_body → restoring_header → idle`. They drive animation and are exposed as `surfacePhase` in `DockState`. In `dismissing_action`, `collapsing_body` and `restoring_header` the card faces the page: it shows the page's header and action (the surface item carries the page's action as `restingAction`) and keeps the page's measured height, so the card resizes once, straight between the page's size and the surface's. Set `timings.restoreHeader` to `0` to go from `collapsing_body` straight to `idle`.
 
 ### 8.5 Steps (wizards)
 

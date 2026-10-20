@@ -6,6 +6,7 @@ import {
   createElement,
   isValidElement,
   Suspense,
+  useMemo,
   type ComponentType,
   type ReactElement,
   type ReactNode,
@@ -29,6 +30,7 @@ import {
 import {
   DOCK_COMPOSITOR_STYLE,
   DOCK_SURFACE_DRAG_CONSTRAINTS,
+  DOCK_UNSEEN_EXIT,
   dockSurfaceDragTransformTemplate,
   getDockActionMotionProps,
   getDockBackdropTransition,
@@ -1384,6 +1386,7 @@ export function StandardItemContent({
   badge,
   isActive = false,
   footerNode,
+  isActionDismissed = false,
   isHudActive = false,
   hud = null,
   clearHud = null,
@@ -1391,6 +1394,15 @@ export function StandardItemContent({
   pathname,
 }: StandardItemContentProps) {
   const dockMotion = useDockMotion();
+  // One element plays the action's whole life: arriving, dismissed in place
+  // when a surface opens from it, and leaving when it goes.
+  const actionVariants = useMemo(
+    () => ({
+      ...dockMotion.variants.textCrossfade,
+      dismissed: dockMotion.variants.actionDismiss.exit,
+    }),
+    [dockMotion],
+  );
   const {
     item,
     isPlaying,
@@ -1459,15 +1471,31 @@ export function StandardItemContent({
             isTop={isTop}
             contextCommands={contextCommands}
           />
-          {footerNode ? (
-            <div
-              key="dock-surface-footer"
-              className={theme.slots.cardFooter}
-              style={theme.styles.cardFooter}
-            >
-              {footerNode}
-            </div>
-          ) : null}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {footerNode ? (
+              <motion.div
+                key="dock-card-footer"
+                variants={actionVariants}
+                initial="hidden"
+                animate={isActionDismissed ? "dismissed" : "visible"}
+                exit="exit"
+                transition={
+                  isActionDismissed
+                    ? dockMotion.transitions.actionDismiss
+                    : dockMotion.transitions.fade
+                }
+                className={theme.slots.cardFooter}
+                style={theme.styles.cardFooter}
+              >
+                <div
+                  className={theme.slots.cardAction}
+                  onClick={stopPropagationOnly}
+                >
+                  {footerNode}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
@@ -1511,6 +1539,8 @@ export const DockCardItem = memo(function DockCardItem({
     cardContentRef,
     itemStyle,
     renderedActionSlot,
+    isActionDismissed,
+    showsSurfaceLayer,
     hasNestedInteractiveContent,
     headerRestoreVariants,
     handleMouseEnter,
@@ -1552,6 +1582,7 @@ export const DockCardItem = memo(function DockCardItem({
   });
   const theme = useDockTheme();
   const renderedActionNode = renderActionSlot(renderedActionSlot);
+  const layerExit = isCollapsedBackgroundCard ? DOCK_UNSEEN_EXIT : "exit";
   if (isCollapsedGhostCard) {
     return (
       <motion.div
@@ -1656,16 +1687,13 @@ export const DockCardItem = memo(function DockCardItem({
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
-          {item.isSurface &&
-          item.surfacePhase !== DOCK_SURFACE_PHASE.DISMISSING_ACTION &&
-          item.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
-          item.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER ? (
+          {showsSurfaceLayer ? (
             <motion.div
               key="surface-content-layer"
               variants={dockMotion.variants.headerSwap}
               initial="hidden"
               animate="visible"
-              exit="exit"
+              exit={layerExit}
               transition={dockMotion.transitions.headerSwap}
               style={DOCK_COMPOSITOR_STYLE}
               className={theme.slots.cardSurface}
@@ -1678,7 +1706,7 @@ export const DockCardItem = memo(function DockCardItem({
               variants={dockMotion.variants.extensionShelf}
               initial="hidden"
               animate="visible"
-              exit="exit"
+              exit={layerExit}
               transition={dockMotion.transitions.headerSwap}
               style={DOCK_COMPOSITOR_STYLE}
               className={theme.slots.cardShelf}
@@ -1695,7 +1723,7 @@ export const DockCardItem = memo(function DockCardItem({
                   ? "hidden"
                   : "visible"
               }
-              exit="exit"
+              exit={layerExit}
               transition={
                 item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION
                   ? dockMotion.transitions.anticipation
@@ -1721,38 +1749,10 @@ export const DockCardItem = memo(function DockCardItem({
                   pathname={pathname}
                   footerNode={
                     renderedActionNode ? (
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        {item.surfacePhase ===
-                        DOCK_SURFACE_PHASE.DISMISSING_ACTION ? (
-                          <motion.div
-                            key="dock-action-component-dismiss"
-                            variants={dockMotion.variants.actionDismiss}
-                            initial="visible"
-                            animate="exit"
-                            exit="exit"
-                            transition={dockMotion.transitions.actionDismiss}
-                            className={theme.slots.cardAction}
-                            onClick={stopPropagationOnly}
-                          >
-                            <Suspense>{renderedActionNode}</Suspense>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="dock-action-component"
-                            variants={dockMotion.variants.textCrossfade}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            transition={dockMotion.transitions.fade}
-                            className={theme.slots.cardAction}
-                            onClick={stopPropagationOnly}
-                          >
-                            <Suspense>{renderedActionNode}</Suspense>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <Suspense>{renderedActionNode}</Suspense>
                     ) : null
                   }
+                  isActionDismissed={isActionDismissed}
                 />
               )}
             </motion.div>

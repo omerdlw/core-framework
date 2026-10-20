@@ -209,6 +209,7 @@ export function applySurfaceToDockItem(
     isSurface: true,
     isOverlay: true,
     ...activeSurface,
+    restingAction: item.action ?? null,
     restingWidth: item.width ?? null,
     surfacePhase,
     actions: null,

@@ -129,6 +129,23 @@ function sortToolbarActionsByOrder(
   );
 }
 
+// A surface's card still shows the page it was opened from while the page's
+// action leaves and again while the page comes back; in between it shows the
+// surface.
+const PAGE_FACING_SURFACE_PHASES: ReadonlySet<string> = new Set([
+  DOCK_SURFACE_PHASE.DISMISSING_ACTION,
+  DOCK_SURFACE_PHASE.COLLAPSING_BODY,
+  DOCK_SURFACE_PHASE.RESTORING_HEADER,
+]);
+
+export function isSurfaceLayerShown(
+  item: Pick<DockItem, "isSurface" | "surfacePhase"> | null | undefined,
+): boolean {
+  return Boolean(
+    item?.isSurface && !PAGE_FACING_SURFACE_PHASES.has(item.surfacePhase ?? ""),
+  );
+}
+
 function isActionlessDockItem(
   activeItem: DockItem | null | undefined,
 ): boolean {
@@ -307,11 +324,16 @@ export function useActionSlot(
   pathname: string,
   { isTop = false }: { isTop?: boolean } = {},
 ): DockActionSlot {
-  const { action, isLoading, isOverlay, path, isStatus, isSurface } = item;
+  const { isLoading, path, isStatus, isSurface, surfacePhase } = item;
+  // A surface marks the card an overlay; facing the page, it is the page's,
+  // with the page's action.
+  const isOverlay = Boolean(item.isOverlay && !isSurface);
+  const action = isSurface ? item.restingAction : item.action;
+  const showsSurface = isSurfaceLayerShown({ isSurface, surfacePhase });
   const hasMedia = useDockHasMedia();
 
   return useMemo(() => {
-    if (isLoading || (isOverlay && !isStatus) || isSurface) return null;
+    if (isLoading || (isOverlay && !isStatus) || showsSurface) return null;
     if (isStatus) {
       return action && isRenderableAction(action)
         ? { kind: "action", action }
@@ -337,7 +359,7 @@ export function useActionSlot(
     isLoading,
     isOverlay,
     isStatus,
-    isSurface,
+    showsSurface,
     isTop,
     hasMedia,
     path,
@@ -501,12 +523,18 @@ export function useDockCardItemModel({
       },
     };
   }, [effectiveStyle, isActive, isStatusCard, showBorder, theme]);
+  const showsSurfaceLayer = isSurfaceLayerShown(item);
+  // The action stays on the card while a surface opens from it, leaving in
+  // place, and is back on it while the surface closes, so the card resizes
+  // once, straight between its two sizes.
   const renderedActionSlot =
-    (item.isSurface && !isHeaderRestoring) || isTopHudActive
-      ? null
-      : actionSlot;
+    showsSurfaceLayer || isTopHudActive ? null : actionSlot;
+  const isActionDismissed = Boolean(
+    item.isSurface &&
+    item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION,
+  );
   const hasNestedInteractiveContent = Boolean(
-    renderedActionSlot || (item.isSurface && !isHeaderRestoring),
+    renderedActionSlot || showsSurfaceLayer,
   );
   const dockMotion = useDockMotion();
   const headerRestoreVariants = useMemo(() => {
@@ -627,6 +655,8 @@ export function useDockCardItemModel({
     cardContentRef,
     itemStyle,
     renderedActionSlot,
+    isActionDismissed,
+    showsSurfaceLayer,
     hasNestedInteractiveContent,
     headerRestoreVariants,
     handleMouseEnter,

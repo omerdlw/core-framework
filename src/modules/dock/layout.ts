@@ -199,7 +199,6 @@ export function useDockHeightController({
   const heightRef = useRef<{ content: number }>({ content: 0 });
   const rafRef = useRef<number | null>(null);
   const isHudRef = useRef(isHud);
-  const surfacePhaseRef = useRef(surfacePhase);
 
   const lastAppliedContainerHeightRef = useRef<number>(
     isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight,
@@ -211,8 +210,7 @@ export function useDockHeightController({
 
   useIsomorphicLayoutEffect(() => {
     isHudRef.current = isHud;
-    surfacePhaseRef.current = surfacePhase;
-  }, [isHud, surfacePhase]);
+  }, [isHud]);
 
   const applyHeight = useCallback(() => {
     if (rafRef.current !== null) {
@@ -220,16 +218,12 @@ export function useDockHeightController({
       rafRef.current = null;
     }
 
+    // While a surface opens and closes, the card faces the page with its
+    // header and action, so it keeps the page's measured size rather than
+    // dropping to the bare header in between.
     const { content } = heightRef.current;
-    const currentPhase = surfacePhaseRef.current;
-    const isLockedToBaseHeight =
-      currentPhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION ||
-      currentPhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY ||
-      currentPhase === DOCK_SURFACE_PHASE.RESTORING_HEADER;
-
-    const computedContentHeight = isLockedToBaseHeight ? 0 : content;
     const height = getContainerHeight({
-      cardContentHeight: computedContentHeight,
+      cardContentHeight: content,
       isHud: isHudRef.current,
     });
 
