@@ -92,7 +92,7 @@ describe("dist bundle", () => {
       .filter((file) =>
         fs
           .readFileSync(path.join("dist", file), "utf8")
-          .includes("dock-surface-footer"),
+          .includes("surface-content-layer"),
       );
 
     assert.equal(files.length, 1, `dock found in: ${files.join(", ")}`);
