@@ -6,6 +6,7 @@ import { dockModule } from "./dock/module";
 import { loadingModule } from "./loading/module";
 import { mediaModule } from "./media/module";
 import { modalModule } from "./modal/module";
+import { navigationModule } from "./navigation/module";
 import { notificationModule } from "./notification/module";
 
 export {
@@ -17,12 +18,14 @@ export {
   loadingModule,
   mediaModule,
   modalModule,
+  navigationModule,
   notificationModule,
 };
 
 export const defaultModules = Object.freeze([
   backgroundModule,
   ambientModule,
+  navigationModule,
   dockModule,
   controlsModule,
   contextMenuModule,

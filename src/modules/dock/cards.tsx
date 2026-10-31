@@ -16,6 +16,7 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import { isObject, toArray, clamp, cn } from "@/utils";
 import { useGlobalEvent } from "@/hooks";
+import { useModule } from "@/kernel";
 import {
   useMotionValue,
   useSpring,
@@ -446,7 +447,10 @@ export function useDockCardItemModel({
   const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { cancelRoutePrefetch, prefetchRoute } = useRoutePrefetch(router);
+  const navigation = useModule("navigation");
+  const { cancelRoutePrefetch, prefetchRoute } = useRoutePrefetch(router, {
+    navigator: navigation?.actions,
+  });
   const hasMedia = useDockHasMedia();
   const isTopHudActive = Boolean(isTop && isHudActive);
   const isCurrentActive = Boolean(

@@ -117,6 +117,11 @@
       "import": "./dist/modules/media/index.js",
       "default": "./dist/modules/media/index.js"
     },
+    "./navigation": {
+      "types": "./dist/modules/navigation/index.d.ts",
+      "import": "./dist/modules/navigation/index.js",
+      "default": "./dist/modules/navigation/index.js"
+    },
     "./modules": {
       "types": "./dist/modules/index.d.ts",
       "import": "./dist/modules/index.js",

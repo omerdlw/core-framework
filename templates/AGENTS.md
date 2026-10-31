@@ -141,6 +141,7 @@ import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
 import { backgroundModule } from "@omerdlw/base-framework/modules/background";
 import { controlsModule } from "@omerdlw/base-framework/modules/controls";
 import { loadingModule } from "@omerdlw/base-framework/modules/loading";
+import { navigationModule } from "@omerdlw/base-framework/modules/navigation";
 
 const modules = [
   dockModule,
@@ -150,6 +151,7 @@ const modules = [
   backgroundModule,
   controlsModule,
   loadingModule,
+  navigationModule,
 ];
 
 export function Providers({ children }: { children: React.ReactNode }) {

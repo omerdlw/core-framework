@@ -6,10 +6,13 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useRequiredContext } from "@/hooks";
+import { useRequiredContext, useStore } from "@/hooks";
+import { useModule } from "@/kernel";
+import { shallowEqual } from "@/utils";
 import { globalEvents } from "@/events";
 import { isSafeInternalHref, isSamePath, getDockLocationKey } from "../paths";
 import {
@@ -32,7 +35,15 @@ import {
 } from "../context";
 import { blurActiveElement } from "../dom";
 import { openDockGuardConfirmation } from "./guards";
-import { useDockTransactions } from "./transactions";
+import { createNavigator } from "../../navigation/navigator";
+import { NAVIGATION_STATUS } from "../../navigation/constants";
+import type {
+  NavigationActions,
+  NavigationBlock,
+  NavigationRouter,
+  NavigationState,
+  Navigator,
+} from "../../navigation/types";
 import { report } from "@/utils";
 
 function getRoutePolicyOverrides(
@@ -153,7 +164,12 @@ export function useRoutePrefetch(
   router: PrefetchingRouter | null | undefined,
   {
     intentDelayMs = DOCK_PREFETCH_INTENT_DELAY_MS,
-  }: { intentDelayMs?: number } = {},
+    navigator = null,
+  }: {
+    intentDelayMs?: number;
+    /** When set, prefetches go through its shared warm cache instead. */
+    navigator?: Pick<NavigationActions, "prefetch"> | null;
+  } = {},
 ) {
   const routeStatesRef = useRef(new Map<string, RoutePrefetchState>());
 
@@ -167,7 +183,10 @@ export function useRoutePrefetch(
 
   const prefetchRoute = useCallback(
     (href: string, { immediate = false }: { immediate?: boolean } = {}) => {
-      if (!isSafeInternalHref(href) || typeof router?.prefetch !== "function")
+      if (
+        !isSafeInternalHref(href) ||
+        (!navigator && typeof router?.prefetch !== "function")
+      )
         return false;
 
       const routeState = routeStatesRef.current.get(href);
@@ -179,6 +198,11 @@ export function useRoutePrefetch(
         if (!currentState) return;
 
         currentState.timeoutId = null;
+        if (navigator) {
+          routeStatesRef.current.delete(href);
+          navigator.prefetch(href);
+          return;
+        }
         currentState.isPrefetched = true;
 
         try {
@@ -209,7 +233,7 @@ export function useRoutePrefetch(
 
       return true;
     },
-    [intentDelayMs, router],
+    [intentDelayMs, navigator, router],
   );
 
   useEffect(() => {
@@ -300,6 +324,28 @@ function emitDockEvent(eventType: string, data: Record<string, unknown> = {}) {
   });
 }
 
+function useDockNavigator(router: NavigationRouter): Navigator {
+  const shared = useModule("navigation");
+  // Without the navigation module the dock runs a navigator of its own: the
+  // same machine, bound to its router, without the global listeners.
+  const [own] = useState(() =>
+    shared ? null : createNavigator({ router }),
+  );
+  useEffect(() => {
+    own?.setRouter(router);
+  }, [own, router]);
+  useEffect(() => (own ? () => own.dispose() : undefined), [own]);
+  return useMemo(
+    () => own ?? ({ ...shared!.actions, dispose: () => {}, store: shared!.store }),
+    [own, shared],
+  );
+}
+
+const selectTrips = (state: NavigationState) => ({
+  active: state.active,
+  last: state.last,
+});
+
 export function useDockNavigation() {
   const pathname = usePathname();
   const { locationKey, syncLocationKey } = useDockLocationKey();
@@ -318,117 +364,97 @@ export function useDockNavigation() {
     "DockProvider",
   );
 
+  const navigator = useDockNavigator(router);
+  const { active: activeTransaction, last: lastTransaction } = useStore(
+    navigator.store,
+    selectTrips,
+    shallowEqual,
+  ) as { active: DockTransaction | null; last: DockTransaction | null };
+
   const previousLocationKeyRef = useRef(locationKey);
+  const settledTripRef = useRef(lastTransaction);
 
-  const handleTransactionTimeout = useCallback(() => {
-    clearPreparedRouteReset();
-    stopLoading();
-  }, [clearPreparedRouteReset, stopLoading]);
-
-  const {
-    activeTransaction,
-    beginTransaction,
-    cancelActiveTransaction,
-    cancelTransaction,
-    completeTransactionForPath,
-    failTransaction,
-    isTransactionCurrent,
-    lastTransaction,
-  } = useDockTransactions({
-    onTimeout: handleTransactionTimeout,
-  });
+  useEffect(() => {
+    if (settledTripRef.current === lastTransaction) return;
+    settledTripRef.current = lastTransaction;
+    if (!lastTransaction) return;
+    if (lastTransaction.status === NAVIGATION_STATUS.COMPLETED) {
+      // A push that kept the pathname moved no pathname; catch up with it.
+      syncLocationKey();
+    } else if (
+      lastTransaction.status === NAVIGATION_STATUS.TIMED_OUT ||
+      lastTransaction.status === NAVIGATION_STATUS.FAILED
+    ) {
+      clearPreparedRouteReset();
+      stopLoading();
+    }
+  }, [clearPreparedRouteReset, lastTransaction, stopLoading, syncLocationKey]);
 
   const cancelDock = useCallback(
     (reason = "guard") => {
-      cancelActiveTransaction(reason);
+      navigator.cancel(reason);
       clearPreparedRouteReset();
       closeSurface({ cancelled: true, reason, success: false });
     },
-    [cancelActiveTransaction, clearPreparedRouteReset, closeSurface],
+    [clearPreparedRouteReset, closeSurface, navigator],
   );
 
   const commitDock = useCallback(
-    ({
+    async ({
+      force = false,
       from,
       href,
+      item,
       routePolicy,
       source = "dock",
-      transaction = null,
     }: {
+      force?: boolean;
       from: string;
       href: string;
+      item?: DockItem | null;
       routePolicy: DockRoutePolicy;
       source?: string;
-      transaction?: DockTransaction | null;
     }) => {
-      const activeRouteTransaction =
-        transaction || beginTransaction({ from, source, to: href });
-      if (!isTransactionCurrent(activeRouteTransaction.id)) return false;
-
-      try {
-        continuity?.remember?.(from);
-        blurActiveElement();
-        prepareRouteReset(routePolicy);
-
-        emitDockEvent(DOCK_EVENTS.NAVIGATE_START, { from, to: href });
-        router.push(href);
-        emitDockEvent(DOCK_EVENTS.NAVIGATE, {
-          from,
-          item: undefined,
-          to: href,
-        });
-
-        if (typeof window !== "undefined") {
-          const currentUrl = new URL(window.location.href);
-          const destinationUrl = new URL(href, window.location.origin);
-
-          if (
-            normalizePath(currentUrl.pathname) ===
-            normalizePath(destinationUrl.pathname)
-          ) {
-            window.requestAnimationFrame(() => {
-              const currentLocKey = getDockLocationKey({
-                hash: window.location.hash,
-                pathname: window.location.pathname,
-                search: window.location.search,
-              });
-              if (
-                !isSamePath(currentLocKey, href) ||
-                !completeTransactionForPath(currentLocKey)
-              )
-                return;
-
-              emitDockEvent(DOCK_EVENTS.NAVIGATE_END, {
-                duration: undefined,
-                from,
-                to: currentLocKey,
-              });
-              previousLocationKeyRef.current = currentLocKey;
-              syncLocationKey();
-              stopLoading();
-            });
-          }
-        }
+      const result = await navigator.navigate(href, {
+        force,
+        guard:
+          guards.count() > 0
+            ? () => guards.check(href, from) as Promise<NavigationBlock>
+            : undefined,
+        onCommit: () => {
+          continuity?.remember?.(from);
+          blurActiveElement();
+          prepareRouteReset(routePolicy);
+          emitDockEvent(DOCK_EVENTS.NAVIGATE_START, { from, to: href });
+        },
+        source,
+      });
+      if (result.ok) {
+        emitDockEvent(DOCK_EVENTS.NAVIGATE, { from, item, to: href });
         return true;
-      } catch (error) {
-        clearPreparedRouteReset();
-        failTransaction(activeRouteTransaction.id, error);
-        stopLoading();
-        report("Dock route transition", error);
-        return false;
       }
+      if (result.blocked) {
+        blurActiveElement();
+        openDockGuardConfirmation({
+          closeSurface,
+          commit: (confirmed) =>
+            void commitDock({ ...confirmed, force: true }).catch((error) =>
+              report("Dock route transition", error),
+            ),
+          from,
+          href,
+          message: result.blocked.message,
+          routePolicy,
+        });
+      }
+      return false;
     },
     [
-      beginTransaction,
-      clearPreparedRouteReset,
-      completeTransactionForPath,
+      closeSurface,
       continuity,
-      failTransaction,
-      isTransactionCurrent,
+      guards,
+      navigator,
       prepareRouteReset,
-      router,
-      stopLoading,
-      syncLocationKey,
     ],
   );
 
@@ -450,64 +476,28 @@ export function useDockNavigation() {
       }
       if (isSamePath(href, from)) return false;
 
-      const transaction = beginTransaction({ from, source, to: href });
-
       try {
-        if (!force && guards.count() > 0) {
-          const guardResult = await guards.check(href, from);
-          if (!isTransactionCurrent(transaction.id)) return false;
-          if (guardResult.blocked) {
-            cancelTransaction(transaction.id, "guard");
-            blurActiveElement();
-            openDockGuardConfirmation({
-              closeSurface,
-              commit: commitDock,
-              from,
-              href,
-              message: guardResult.message,
-              routePolicy,
-            });
-            return false;
-          }
-        }
-        return commitDock({
-          from,
-          href,
-          routePolicy,
-          source,
-          transaction,
-        });
+        return await commitDock({ force, from, href, routePolicy, source });
       } catch (error) {
-        failTransaction(transaction.id, error);
         stopLoading();
-        report("Dock navigation guard", error);
+        report("Dock navigation", error);
         return false;
       }
     },
-    [
-      guards,
-      beginTransaction,
-      cancelTransaction,
-      commitDock,
-      failTransaction,
-      isTransactionCurrent,
-      closeSurface,
-      locationKey,
-      stopLoading,
-    ],
+    [commitDock, locationKey, stopLoading],
   );
 
   useEffect(() => {
+    navigator.arrive(locationKey);
     if (previousLocationKeyRef.current === locationKey) return;
     emitDockEvent(DOCK_EVENTS.NAVIGATE_END, {
       duration: undefined,
       from: previousLocationKeyRef.current,
       to: locationKey,
     });
-    completeTransactionForPath(locationKey);
     previousLocationKeyRef.current = locationKey;
     stopLoading();
-  }, [completeTransactionForPath, locationKey, stopLoading]);
+  }, [locationKey, navigator, stopLoading]);
 
   return {
     activeTransaction,

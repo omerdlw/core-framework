@@ -33,6 +33,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 - 🖱️ **[Context Menu (`context-menu`)](./docs/modules/context-menu.md)** — Viewport clamping, declarative menus
 - 🎛️ **[Controls Module (`controls`)](./docs/modules/controls.md)** — Paired HUD action rails beside the dock
 - ⏳ **[Loading & Skeleton (`loading`)](./docs/modules/loading.md)** — Coordinated loading, anti-flicker delay
+- 🧭 **[Navigation (`navigation`)](./docs/modules/navigation.md)** — Exit holds, payload for the next page, back-button hold, intent prefetch
 - 🎵 **[Media Transport (`media`)](./docs/modules/media.md)** — Session sync, leader vs audible displacement
 - 🔒 **[Result Pattern (`result`)](./docs/modules/result.md)** — Functional `Result<T, E>`, `ok()`, `err()`
 - 🛡️ **[Error Boundary (`error-boundary`)](./docs/modules/error-boundary.md)** — Isolated boundaries, deduplicating reporter
@@ -42,7 +43,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 ## ✨ Features
 
 - ⚡ **Microkernel Architecture:** Ultra-lean orchestration host with topological module dependency sorting, transactional multi-source registry, and atomic route lifecycle commits.
-- 🧩 **First-Party Declarative UI Modules:** 9 production-tested modules (`dock`, `modal`, `notification`, `ambient`, `background`, `context-menu`, `controls`, `loading`, `media`) that communicate strictly through typed contracts without tight coupling.
+- 🧩 **First-Party Declarative UI Modules:** 10 production-tested modules (`dock`, `modal`, `notification`, `ambient`, `background`, `context-menu`, `controls`, `loading`, `media`, `navigation`) that communicate strictly through typed contracts without tight coupling.
 - 🎯 **Single Route Declaration (`usePage`):** Cleanly declare titles, navigation cards, modals, loading states, and background media in a single atomic hook call.
 - 🔒 **Type-Safe Result Pattern (`Result<T, E>`):** Functional, bulletproof error handling with `ok()`, `err()`, and direct feedback bridging via `toast.fromResult()`.
 - 🛡️ **Cross-Bundle Context Deduplication:** Guarantees stable React Context singletons across Next.js split chunks and monorepo boundaries.
@@ -76,6 +77,7 @@ import { notificationModule } from "@omerdlw/base-framework/modules/notification
 import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
 import { backgroundModule } from "@omerdlw/base-framework/modules/background";
 import { loadingModule } from "@omerdlw/base-framework/modules/loading";
+import { navigationModule } from "@omerdlw/base-framework/modules/navigation";
 
 const modules = [
   dockModule,
@@ -84,6 +86,7 @@ const modules = [
   ambientModule,
   backgroundModule,
   loadingModule,
+  navigationModule,
 ];
 
 export function Providers({ children }: { children: React.ReactNode }) {

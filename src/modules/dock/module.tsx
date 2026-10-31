@@ -261,7 +261,7 @@ export const dockModule = defineModule({
   context: DockContext,
   Provider: DockModuleProvider,
   Overlay: Dock,
-  uses: ["loading", "media", "notification"],
+  uses: ["loading", "media", "navigation", "notification"],
   registry: {
     cleanupDelayMs: 600,
     keyPolicy: "path",

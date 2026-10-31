@@ -59,6 +59,22 @@ describe("dist bundle", () => {
     assert.equal(barrel.loadingModule.context, loading.LoadingContext);
   });
 
+  test("the navigation module, its context and settings are shared across entries", async () => {
+    const barrel = await import(`${PKG}/modules`);
+    const navigation = await import(`${PKG}/modules/navigation`);
+    const short = await import(`${PKG}/navigation`);
+
+    assert.equal(barrel.navigationModule, navigation.navigationModule);
+    assert.equal(barrel.navigationModule.context, short.NavigationContext);
+    assert.ok(barrel.defaultModules.includes(navigation.navigationModule));
+    const restore = navigation.configureNavigation({ maxHoldMs: 7 });
+    try {
+      assert.equal(short.getNavigationSettings().maxHoldMs, 7);
+    } finally {
+      restore();
+    }
+  });
+
   test("ambient settings are one store across the client and server entries", async () => {
     const client = await import(`${PKG}/ambient`);
     const server = await import(`${PKG}/ambient/server`);

@@ -159,7 +159,7 @@ export function openDockGuardConfirmation({
     href: string;
     routePolicy: DockRoutePolicy;
     source: string;
-  }) => boolean;
+  }) => unknown;
   from: string;
   href: string;
   message?: string;

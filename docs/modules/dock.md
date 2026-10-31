@@ -11,7 +11,7 @@
 | **Renders**        | `Dock` overlay, portalled to `document.body`, DOM id `dock-card-stack`                                                                                     |
 | **Registry type**  | `dock` (key policy `path`, lifecycle `route`, cleanup delay 600 ms, entries merged by priority)                                                            |
 | **Page slice**     | `usePage({ dock: {…} })` → controller `page.modules.dock`                                                                                                  |
-| **Peers (`uses`)** | `loading`, `media`, `notification` (optional; inert stand-ins when absent)                                                                                 |
+| **Peers (`uses`)** | `loading`, `media`, `navigation`, `notification` (optional; inert stand-ins when absent, a private navigator for `navigation`)                            |
 | **Theme**          | `dockTheme` slots in `src/config/dock.module.theme.ts`                                                                                                     |
 | **Events it owns** | `DOCK_STATUS_SET`, `DOCK_STATUS_CLEAR`, `DOCK_GUARD`, `DOCK_NOT_FOUND`, `DOCK_NAVIGATE_START` / `DOCK_NAVIGATE` / `DOCK_NAVIGATE_END`, `DOCK_UPDATE_BADGE` |
 | **CSS output**     | `--dock-h` on `<html>` (dock height + 16 px buffer)                                                                                                        |
@@ -35,7 +35,7 @@ Three ideas explain everything else:
 
 1. **Cards come from the registry.** A page registers a card (`usePage({ dock })`, `useDockRegistration`, or static entries in `src/app/registry.tsx`). The card whose `path` matches the URL is the active item. Expanding the stack lists all registered cards and turns it into a navigator.
 2. **One thing owns the top card at a time ("attention").** Surface, status, HUD, operation, loading and the plain route all compete; the highest priority wins (see [§7](#7-attention-who-owns-the-top-card)).
-3. **Navigation goes through the dock.** `navigate()` runs guards, records scroll/focus so "back" restores position, tracks a transaction (timeout, supersession), and prefetches on hover intent.
+3. **Navigation goes through the dock.** `navigate()` runs guards, records scroll/focus so "back" restores position, tracks a transaction (timeout, supersession), and prefetches on hover intent. The transaction is a trip of the [navigation module](./navigation.md) when it is installed.
 
 ## 3. Quick start
 
@@ -552,12 +552,13 @@ The starter `src/app/error.tsx` (Next.js's segment boundary, which catches page 
 Returns `Promise<boolean>` — `true` only when the route change was committed.
 
 1. Rejects unsafe or non-internal hrefs and the current location (`false`).
-2. Starts a **transaction** `{ id, from, to, source, status }` (superseding any pending one).
-3. Unless `force`, awaits every registered guard. If one blocks → the transaction is cancelled with reason `guard`, a `GUARD` status is shown, and the promise resolves `false`. "Leave" later re-commits through the same path (source `guard-confirmation`).
-4. Commit: remember scroll/focus of the old path, blur the active element, prepare the route reset policy, emit `DOCK_NAVIGATE_START`, `router.push`, emit `DOCK_NAVIGATE`.
-5. `DOCK_NAVIGATE_END` is emitted when the location key changes (or in the next frame for same-path hash/query changes); the `loading` module is told to stop.
+2. Starts a **transaction** `{ id, from, to, source, status }` (superseding any pending one). The transaction is a navigation trip ([navigation.md](./navigation.md)): of the shared navigator when the `navigation` module is installed, otherwise of a navigator the dock creates for itself.
+3. Unless `force`, awaits every registered guard (as the trip's `guard`). If one blocks → the transaction is cancelled with reason `guard`, a `GUARD` status is shown, and the promise resolves `false`. "Leave" later re-commits through the same path (source `guard-confirmation`, `force`).
+4. Navigation holds run (exit animations, `useNavigationHold`).
+5. Commit: remember scroll/focus of the old path, blur the active element, prepare the route reset policy, emit `DOCK_NAVIGATE_START`, `router.push`, emit `DOCK_NAVIGATE`.
+6. `DOCK_NAVIGATE_END` is emitted when the location key changes (or in the next frame for same-path hash/query changes); the `loading` module is told to stop.
 
-A transaction times out after 15 s (`stopLoading` is called). Statuses: `pending → completed | cancelled | failed | timed-out`. Expanding or navigating collapses the stack and clears hover/search.
+A transaction times out after 15 s from its start and again from its commit (`navigation` `timeoutMs`; `stopLoading` is called). With the module installed, `dockTransaction` is also set for trips the dock did not start (back/forward, `useNavigation().navigate`), so the dock shows the destination card for them too. Statuses: `pending → completed | cancelled | failed | timed-out`. Expanding or navigating collapses the stack and clears hover/search.
 
 ### 12.2 Guards
 
@@ -577,7 +578,7 @@ const { isActive, setGuard, clearGuard } = useDockGuard({
 
 ### 12.3 Prefetch
 
-Hovering a card for 90 ms prefetches its `path` with `router.prefetch` (leaving the card cancels a pending prefetch); focusing a card with the keyboard prefetches its `targetPath ?? path` **immediately**. Not prefetched: loading, overlay and surface cards, cards with `prefetchDisabled` or `dockPolicy.prefetch: false`. A route is prefetched once; if Next.js invalidates it, it can be prefetched again.
+Hovering a card for 90 ms prefetches its `path` with `router.prefetch` (leaving the card cancels a pending prefetch); focusing a card with the keyboard prefetches its `targetPath ?? path` **immediately**. Not prefetched: loading, overlay and surface cards, cards with `prefetchDisabled` or `dockPolicy.prefetch: false`. A route is prefetched once; if Next.js invalidates it, it can be prefetched again. With the `navigation` module installed the prefetch goes through its shared warm cache (`prefetchKind`, `prefetchTtlMs`, intent listeners), the same one plain links use.
 
 ### 12.4 Route policy
 
@@ -719,8 +720,7 @@ Gotchas:
 | `runtime/display.ts`      | Item pipeline: registry entries → filtered items → active item (applies surface / status / media).                                                                                                                        |
 | `runtime/pipeline.ts`     | Item identity, active item detection, ancestor deduplication, loading item cleanup, and stacking reorder.                                                                                                                |
 | `runtime/commands.ts`     | Context-action registry, `useDockContextActions`, `defineDockAction`.                                                                                                                                                     |
-| `routing/navigation.ts`   | `useDockNavigation`, route policy, topology, prefetch, location key, view connection.                                                                                                                                     |
-| `routing/transactions.ts` | Navigation transaction reducer and timeout.                                                                                                                                                                               |
+| `routing/navigation.ts`   | `useDockNavigation` (on a navigation trip), route policy, topology, prefetch, location key, view connection.                                                                                                                                     |
 | `routing/guards.ts`       | Guard registry, `useDockGuard`, guard confirmation.                                                                                                                                                                       |
 | `routing/continuity.ts`   | Scroll/focus snapshots and return handoffs.                                                                                                                                                                               |
 | `routing/breadcrumbs.tsx` | Breadcrumb resolution, provider, overrides, `defineBreadcrumb`.                                                                                                                                                           |

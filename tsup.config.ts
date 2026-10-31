@@ -62,6 +62,7 @@ export default defineConfig([
       "modules/controls/index": "src/modules/controls/index.ts",
       "modules/loading/index": "src/modules/loading/index.ts",
       "modules/media/index": "src/modules/media/index.ts",
+      "modules/navigation/index": "src/modules/navigation/index.ts",
     },
     async onSuccess() {
       const fs = await import("node:fs");
@@ -84,6 +85,7 @@ export default defineConfig([
         "dist/modules/controls/index.js",
         "dist/modules/loading/index.js",
         "dist/modules/media/index.js",
+        "dist/modules/navigation/index.js",
       ];
       for (const rel of clientFiles) {
         const full = path.resolve(rel);

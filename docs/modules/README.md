@@ -12,6 +12,7 @@ One page per module/core entry. Each page answers, from the big picture down to 
 | Dock           | `@omerdlw/base-framework/modules/dock`                            | [dock.md](./dock.md)                     | The only chrome: card stack, surfaces/flows, HUD, operations, status overlays, guards, breadcrumbs | `dock`               | `dock`        |
 | Modal          | `@omerdlw/base-framework/modules/modal`                           | [modal.md](./modal.md)                   | Promise-based stacked dialogs                                                                      | `modal`              | `modal`       |
 | Notification   | `@omerdlw/base-framework/modules/notification`                    | [notification.md](./notification.md)     | Single-slot toasts docked to the dock; event-driven feedback                                       | `notification`       | —             |
+| Navigation     | `@omerdlw/base-framework/modules/navigation`                      | [navigation.md](./navigation.md)         | Trips: exit holds, payload to the next page, back-button hold, intent prefetch                     | —                    | —             |
 | Loading        | `@omerdlw/base-framework/modules/loading`                         | [loading.md](./loading.md)               | Loading overlay + busy flag                                                                        | `loading`            | `loading`     |
 | Background     | `@omerdlw/base-framework/modules/background`                      | [background.md](./background.md)         | Image / video / YouTube layer behind the page                                                      | `background`         | `background`  |
 | Media          | `@omerdlw/base-framework/modules/media`                           | [media.md](./media.md)                   | The active media session the dock controls operate on                                              | `media`              | `media`       |
@@ -44,6 +45,7 @@ Modules never import each other. They connect through three channels only:
 | dock → `loading`              | `definePeer`             | Page-loading flag; `stopLoading()` after navigation.                         |
 | dock → `media`                | `definePeer`             | Play/pause icon, media controls.                                             |
 | dock → `notification`         | `definePeer`             | Is a toast visible (breadcrumbs yield).                                      |
+| dock → `navigation`           | `useModule`              | Transactions are its trips; card prefetch uses its warm cache. Without it the dock runs its own navigator. |
 | background → `media`          | `definePeer`             | Registers the background video as source `background`.                       |
 | ambient → `background`        | `useModuleState`         | Poster URL as the default tint image.                                        |
 | context-menu → `dock`         | `useModuleState`         | Active card as the default menu header.                                      |
@@ -55,7 +57,7 @@ Every `definePeer`/`useModuleState`/`useModule` call needs the **peer id as a st
 
 ## 3. Install-time facts
 
-- `src/modules/index.ts` exports every module and `defaultModules` (`background, ambient, dock, controls, contextMenu, loading, media, modal, notification`); it is the only place that lists them all. `src/app/providers.tsx` passes the list to `CoreProvider`.
+- `src/modules/index.ts` exports every module and `defaultModules` (`background, ambient, navigation, dock, controls, contextMenu, loading, media, modal, notification`); it is the only place that lists them all. `src/app/providers.tsx` passes the list to `CoreProvider`.
 - Install a subset to ship less: `modules={[dockModule, notificationModule, loadingModule]}`.
 - Module ids are **camelCase** (`contextMenu`); the folder and theme id may be kebab-case (`context-menu`).
 - A module is installable when it has a `module.tsx` (or `module.ts`) with `defineModule`; the order of the list does not matter (`uses` sorts it).
@@ -97,6 +99,7 @@ Rules of thumb:
 | loading      |              ✅               |     ✅      |      ✅      |   ✅    |    —    |    ✅     |    —     |                                                                                      |
 | media        |              ✅               |     ✅      |      ✅      |   ✅    |    —    |    ✅     |    —     |                                                                                      |
 | modal        |              ✅               |     ✅      |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    |                                                                                      |
+| navigation   |              ✅               |     ✅      |      ✅      |   ✅    |   ✅    |     —     |    —     | `navigator.ts`, `listeners.ts`, `settings.ts`                                        |
 | notification |              ✅               | `module.ts` |      ✅      |   ✅    |    —    |    ✅     |    ✅    |                                                                                      |
 
 ### 4.2 Why some optional slots are absent
@@ -106,6 +109,7 @@ Rules of thumb:
 | `ambient`      | `overlay`, `motion`     | Renders nothing: it writes CSS custom properties; transitions are CSS classes from the theme.                                          |
 | `controls`     | `context`, `motion`     | Stateless: entries live in the registry and layout is measured from the DOM. No animation.                                             |
 | `loading`      | `motion`, `state`       | The overlay renders `Spinner` (or a skeleton) and mounts/unmounts instantly; state is a small `useState` in the provider.              |
+| `navigation`   | `overlay`, `motion`     | Renders nothing: it binds the router and listens to the document; animation is the app's, in its holds. |
 | `media`        | `motion`                | Renders nothing; `overlay.tsx` holds only the components that return `null` (`MediaSource`, `MediaOverlay`).                           |
 | `notification` | builder                 | Toasts are imperative: `useToast` (in `hooks.ts`) plays the builder role.                                                              |
 | core `error`   | provider, builder, view | Boundaries are class components configured through props; `boundary.tsx` is the view, `listener.ts` and `reporter.ts` are topic files. |
