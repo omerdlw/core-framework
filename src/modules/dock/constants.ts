@@ -114,29 +114,6 @@ export const DOCK_CARD_LAYOUT = Object.freeze({
   baseHeight: DOCK_CARD_DIMENSIONS.height,
 });
 
-export const DOCK_TRANSACTION_EVENTS = Object.freeze({
-  START: "START",
-  COMPLETE: "COMPLETE",
-  CANCEL: "CANCEL",
-  FAIL: "FAIL",
-  TIME_OUT: "TIME_OUT",
-} as const);
-
-export const DOCK_TRANSACTION_STATUS = Object.freeze({
-  PENDING: "pending",
-  COMPLETED: "completed",
-  CANCELLED: "cancelled",
-  FAILED: "failed",
-  TIMED_OUT: "timed-out",
-} as const);
-
-export const DOCK_TRANSACTION_REASON = Object.freeze({
-  GUARD: "guard",
-  SUPERSEDED: "superseded",
-  TIME_OUT: "time-out",
-} as const);
-
-export const DOCK_TRANSACTION_TIMEOUT_MS = 15_000;
 export const DOCK_PREFETCH_INTENT_DELAY_MS = 90;
 // How long the previous card stays on top after the path changes while the
 // new page has not registered its own (a loading boundary, a slow fetch).

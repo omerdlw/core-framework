@@ -1,3 +1,4 @@
+import type { NavigationTrip } from "../navigation/types";
 import { createScheduler, type ExternalStore } from "@/utils";
 import {
   type ComponentType,
@@ -176,11 +177,6 @@ export interface PrefetchingRouter {
 export interface RoutePrefetchState {
   isPrefetched: boolean;
   timeoutId: ReturnType<typeof setTimeout> | null;
-}
-
-export interface DockTransactionEvent {
-  transaction: DockTransaction;
-  type: string;
 }
 
 export interface SurfaceUrlState {
@@ -367,31 +363,8 @@ export type DockRoutePolicyOverrides = Partial<
   Pick<DockRoutePolicy, "clearTransientState" | "dismissSurfaces" | "prefetch">
 >;
 
-export interface DockTransaction {
-  endedAt?: number;
-  error?: unknown;
-  from: string;
-  id: number;
-  reason?: string | null;
-  source: string;
-  startedAt: number;
-  status: string;
-  to: string;
-}
-
-export interface DockTransactionState {
-  active: DockTransaction | null;
-  last: DockTransaction | null;
-}
-
-export interface DockTransactionAction {
-  endedAt?: number;
-  error?: unknown;
-  id?: number;
-  reason?: string | null;
-  transaction?: DockTransaction;
-  type: string;
-}
+/** A dock navigation is a trip of the navigation module. */
+export type DockTransaction = NavigationTrip;
 
 export interface DockContinuityEntry {
   focusKey: string | null;

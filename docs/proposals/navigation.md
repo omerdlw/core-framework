@@ -49,8 +49,9 @@ Why B:
 The dock's `routing/transactions.ts` reducer moves into
 `modules/navigation/state.ts`. `useDockNavigation()` keeps its return shape
 (`activeTransaction`, `lastTransaction`, `cancelDock`, `navigate`, …), so
-`runtime/dock.tsx` does not change. `DOCK_TRANSACTION_*` stay exported as
-aliases of the new constants; `DOCK_EVENTS.NAVIGATE_*` keep firing.
+`runtime/dock.tsx` does not change. `DOCK_TRANSACTION_*` and the transaction
+reducer types are removed (`DockTransaction` is now `NavigationTrip`);
+`DOCK_EVENTS.NAVIGATE_*` keep firing.
 
 ## 3. The model
 

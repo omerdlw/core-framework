@@ -25,7 +25,6 @@ import {
   type DockTopologyNode,
   type DockActions,
   type DockRouteSnapshot,
-  type DockTransaction,
 } from "../types";
 import { DOCK_PREFETCH_INTENT_DELAY_MS, DOCK_EVENTS } from "../constants";
 import {
@@ -369,7 +368,7 @@ export function useDockNavigation() {
     navigator.store,
     selectTrips,
     shallowEqual,
-  ) as { active: DockTransaction | null; last: DockTransaction | null };
+  );
 
   const previousLocationKeyRef = useRef(locationKey);
   const settledTripRef = useRef(lastTransaction);
