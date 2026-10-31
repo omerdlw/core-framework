@@ -5,6 +5,7 @@ import { useRequiredContext, useStore } from "@/hooks";
 import { shallowEqual } from "@/utils";
 import { useModuleTheme } from "@/theme";
 import { ambientTheme } from "./constants";
+import { getAmbientSettings } from "./settings";
 import { AmbientContext } from "./context";
 import { extractPaletteFromImage, primeAmbientPalette } from "./extractor";
 import {
@@ -91,6 +92,7 @@ export function useAmbientTheme(
     cssVars = null,
     image = null,
     initialPalette = null,
+    linger,
     options = null,
     scope = null,
     transition = true,
@@ -150,7 +152,9 @@ export function useAmbientTheme(
       targetEl.classList.add(...transitionKey.split(" ").filter(Boolean));
     }
 
-    const restoreVariables = applyScopedCssVariables(targetEl, resolvedVarMap);
+    const restoreVariables = applyScopedCssVariables(targetEl, resolvedVarMap, {
+      linger: linger ?? (scope ? 0 : getAmbientSettings().linger),
+    });
 
     return () => {
       restoreVariables();
@@ -158,7 +162,7 @@ export function useAmbientTheme(
         targetEl.classList.remove(...transitionKey.split(" ").filter(Boolean));
       }
     };
-  }, [resolvedVarMap, scope, transition, transitionKey]);
+  }, [linger, resolvedVarMap, scope, transition, transitionKey]);
 
   return { isExtracting, palette: extractedPalette };
 }

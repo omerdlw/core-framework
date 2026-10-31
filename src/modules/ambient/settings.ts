@@ -46,10 +46,13 @@ export const DEFAULT_CSS_VAR_NAMES: Readonly<AmbientCssVarNames> = Object.freeze
 
 export const DEFAULT_PROXY = "/api/ambient/proxy?url=";
 
+export const DEFAULT_LINGER_MS = 3_000;
+
 const createDefaults = (): AmbientSettings => ({
   analysis: { ...DEFAULT_ANALYSIS },
   cacheLimit: 100,
   cssVars: { ...DEFAULT_CSS_VAR_NAMES, tones: AMBIENT_TONES },
+  linger: DEFAULT_LINGER_MS,
   proxy: DEFAULT_PROXY,
   strategy: "auto",
   worker: null,
@@ -75,6 +78,7 @@ export function mergeAmbientSettings(
     analysis: { ...base.analysis, ...input.analysis },
     cacheLimit: input.cacheLimit ?? base.cacheLimit,
     cssVars: { ...base.cssVars, ...input.cssVars },
+    linger: input.linger ?? base.linger,
     proxy: input.proxy === undefined ? base.proxy : input.proxy,
     strategy: input.strategy ?? base.strategy,
     worker: input.worker === undefined ? base.worker : input.worker,

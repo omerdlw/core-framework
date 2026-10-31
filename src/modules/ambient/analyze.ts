@@ -23,6 +23,13 @@ import type {
   OklchColor,
 } from "./types";
 
+/**
+ * Bumped whenever the same pixels would give a different palette. Put it in
+ * the key of any palette cache that outlives a deploy (`unstable_cache`, a
+ * database), so stored palettes are computed again.
+ */
+export const AMBIENT_ANALYSIS_VERSION = 2;
+
 // Below this chroma a colour reads as grey; its hue is noise.
 const MIN_CHROMA = 0.022;
 // Below this share of coloured pixels an image is treated as neutral.
@@ -118,47 +125,106 @@ function pickBest<T>(items: T[], score: (item: T) => number): T | null {
 
 const round3 = (value: number) => Math.round(value * 1000) / 1000;
 
-interface ToneSpec {
-  cap: number;
-  max: number;
-  min: number;
-  rel: number;
+/**
+ * How much a colour looks like skin, hair, wood or a tungsten-lit wall: the
+ * warm, low-chroma band most film frames are full of. It is what a frame
+ * shows, rarely its mood.
+ */
+export function skinLikeness({ c, h, l }: OklchColor): number {
+  return (
+    (1 - smoothstep(12, 26, hueDistance(h, 54))) *
+    smoothstep(0.02, 0.035, c) *
+    (1 - smoothstep(0.11, 0.15, c)) *
+    smoothstep(0.26, 0.38, l) *
+    (1 - smoothstep(0.88, 0.95, l))
+  );
 }
 
+// Reds and oranges read louder than blues or greens at the same chroma
+// (Helmholtz–Kohlrausch), so they are given less of it.
+const warmth = (h: number) => 1 - smoothstep(22, 50, hueDistance(h, 42));
+
+// Weight of a colour in the role and region picks: skin still counts, less.
+const salience = (color: OklchColor) => 1 - 0.65 * skinLikeness(color);
+
+interface ChromaSpec {
+  cap: number;
+  gain: number;
+}
+
+/**
+ * The chroma a role carries: its source's own, raised by `gain`, held back
+ * for skin and warm hues, never above `cap`. Chroma, not a share of the
+ * gamut: at mid lightness orange has twice the room teal has, so carrying
+ * the share would turn a pale face into a loud orange.
+ */
+const roleChroma = (source: OklchColor, { cap, gain }: ChromaSpec) =>
+  Math.min(
+    cap * (1 - 0.3 * warmth(source.h)),
+    // A faint tint is raised further, so it still reads as a colour.
+    Math.max(source.c * gain, Math.min(0.05, source.c * 1.6)) *
+      (1 - 0.3 * skinLikeness(source)),
+  );
+
+/** `c` at hue `h` and lightness `l`, inside sRGB. */
+const fitTone = (h: number, l: number, c: number): OklchColor => ({
+  c: Math.max(0, Math.min(c, maxChroma(l, h) * 0.96)),
+  h,
+  l,
+});
+
 function buildSwatch(
-  source: Cluster | null,
-  { cap, max, min, rel }: ToneSpec,
-  fallback: { h: number; l: number },
+  tone: OklchColor,
+  population: number,
   fromImage: boolean,
   minContrast: number,
 ): AmbientSwatch {
-  const h = source?.h ?? fallback.h;
-  const l = clamp(source?.l ?? fallback.l, min, max);
-  const tone = toneOf(h, l, rel, cap);
+  // The ramp keeps the swatch's share of the gamut, so its dark tones stay
+  // hued instead of collapsing to grey.
+  const room = maxChroma(tone.l, tone.h) * 0.96;
+  const rel = room > 0 ? tone.c / room : 0;
   const ramp = {} as AmbientRamp;
   for (const step of AMBIENT_TONES) {
-    ramp[step] = formatOklch(toneOf(h, step / 100, rel, cap));
+    ramp[step] = formatOklch(toneOf(tone.h, step / 100, rel, Math.max(tone.c, 0.04)));
   }
   return {
     c: round3(tone.c),
     color: formatOklch(tone),
     fromImage,
-    h: Math.round(h * 10) / 10,
+    h: Math.round(tone.h * 10) / 10,
     l: round3(tone.l),
     on: formatOklch(onColorFor(tone, minContrast)),
-    population: round3(source?.pop ?? 0),
+    population: round3(population),
     ramp,
   };
 }
 
-// How much of the gamut each role uses, from the source colour's own share.
-const lift = (rel: number, base: number, gain: number, ceiling: number) =>
-  clamp(base + gain * rel, 0, ceiling);
+interface RoleSpec extends ChromaSpec {
+  max: number;
+  min: number;
+}
+
+/** A role's tone from its source cluster, or `fallback` when there is none. */
+function roleTone(
+  source: Cluster | null,
+  spec: RoleSpec,
+  fallback: OklchColor,
+  dilution = 1,
+): OklchColor {
+  if (!source) return fitTone(fallback.h, clamp(fallback.l, spec.min, spec.max), fallback.c);
+  return fitTone(
+    source.h,
+    clamp(source.l, spec.min, spec.max),
+    roleChroma(source, spec) * dilution,
+  );
+}
 
 export interface AmbientClustering {
   clusters: Cluster[];
   /** Centre-weighted mean lightness. */
   meanL: number;
+  /** Per region, the OKLab sum (`L, a, b` per cluster) of each cluster's pixels. */
+  regionLab: Float64Array[];
   /** Per region, the pixel count of each cluster. */
   regionWeights: Float64Array[];
 }
@@ -266,18 +332,25 @@ export function clusterAmbientPixels(
       // Vivid colours pull harder, so a small saturated area keeps its own cluster.
       weights[i] = w * (1 + 5 * Math.sqrt(a * a + b * b));
     });
-    const { assignment, centroids, k } = kmeans(points, weights, budgets[group]);
-    const pop = new Float64Array(k);
-    members.forEach((bin, i) => (pop[assignment[i]] += binSums[bin * 4 + 3]));
+    const { assignment, k } = kmeans(points, weights, budgets[group]);
+    // A cluster's colour is the plain mean of its pixels: the vivid pull that
+    // shaped the clusters would tint a face toward the red title beside it.
+    const sums = new Float64Array(k * 4);
+    members.forEach((bin, i) => {
+      for (let channel = 0; channel < 4; channel++) {
+        sums[assignment[i] * 4 + channel] += binSums[bin * 4 + channel];
+      }
+    });
     const index = new Int32Array(k).fill(-1);
     for (let j = 0; j < k; j++) {
-      if (pop[j] <= 0) continue;
-      const lch = labToLch([centroids[j * 3], centroids[j * 3 + 1], centroids[j * 3 + 2]]);
+      const pop = sums[j * 4 + 3];
+      if (pop <= 0) continue;
+      const lch = labToLch([sums[j * 4] / pop, sums[j * 4 + 1] / pop, sums[j * 4 + 2] / pop]);
       const room = maxChroma(lch.l, lch.h);
       index[j] = clusters.length;
       clusters.push({
         ...lch,
-        pop: pop[j] / total,
+        pop: pop / total,
         rel: room > 0 ? clamp(lch.c / room, 0, 1) : 0,
         rely: reliability(lch.l),
       });
@@ -285,33 +358,41 @@ export function clusterAmbientPixels(
     members.forEach((bin, i) => (clusterOfBin[bin] = index[assignment[i]]));
   });
 
-  // 3. Region shares per cluster.
+  // 3. Region shares per cluster, and the OKLab sum of each cluster's pixels
+  //    in each region: a cluster spanning the frame looks different in parts.
   const regionWeights = AMBIENT_REGIONS.map(() => new Float64Array(clusters.length));
+  const regionLab = AMBIENT_REGIONS.map(() => new Float64Array(clusters.length * 3));
   for (let i = 0; i < pixelBins.length; i++) {
     const bin = pixelBins[i];
     if (bin < 0) continue;
     const cluster = clusterOfBin[bin];
     const bits = pixelRegions[i];
+    const w = binSums[bin * 4 + 3];
     AMBIENT_REGIONS.forEach((region, r) => {
-      if (bits & REGION_BITS[region]) regionWeights[r][cluster] += 1;
+      if (!(bits & REGION_BITS[region])) return;
+      regionWeights[r][cluster] += 1;
+      for (let channel = 0; channel < 3; channel++) {
+        regionLab[r][cluster * 3 + channel] += binSums[bin * 4 + channel] / w;
+      }
     });
   }
 
-  return { clusters, meanL, regionWeights };
+  return { clusters, meanL, regionLab, regionWeights };
 }
 
 /**
  * The palette of an image: OKLab k-means clusters scored by population ×
- * chroma, turned into four roles (each with a gamut-aware tonal ramp and a
- * contrast-safe text colour), five region colours, and the deep `shadow`
- * tone.
+ * chroma (skin tones counted less), turned into four roles (each with a tonal
+ * ramp and a contrast-safe text colour), five region colours, and the deep
+ * `shadow` tone. Roles keep about their source's chroma rather than its share
+ * of the gamut, so warm hues are not inflated.
  */
 export function analyzeAmbientPixels(
   pixels: AmbientPixels,
   overrides: Partial<AmbientAnalysisOptions> = {},
 ): AmbientPalette {
   const options = { ...DEFAULT_ANALYSIS, ...overrides };
-  const { clusters, meanL, regionWeights } = clusterAmbientPixels(pixels, options);
+  const { clusters, meanL, regionLab, regionWeights } = clusterAmbientPixels(pixels, options);
 
   // 4. Roles.
   const chromatic = clusters.filter(isChromatic);
@@ -323,7 +404,7 @@ export function analyzeAmbientPixels(
   // A coloured detail on an almost grey image is kept, but quieter.
   const dilution = 0.55 + 0.45 * Math.min(1, presence / 0.25);
   const { minContrast, minHueDistance } = options;
-  const grey = { h: 0, l: clamp(meanL, 0.3, 0.8) };
+  const grey = { c: 0, h: 0, l: clamp(meanL, 0.3, 0.8) };
 
   // k-means splits one hue into several lightness levels; a hue's share is
   // that of its whole family (clusters within 20°), so it is not undercounted.
@@ -336,19 +417,24 @@ export function analyzeAmbientPixels(
     family.set(cluster, share);
   }
   const share = (cluster: Cluster) => family.get(cluster) ?? cluster.pop;
-  const withShare = (cluster: Cluster | null) =>
-    cluster ? { ...cluster, pop: share(cluster) } : null;
 
   const dominantPick = neutral
     ? null
-    : pickBest(chromatic, (cluster) => share(cluster) * cluster.c * cluster.rely);
+    : pickBest(
+        chromatic,
+        (cluster) => share(cluster) * cluster.c * cluster.rely * salience(cluster),
+      );
   // A grey image keeps a grey `vibrant`: no hue is invented.
   const vividPick = neutral
     ? null
     : pickBest(
         chromatic.filter((cluster) => share(cluster) >= MIN_POPULATION),
         (cluster) =>
-          cluster.c * cluster.c * Math.pow(share(cluster), 0.3) * cluster.rely,
+          cluster.c *
+          cluster.c *
+          Math.pow(share(cluster), 0.3) *
+          cluster.rely *
+          salience(cluster),
       );
   // …but a coloured detail on it (the red coat) becomes the accent.
   const accentPick = pickBest(
@@ -359,7 +445,8 @@ export function analyzeAmbientPixels(
           cluster.c >= 0.035 &&
           (!dominantPick || hueDistance(cluster.h, dominantPick.h) >= minHueDistance),
     ),
-    (cluster) => Math.pow(share(cluster), 0.6) * cluster.c * cluster.rely,
+    (cluster) =>
+      Math.pow(share(cluster), 0.6) * cluster.c * cluster.rely * salience(cluster),
   );
   const mutedPick = neutral
     ? null
@@ -369,58 +456,43 @@ export function analyzeAmbientPixels(
       );
 
   const dominantHue = dominantPick?.h ?? vividPick?.h ?? 0;
+  const accentSource = accentPick ?? vividPick;
   const roles: Record<AmbientRole, AmbientSwatch> = {
     dominant: buildSwatch(
-      withShare(dominantPick),
-      {
-        cap: 0.22,
-        max: 0.74,
-        min: 0.42,
-        rel: dominantPick ? lift(dominantPick.rel, 0.25, 0.85, 0.9) : 0,
-      },
-      grey,
+      roleTone(dominantPick, { cap: 0.2, gain: 1.15, max: 0.74, min: 0.42 }, grey),
+      dominantPick ? share(dominantPick) : 0,
       true,
       minContrast,
     ),
     vibrant: buildSwatch(
-      withShare(vividPick),
-      {
-        cap: 0.24,
-        max: 0.84,
-        min: 0.62,
-        rel: vividPick ? lift(vividPick.rel, 0.4, 0.75, 0.95) * dilution : 0,
-      },
-      { h: dominantHue, l: 0.78 },
+      roleTone(
+        vividPick,
+        { cap: 0.22, gain: 1.35, max: 0.84, min: 0.62 },
+        { c: 0, h: dominantHue, l: 0.78 },
+        dilution,
+      ),
+      vividPick ? share(vividPick) : 0,
       true,
       minContrast,
     ),
     muted: buildSwatch(
-      withShare(mutedPick),
-      {
-        cap: 0.08,
-        max: 0.66,
-        min: 0.38,
-        rel: mutedPick
-          ? clamp(mutedPick.rel, 0.1, 0.3)
-          : dominantPick
-            ? 0.2
-            : 0,
-      },
-      { h: dominantHue, l: clamp(meanL, 0.38, 0.66) },
+      roleTone(
+        mutedPick,
+        { cap: 0.07, gain: 1, max: 0.66, min: 0.38 },
+        { c: dominantPick ? 0.035 : 0, h: dominantHue, l: clamp(meanL, 0.38, 0.66) },
+      ),
+      mutedPick ? share(mutedPick) : 0,
       Boolean(mutedPick) || neutral,
       minContrast,
     ),
     accent: buildSwatch(
-      withShare(accentPick ?? vividPick),
-      {
-        cap: 0.24,
-        max: 0.8,
-        min: 0.55,
-        rel: (accentPick ?? vividPick)
-          ? lift((accentPick ?? vividPick)!.rel, 0.35, 0.75, 0.92) * dilution
-          : 0,
-      },
-      { h: dominantHue, l: 0.72 },
+      roleTone(
+        accentSource,
+        { cap: 0.22, gain: 1.3, max: 0.8, min: 0.55 },
+        { c: 0, h: dominantHue, l: 0.72 },
+        dilution,
+      ),
+      accentSource ? share(accentSource) : 0,
       Boolean(accentPick),
       minContrast,
     ),
@@ -444,39 +516,44 @@ export function analyzeAmbientPixels(
     options.shadowLightness + 0.02,
   );
   const shadow = deepSource
-    ? toneOf(deepSource.h, shadowL, lift(deepSource.rel, 0.3, 0.7, 0.85), 0.1)
+    ? toneOf(deepSource.h, shadowL, clamp(0.3 + 0.7 * deepSource.rel, 0, 0.85), 0.1)
     : { c: 0, h: 0, l: shadowL };
 
-  // 6. Regions: the most telling cluster in each part of the frame.
+  // 6. Regions: the most telling colour in each part of the frame, as that
+  //    part shows it (a cluster's own pixels there, not its frame-wide mean).
   const regions = {} as Record<AmbientRegion, AmbientRegionColor>;
   AMBIENT_REGIONS.forEach((region, r) => {
     const weights = regionWeights[r];
+    const lab = regionLab[r];
     let regionTotal = 0;
     let regionL = 0;
     clusters.forEach((cluster, j) => {
       regionTotal += weights[j];
       regionL += cluster.l * weights[j];
     });
-    const share = (j: number) => (regionTotal > 0 ? weights[j] / regionTotal : 0);
     let strength = 0;
-    let pick: Cluster | null = null;
+    let pick: OklchColor | null = null;
     let pickScore = 0;
-    clusters.forEach((cluster, j) => {
-      if (!isChromatic(cluster)) return;
-      strength += share(j) * colorfulness(cluster.c) * cluster.rely;
-      const score = share(j) * cluster.c * cluster.rely;
+    clusters.forEach((_, j) => {
+      const count = weights[j];
+      if (count <= 0) return;
+      const local = labToLch([lab[j * 3] / count, lab[j * 3 + 1] / count, lab[j * 3 + 2] / count]);
+      const rely = reliability(local.l);
+      if (local.c < MIN_CHROMA || rely <= 0) return;
+      const part = count / regionTotal;
+      strength += part * colorfulness(local.c) * rely;
+      const score = part * local.c * rely * salience(local);
       if (score > pickScore) {
         pickScore = score;
-        pick = cluster;
+        pick = local;
       }
     });
-    const chosen = neutral || strength < MIN_PRESENCE ? null : (pick as Cluster | null);
+    const chosen = neutral || strength < MIN_PRESENCE ? null : (pick as OklchColor | null);
     const tone = chosen
-      ? toneOf(
+      ? fitTone(
           chosen.h,
           clamp(chosen.l, 0.42, 0.72),
-          lift(chosen.rel, 0.25, 0.85, 0.9),
-          0.22,
+          roleChroma(chosen, { cap: 0.18, gain: 1.15 }),
         )
       : {
           c: 0,

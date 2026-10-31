@@ -6,6 +6,7 @@ export {
   AMBIENT_TONES,
   DEFAULT_ANALYSIS,
   DEFAULT_CSS_VAR_NAMES,
+  DEFAULT_LINGER_MS,
   configureAmbient,
   getAmbientSettings,
 } from "./settings";
@@ -19,7 +20,12 @@ export {
   toneOf,
 } from "./oklab";
 
-export { analyzeAmbientPixels, findContentBounds } from "./analyze";
+export {
+  AMBIENT_ANALYSIS_VERSION,
+  analyzeAmbientPixels,
+  findContentBounds,
+  skinLikeness,
+} from "./analyze";
 
 export {
   extractPaletteFromImage,

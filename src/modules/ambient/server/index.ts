@@ -11,7 +11,12 @@ import type {
 // route handlers, build scripts), to be cached and handed to the client as
 // `initialPalette`. Nothing here is client code.
 
-export { analyzeAmbientPixels, findContentBounds, fitSample } from "../analyze";
+export {
+  AMBIENT_ANALYSIS_VERSION,
+  analyzeAmbientPixels,
+  findContentBounds,
+  fitSample,
+} from "../analyze";
 export { isPrivateAddress, isPrivateHostname } from "./address";
 export { configureAmbient, getAmbientSettings } from "../settings";
 export {

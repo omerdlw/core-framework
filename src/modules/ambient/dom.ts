@@ -47,24 +47,104 @@ export function normalizeColorMap(
   return result;
 }
 
+interface InlineValue {
+  priority: string;
+  value: string;
+}
+
+interface VariableLayer {
+  vars: Record<string, string>;
+  /** Set while the layer lingers after its owner let go. */
+  leaving: ReturnType<typeof setTimeout> | null;
+}
+
+interface ElementLayers {
+  /** Each variable's inline value before any layer touched it. */
+  base: Map<string, InlineValue>;
+  /** Oldest first; a later layer wins a variable both define. */
+  layers: VariableLayer[];
+}
+
+const layersOf = new WeakMap<HTMLElement, ElementLayers>();
+
+function paint(element: HTMLElement, state: ElementLayers, names: Iterable<string>) {
+  for (const name of names) {
+    let value: string | undefined;
+    for (let i = state.layers.length - 1; i >= 0 && value === undefined; i--) {
+      value = state.layers[i].vars[name];
+    }
+    if (value !== undefined) {
+      element.style.setProperty(name, value);
+      continue;
+    }
+    const base = state.base.get(name);
+    if (base?.value) element.style.setProperty(name, base.value, base.priority);
+    else element.style.removeProperty(name);
+  }
+}
+
+function removeLayer(element: HTMLElement, state: ElementLayers, layer: VariableLayer) {
+  const index = state.layers.indexOf(layer);
+  if (index < 0) return;
+  if (layer.leaving) clearTimeout(layer.leaving);
+  state.layers.splice(index, 1);
+  paint(element, state, Object.keys(layer.vars));
+  if (state.layers.length === 0) layersOf.delete(element);
+}
+
+export interface ScopedCssVariableOptions {
+  /**
+   * How long (ms) the variables stay after the returned function is called,
+   * unless another call on the same element takes over first. Bridges the
+   * gap between one page's theme and the next (a loading boundary between).
+   */
+  linger?: number;
+}
+
+/**
+ * Sets custom properties on `element`; the returned function takes them off
+ * again, restoring the inline values from before. Calls stack: the latest
+ * wins each variable, and taking one off reveals what lies beneath it.
+ */
 export function applyScopedCssVariables(
   element: HTMLElement,
   varMap: Record<string, string>,
+  { linger = 0 }: ScopedCssVariableOptions = {},
 ): () => void {
-  const previous = new Map<string, { priority: string; value: string }>();
+  const vars: Record<string, string> = {};
   for (const [name, value] of Object.entries(varMap)) {
-    if (!name || !value) continue;
-    previous.set(name, {
+    if (name && value) vars[name] = value;
+  }
+  let state = layersOf.get(element);
+  if (!state) {
+    state = { base: new Map(), layers: [] };
+    layersOf.set(element, state);
+  }
+  // A new theme takes over from any that was only lingering.
+  for (const layer of state.layers.filter((layer) => layer.leaving)) {
+    removeLayer(element, state, layer);
+  }
+  if (!layersOf.has(element)) layersOf.set(element, state);
+  for (const name of Object.keys(vars)) {
+    if (state.base.has(name)) continue;
+    state.base.set(name, {
       priority: element.style.getPropertyPriority(name),
       value: element.style.getPropertyValue(name),
     });
-    element.style.setProperty(name, value);
   }
+  const layer: VariableLayer = { leaving: null, vars };
+  state.layers.push(layer);
+  paint(element, state, Object.keys(vars));
 
+  const owner = state;
+  let released = false;
   return () => {
-    for (const [name, { priority, value }] of previous) {
-      if (value) element.style.setProperty(name, value, priority);
-      else element.style.removeProperty(name);
+    if (released) return;
+    released = true;
+    if (linger > 0 && element.isConnected) {
+      layer.leaving = setTimeout(() => removeLayer(element, owner, layer), linger);
+    } else {
+      removeLayer(element, owner, layer);
     }
   };
 }

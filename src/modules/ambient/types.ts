@@ -104,6 +104,12 @@ export interface AmbientSettings {
   analysis: AmbientAnalysisOptions;
   cacheLimit: number;
   cssVars: AmbientCssVarNames & { tones: readonly AmbientTone[] | false };
+  /**
+   * How long (ms) a page-wide theme's variables stay after it goes away,
+   * so the next page (behind a loading boundary, say) takes over from them
+   * instead of from the fallbacks.
+   */
+  linger: number;
   proxy: AmbientProxy;
   strategy: AmbientStrategy;
   /** Builds the extraction worker (see `serveAmbientWorker`). */
@@ -114,6 +120,7 @@ export interface AmbientSettingsInput {
   analysis?: Partial<AmbientAnalysisOptions>;
   cacheLimit?: number;
   cssVars?: AmbientCssVarConfig;
+  linger?: number;
   proxy?: AmbientProxy;
   strategy?: AmbientStrategy;
   worker?: (() => Worker) | null;
@@ -137,6 +144,12 @@ export interface AmbientConfig {
   cssVars?: AmbientCssVarConfig | null;
   image?: AmbientImageSource;
   initialPalette?: AmbientPalette | null;
+  /**
+   * How long (ms) the variables stay after this theme goes away, unless
+   * another theme takes over first. Default: the configured `linger` on the
+   * page root, 0 on a scoped target.
+   */
+  linger?: number;
   options?: AmbientExtractOptions | null;
   scope?: AmbientTarget;
   transition?: boolean;

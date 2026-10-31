@@ -207,6 +207,39 @@ describe("ambient: analyzeAmbientPixels", () => {
     const pixels = image(40, 40, (_, y) => (y >= 15 && y < 25 ? [2, 2, 2] : ORANGE));
     assert.deepEqual(findContentBounds(pixels), { bottom: 40, left: 0, right: 40, top: 0 });
   });
+
+  test("a pale face stays a pale warm tone, not a loud orange", () => {
+    const palette = analyzeAmbientPixels(solid([224, 172, 140]));
+    const source = 0.075;
+    assert.ok(palette.roles.dominant.c <= source * 1.15, `dominant C ${palette.roles.dominant.c}`);
+    for (const region of Object.values(palette.regions)) {
+      assert.ok(region.c <= source * 1.15, `region C ${region.c}`);
+    }
+  });
+
+  test("pale tones, warm or cool, keep about their own chroma", () => {
+    for (const rgb of [[200, 160, 130], [220, 180, 150], [130, 170, 190], [140, 170, 150]] as RGB[]) {
+      const [, a, b] = srgbToOklab(...rgb);
+      const source = Math.hypot(a, b);
+      const { c } = analyzeAmbientPixels(solid(rgb)).regions.center;
+      assert.ok(c <= source * 1.25, `${rgb}: C ${source.toFixed(3)} became ${c}`);
+    }
+  });
+
+  test("a vivid colour keeps its chroma", () => {
+    const red = parse(analyzeAmbientPixels(solid(RED)).roles.vibrant.color);
+    assert.ok(red.c >= 0.14, `vibrant C ${red.c}`);
+    assert.ok(hueDistance(red.h, 27) < 15);
+  });
+
+  test("a region shows its own pixels, not the colour of a cluster it shares", () => {
+    // Two clusters for three hues: red and orange share one, yet the left
+    // third is red and the right third orange.
+    const pixels = image(90, 30, (x) => (x < 30 ? RED : x < 60 ? NAVY : ORANGE));
+    const { regions } = analyzeAmbientPixels(pixels, { clusters: 2 });
+    assert.ok(regions.right.h - regions.left.h > 15, `left ${regions.left.h} right ${regions.right.h}`);
+    assert.ok(hueDistance(regions.left.h, 27) < 12, `left ${regions.left.h}`);
+  });
 });
 
 describe("ambient: settings", () => {

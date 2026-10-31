@@ -97,6 +97,50 @@ describe("ambient page", () => {
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "blue");
       assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
     });
+
+    test("applyScopedCssVariables stacks: the latest wins, removing one reveals the one beneath", async () => {
+      const { applyScopedCssVariables } = await import("../../src/modules/ambient/index.ts");
+      const div = document.createElement("div");
+      div.style.setProperty("--ambient-vibrant", "blue");
+
+      const first = applyScopedCssVariables(div, { "--ambient-vibrant": "red", "--ambient-shadow": "black" });
+      const second = applyScopedCssVariables(div, { "--ambient-vibrant": "green" });
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
+
+      // Taken off out of order: the later one is still on top.
+      first();
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
+      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
+      second();
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "blue");
+    });
+
+    test("a lingering theme stays until the next one takes over, or its time runs out", async (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      const { applyScopedCssVariables } = await import("../../src/modules/ambient/index.ts");
+      const div = document.createElement("div");
+      document.body.appendChild(div);
+
+      const leaving = applyScopedCssVariables(div, { "--ambient-vibrant": "red", "--ambient-shadow": "black" }, { linger: 1_000 });
+      leaving();
+      t.mock.timers.tick(500);
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "red");
+
+      // The next page's theme replaces it at once, even the variables it leaves out…
+      const next = applyScopedCssVariables(div, { "--ambient-vibrant": "green" }, { linger: 1_000 });
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
+      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
+      // …and the old timer cannot take the new theme down.
+      t.mock.timers.tick(1_000);
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
+
+      next();
+      t.mock.timers.tick(999);
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
+      t.mock.timers.tick(1);
+      assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "");
+      document.body.removeChild(div);
+    });
   });
 
   describe("defineAmbient", () => {
