@@ -1,5 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import type { ReactNode } from "react";
 import {
   calculateRemainingMinDuration,
   normalizeLoadingOptions,
@@ -171,5 +172,63 @@ describe("withLoading action", () => {
       },
       { message: "Task failed" },
     );
+  });
+});
+
+describe("LoadingProvider", () => {
+  const mount = async () => {
+    const { renderHook } = await import("../support/render.ts");
+    const { LoadingProvider } = await import("../../src/modules/loading/context.tsx");
+    const { useLoading } = await import("../../src/modules/loading/hooks.ts");
+    const { RegistryProvider } = await import("../../src/core/kernel/index.ts");
+    const { createElement: h } = await import("react");
+    const wrapper = ({ children }: { children?: ReactNode }) =>
+      h(RegistryProvider, null, h(LoadingProvider, null, children));
+    return renderHook(() => useLoading(), { wrapper });
+  };
+
+  test("overlapping withLoading calls keep loading until the last one ends", async () => {
+    await import("../support/dom.ts");
+    const { act } = await import("react");
+    const view = await mount();
+    let finishFirst!: () => void;
+    let finishSecond!: () => void;
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = view.result.current.withLoading(new Promise<void>((resolve) => (finishFirst = resolve)), "Saving");
+      second = view.result.current.withLoading(new Promise<void>((resolve) => (finishSecond = resolve)), "Uploading");
+    });
+    assert.equal(view.result.current.isLoading, true);
+    assert.equal(view.result.current.message, "Uploading");
+
+    await act(async () => {
+      finishSecond();
+      await second;
+    });
+    // The first task still runs: loading stays, with its message.
+    assert.equal(view.result.current.isLoading, true);
+    assert.equal(view.result.current.message, "Saving");
+
+    await act(async () => {
+      finishFirst();
+      await first;
+    });
+    assert.equal(view.result.current.isLoading, false);
+    await view.unmount();
+  });
+
+  test("startLoading / stopLoading stay a single switch", async () => {
+    await import("../support/dom.ts");
+    const { act } = await import("react");
+    const view = await mount();
+    await act(async () => {
+      view.result.current.startLoading({ message: "One" });
+      view.result.current.startLoading({ message: "Two" });
+    });
+    assert.equal(view.result.current.message, "Two");
+    await act(async () => view.result.current.stopLoading());
+    assert.equal(view.result.current.isLoading, false);
+    await view.unmount();
   });
 });

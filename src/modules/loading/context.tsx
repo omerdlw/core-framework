@@ -36,6 +36,14 @@ import {
 export const LoadingContext =
   getOrCreateGlobalContext<LoadingContextValue | null>("LoadingContext", null);
 
+const MANUAL_TASK = "manual";
+type LoadingTaskKey = typeof MANUAL_TASK | number;
+
+interface LoadingTask {
+  key: LoadingTaskKey;
+  state: Omit<LoadingState, "isLoading">;
+}
+
 export const NOOP_LOADING_STORE = createStore<LoadingStateWithPage>(
   DEFAULT_LOADING_STATE_WITH_PAGE,
 );
@@ -48,6 +56,11 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const startTimeRef = useRef<number | null>(null);
   const minDurationRef = useRef<number>(0);
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // What is loading, oldest first: the `startLoading` switch and each
+  // `withLoading` task. The overlay shows the latest and stays up until the
+  // last one ends, so one task finishing does not hide another.
+  const tasksRef = useRef<LoadingTask[]>([]);
+  const nextTaskRef = useRef(1);
 
   const registryLoading = useRegistryValue<"loading", LoadingOptions>(
     "loading",
@@ -68,34 +81,51 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     setManualState(DEFAULT_LOADING_STATE);
   }, [clearStopTimer]);
 
-  const startLoading = useCallback(
-    (options: LoadingOptions = {}) => {
+  const beginTask = useCallback(
+    (key: LoadingTaskKey, options: LoadingOptions) => {
       clearStopTimer();
       const nextState = normalizeLoadingOptions(options);
-      startTimeRef.current = Date.now();
-      minDurationRef.current = nextState.minDuration;
-      setManualState({
-        ...nextState,
-        isLoading: true,
-      });
+      const tasks = tasksRef.current.filter((task) => task.key !== key);
+      tasks.push({ key, state: nextState });
+      tasksRef.current = tasks;
+      startTimeRef.current ??= Date.now();
+      minDurationRef.current = Math.max(minDurationRef.current, nextState.minDuration);
+      setManualState({ ...nextState, isLoading: true });
     },
     [clearStopTimer],
   );
 
-  const stopLoading = useCallback(() => {
-    const remaining = calculateRemainingMinDuration(
-      startTimeRef.current,
-      minDurationRef.current,
-    );
+  const endTask = useCallback(
+    (key: LoadingTaskKey) => {
+      const tasks = tasksRef.current;
+      if (!tasks.some((task) => task.key === key)) return;
+      tasksRef.current = tasks.filter((task) => task.key !== key);
+      const latest = tasksRef.current.at(-1);
+      if (latest) {
+        setManualState({ ...latest.state, isLoading: true });
+        return;
+      }
 
-    if (remaining <= 0) {
-      resetState();
-      return;
-    }
+      const remaining = calculateRemainingMinDuration(
+        startTimeRef.current,
+        minDurationRef.current,
+      );
+      if (remaining <= 0) {
+        resetState();
+        return;
+      }
+      clearStopTimer();
+      stopTimerRef.current = setTimeout(resetState, remaining);
+    },
+    [clearStopTimer, resetState],
+  );
 
-    clearStopTimer();
-    stopTimerRef.current = setTimeout(resetState, remaining);
-  }, [clearStopTimer, resetState]);
+  const startLoading = useCallback(
+    (options: LoadingOptions = {}) => beginTask(MANUAL_TASK, options),
+    [beginTask],
+  );
+
+  const stopLoading = useCallback(() => endTask(MANUAL_TASK), [endTask]);
 
   const setLoading = useCallback(
     (value: boolean) => {
@@ -112,6 +142,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
           ? nextSkeleton(currentState.skeleton)
           : nextSkeleton;
 
+      const latest = tasksRef.current.at(-1);
+      if (latest) latest.state = { ...latest.state, skeleton };
       return currentState.skeleton === skeleton
         ? currentState
         : { ...currentState, skeleton };
@@ -123,16 +155,15 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       task: Promise<T> | (() => Promise<T>),
       options: LoadingOptions | string = {},
     ): Promise<T> => {
-      startLoading(
-        typeof options === "string" ? { message: options } : options,
-      );
+      const key = nextTaskRef.current++;
+      beginTask(key, typeof options === "string" ? { message: options } : options);
       try {
         return typeof task === "function" ? await task() : await task;
       } finally {
-        stopLoading();
+        endTask(key);
       }
     },
-    [startLoading, stopLoading],
+    [beginTask, endTask],
   );
 
   useEffect(() => clearStopTimer, [clearStopTimer]);

@@ -95,7 +95,7 @@ CheckoutLoading.use(isSubmitting); // boolean | message string | LoadingOptions
 | `stopLoading()`                         | Turn it off. If `minDuration` has not elapsed yet, the stop is **delayed** by the remaining time. With no `minDuration` it is immediate. |
 | `setLoading(boolean)`                   | Shorthand for the two above (no options).                                                                                                |
 | `setSkeleton(nodeOrUpdater)`            | Replace the manual skeleton; accepts `(current) => next`. No re-render when unchanged.                                                   |
-| `withLoading(task, options \| message)` | `startLoading`, await the promise (or call the function and await its result), `stopLoading` in `finally`. Rejections propagate.         |
+| `withLoading(task, options \| message)` | Starts its own task, awaits the promise (or calls the function and awaits its result), ends the task in `finally`. Rejections propagate. |
 
 `page.modules.loading` = these actions plus `set(loading)` (`page.set({ loading })`).
 
@@ -115,7 +115,7 @@ The same value also feeds the dock's `isLoading` card flag (`usePage({ dock })` 
 - **Graceful cleanup.** The registry entry survives 600 ms after the page unmounts, so a route change does not flash the overlay off and on between pages.
 - **`minDuration` is manual-only.** Page-registered loading ends as soon as the page stops declaring it.
 - **Navigation.** The dock calls `stopLoading()` after a navigation completes or times out (15 s), so a `startLoading()` made before navigating does not stick.
-- **No counter.** Manual loading is a single flag. Two overlapping `withLoading` calls share it: the **first** to finish stops it. Use a page-level `loading` flag derived from your own pending count if you need reference counting.
+- **Overlapping tasks.** Each `withLoading` call is its own task: loading stays on until the **last** one ends, and the overlay shows the latest task's message and skeleton (the one beneath shows again when it ends). `startLoading` / `stopLoading` / `setLoading` are one more task, a single switch: calling `startLoading` twice and `stopLoading` once turns it off. `minDuration` counts from the first task to the last.
 - **Fullscreen suppression.** While `useIsFullscreenStateActive()` is true (a full-screen view is active) the overlay is hidden.
 - **Accessibility.** The overlay has `role="status"`, `aria-busy="true"` and `aria-label="Loading"`.
 - **Next.js `loading.tsx`.** `src/app/loading.tsx` (a bare `Spinner`) is the route-segment fallback and is independent of this module.
