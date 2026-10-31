@@ -138,6 +138,9 @@ export const DOCK_TRANSACTION_REASON = Object.freeze({
 
 export const DOCK_TRANSACTION_TIMEOUT_MS = 15_000;
 export const DOCK_PREFETCH_INTENT_DELAY_MS = 90;
+// How long the previous card stays on top after the path changes while the
+// new page has not registered its own (a loading boundary, a slow fetch).
+export const DOCK_PENDING_ROUTE_HOLD_MS = 2_500;
 
 export const DOCK_CONTINUITY_EVENTS = Object.freeze({
   CLEAR: "CLEAR",

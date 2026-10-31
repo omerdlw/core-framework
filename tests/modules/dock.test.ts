@@ -127,8 +127,15 @@ import {
   buildDockItems,
   isNotFoundItem,
   resolveActiveItem,
+  resolveBaseActiveItemMatch,
+  selectPendingRouteItem,
+  usePendingRouteHold,
 } from "../../src/modules/dock/runtime/display.ts";
-import { DOCK_ATTENTION_KIND } from "../../src/modules/dock/constants.ts";
+import { useDockLayout } from "../../src/modules/dock/runtime/dock.tsx";
+import {
+  DOCK_ATTENTION_KIND,
+  DOCK_PENDING_ROUTE_HOLD_MS,
+} from "../../src/modules/dock/constants.ts";
 
 describe("dock context", () => {
   function createTestScheduler() {
@@ -2256,6 +2263,161 @@ describe("dock display", () => {
 
       assert.equal(item.isStatus, undefined);
     }
+  });
+});
+
+describe("dock pending route hold", () => {
+  const home = { name: "home", path: "/", title: "Home" };
+  const directors = { name: "directors", path: "/directors", title: "Directors" };
+  const account = { name: "account", path: "/account", title: "Account" };
+  const movie = { name: "movie-1", path: "/movie/1", title: "Movie" };
+  const match = (items: any[], pathname: string) =>
+    resolveBaseActiveItemMatch({
+      dockItems: items,
+      isNotFoundPage: false,
+      pathname,
+      rawItems: items,
+    } as any);
+
+  beforeEach(() => mock.timers.enable({ apis: ["setTimeout"] }));
+  afterEach(() => mock.timers.reset());
+
+  async function mountHold() {
+    const seen: { current: any } = { current: null };
+    function Probe({
+      isNavigating = false,
+      items,
+      pathname,
+    }: {
+      isNavigating?: boolean;
+      items: any[];
+      pathname: string;
+    }) {
+      seen.current = usePendingRouteHold(pathname, match(items, pathname), {
+        isNavigating,
+      });
+      return null;
+    }
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const show = (items: any[], pathname: string, isNavigating = false) =>
+      act(async () =>
+        root.render(h(Probe, { isNavigating, items, pathname })),
+      );
+    return { seen, show, unmount: () => act(async () => root.unmount()) };
+  }
+
+  test("only the root prefix and the first-card fallback count as no match", () => {
+    const items = [home, directors, account];
+    assert.deepEqual(match(items, "/movie/1"), { isFallback: true, item: home });
+    assert.equal(match(items, "/directors").isFallback, false);
+    assert.equal(match(items, "/account/other").isFallback, false);
+    assert.equal(match(items, "/account/other").item, account);
+    assert.deepEqual(match([directors], "/movie/1"), {
+      isFallback: true,
+      item: directors,
+    });
+  });
+
+  test("the held card stands in only for a fallback while the hold is open", () => {
+    const fallback = { isFallback: true, item: home } as any;
+    const args = { heldItem: directors as any, pathname: "/movie/1" };
+    assert.equal(
+      selectPendingRouteItem({ ...args, isHolding: true, match: fallback }),
+      directors,
+    );
+    assert.equal(
+      selectPendingRouteItem({ ...args, isHolding: false, match: fallback }),
+      home,
+    );
+    assert.equal(
+      selectPendingRouteItem({
+        ...args,
+        isHolding: true,
+        match: { isFallback: false, item: movie } as any,
+      }),
+      movie,
+    );
+    assert.equal(
+      selectPendingRouteItem({
+        ...args,
+        heldItem: home as any,
+        isHolding: true,
+        match: fallback,
+        pathname: "/",
+      }),
+      home,
+    );
+  });
+
+  test("a static card stays on top until the new page registers its card", async () => {
+    const view = await mountHold();
+    await view.show([home, directors], "/directors");
+    assert.equal(view.seen.current, directors);
+
+    await view.show([home, directors], "/movie/1");
+    assert.equal(view.seen.current.name, "directors");
+    assert.equal(view.seen.current.isRoutePending, true);
+
+    await view.show([home, directors, movie], "/movie/1");
+    assert.equal(view.seen.current, movie);
+    await view.unmount();
+  });
+
+  test("a path that never registers falls back once the hold runs out", async () => {
+    const view = await mountHold();
+    await view.show([home, directors], "/directors");
+    await view.show([home, directors], "/movie/1");
+    assert.equal(view.seen.current.name, "directors");
+
+    await act(async () => mock.timers.tick(DOCK_PENDING_ROUTE_HOLD_MS));
+    assert.equal(view.seen.current, home);
+    await view.unmount();
+  });
+
+  test("the hold does not run down while the navigation is in flight", async () => {
+    const view = await mountHold();
+    await view.show([home, directors], "/directors");
+    await view.show([home, directors], "/movie/1", true);
+    await act(async () => mock.timers.tick(DOCK_PENDING_ROUTE_HOLD_MS * 2));
+    assert.equal(view.seen.current.name, "directors");
+
+    await view.show([home, directors], "/movie/1", false);
+    await act(async () => mock.timers.tick(DOCK_PENDING_ROUTE_HOLD_MS - 1));
+    assert.equal(view.seen.current.name, "directors");
+    await act(async () => mock.timers.tick(1));
+    assert.equal(view.seen.current, home);
+    await view.unmount();
+  });
+
+  test("the first page has nothing to hold", async () => {
+    const view = await mountHold();
+    await view.show([home, directors], "/movie/1");
+    assert.equal(view.seen.current, home);
+    await view.unmount();
+  });
+
+  test("a held card whose registration is gone still leads the stack", async () => {
+    const seen: { current: any } = { current: null };
+    function Probe() {
+      seen.current = useDockLayout({
+        activeItem: { ...account, isRoutePending: true } as any,
+        dockItems: [home, directors] as any,
+        pathname: "/movie/1",
+      });
+      return null;
+    }
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => root.render(h(Probe)));
+    assert.equal(seen.current.activeIndex, 0);
+    assert.deepEqual(
+      seen.current.displayItems.map((item: any) => item.name),
+      ["account", "directors", "home"],
+    );
+    await act(async () => root.unmount());
   });
 });
 

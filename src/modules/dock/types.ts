@@ -808,6 +808,8 @@ export interface DockItemRuntimeFields {
   isMasked?: boolean;
   isNotFound?: boolean;
   isOverlay?: boolean;
+  /** The previous card, held on top until the new path registers its own. */
+  isRoutePending?: boolean;
   isSelected?: boolean;
   isStatus?: boolean;
   mediaAction?: boolean;

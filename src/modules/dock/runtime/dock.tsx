@@ -87,8 +87,20 @@ export function useDockLayout({
   const pathname = overridePathname || routePathname;
 
   const { displayItems, displayActiveIndex } = useMemo(() => {
-    const items = dockItems || [];
-    const activeIndex = findDockItemIndex(items, activeItem ?? null, pathname);
+    const registeredItems = dockItems || [];
+    const registeredIndex = findDockItemIndex(
+      registeredItems,
+      activeItem ?? null,
+      pathname,
+    );
+    // A held card may outlive its registration (the old page unmounted while
+    // the new one loads); it still goes on top.
+    const isHeldOutsideStack =
+      registeredIndex === -1 && Boolean(activeItem?.isRoutePending);
+    const items = isHeldOutsideStack
+      ? [activeItem as DockItem, ...registeredItems]
+      : registeredItems;
+    const activeIndex = isHeldOutsideStack ? 0 : registeredIndex;
     const itemsWithActiveItem = replaceActiveItem(
       items,
       activeIndex,
@@ -157,7 +169,9 @@ export function useDock() {
   const effectivePathname = activeTransaction?.to
     ? normalizePath(activeTransaction.to)
     : pathname;
-  const display = useDockDisplay(effectivePathname);
+  const display = useDockDisplay(effectivePathname, {
+    isNavigating: Boolean(activeTransaction),
+  });
   const { dockItems, activeItem, statusState, attention, topology } = display;
   const isHudModeActive =
     attention?.kind === DOCK_ATTENTION_KIND.HUD ||

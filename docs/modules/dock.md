@@ -270,6 +270,8 @@ How `usePage` turns the slice into registry entries (`dockModule.page`):
 
 The active card is chosen from registered items in this order: a selected data-source item → exact `path` / `targetPath` match → longest path-prefix match → first item. On a 404 page only `/` and the not-found card are listed. While a navigation transaction is pending, the card for the **destination** is used so the dock changes before the route does.
 
+When the path changes and no card claims it yet (only `/` as a prefix, or the first item), the dock **holds the previous card** on top instead of falling back to Home. This covers a `loading.tsx` boundary or a slow fetch before the new page's `usePage` registers. The held card carries `isRoutePending: true` and stays even if its own registration is gone. The hold lasts while the navigation is in flight plus `DOCK_PENDING_ROUTE_HOLD_MS` (2.5 s) after it commits. If no card arrives by then, the usual fallback applies. The first page load has nothing to hold.
+
 ## 7. Attention: who owns the top card?
 
 `resolveDockAttention` scores each candidate and the highest wins. A new candidate with a higher score takes over immediately; when it goes away the next one returns.

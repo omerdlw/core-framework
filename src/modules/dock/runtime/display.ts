@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, use, type ComponentType } from "react";
+import { useEffect, useMemo, useState, use, type ComponentType } from "react";
 import { useRegistryEntries } from "@/kernel";
 import {
   normalizePath,
@@ -11,7 +11,11 @@ import { toSearchableText } from "../helpers";
 import { isPathPrefix, isSamePath } from "../paths";
 import { resolveActiveIndex } from "./pipeline";
 import { useModuleTheme } from "@/theme";
-import { DOCK_ATTENTION_KIND, dockTheme } from "../constants";
+import {
+  DOCK_ATTENTION_KIND,
+  DOCK_PENDING_ROUTE_HOLD_MS,
+  dockTheme,
+} from "../constants";
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";
 import { applyStatusOverlay } from "../status/model";
@@ -85,7 +89,13 @@ export function buildDockItems({
   return flattenedItems;
 }
 
-function resolveBaseActiveItem({
+export interface DockBaseMatch {
+  item: DockItem | null;
+  /** No card claims the path: `item` is the root card or the first one. */
+  isFallback: boolean;
+}
+
+export function resolveBaseActiveItemMatch({
   rawItems,
   dockItems,
   pathname,
@@ -95,30 +105,34 @@ function resolveBaseActiveItem({
   dockItems: DockItem[];
   pathname: string;
   isNotFoundPage: boolean;
-}): DockItem | null {
+}): DockBaseMatch {
   const normalizedPathname = normalizePath(pathname);
+  const matched = (item: DockItem | null): DockBaseMatch => ({
+    item,
+    isFallback: false,
+  });
 
   const selectedDataSource = dockItems.find(
     (item) => item.isDataSource && item.isSelected,
   );
-  if (selectedDataSource) return selectedDataSource;
+  if (selectedDataSource) return matched(selectedDataSource);
 
   if (isNotFoundPage)
-    return rawItems.find(isNotFoundItem) || rawItems[0] || null;
+    return matched(rawItems.find(isNotFoundItem) || rawItems[0] || null);
 
   const matchInDock = dockItems.find(
     (item) =>
       isSamePath(item.path, normalizedPathname) ||
       (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
   );
-  if (matchInDock) return matchInDock;
+  if (matchInDock) return matched(matchInDock);
 
   const matchInRaw = rawItems.find(
     (item) =>
       isSamePath(item.path, normalizedPathname) ||
       (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
   );
-  if (matchInRaw) return matchInRaw;
+  if (matchInRaw) return matched(matchInRaw);
 
   let prefixMatchedRawItem: DockItem | null = null;
   let longestPrefixLength = -1;
@@ -134,15 +148,92 @@ function resolveBaseActiveItem({
   }
 
   if (prefixMatchedRawItem) {
-    return (
+    const item =
       dockItems.find(
         (entry) =>
           isSamePath(entry?.path, prefixMatchedRawItem?.path) ||
           (entry?.name && entry.name === prefixMatchedRawItem?.name),
-      ) || prefixMatchedRawItem
-    );
+      ) || prefixMatchedRawItem;
+    // The root is a prefix of every path, so it says nothing about this one.
+    return {
+      item,
+      isFallback: normalizePath(prefixMatchedRawItem.path) === "/",
+    };
   }
-  return rawItems[0] || null;
+  return { item: rawItems[0] || null, isFallback: true };
+}
+
+/**
+ * The card to show while the path has no card of its own: the one that was on
+ * top before the path changed, as long as the hold for this path is open.
+ */
+export function selectPendingRouteItem({
+  match,
+  heldItem,
+  pathname,
+  isHolding,
+}: {
+  match: DockBaseMatch;
+  heldItem: DockItem | null;
+  pathname: string;
+  isHolding: boolean;
+}): DockItem | null {
+  if (!match.isFallback || !isHolding || !heldItem) return match.item;
+  if (heldItem.path && isSamePath(heldItem.path, pathname)) return match.item;
+  return heldItem;
+}
+
+export function usePendingRouteHold(
+  pathname: string,
+  match: DockBaseMatch,
+  {
+    holdMs = DOCK_PENDING_ROUTE_HOLD_MS,
+    isNavigating = false,
+  }: { holdMs?: number; isNavigating?: boolean } = {},
+): DockItem | null {
+  const normalizedPathname = normalizePath(pathname);
+  const [lastMatched, setLastMatched] = useState<DockItem | null>(() =>
+    match.isFallback ? null : match.item,
+  );
+  // Starts closed: the first page has nothing before it to hold.
+  const [hold, setHold] = useState(() => ({
+    isOpen: false,
+    pathname: normalizedPathname,
+  }));
+
+  if (!match.isFallback && match.item !== lastMatched) {
+    setLastMatched(match.item);
+  }
+  if (hold.pathname !== normalizedPathname) {
+    setHold({ isOpen: true, pathname: normalizedPathname });
+  }
+
+  // The countdown starts once the navigation commits, not while it runs.
+  useEffect(() => {
+    if (!hold.isOpen || isNavigating) return;
+    const timer = setTimeout(
+      () =>
+        setHold((current) =>
+          current.pathname === hold.pathname
+            ? { ...current, isOpen: false }
+            : current,
+        ),
+      holdMs,
+    );
+    return () => clearTimeout(timer);
+  }, [hold, holdMs, isNavigating]);
+
+  const selected = selectPendingRouteItem({
+    heldItem: lastMatched,
+    isHolding: hold.isOpen && hold.pathname === normalizedPathname,
+    match,
+    pathname: normalizedPathname,
+  });
+  const isHeld = selected !== match.item;
+  return useMemo(
+    () => (isHeld && selected ? { ...selected, isRoutePending: true } : selected),
+    [isHeld, selected],
+  );
 }
 
 export function resolveActiveItem({
@@ -159,6 +250,7 @@ export function resolveActiveItem({
   surfaceActions,
   isPageLoading,
   attention,
+  baseActiveItem: resolvedBaseActiveItem,
 }: {
   rawItems: DockItem[];
   dockItems: DockItem[];
@@ -173,13 +265,18 @@ export function resolveActiveItem({
   surfaceActions: SurfaceViewModelOptions;
   isPageLoading: boolean;
   attention: DockAttention;
+  /** Already resolved (and possibly held) base card; resolved here if absent. */
+  baseActiveItem?: DockItem | null;
 }): DockItem | null {
-  const baseActiveItem = resolveBaseActiveItem({
-    rawItems,
-    dockItems,
-    pathname,
-    isNotFoundPage,
-  });
+  const baseActiveItem =
+    resolvedBaseActiveItem !== undefined
+      ? resolvedBaseActiveItem
+      : resolveBaseActiveItemMatch({
+          rawItems,
+          dockItems,
+          pathname,
+          isNotFoundPage,
+        }).item;
   if (!baseActiveItem) return null;
 
   if (attention?.kind === DOCK_ATTENTION_KIND.SURFACE)
@@ -240,7 +337,10 @@ export function useDockItems(): { rawItems: DockItem[] } {
   return { rawItems };
 }
 
-export function useDockDisplay(overridePathname?: string) {
+export function useDockDisplay(
+  overridePathname?: string,
+  { isNavigating = false }: { isNavigating?: boolean } = {},
+) {
   const routerPathname = usePathname();
   const pathname = overridePathname || routerPathname;
   const loadingState = useLoadingState();
@@ -329,9 +429,24 @@ export function useDockDisplay(overridePathname?: string) {
     [rawItems, expanded, searchQuery, isNotFoundPage],
   );
 
+  const baseMatch = useMemo(
+    () =>
+      resolveBaseActiveItemMatch({
+        rawItems,
+        dockItems,
+        pathname,
+        isNotFoundPage,
+      }),
+    [rawItems, dockItems, pathname, isNotFoundPage],
+  );
+  const baseActiveItem = usePendingRouteHold(pathname, baseMatch, {
+    isNavigating,
+  });
+
   const activeItem = useMemo(
     () =>
       resolveActiveItem({
+        baseActiveItem,
         rawItems,
         dockItems,
         pathname,
@@ -356,6 +471,7 @@ export function useDockDisplay(overridePathname?: string) {
         attention,
       }),
     [
+      baseActiveItem,
       rawItems,
       dockItems,
       pathname,
