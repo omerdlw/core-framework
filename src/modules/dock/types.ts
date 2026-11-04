@@ -700,6 +700,7 @@ export interface DockItemRouteFields {
   keepWhenDescendant?:
     boolean | ((activePath: string, item: DockItem) => boolean);
   prefetchDisabled?: boolean;
+  stackOrder?: number;
   statusType?: string;
 }
 
@@ -1011,6 +1012,7 @@ export type DockPageCardFields = Omit<DockItemPresentationFields, "actions"> &
     | "name"
     | "path"
     | "prefetchDisabled"
+    | "stackOrder"
     | "targetPath"
   > &
   Pick<DockItemRuntimeFields, "isLoading" | "isOverlay"> &

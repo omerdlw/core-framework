@@ -140,6 +140,11 @@ export function removeInactiveLoadingItems(
   );
 }
 
+function stackRank(item: DockItem): number {
+  if (typeof item.stackOrder === "number") return item.stackOrder;
+  return item.path === "/" ? Number.POSITIVE_INFINITY : 0;
+}
+
 export function reorderItemsWithActiveFirst(
   items: DockItem[],
   activeIndex: number,
@@ -150,7 +155,7 @@ export function reorderItemsWithActiveFirst(
     ...items.slice(0, activeIndex),
     ...items.slice(activeIndex + 1),
   ];
-  rest.sort((a, b) => (a.path === "/" ? 1 : b.path === "/" ? -1 : 0));
+  rest.sort((a, b) => stackRank(a) - stackRank(b));
   return [active, ...rest];
 }
 

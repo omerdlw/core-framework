@@ -1487,6 +1487,21 @@ describe("dock utils: item lists", () => {
     assert.deepEqual(ordered, ["settings", "account", "home"]);
     assert.equal(reorderItemsWithActiveFirst(items, -1), items);
   });
+
+  test("stackOrder places a card relative to the rest, below the default", () => {
+    const list: any[] = [
+      { name: "active", path: "/active" },
+      { name: "other", path: "/other" },
+      { name: "account", path: "/account", stackOrder: -1 },
+      { name: "home", path: "/", stackOrder: -2 },
+      { name: "last", path: "/last", stackOrder: 1 },
+    ];
+
+    assert.deepEqual(
+      reorderItemsWithActiveFirst(list, 0).map((i) => i.name),
+      ["active", "home", "account", "other", "last"],
+    );
+  });
 });
 
 describe("dock utils: descriptors and surface extensions", () => {
