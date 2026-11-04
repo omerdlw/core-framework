@@ -1,10 +1,7 @@
 import { type CSSProperties } from "react";
 import { cn, isObject as isObjectLike, trimToNull } from "@/utils";
 import { Z_INDEX } from "@/tokens";
-import {
-  DOCK_CARD_LAYOUT,
-  DOCK_STYLE_SECTIONS,
-} from "./constants";
+import { DOCK_STYLE_SECTIONS } from "./constants";
 import {
   type DockItemCardPropsOptions,
   type DockStyleSectionName,
@@ -115,12 +112,13 @@ export function getDockItemCardProps({
   hasExtensions = false,
   isAnchoredToBottom,
   position,
+  stacking,
   theme,
-  visibleCount = 3,
+  visibleCount = stacking.visible.stack,
 }: DockItemCardPropsOptions) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } =
-    DOCK_CARD_LAYOUT.collapsed;
-  const { offsetY: expandedOffsetY } = DOCK_CARD_LAYOUT.expanded;
+    stacking.collapsed;
+  const { offsetY: expandedOffsetY } = stacking.expanded;
 
   const safeCardStyle = { ...cardStyle };
   delete safeCardStyle.scale;
@@ -134,16 +132,18 @@ export function getDockItemCardProps({
   const y = expanded
     ? position * expandedOffsetY
     : isShelf
-      ? DOCK_CARD_LAYOUT.extensionShelfY
+      ? stacking.shelf.offsetY
       : position * collapsedOffsetY;
-  const shelfScale = DOCK_CARD_LAYOUT.extensionShelfScale ?? 0.94;
   const scale = expanded
     ? cardScale || 1
     : isShelf
-      ? shelfScale
+      ? stacking.shelf.scale
       : collapsedScaleValue;
 
-  const collapsedOpacity = Math.max(0.1, +(1 - position * 0.2).toFixed(2));
+  const collapsedOpacity = Math.max(
+    stacking.collapsed.opacityMin,
+    +(1 - position * stacking.collapsed.opacityStep).toFixed(2),
+  );
   const opacity =
     expanded || isShelf ? 1 : position < visibleCount ? collapsedOpacity : 0;
 

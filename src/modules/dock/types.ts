@@ -1241,6 +1241,7 @@ export interface DockItemCardPropsOptions {
   hasExtensions?: boolean;
   isAnchoredToBottom?: boolean;
   position: number;
+  stacking: DockDeckStacking;
   theme: DockTheme;
   visibleCount?: number;
 }
@@ -1539,6 +1540,50 @@ export interface DockSurfaceTimings {
   restoreHeader: number;
 }
 
+/** The phases a surface passes through; `idle` and `open` are the two rests. */
+export type DockSurfacePhaseKey = keyof DockSurfaceTimings | "idle" | "open";
+
+/** How the dock plays one phase of a surface opening or closing. */
+export interface DockSurfacePhaseMotion {
+  /**
+   * The deck's size and shadow. `null` follows the deck's resting transition
+   * (`stack`, or `expand` while the deck is expanded). A function receives how
+   * far the deck resizes, in px.
+   */
+  deck: Transition | ((distancePx: number) => Transition) | null;
+  /** The deck's lift and scale. `null` follows `deck`. */
+  transform: Transition | null;
+  /** The deck's scale; below 1 compresses it. */
+  scale: number;
+  /** The surface body coming into view. */
+  body: Transition;
+  /** The card header while it plays this phase. */
+  header: Transition;
+  /** The card header returning in this phase. `null` keeps the `headerRestore` variants' own. */
+  headerReturn: Transition | null;
+}
+
+/** Where the cards of the deck rest, in px, scale and opacity. */
+export interface DockDeckStacking {
+  /** Cards stacked behind the front one: per level of depth. */
+  collapsed: {
+    offsetY: number;
+    scale: number;
+    /** Opacity lost per level, down to `opacityMin`. */
+    opacityStep: number;
+    opacityMin: number;
+  };
+  /** Cards in the expanded deck: per level of depth. */
+  expanded: { offsetY: number };
+  /** The card that peeks out as the extension shelf. */
+  shelf: { offsetY: number; scale: number };
+  /**
+   * How many cards stay in view: normally, while an extension shelf takes the
+   * second place, and while a status holds the deck.
+   */
+  visible: { stack: number; extensions: number; status: number };
+}
+
 /**
  * Everything the dock animates, written by the app in its dock theme.
  * Values are at tempo 1; the app's tempo stretches all of them.
@@ -1550,18 +1595,10 @@ export interface DockMotion {
     stack: Transition;
     /** The deck, backdrop and breadcrumbs while expanded or holding a surface. */
     expand: Transition;
-    /** The deck's size while an open surface changes height, by how far it moves. */
-    surfaceResize: (distancePx: number) => Transition;
-    /** The deck's transform while a surface body grows in. */
-    surfaceArrival: Transition;
-    /** The deck and header just before a surface opens or closes. */
-    anticipation: Transition;
-    /** A surface body growing in; also the card header returning as a surface collapses. */
-    surfaceEnter: Transition;
-    /** A surface body changing between steps. */
-    surfaceStep: Transition;
     /** A surface body leaving. */
     surfaceExit: Transition;
+    /** Parts sliding to a new place when their neighbours change: the surface close control and the breadcrumbs. */
+    layout: Transition;
     /** A card settling in the collapsed deck. */
     card: Transition;
     /** A card moving in the expanded deck. */
@@ -1618,11 +1655,15 @@ export interface DockMotion {
     /** A card's content while it is behind the front card, and in front. */
     cardContent: { hidden: TargetAndTransition; visible: TargetAndTransition };
   };
+  /**
+   * What the deck, the header and the body play in each phase of a surface
+   * opening or closing. The phases and their order belong to the dock; how
+   * each one looks, and how long it holds (`timings`), is yours.
+   */
+  phases: Record<DockSurfacePhaseKey, DockSurfacePhaseMotion>;
   deck: {
     /** The deck's shadow at rest and while holding a surface. */
     elevation: { rest: string; elevated: string };
-    /** The deck's scale just before a surface opens and closes. */
-    compress: { open: number; close: number };
     /**
      * How far up (px) and how much larger (×) a card behind the front one
      * moves while the deck is hovered.
@@ -1632,6 +1673,23 @@ export interface DockMotion {
     exit: (card: DockCardExitInput) => TargetAndTransition;
     /** A pressed card's scale, relative to its resting scale. */
     tapScale: number;
+    /** Where the cards rest. */
+    stacking: DockDeckStacking;
+    /** How far the deck rises (px, negative is up) while the breadcrumbs show. */
+    breadcrumbOffset: number;
+    /** The deck's opacity while a page is fullscreen. */
+    fullscreenOpacity: number;
+    /** The deck's `transform-origin`. */
+    origin: string;
+    /** The distance (px) a surface resize is timed for while its real distance is unknown. */
+    resizeFallback: number;
+  };
+  /** Resting opacities, before a page gives its own. */
+  opacity: {
+    /** The card banner image. */
+    banner: number;
+    /** A card's description. */
+    description: number;
   };
   /** How a surface follows a swipe down before it is dismissed. */
   drag: {
@@ -1640,6 +1698,8 @@ export interface DockMotion {
     range: readonly [number, number];
     opacity: readonly [number, number];
     scale: readonly [number, number];
+    /** A swipe dismisses the surface past this distance (px) or this speed (px/s). */
+    dismiss: { offset: number; velocity: number };
   };
   /** Class for loading skeletons (a CSS animation). */
   skeleton: string;

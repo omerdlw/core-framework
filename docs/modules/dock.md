@@ -658,8 +658,9 @@ See [media.md](./media.md) for how sources are registered (`usePage({ media })`,
 | :-------------------- | :-------------------------------------------------------------------------------------- |
 | Card base height      | 68 px; HUD 52 px; chrome 20 px; viewport margin 24 px                                   |
 | Card width            | 460 px (clamped to `viewport − 16/32 px`), or the card/surface `width`                  |
-| Visible stacked cards | 3 (`MAX_VISIBLE_STACKED_CARDS`); collapsed scale 0.88 per level, opacity −0.2 per level |
 | Published height      | `--dock-h` on `<html>` and `dockHeight` in state (card height + 16 px buffer)           |
+
+These are what the layout **measures**, so they stay in the module. Where the cards *rest* is yours: `motion.deck.stacking` holds the offsets, scales, depth fade and how many cards stay in view ([§17](#17-theming)). If you change a card's height, change `stacking.expanded.offsetY` with it (the starter spaces expanded cards by the card height plus a 4 px gap).
 
 Reserve space with `useDockHeight().padding` or `padding-bottom: var(--dock-h)`. Height changes are measured with a `ResizeObserver` and ignored below 0.5 px; during surface close phases the height is locked to the base height.
 
@@ -667,9 +668,23 @@ Reserve space with `useDockHeight().padding` or `padding-bottom: var(--dock-h)`.
 
 The module contains **no design classes**. Every slot comes from `dockTheme` (`src/config/dock.module.theme.ts`, 101 slots, named after the component that renders them): `stack`, `backdrop`, `card*`, `banner*`, `header*`, `title*`, `description*`, `icon*` (incl. `iconBadge`, `iconOverlay*`), `command*`, `status*`, `surface*`, `control*` (incl. `controlHeaderButton`), `extension*`, `scrubber*`, `media*`, `breadcrumbs*`, `loading*`, `action*`. State variants are `data-*` modifiers on the slot itself (`data-placement`, `data-blur`, `data-shelf`, `data-anchored`, `data-ghost`, `data-fill`, `data-active`, `data-banner`, `data-multiline`, `data-interactive`, `data-text`); the header of `src/config/dock.module.theme.ts` lists them. `styles` can add inline CSS per slot (z-index, banner masks, stack size/radius).
 
-The theme also carries the dock's **motion** (`motion: DockMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): every transition and variant, the deck's elevation, compression, peek and card exit, the swipe-to-dismiss feel, the skeleton class, and `timings`, which hold how long each surface phase lasts (`dismissAction`, `anticipation`, `expandBody`, `collapseBody`, `restoreHeader`) plus the card staggers, in seconds. The surface state machine schedules its phases from those timings, so they follow the app's tempo with everything else. Start from `templates/motion/dock.ts`, the dock's original motion.
+The theme also carries the dock's **motion** (`motion: DockMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)). Everything the dock animates, and every number that shapes it, is yours:
 
-Stays in code: measured geometry and stack layout (card offsets and scales per position, the breadcrumb lift), per-position z-index (`Z_INDEX.DOCK_CARD_STACK_BASE − position`), compositor hints, swipe thresholds, and which of the app's transitions each state uses. The theme and its motion are **required**: a missing theme throws `Theme "dock" is missing…` and a theme without motion throws `Motion for theme "dock" is missing…`. `DockProvider` on its own (no dock theme) still runs; its surface phases advance immediately.
+| Key | What you decide |
+| :-- | :-- |
+| `transitions`, `variants` | Every transition and variant, including `transitions.layout` for parts that slide when their neighbours change (the surface close control, the breadcrumbs). |
+| `phases` | What the deck, header and body play in each surface phase (`idle`, `dismissAction`, `expandBody`, `open`, `anticipation`, `collapseBody`, `restoreHeader`): the deck's size/shadow transition (`null` follows its resting one, a function gets the resize distance), its transform transition and `scale` (below 1 compresses it), the body's and header's transitions, and `headerReturn`. |
+| `timings` | How long each phase holds (`dismissAction`, `anticipation`, `expandBody`, `collapseBody`, `restoreHeader`) plus the card staggers, in seconds. The surface state machine schedules its phases from these, so they follow the app's tempo. `restoreHeader: 0` skips that phase. |
+| `deck` | `elevation`, `peek`, `exit`, `tapScale`; `stacking` (where cards rest: collapsed/expanded offsets, scale, depth fade, the shelf, and how many cards stay in view normally, with an extension shelf and under a status); `breadcrumbOffset`; `fullscreenOpacity`; `origin`; `resizeFallback`. |
+| `opacity` | The resting opacity of the card **banner** and **description**. A page's own `bannerOpacity` or description `style.opacity` still wins. |
+| `drag` | The swipe-to-dismiss feel (`elastic`, `range`, `opacity`, `scale`) and `dismiss: { offset, velocity }`, the distance (px) or speed (px/s) past which a swipe closes the surface. |
+| `skeleton` | The class of the loading skeletons. |
+
+Start from `templates/motion/dock.ts`, the dock's original motion. Geometry and opacities are not times, so tempo and reduced motion leave them alone; only transitions and `timings` are stretched or collapsed.
+
+**The phases and their order belong to the dock.** A surface always opens `dismissAction → expandBody → open` and closes `anticipation → collapseBody → restoreHeader`; the render code relies on that sequence. You decide how each phase looks and how long it holds, not which phases exist.
+
+Stays in code: what the layout measures (card, HUD and chrome heights, viewport margin), per-position z-index (`Z_INDEX.DOCK_CARD_STACK_BASE − position`), compositor hints, the swipe's direction and its non-draggable targets, and the focus trap. The theme and its motion are **required**: a missing theme throws `Theme "dock" is missing…` and a theme without motion throws `Motion for theme "dock" is missing…`. `DockProvider` on its own (no dock theme) still runs; its surface phases advance immediately.
 
 Per-card overrides use `style` on the card (see [§6.1](#61-dockpageconfig-the-dock-key-of-usepage)). Custom buttons inside surfaces should use `useDockActionClass()` so they match.
 

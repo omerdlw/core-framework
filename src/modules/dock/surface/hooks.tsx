@@ -62,7 +62,7 @@ import {
 } from "./context";
 import { normalizeSurfaceExtension } from "./helpers";
 import { useDockFocusTrap } from "../dom";
-import { DOCK_SURFACE_DRAG_THRESHOLDS, useDockMotion } from "../motion";
+import { getDockPhaseMotion, useDockMotion } from "../motion";
 import { report } from "@/utils";
 import { useIsomorphicLayoutEffect } from "@/hooks";
 
@@ -628,9 +628,10 @@ export function useDockSurfaceShellModel({
       !isFullyOpen
     )
       return;
+    const { dismiss } = dockMotion.drag;
     if (
-      info.offset.y > DOCK_SURFACE_DRAG_THRESHOLDS.DISMISS_OFFSET_Y ||
-      info.velocity.y > DOCK_SURFACE_DRAG_THRESHOLDS.DISMISS_VELOCITY_Y
+      info.offset.y > dismiss.offset ||
+      info.velocity.y > dismiss.velocity
     ) {
       onClose();
     }
@@ -663,15 +664,12 @@ export function useDockSurfaceShellModel({
   const resolvedSurfaceId = surfaceId || "active";
   const bodyVariants = useMemo(() => {
     const { surfaceBody } = dockMotion.variants;
-    const { surfaceEnter, surfaceExit, surfaceStep } = dockMotion.transitions;
+    const { surfaceExit } = dockMotion.transitions;
     return {
       hidden: surfaceBody.hidden,
       visible: {
         ...(surfaceBody.visible as object),
-        transition:
-          surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY
-            ? surfaceEnter
-            : surfaceStep,
+        transition: getDockPhaseMotion(dockMotion, surfacePhase).body,
       },
       exit: {
         ...(surfaceBody.exit as object),

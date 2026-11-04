@@ -42,7 +42,6 @@ import {
 import {
   DOCK_SURFACE_PHASE,
   DOCK_EVENTS,
-  MAX_VISIBLE_STACKED_CARDS,
   PLAYBACK_RATES,
 } from "./constants";
 import { type DockCommandEntry } from "./runtime/commands";
@@ -56,7 +55,11 @@ import {
   useElementHeight,
 } from "./layout";
 import { useDockHasMedia, useDockMedia, useDockMediaActions } from "./context";
-import { getDockCardDelay, useDockMotion } from "./motion";
+import {
+  getDockCardDelay,
+  getDockPhaseMotion,
+  useDockMotion,
+} from "./motion";
 import { resolveDockRoutePolicy, useRoutePrefetch } from "./routing/navigation";
 
 const bannerPreloadCache = new Set<string>();
@@ -549,9 +552,8 @@ export function useDockCardItemModel({
       visible: {
         ...visible,
         transition:
-          item.surfacePhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY
-            ? dockMotion.transitions.surfaceEnter
-            : visible.transition,
+          getDockPhaseMotion(dockMotion, item.surfacePhase).headerReturn ??
+          visible.transition,
       },
       exit: headerRestore.exit,
     };
@@ -623,7 +625,9 @@ export function useDockCardItemModel({
     !expanded && position > 0 && !isExtensionShelf,
   );
   const isCollapsedGhostCard = Boolean(
-    !expanded && position >= MAX_VISIBLE_STACKED_CARDS && !isExtensionShelf,
+    !expanded &&
+      position >= dockMotion.deck.stacking.visible.stack &&
+      !isExtensionShelf,
   );
   const {
     className: cardClassName,
@@ -637,8 +641,13 @@ export function useDockCardItemModel({
     cardScale: itemStyle.scale,
     theme,
     isAnchoredToBottom: item.isSurface,
+    stacking: dockMotion.deck.stacking,
     visibleCount:
-      item.isStatus && !isStackHovered ? 1 : hasExtensions && !expanded ? 2 : 3,
+      item.isStatus && !isStackHovered
+        ? dockMotion.deck.stacking.visible.status
+        : hasExtensions && !expanded
+          ? dockMotion.deck.stacking.visible.extensions
+          : dockMotion.deck.stacking.visible.stack,
     hasExtensions,
   });
   const cardDelay = useMemo(

@@ -81,15 +81,12 @@ export const DOCK_SURFACE_PHASE = Object.freeze({
   RESTORING_HEADER: "restoring_header",
 } as const);
 
-const DOCK_VIEWPORT_GAP = 4;
 export const VIEWPORT_MARGIN = 24;
 
+// What the layout measures. Where cards rest and how they move is the app's
+// (`DockMotion.deck.stacking`).
 export const DOCK_CARD_DIMENSIONS = Object.freeze({
-  expandedY: -(68 + DOCK_VIEWPORT_GAP),
   chromeHeight: 20,
-  collapsedY: -10,
-  extensionShelfY: -42,
-  extensionShelfScale: 0.94,
   extensionShelfHeight: 45,
   hudHeight: 52,
   actionGap: 10,
@@ -97,16 +94,6 @@ export const DOCK_CARD_DIMENSIONS = Object.freeze({
 });
 
 export const DOCK_CARD_LAYOUT = Object.freeze({
-  collapsed: Object.freeze({
-    offsetY: DOCK_CARD_DIMENSIONS.collapsedY,
-    scale: 0.88,
-  }),
-  expanded: Object.freeze({
-    offsetY: DOCK_CARD_DIMENSIONS.expandedY,
-    scale: 1,
-  }),
-  extensionShelfY: DOCK_CARD_DIMENSIONS.extensionShelfY,
-  extensionShelfScale: DOCK_CARD_DIMENSIONS.extensionShelfScale,
   extensionShelfHeight: DOCK_CARD_DIMENSIONS.extensionShelfHeight,
   chromeHeight: DOCK_CARD_DIMENSIONS.chromeHeight,
   hudHeight: DOCK_CARD_DIMENSIONS.hudHeight,
@@ -192,6 +179,5 @@ export const STATUS_CLEAR_DURATION = 4500;
 export const API_ERROR_BATCH_DELAY = 300;
 export const DOCK_HEIGHT_BUFFER = 16;
 export const HEIGHT_EPSILON = 0.5;
-export const MAX_VISIBLE_STACKED_CARDS = 3;
 
 export const dockTheme = defineThemeSpec<DockThemeSlot, DockMotion>("dock");

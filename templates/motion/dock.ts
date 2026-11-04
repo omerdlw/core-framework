@@ -1,4 +1,7 @@
-import type { DockMotion } from "@omerdlw/base-framework/modules/dock";
+import type {
+  DockMotion,
+  DockSurfacePhaseMotion,
+} from "@omerdlw/base-framework/modules/dock";
 import {
   chip,
   contentSwap,
@@ -70,31 +73,51 @@ const crossfade = {
   scale: 1 - 0.018,
 };
 
+// The deck's size while an open surface changes height: a longer move takes a
+// little longer.
+const surfaceResize = (distancePx: number) => {
+  const resize = surfaceResizeTransition(distancePx, {
+    base: 0.5,
+    min: 0.4,
+    max: durations.cinematic,
+    ease: easings.weighted,
+  });
+  return { ...resize, height: resize, width: resize };
+};
+
+// The deck's lift and scale while the body grows in, and just before a surface
+// opens or closes.
+const surfaceArrival = tween(durations.cinematic, easings.overshoot);
+const anticipation = tween(SURFACE.anticipation, easings.weighted);
+
+// The body growing in, and the body changing between steps.
+const surfaceEnter = { ...surfaceBody.visible.transition, delay: SURFACE.bodyEnterDelay };
+const surfaceStep = swap(durations.base, easings.enter).enter;
+
 const controlsSlot = (enter: object, exit: object) => ({
   hidden: { opacity: 0, scale: 0.96, width: 0, marginRight: -2 },
   visible: { opacity: 1, scale: 1, width: "auto", marginRight: 0, transition: enter },
   exit: { opacity: 0, scale: 0.96, width: 0, marginRight: -2, transition: exit },
 });
 
+// A phase that plays nothing of its own: the deck rests, the header swaps and
+// the body steps. Each phase below changes only what it plays differently.
+const REST_PHASE: DockSurfacePhaseMotion = {
+  deck: null,
+  transform: null,
+  scale: 1,
+  body: surfaceStep,
+  header: headerSwap.enter,
+  headerReturn: null,
+};
+
 // defineTheme(dockTheme, { slots, motion: dockMotion })
 export const dockMotion: DockMotion = {
   transitions: {
     stack: tween(COLLAPSE, easings.enter),
     expand,
-    surfaceResize: (distancePx) => {
-      const resize = surfaceResizeTransition(distancePx, {
-        base: 0.5,
-        min: 0.4,
-        max: durations.cinematic,
-        ease: easings.weighted,
-      });
-      return { ...resize, height: resize, width: resize };
-    },
-    surfaceArrival: tween(durations.cinematic, easings.overshoot),
-    anticipation: tween(SURFACE.anticipation, easings.weighted),
-    surfaceEnter: { ...surfaceBody.visible.transition, delay: SURFACE.bodyEnterDelay },
-    surfaceStep: swap(durations.base, easings.enter).enter,
     surfaceExit: surfaceBody.exit.transition,
+    layout: { type: "tween", duration: 0.45, ease: [0.4, 0, 0.1, 1] },
     card,
     cardExpanded: springs.deck,
     cardPeek: tween(durations.fast, easings.enter),
@@ -279,13 +302,44 @@ export const dockMotion: DockMotion = {
       visible: { opacity: 1, transform: gpuTransform(0, 1) },
     },
   },
+  phases: {
+    idle: REST_PHASE,
+    // The inline action leaves and the deck compresses for a beat.
+    dismissAction: {
+      ...REST_PHASE,
+      transform: anticipation,
+      scale: 0.94,
+      header: anticipation,
+    },
+    // The body grows in; the deck arrives with a little overshoot.
+    expandBody: {
+      ...REST_PHASE,
+      deck: expand,
+      transform: surfaceArrival,
+      body: surfaceEnter,
+    },
+    open: { ...REST_PHASE, deck: surfaceResize },
+    // The deck compresses again before the body leaves.
+    anticipation: {
+      ...REST_PHASE,
+      deck: surfaceResize,
+      transform: anticipation,
+      scale: 0.96,
+    },
+    // The body leaves and the card header comes back.
+    collapseBody: {
+      ...REST_PHASE,
+      deck: expand,
+      headerReturn: surfaceEnter,
+    },
+    restoreHeader: { ...REST_PHASE, deck: expand },
+  },
   deck: {
     elevation: {
       rest: "0px 12px 32px 0px rgba(0,0,0,0.35), 0px 2px 8px 0px rgba(0,0,0,0.25)",
       elevated:
         "0px 32px 80px 0px rgba(0,0,0,0.55), 0px 8px 24px 0px rgba(0,0,0,0.35)",
     },
-    compress: { open: 0.94, close: 0.96 },
     // Cards further back lift a little further and grow a little less.
     peek: (position) => {
       const progress = Math.min(position / 3, 1);
@@ -303,12 +357,26 @@ export const dockMotion: DockMotion = {
       transition: { ...cardCollapse },
     }),
     tapScale: 0.97,
+    // Cards stack 10px apart and shrink to 0.88 per level, fading by 0.2. The
+    // expanded deck spaces them by a card's height (68px) and a 4px gap.
+    stacking: {
+      collapsed: { offsetY: -10, scale: 0.88, opacityStep: 0.2, opacityMin: 0.1 },
+      expanded: { offsetY: -72 },
+      shelf: { offsetY: -42, scale: 0.94 },
+      visible: { stack: 3, extensions: 2, status: 1 },
+    },
+    breadcrumbOffset: -44,
+    fullscreenOpacity: 0,
+    origin: "50% 100%",
+    resizeFallback: 260,
   },
+  opacity: { banner: 0.95, description: 0.7 },
   drag: {
     elastic: { top: 0.05, bottom: 0.5 },
     range: [0, 180],
     opacity: [1, 0.75],
     scale: [1, 0.96],
+    dismiss: { offset: 65, velocity: 400 },
   },
   skeleton: "animate-pulse motion-reduce:animate-none",
   timings: {

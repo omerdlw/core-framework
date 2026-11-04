@@ -38,6 +38,8 @@ import {
   getDockItemAnimateValues,
   getDockItemExitValues,
   getDockItemTransition,
+  getDockLayoutTransition,
+  getDockPhaseMotion,
   getDockMediaVolumeFillTransition,
   getDockMediaVolumeThumbAnimateProps,
   getDockMediaVolumeThumbPositionTransition,
@@ -93,7 +95,6 @@ import { useDockActions } from "./context";
 import { isValidComponentType, formatMediaTime } from "./helpers";
 import {
   DOCK_HUD_RENDER_MODE,
-  DOCK_CARD_LAYOUT,
   DOCK_SURFACE_PHASE,
 } from "./constants";
 import { useDockHudViewModel } from "./hud";
@@ -144,7 +145,10 @@ export const DockCardBanner = memo(function DockCardBanner({
   const resolvedRepeat =
     bannerRepeat || bannerObj?.repeat || bannerObj?.bannerRepeat || "no-repeat";
   const resolvedOpacity =
-    bannerOpacity ?? bannerObj?.opacity ?? bannerObj?.bannerOpacity ?? 0.95;
+    bannerOpacity ??
+    bannerObj?.opacity ??
+    bannerObj?.bannerOpacity ??
+    dockMotion.opacity.banner;
   return (
     <motion.div
       aria-hidden="true"
@@ -295,9 +299,11 @@ export const DockDescription = memo(function DockDescription({
   if (text == null || text === "") return null;
 
   const { className, inlineStyle } = splitStyle(style);
-  const { opacity = 0.7, ...restStyle } = inlineStyle;
+  const { opacity = dockMotion.opacity.description, ...restStyle } =
+    inlineStyle;
   const isMultiline = Number(maxLines) > 1;
-  const targetOpacity = typeof opacity === "number" ? opacity : 0.7;
+  const targetOpacity =
+    typeof opacity === "number" ? opacity : dockMotion.opacity.description;
   const sharedClass = cn(theme.slots.descriptionText, className);
   const sharedStyle = {
     opacity: targetOpacity,
@@ -1025,7 +1031,8 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
     activeControlKeys.length > 0,
   );
   const targetY = hasExtensions
-    ? DOCK_CARD_LAYOUT.extensionShelfY - DOCK_CARD_LAYOUT.collapsed.offsetY
+    ? dockMotion.deck.stacking.shelf.offsetY -
+      dockMotion.deck.stacking.collapsed.offsetY
     : 0;
   return (
     <AnimatePresence>
@@ -1103,6 +1110,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
               <motion.div
                 key="dock-surface-close"
                 layout="position"
+                transition={getDockLayoutTransition(dockMotion)}
                 variants={dockMotion.variants.controlsClose}
                 initial="hidden"
                 animate="visible"
@@ -1724,11 +1732,7 @@ export const DockCardItem = memo(function DockCardItem({
                   : "visible"
               }
               exit={layerExit}
-              transition={
-                item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION
-                  ? dockMotion.transitions.anticipation
-                  : dockMotion.transitions.headerSwap
-              }
+              transition={getDockPhaseMotion(dockMotion, item.surfacePhase).header}
               style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
               className={theme.slots.cardStandard}
             >
@@ -1984,6 +1988,7 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
           return (
             <motion.div
               layout="position"
+              transition={getDockLayoutTransition(dockMotion)}
               key={crumb.id || crumb.path}
               className={theme.slots.breadcrumbsItem}
             >
@@ -2077,7 +2082,7 @@ export function Dock(): ReactPortal | null {
         }
         style={{
           ...theme.styles.stack,
-          transformOrigin: "50% 100%",
+          transformOrigin: dockMotion.deck.origin,
         }}
         initial={false}
         animate={getDockStackAnimateProps(dockMotion, {

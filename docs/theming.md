@@ -221,7 +221,7 @@ Each animating module exports its contract type. Give it a full value, the same 
 
 | Module | Spec | Contract type | What it holds |
 | :--- | :--- | :--- | :--- |
-| Dock | `dockTheme` | `DockMotion` | `transitions` (stack, expand, surface enter/step/exit/resize, cards, text, header swap, press, …), `variants` (fade, text crossfade, header swap/restore, controls, command bar, badge, hud, …), `deck` (elevation, compress, `peek(position)`, `exit(card)`, `tapScale`), `drag`, `skeleton`, `timings` (surface phase lengths and card staggers, in seconds) |
+| Dock | `dockTheme` | `DockMotion` | `transitions` (stack, expand, surface exit, layout, cards, text, header swap, press, …), `variants` (fade, text crossfade, header swap/restore, controls, command bar, badge, hud, …), `phases` (what the deck, header and body play in each surface phase, and the deck's compression), `deck` (elevation, `peek(position)`, `exit(card)`, `tapScale`, `stacking`, breadcrumb offset, fullscreen opacity, origin, resize fallback), `opacity` (banner and description rest), `drag` (swipe feel and the dismiss distance and speed), `skeleton`, `timings` (surface phase lengths and card staggers, in seconds) |
 | Modal | `modalTheme` | `ModalMotion` | `backdrop`, `content`, `header`, `footer` variants, and `positions` (`center`, `top`, `right`, `bottom`, `left`: variants plus an optional own `transition`) |
 | Notification | `notificationTheme` | `NotificationMotion` | `toast` variants and the toast's `transition` |
 | Context menu | `contextMenuTheme` | `ContextMenuMotion` | `pop`, `content`, `item` variants (`item.visible` may take the row index), `itemTap`, `itemTransition` |

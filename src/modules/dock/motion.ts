@@ -1,12 +1,13 @@
 import { type Transition } from "motion/react";
 import { cssTransition, gpuTransform, staggerDelay } from "@/tokens";
 import { useModuleMotion, useOptionalModuleMotion } from "@/theme";
+import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
 import {
-  DOCK_CARD_DIMENSIONS,
-  DOCK_SURFACE_PHASE,
-  dockTheme,
-} from "./constants";
-import { type DockMotion, type DockSurfaceTimings } from "./types";
+  type DockMotion,
+  type DockSurfacePhaseKey,
+  type DockSurfacePhaseMotion,
+  type DockSurfaceTimings,
+} from "./types";
 
 // The dock plays only what the app's dock theme gives it. What stays here is
 // mechanics: which of the app's transitions a state uses, and the parts of a
@@ -52,11 +53,6 @@ export const DOCK_UNSEEN_EXIT = Object.freeze({
 export const DOCK_SURFACE_DRAG_CONSTRAINTS = Object.freeze({
   top: 0,
   bottom: 0,
-} as const);
-
-export const DOCK_SURFACE_DRAG_THRESHOLDS = Object.freeze({
-  DISMISS_OFFSET_Y: 65,
-  DISMISS_VELOCITY_Y: 400,
 } as const);
 
 export function toGpuTransform(
@@ -137,17 +133,24 @@ export function getDockMediaVolumeThumbPositionTransition(
     : cssTransition("left", motion.transitions.mediaVolume);
 }
 
-function getDockSurfaceStackScale(
+const SURFACE_PHASE_KEYS: Readonly<Record<string, DockSurfacePhaseKey>> =
+  Object.freeze({
+    [DOCK_SURFACE_PHASE.IDLE]: "idle",
+    [DOCK_SURFACE_PHASE.DISMISSING_ACTION]: "dismissAction",
+    [DOCK_SURFACE_PHASE.EXPANDING_BODY]: "expandBody",
+    [DOCK_SURFACE_PHASE.OPEN]: "open",
+    [DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION]: "anticipation",
+    [DOCK_SURFACE_PHASE.COLLAPSING_BODY]: "collapseBody",
+    [DOCK_SURFACE_PHASE.RESTORING_HEADER]: "restoreHeader",
+  });
+
+/** What the app's theme plays in a surface phase; a missing or unknown phase is `idle`. */
+export function getDockPhaseMotion(
   motion: DockMotion,
   surfacePhase?: string | null,
-): number {
-  if (surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION) {
-    return motion.deck.compress.open;
-  }
-  if (surfacePhase === DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION) {
-    return motion.deck.compress.close;
-  }
-  return 1;
+): DockSurfacePhaseMotion {
+  const key = (surfacePhase && SURFACE_PHASE_KEYS[surfacePhase]) || "idle";
+  return motion.phases[key];
 }
 
 export function getDockStackTransformTransition(
@@ -155,16 +158,7 @@ export function getDockStackTransformTransition(
   surfacePhase: string | null | undefined,
   fallbackTransition: Transition,
 ) {
-  if (surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY) {
-    return motion.transitions.surfaceArrival;
-  }
-  if (
-    surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION ||
-    surfacePhase === DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION
-  ) {
-    return motion.transitions.anticipation;
-  }
-  return fallbackTransition;
+  return getDockPhaseMotion(motion, surfacePhase).transform ?? fallbackTransition;
 }
 
 export function getDockStackTransition(
@@ -179,24 +173,17 @@ export function getDockStackTransition(
     surfacePhase?: string | null;
   } = {},
 ) {
-  if (surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY) {
-    return motion.transitions.expand;
+  const { deck } = getDockPhaseMotion(motion, surfacePhase);
+  if (typeof deck === "function") {
+    return deck(resizeDistance > 0 ? resizeDistance : motion.deck.resizeFallback);
   }
-  if (
-    surfacePhase === DOCK_SURFACE_PHASE.OPEN ||
-    surfacePhase === DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION
-  ) {
-    return motion.transitions.surfaceResize(
-      resizeDistance > 0 ? resizeDistance : 260,
-    );
-  }
-  if (
-    surfacePhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY ||
-    surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER
-  ) {
-    return motion.transitions.expand;
-  }
+  if (deck) return deck;
   return expanded ? motion.transitions.expand : motion.transitions.stack;
+}
+
+/** The transition of a layout move (`layout="position"`), apart from the part's other animations. */
+export function getDockLayoutTransition(motion: DockMotion) {
+  return { layout: motion.transitions.layout };
 }
 
 export function getDockStackAnimateProps(
@@ -220,7 +207,7 @@ export function getDockStackAnimateProps(
 ) {
   const safeWidth = Number(width);
   const safeHeight = Number(height);
-  const liftAmount = isBreadcrumbsVisible ? -44 : 0;
+  const liftAmount = isBreadcrumbsVisible ? motion.deck.breadcrumbOffset : 0;
   return {
     width: Math.max(0, Math.round(Number.isFinite(safeWidth) ? safeWidth : 0)),
     height: Math.max(
@@ -229,9 +216,9 @@ export function getDockStackAnimateProps(
     ),
     transform: toGpuTransform(
       liftAmount,
-      getDockSurfaceStackScale(motion, surfacePhase),
+      getDockPhaseMotion(motion, surfacePhase).scale,
     ),
-    opacity: isFullscreen ? 0 : 1,
+    opacity: isFullscreen ? motion.deck.fullscreenOpacity : 1,
     boxShadow: isSurfaceActive
       ? motion.deck.elevation.elevated
       : motion.deck.elevation.rest,
@@ -350,7 +337,7 @@ export function getDockItemExitValues(
     y:
       motionValues && Number.isFinite(motionValues.y)
         ? motionValues.y
-        : safePosition * DOCK_CARD_DIMENSIONS.collapsedY,
+        : safePosition * motion.deck.stacking.collapsed.offsetY,
   });
 }
 

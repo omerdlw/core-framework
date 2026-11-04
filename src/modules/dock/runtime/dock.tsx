@@ -17,7 +17,6 @@ import {
 } from "@/hooks";
 import { normalizePath, shallowEqual } from "@/utils";
 import {
-  MAX_VISIBLE_STACKED_CARDS,
   DOCK_ATTENTION_KIND,
   DOCK_OPERATION_EVENTS,
   DOCK_OPERATION_MAX_ENTRIES,
@@ -134,7 +133,6 @@ export function useDockLayout({
   return {
     displayItems,
     activeIndex: displayActiveIndex,
-    MAX_VISIBLE_STACKED_CARDS,
   };
 }
 
