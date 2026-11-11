@@ -6,8 +6,6 @@ const shared: Options = {
   clean: false,
   sourcemap: true,
   treeshake: true,
-  // Code shared by entries goes to chunks, so an app importing several
-  // subpaths (e.g. "/modules" and "/modules/dock") loads it once.
   splitting: true,
   external: [
     "react",
@@ -26,7 +24,6 @@ const shared: Options = {
 };
 
 export default defineConfig([
-  // 1. Server-Safe Pure Entries (NO "use client"; banner)
   {
     ...shared,
     entry: {
@@ -39,7 +36,6 @@ export default defineConfig([
       "modules/ambient/worker/index": "src/modules/ambient/worker/index.ts",
     },
   },
-  // 2. Client-Only Entries (WITH "use client"; banner)
   {
     ...shared,
     banner: {

@@ -31,7 +31,6 @@ export const PassthroughBoundary: BoundaryComponent = ({ children }) =>
 export const ModuleHostContext =
   getOrCreateGlobalContext<ModuleHostValue | null>("ModuleHostContext", null);
 
-
 export function selectModuleSlice(
   coreModule: AnyCoreModule,
   config: PageConfig,

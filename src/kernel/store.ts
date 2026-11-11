@@ -11,10 +11,7 @@ import {
   REGISTRY_SOURCES,
   REGISTRY_VALIDATION_MODES,
 } from "./constants";
-import {
-  validateRegistryMetadata,
-  validateRegistryValue,
-} from "./schema";
+import { validateRegistryMetadata, validateRegistryValue } from "./schema";
 import { createRegistryTransaction } from "./runtime";
 import type {
   AppRegistryEntry,

@@ -3,13 +3,11 @@ import { motion } from "./tokens";
 
 const { durations, easings, springs } = motion;
 
-// Rows come in one after another, a short step apart, after the menu opens.
 const rowDelay = (index: unknown) =>
   0.04 + Math.min(Math.max(Number(index) || 0, 0) * 0.042, 0.21);
 
 const leave = { duration: durations.micro, ease: easings.exit };
 
-// defineTheme(contextMenuTheme, { slots, motion: contextMenuMotion })
 export const contextMenuMotion: ContextMenuMotion = {
   pop: {
     hidden: {
@@ -34,7 +32,11 @@ export const contextMenuMotion: ContextMenuMotion = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: durations.fast, ease: easings.weighted, delay: 0.04 },
+      transition: {
+        duration: durations.fast,
+        ease: easings.weighted,
+        delay: 0.04,
+      },
     },
     exit: { opacity: 0, transition: leave },
   },

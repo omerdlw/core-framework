@@ -1,10 +1,7 @@
 "use client";
 
 export type * from "./types";
-export {
-  ContextMenuContext,
-  ContextMenuProvider,
-} from "./context";
+export { ContextMenuContext, ContextMenuProvider } from "./context";
 export {
   useContextMenu,
   useContextMenuActions,

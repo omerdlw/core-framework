@@ -83,8 +83,6 @@ export const DOCK_SURFACE_PHASE = Object.freeze({
 
 export const VIEWPORT_MARGIN = 24;
 
-// What the layout measures. Where cards rest and how they move is the app's
-// (`DockMotion.deck.stacking`).
 export const DOCK_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 20,
   extensionShelfHeight: 45,
@@ -102,8 +100,6 @@ export const DOCK_CARD_LAYOUT = Object.freeze({
 });
 
 export const DOCK_PREFETCH_INTENT_DELAY_MS = 90;
-// How long the previous card stays on top after the path changes while the
-// new page has not registered its own (a loading boundary, a slow fetch).
 export const DOCK_PENDING_ROUTE_HOLD_MS = 2_500;
 
 export const DOCK_CONTINUITY_EVENTS = Object.freeze({

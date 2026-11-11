@@ -35,7 +35,6 @@ export function resolveTargetElement(
   return "current" in target ? target.current : target;
 }
 
-/** `colors` keys are custom property names; a bare name gets `--color-`. */
 export function normalizeColorMap(
   colors: Record<string, string>,
 ): Record<string, string> {
@@ -54,20 +53,21 @@ interface InlineValue {
 
 interface VariableLayer {
   vars: Record<string, string>;
-  /** Set while the layer lingers after its owner let go. */
   leaving: ReturnType<typeof setTimeout> | null;
 }
 
 interface ElementLayers {
-  /** Each variable's inline value before any layer touched it. */
   base: Map<string, InlineValue>;
-  /** Oldest first; a later layer wins a variable both define. */
   layers: VariableLayer[];
 }
 
 const layersOf = new WeakMap<HTMLElement, ElementLayers>();
 
-function paint(element: HTMLElement, state: ElementLayers, names: Iterable<string>) {
+function paint(
+  element: HTMLElement,
+  state: ElementLayers,
+  names: Iterable<string>,
+) {
   for (const name of names) {
     let value: string | undefined;
     for (let i = state.layers.length - 1; i >= 0 && value === undefined; i--) {
@@ -83,7 +83,11 @@ function paint(element: HTMLElement, state: ElementLayers, names: Iterable<strin
   }
 }
 
-function removeLayer(element: HTMLElement, state: ElementLayers, layer: VariableLayer) {
+function removeLayer(
+  element: HTMLElement,
+  state: ElementLayers,
+  layer: VariableLayer,
+) {
   const index = state.layers.indexOf(layer);
   if (index < 0) return;
   if (layer.leaving) clearTimeout(layer.leaving);
@@ -93,19 +97,9 @@ function removeLayer(element: HTMLElement, state: ElementLayers, layer: Variable
 }
 
 export interface ScopedCssVariableOptions {
-  /**
-   * How long (ms) the variables stay after the returned function is called,
-   * unless another call on the same element takes over first. Bridges the
-   * gap between one page's theme and the next (a loading boundary between).
-   */
   linger?: number;
 }
 
-/**
- * Sets custom properties on `element`; the returned function takes them off
- * again, restoring the inline values from before. Calls stack: the latest
- * wins each variable, and taking one off reveals what lies beneath it.
- */
 export function applyScopedCssVariables(
   element: HTMLElement,
   varMap: Record<string, string>,
@@ -120,7 +114,6 @@ export function applyScopedCssVariables(
     state = { base: new Map(), layers: [] };
     layersOf.set(element, state);
   }
-  // A new theme takes over from any that was only lingering.
   for (const layer of state.layers.filter((layer) => layer.leaving)) {
     removeLayer(element, state, layer);
   }
@@ -142,14 +135,16 @@ export function applyScopedCssVariables(
     if (released) return;
     released = true;
     if (linger > 0 && element.isConnected) {
-      layer.leaving = setTimeout(() => removeLayer(element, owner, layer), linger);
+      layer.leaving = setTimeout(
+        () => removeLayer(element, owner, layer),
+        linger,
+      );
     } else {
       removeLayer(element, owner, layer);
     }
   };
 }
 
-/** Every variable a palette writes: shadow, roles, `on` colours, ramps, regions. */
 export function paletteVarMap(
   palette: AmbientPalette | null | undefined,
   names: ResolvedCssVars = resolveCssVarNames(),

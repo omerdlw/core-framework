@@ -57,4 +57,3 @@ export function getCurrentPath(): string {
   if (!isBrowser) return "/";
   return `${window.location.pathname}${window.location.search}`;
 }
-

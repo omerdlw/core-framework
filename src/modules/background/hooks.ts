@@ -2,16 +2,10 @@
 
 import { useContext, useMemo } from "react";
 import { useRequiredContext, useStore } from "@/hooks";
-import {
-  useModuleRegistration,
-  type RegistryMetadata,
-} from "@/kernel";
+import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
 import { createStore } from "@/utils";
 import { BackgroundContext } from "./context";
-import {
-  DEFAULT_BACKGROUND_COMPUTED,
-  INERT_BACKGROUND_ACTIONS,
-} from "./state";
+import { DEFAULT_BACKGROUND_COMPUTED, INERT_BACKGROUND_ACTIONS } from "./state";
 import type {
   BackgroundActions,
   BackgroundPageConfig,

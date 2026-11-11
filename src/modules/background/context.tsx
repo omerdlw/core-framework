@@ -1,26 +1,12 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  useIsomorphicLayoutEffect,
-  useStore,
-} from "@/hooks";
-import {
-  getOrCreateGlobalContext,
-  useRegistryValue,
-} from "@/kernel";
+import { useIsomorphicLayoutEffect, useStore } from "@/hooks";
+import { getOrCreateGlobalContext, useRegistryValue } from "@/kernel";
 import { useOptionalMediaActions } from "../media";
 import { createStore } from "@/utils";
-import {
-  BACKGROUND_MEDIA_ID,
-  BACKGROUND_REGISTRY_KEY,
-} from "./constants";
+import { BACKGROUND_MEDIA_ID, BACKGROUND_REGISTRY_KEY } from "./constants";
 import {
   computeBackgroundState,
   normalizeBackgroundInput,

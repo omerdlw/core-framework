@@ -31,12 +31,18 @@ import {
   isPublicImageUrl,
   type AmbientDecoder,
 } from "../../src/modules/ambient/server/index.ts";
-import type { AmbientPalette, AmbientPixels } from "../../src/modules/ambient/types.ts";
+import type {
+  AmbientPalette,
+  AmbientPixels,
+} from "../../src/modules/ambient/types.ts";
 
 type RGB = [number, number, number];
 
-/** A width × height image painted by `paint(x, y)`. */
-function image(width: number, height: number, paint: (x: number, y: number) => RGB | null): AmbientPixels {
+function image(
+  width: number,
+  height: number,
+  paint: (x: number, y: number) => RGB | null,
+): AmbientPixels {
   const data = new Uint8ClampedArray(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -47,7 +53,8 @@ function image(width: number, height: number, paint: (x: number, y: number) => R
   return { data, height, width };
 }
 
-const solid = (rgb: RGB, width = 40, height = 30) => image(width, height, () => rgb);
+const solid = (rgb: RGB, width = 40, height = 30) =>
+  image(width, height, () => rgb);
 
 const parse = (css: string) => {
   const [l, c, h] = css.slice(6, -1).split(" ").map(Number);
@@ -95,13 +102,18 @@ describe("ambient: colour math", () => {
         assert.ok(contrastRatio(on, background) >= 4.5, `h ${h} l ${l}`);
       }
     }
-    assert.ok(Math.abs(contrastRatio({ c: 0, h: 0, l: 1 }, { c: 0, h: 0, l: 0 }) - 21) < 0.01);
+    assert.ok(
+      Math.abs(contrastRatio({ c: 0, h: 0, l: 1 }, { c: 0, h: 0, l: 0 }) - 21) <
+        0.01,
+    );
   });
 });
 
 describe("ambient: k-means", () => {
   test("separates distinct colours and is deterministic", () => {
-    const points = new Float64Array([0.5, 0.2, 0, 0.51, 0.21, 0, 0.5, -0.2, 0, 0.49, -0.19, 0]);
+    const points = new Float64Array([
+      0.5, 0.2, 0, 0.51, 0.21, 0, 0.5, -0.2, 0, 0.49, -0.19, 0,
+    ]);
     const weights = new Float64Array([1, 1, 1, 1]);
     const first = kmeans(points, weights, 2);
     const second = kmeans(points, weights, 2);
@@ -113,7 +125,11 @@ describe("ambient: k-means", () => {
   });
 
   test("never asks for more clusters than points", () => {
-    const result = kmeans(new Float64Array([0.5, 0, 0]), new Float64Array([1]), 6);
+    const result = kmeans(
+      new Float64Array([0.5, 0, 0]),
+      new Float64Array([1]),
+      6,
+    );
     assert.equal(result.k, 1);
     assert.equal(kmeans(new Float64Array(), new Float64Array(), 3).k, 0);
   });
@@ -123,22 +139,44 @@ describe("ambient: analyzeAmbientPixels", () => {
   test("gives a shadow tone, roles with ramps and regions", () => {
     const palette = analyzeAmbientPixels(solid(ORANGE));
     assert.match(palette.shadow, /^oklch\(/);
-    assert.deepEqual(Object.keys(palette).sort(), ["neutral", "regions", "roles", "shadow"]);
+    assert.deepEqual(Object.keys(palette).sort(), [
+      "neutral",
+      "regions",
+      "roles",
+      "shadow",
+    ]);
     assert.equal(palette.neutral, false);
     for (const role of ["dominant", "vibrant", "muted", "accent"] as const) {
       const swatch = palette.roles![role];
-      assert.deepEqual(Object.keys(swatch.ramp).map(Number), [...AMBIENT_TONES]);
-      for (const tone of AMBIENT_TONES) assert.ok(inGamut(parse(swatch.ramp[tone])), `${role} ${tone}`);
-      assert.ok(contrastRatio(parse(swatch.on), parse(swatch.color)) >= 4.5, role);
+      assert.deepEqual(Object.keys(swatch.ramp).map(Number), [
+        ...AMBIENT_TONES,
+      ]);
+      for (const tone of AMBIENT_TONES)
+        assert.ok(inGamut(parse(swatch.ramp[tone])), `${role} ${tone}`);
+      assert.ok(
+        contrastRatio(parse(swatch.on), parse(swatch.color)) >= 4.5,
+        role,
+      );
     }
-    for (const region of ["top", "bottom", "left", "right", "center"] as const) {
+    for (const region of [
+      "top",
+      "bottom",
+      "left",
+      "right",
+      "center",
+    ] as const) {
       assert.ok(palette.regions![region].strength > 0.5, region);
     }
   });
 
   test("the same pixels always give the same palette", () => {
-    const pixels = image(48, 32, (x, y) => (x < 24 ? ORANGE : y < 16 ? TEAL : NAVY));
-    assert.deepEqual(analyzeAmbientPixels(pixels), analyzeAmbientPixels(pixels));
+    const pixels = image(48, 32, (x, y) =>
+      x < 24 ? ORANGE : y < 16 ? TEAL : NAVY,
+    );
+    assert.deepEqual(
+      analyzeAmbientPixels(pixels),
+      analyzeAmbientPixels(pixels),
+    );
   });
 
   test("shadow is a deep tone of the image, not near-black grey", () => {
@@ -150,7 +188,9 @@ describe("ambient: analyzeAmbientPixels", () => {
   });
 
   test("a two-tone image keeps both hues: dominant and a distinct accent", () => {
-    const palette = analyzeAmbientPixels(image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)));
+    const palette = analyzeAmbientPixels(
+      image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)),
+    );
     const { accent, dominant } = palette.roles!;
     assert.ok(hueDistance(accent.h, dominant.h) >= 40);
     assert.equal(accent.fromImage, true);
@@ -163,17 +203,23 @@ describe("ambient: analyzeAmbientPixels", () => {
 
   test("a grey image stays grey: no hue is invented", () => {
     const palette = analyzeAmbientPixels(
-      image(30, 30, (x) => (x < 10 ? [20, 20, 20] : x < 20 ? [128, 128, 128] : [235, 235, 235])),
+      image(30, 30, (x) =>
+        x < 10 ? [20, 20, 20] : x < 20 ? [128, 128, 128] : [235, 235, 235],
+      ),
     );
     assert.equal(palette.neutral, true);
     assert.equal(parse(palette.shadow).c, 0);
-    for (const swatch of Object.values(palette.roles!)) assert.equal(swatch.c, 0);
-    for (const region of Object.values(palette.regions!)) assert.equal(region.strength, 0);
+    for (const swatch of Object.values(palette.roles!))
+      assert.equal(swatch.c, 0);
+    for (const region of Object.values(palette.regions!))
+      assert.equal(region.strength, 0);
   });
 
   test("a vivid detail on a grey image becomes the accent, vibrant stays grey", () => {
     const palette = analyzeAmbientPixels(
-      image(50, 50, (x, y) => (x >= 22 && x < 27 && y >= 40 && y < 45 ? RED : [70, 70, 70])),
+      image(50, 50, (x, y) =>
+        x >= 22 && x < 27 && y >= 40 && y < 45 ? RED : [70, 70, 70],
+      ),
     );
     assert.equal(palette.neutral, true);
     assert.equal(palette.roles.vibrant.c, 0);
@@ -183,46 +229,86 @@ describe("ambient: analyzeAmbientPixels", () => {
   });
 
   test("a fully transparent image is neutral and does not throw", () => {
-    const palette = analyzeAmbientPixels({ data: new Uint8ClampedArray(64), height: 4, width: 4 });
+    const palette = analyzeAmbientPixels({
+      data: new Uint8ClampedArray(64),
+      height: 4,
+      width: 4,
+    });
     assert.equal(palette.neutral, true);
   });
 
   test("regions follow the layout", () => {
-    const palette = analyzeAmbientPixels(image(60, 40, (x) => (x < 30 ? RED : NAVY)));
-    assert.ok(hueDistance(palette.regions!.left.h, 25) < 25, `left ${palette.regions!.left.h}`);
-    assert.ok(hueDistance(palette.regions!.right.h, 264) < 25, `right ${palette.regions!.right.h}`);
+    const palette = analyzeAmbientPixels(
+      image(60, 40, (x) => (x < 30 ? RED : NAVY)),
+    );
+    assert.ok(
+      hueDistance(palette.regions!.left.h, 25) < 25,
+      `left ${palette.regions!.left.h}`,
+    );
+    assert.ok(
+      hueDistance(palette.regions!.right.h, 264) < 25,
+      `right ${palette.regions!.right.h}`,
+    );
   });
 
   test("letterbox bars are cut before sampling", () => {
-    const pixels = image(64, 48, (_, y) => (y < 8 || y >= 40 ? [2, 2, 2] : TEAL));
-    assert.deepEqual(findContentBounds(pixels), { bottom: 40, left: 0, right: 64, top: 8 });
+    const pixels = image(64, 48, (_, y) =>
+      y < 8 || y >= 40 ? [2, 2, 2] : TEAL,
+    );
+    assert.deepEqual(findContentBounds(pixels), {
+      bottom: 40,
+      left: 0,
+      right: 64,
+      top: 8,
+    });
     const palette = analyzeAmbientPixels(pixels);
     assert.ok(palette.regions!.top.strength > 0.5);
     assert.ok(palette.regions!.bottom.strength > 0.5);
     const off = analyzeAmbientPixels(pixels, { letterbox: false });
-    assert.equal(off.regions!.top.strength < palette.regions!.top.strength, true);
+    assert.equal(
+      off.regions!.top.strength < palette.regions!.top.strength,
+      true,
+    );
   });
 
   test("a dark image with a black area is not mistaken for letterbox in the middle", () => {
-    const pixels = image(40, 40, (_, y) => (y >= 15 && y < 25 ? [2, 2, 2] : ORANGE));
-    assert.deepEqual(findContentBounds(pixels), { bottom: 40, left: 0, right: 40, top: 0 });
+    const pixels = image(40, 40, (_, y) =>
+      y >= 15 && y < 25 ? [2, 2, 2] : ORANGE,
+    );
+    assert.deepEqual(findContentBounds(pixels), {
+      bottom: 40,
+      left: 0,
+      right: 40,
+      top: 0,
+    });
   });
 
   test("a pale face stays a pale warm tone, not a loud orange", () => {
     const palette = analyzeAmbientPixels(solid([224, 172, 140]));
     const source = 0.075;
-    assert.ok(palette.roles.dominant.c <= source * 1.15, `dominant C ${palette.roles.dominant.c}`);
+    assert.ok(
+      palette.roles.dominant.c <= source * 1.15,
+      `dominant C ${palette.roles.dominant.c}`,
+    );
     for (const region of Object.values(palette.regions)) {
       assert.ok(region.c <= source * 1.15, `region C ${region.c}`);
     }
   });
 
   test("pale tones, warm or cool, keep about their own chroma", () => {
-    for (const rgb of [[200, 160, 130], [220, 180, 150], [130, 170, 190], [140, 170, 150]] as RGB[]) {
+    for (const rgb of [
+      [200, 160, 130],
+      [220, 180, 150],
+      [130, 170, 190],
+      [140, 170, 150],
+    ] as RGB[]) {
       const [, a, b] = srgbToOklab(...rgb);
       const source = Math.hypot(a, b);
       const { c } = analyzeAmbientPixels(solid(rgb)).regions.center;
-      assert.ok(c <= source * 1.25, `${rgb}: C ${source.toFixed(3)} became ${c}`);
+      assert.ok(
+        c <= source * 1.25,
+        `${rgb}: C ${source.toFixed(3)} became ${c}`,
+      );
     }
   });
 
@@ -233,11 +319,14 @@ describe("ambient: analyzeAmbientPixels", () => {
   });
 
   test("a region shows its own pixels, not the colour of a cluster it shares", () => {
-    // Two clusters for three hues: red and orange share one, yet the left
-    // third is red and the right third orange.
-    const pixels = image(90, 30, (x) => (x < 30 ? RED : x < 60 ? NAVY : ORANGE));
+    const pixels = image(90, 30, (x) =>
+      x < 30 ? RED : x < 60 ? NAVY : ORANGE,
+    );
     const { regions } = analyzeAmbientPixels(pixels, { clusters: 2 });
-    assert.ok(regions.right.h - regions.left.h > 15, `left ${regions.left.h} right ${regions.right.h}`);
+    assert.ok(
+      regions.right.h - regions.left.h > 15,
+      `left ${regions.left.h} right ${regions.right.h}`,
+    );
     assert.ok(hueDistance(regions.left.h, 27) < 12, `left ${regions.left.h}`);
   });
 });
@@ -264,16 +353,27 @@ describe("ambient: settings", () => {
 
   test("resolveProxyUrl handles prefixes, templates, functions and opt-out", () => {
     const src = "https://cdn.example/a b.jpg";
-    assert.equal(resolveProxyUrl("/p?url=", src), "/p?url=https%3A%2F%2Fcdn.example%2Fa%20b.jpg");
-    assert.equal(resolveProxyUrl("/img/{url}/raw", src), "/img/https%3A%2F%2Fcdn.example%2Fa%20b.jpg/raw");
-    assert.equal(resolveProxyUrl((s) => `/x?u=${s.length}`, src), "/x?u=27");
+    assert.equal(
+      resolveProxyUrl("/p?url=", src),
+      "/p?url=https%3A%2F%2Fcdn.example%2Fa%20b.jpg",
+    );
+    assert.equal(
+      resolveProxyUrl("/img/{url}/raw", src),
+      "/img/https%3A%2F%2Fcdn.example%2Fa%20b.jpg/raw",
+    );
+    assert.equal(
+      resolveProxyUrl((s) => `/x?u=${s.length}`, src),
+      "/x?u=27",
+    );
     assert.equal(resolveProxyUrl(null, src), null);
     assert.equal(resolveProxyUrl("/p?url=", "/local.jpg"), null);
   });
 });
 
 describe("ambient: CSS variables", () => {
-  const palette = analyzeAmbientPixels(image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)));
+  const palette = analyzeAmbientPixels(
+    image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)),
+  );
 
   test("a palette writes shadow, roles, on colours, ramps and regions, all under --ambient-", () => {
     const vars = resolveAmbientVarMap({ image: "/a.jpg", palette });
@@ -287,7 +387,12 @@ describe("ambient: CSS variables", () => {
 
   test("names, tones and groups are configurable", () => {
     const vars = resolveAmbientVarMap({
-      cssVars: { shadow: "--page", region: null, tone: "--{role}{tone}", tones: [10, 90] },
+      cssVars: {
+        shadow: "--page",
+        region: null,
+        tone: "--{role}{tone}",
+        tones: [10, 90],
+      },
       image: "/a.jpg",
       palette,
     });
@@ -297,26 +402,44 @@ describe("ambient: CSS variables", () => {
     assert.equal(vars["--dominant20"], undefined);
     assert.equal(vars["--ambient-left"], undefined);
 
-    const none = resolveAmbientVarMap({ cssVars: { tones: false }, image: "/a.jpg", palette });
-    assert.equal(Object.keys(none).some((name) => /-\d+$/.test(name)), false);
+    const none = resolveAmbientVarMap({
+      cssVars: { tones: false },
+      image: "/a.jpg",
+      palette,
+    });
+    assert.equal(
+      Object.keys(none).some((name) => /-\d+$/.test(name)),
+      false,
+    );
   });
 
   test("explicit colors are custom properties; a bare name gets --color-", () => {
-    const mapped = normalizeColorMap({ "--accent-main": "#f00", brand: "#00f", empty: "" });
-    assert.deepEqual(mapped, { "--accent-main": "#f00", "--color-brand": "#00f" });
+    const mapped = normalizeColorMap({
+      "--accent-main": "#f00",
+      brand: "#00f",
+      empty: "",
+    });
+    assert.deepEqual(mapped, {
+      "--accent-main": "#f00",
+      "--color-brand": "#00f",
+    });
   });
 
   test("no palette writes nothing", () => {
-    assert.deepEqual(resolveAmbientVarMap({ image: "/a.jpg", palette: null }), {});
+    assert.deepEqual(
+      resolveAmbientVarMap({ image: "/a.jpg", palette: null }),
+      {},
+    );
   });
 });
 
-// ─── Client extraction ───────────────────────────────────────────────────
-
-// tests/support/dom.ts exposes happy-dom globals as getters; swap them in place.
 function override(name: string, value: unknown): () => void {
   const previous = Object.getOwnPropertyDescriptor(globalThis, name);
-  Object.defineProperty(globalThis, name, { configurable: true, value, writable: true });
+  Object.defineProperty(globalThis, name, {
+    configurable: true,
+    value,
+    writable: true,
+  });
   return () => {
     if (previous) Object.defineProperty(globalThis, name, previous);
     else delete (globalThis as any)[name];
@@ -332,7 +455,10 @@ function fakeDecoding(rgb: RGB): () => void {
   const restoreCanvas = override(
     "OffscreenCanvas",
     class {
-      constructor(public width: number, public height: number) {}
+      constructor(
+        public width: number,
+        public height: number,
+      ) {}
       getContext() {
         return {
           drawImage() {},
@@ -361,10 +487,16 @@ describe("ambient: client extraction", () => {
     calls = [];
     restoreSettings = configureAmbient({});
     restoreDecoding = fakeDecoding(ORANGE);
-    restoreFetch = override("fetch", async (url: string, init?: RequestInit) => {
-      calls.push({ init, url: String(url) });
-      return new Response(new Blob([new Uint8Array(4)], { type: "image/jpeg" }), { status: 200 });
-    });
+    restoreFetch = override(
+      "fetch",
+      async (url: string, init?: RequestInit) => {
+        calls.push({ init, url: String(url) });
+        return new Response(
+          new Blob([new Uint8Array(4)], { type: "image/jpeg" }),
+          { status: 200 },
+        );
+      },
+    );
   });
 
   afterEach(() => {
@@ -376,7 +508,10 @@ describe("ambient: client extraction", () => {
   test("fetches the image as is: no ?cors=1, one request", async () => {
     const src = unique();
     const palette = await extractPaletteFromImage(src);
-    assert.deepEqual(calls.map((call) => call.url), [src]);
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      [src],
+    );
     assert.equal(calls[0].init?.mode, "cors");
     assert.ok(palette);
     assert.equal(palette.source, src);
@@ -391,11 +526,10 @@ describe("ambient: client extraction", () => {
       return new Response(new Blob([new Uint8Array(4)], { type: "image/png" }));
     };
     const palette = await extractPaletteFromImage(src);
-    assert.deepEqual(calls.map((call) => call.url), [
-      src,
-      src,
-      `http://localhost/img-proxy?src=${encodeURIComponent(src)}`,
-    ]);
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      [src, src, `http://localhost/img-proxy?src=${encodeURIComponent(src)}`],
+    );
     assert.equal(calls[0].init?.cache, undefined);
     assert.equal(calls[1].init?.cache, "reload");
     assert.ok(palette?.roles);
@@ -406,10 +540,15 @@ describe("ambient: client extraction", () => {
     (globalThis as any).fetch = async (url: string, init?: RequestInit) => {
       calls.push({ init, url: String(url) });
       if (init?.cache !== "reload") throw new TypeError("CORS");
-      return new Response(new Blob([new Uint8Array(4)], { type: "image/jpeg" }));
+      return new Response(
+        new Blob([new Uint8Array(4)], { type: "image/jpeg" }),
+      );
     };
     await extractPaletteFromImage(src);
-    assert.deepEqual(calls.map((call) => call.url), [src, src]);
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      [src, src],
+    );
   });
 
   test("a same-origin image is not retried or proxied", async () => {
@@ -423,7 +562,9 @@ describe("ambient: client extraction", () => {
   });
 
   test('strategy "none" never fetches and returns null when nothing is cached', async () => {
-    const palette = await extractPaletteFromImage(unique(), { strategy: "none" });
+    const palette = await extractPaletteFromImage(unique(), {
+      strategy: "none",
+    });
     assert.equal(palette, null);
     assert.equal(calls.length, 0);
   });
@@ -439,11 +580,12 @@ describe("ambient: client extraction", () => {
 
   test("runs in the configured worker and answers the same palette", async () => {
     let created = 0;
-    // happy-dom's EventTarget only takes its own Event, so `data` is attached.
     const message = (data: unknown) =>
       Object.assign(new Event("message"), { data }) as unknown as MessageEvent;
     class FakeWorker extends EventTarget {
-      private scope = new EventTarget() as EventTarget & { postMessage: (m: unknown) => void };
+      private scope = new EventTarget() as EventTarget & {
+        postMessage: (m: unknown) => void;
+      };
       constructor() {
         super();
         created++;
@@ -460,7 +602,9 @@ describe("ambient: client extraction", () => {
     configureAmbient({ worker: factory });
     try {
       const inWorker = await extractPaletteFromImage(unique());
-      const onMain = await extractPaletteFromImage(unique(), { strategy: "main" });
+      const onMain = await extractPaletteFromImage(unique(), {
+        strategy: "main",
+      });
       assert.equal(created, 1);
       assert.equal(inWorker?.shadow, onMain?.shadow);
       assert.deepEqual(inWorker?.roles, onMain?.roles);
@@ -471,7 +615,10 @@ describe("ambient: client extraction", () => {
 
   test("useAmbientColor uses a server palette for the same image without extracting", async () => {
     const src = unique();
-    const server = { ...analyzeAmbientPixels(solid(NAVY)), source: src } as AmbientPalette;
+    const server = {
+      ...analyzeAmbientPixels(solid(NAVY)),
+      source: src,
+    } as AmbientPalette;
     const { result } = await renderHook(() =>
       useAmbientColor(src, { initialPalette: server }),
     );
@@ -482,10 +629,9 @@ describe("ambient: client extraction", () => {
   });
 });
 
-// ─── Server ──────────────────────────────────────────────────────────────
-
 describe("ambient: server", () => {
-  const decode: AmbientDecoder = async (_bytes, size) => solid(TEAL, size, Math.round(size / 2));
+  const decode: AmbientDecoder = async (_bytes, size) =>
+    solid(TEAL, size, Math.round(size / 2));
   const resolve = async () => ["93.184.216.34"];
   const imageResponse = (init: ResponseInit = {}) =>
     new Response(new Uint8Array(16), {
@@ -494,8 +640,15 @@ describe("ambient: server", () => {
     });
 
   test("extracts from bytes with any decoder", async () => {
-    const palette = await extractAmbientPaletteFromBytes(new Uint8Array(4), { decode });
-    assert.ok(hueDistance(palette.roles.dominant.h, analyzeAmbientPixels(solid(TEAL)).roles.vibrant.h) < 5);
+    const palette = await extractAmbientPaletteFromBytes(new Uint8Array(4), {
+      decode,
+    });
+    assert.ok(
+      hueDistance(
+        palette.roles.dominant.h,
+        analyzeAmbientPixels(solid(TEAL)).roles.vibrant.h,
+      ) < 5,
+    );
   });
 
   test("fetches, sets source to the URL and caches", async () => {
@@ -542,24 +695,33 @@ describe("ambient: server", () => {
     ]) {
       assert.equal(isPublicImageUrl(new URL(url)), false, url);
     }
-    assert.equal(isPublicImageUrl(new URL("https://image.tmdb.org/t/p/w780/a.jpg")), true);
+    assert.equal(
+      isPublicImageUrl(new URL("https://image.tmdb.org/t/p/w780/a.jpg")),
+      true,
+    );
     assert.equal(isPublicImageUrl(new URL("https://8.8.8.8/a.jpg")), true);
-    assert.equal(isPublicImageUrl(new URL("https://[2606:4700::1111]/a.jpg")), true);
+    assert.equal(
+      isPublicImageUrl(new URL("https://[2606:4700::1111]/a.jpg")),
+      true,
+    );
     assert.equal(isPrivateAddress("::ffff:192.168.1.1"), true);
     assert.equal(isPrivateAddress("172.32.0.1"), false);
   });
 
   test("a public name that resolves to a private address is refused", async () => {
     let fetches = 0;
-    const palette = await extractAmbientPalette("https://rebind.example/a.jpg", {
-      cache: false,
-      decode,
-      fetch: (async () => {
-        fetches++;
-        return imageResponse();
-      }) as typeof fetch,
-      resolve: async () => ["93.184.216.34", "10.0.0.5"],
-    });
+    const palette = await extractAmbientPalette(
+      "https://rebind.example/a.jpg",
+      {
+        cache: false,
+        decode,
+        fetch: (async () => {
+          fetches++;
+          return imageResponse();
+        }) as typeof fetch,
+        resolve: async () => ["93.184.216.34", "10.0.0.5"],
+      },
+    );
     assert.equal(palette, null);
     assert.equal(fetches, 0);
   });
@@ -576,15 +738,21 @@ describe("ambient: server", () => {
 
   test("redirects are checked hop by hop", async () => {
     const seen: string[] = [];
-    const palette = await extractAmbientPalette("https://image.example/redirect.jpg", {
-      cache: false,
-      decode,
-      resolve,
-      fetch: (async (url: URL) => {
-        seen.push(String(url));
-        return new Response(null, { headers: { location: "http://127.0.0.1/secret" }, status: 302 });
-      }) as typeof fetch,
-    });
+    const palette = await extractAmbientPalette(
+      "https://image.example/redirect.jpg",
+      {
+        cache: false,
+        decode,
+        resolve,
+        fetch: (async (url: URL) => {
+          seen.push(String(url));
+          return new Response(null, {
+            headers: { location: "http://127.0.0.1/secret" },
+            status: 302,
+          });
+        }) as typeof fetch,
+      },
+    );
     assert.equal(palette, null);
     assert.deepEqual(seen, ["https://image.example/redirect.jpg"]);
   });
@@ -595,7 +763,9 @@ describe("ambient: server", () => {
       decode,
       resolve,
       fetch: (async () =>
-        new Response("<html>", { headers: { "content-type": "text/html" } })) as typeof fetch,
+        new Response("<html>", {
+          headers: { "content-type": "text/html" },
+        })) as typeof fetch,
     });
     assert.equal(html, null);
 
@@ -611,16 +781,19 @@ describe("ambient: server", () => {
 
   test("an allow list narrows what may be fetched", async () => {
     let fetches = 0;
-    const palette = await extractAmbientPalette("https://elsewhere.example/a.jpg", {
-      allow: (url) => url.hostname === "image.tmdb.org",
-      cache: false,
-      decode,
-      resolve,
-      fetch: (async () => {
-        fetches++;
-        return imageResponse();
-      }) as typeof fetch,
-    });
+    const palette = await extractAmbientPalette(
+      "https://elsewhere.example/a.jpg",
+      {
+        allow: (url) => url.hostname === "image.tmdb.org",
+        cache: false,
+        decode,
+        resolve,
+        fetch: (async () => {
+          fetches++;
+          return imageResponse();
+        }) as typeof fetch,
+      },
+    );
     assert.equal(palette, null);
     assert.equal(fetches, 0);
   });

@@ -22,7 +22,6 @@ import {
 } from "./track";
 import { useDragScroll } from "./use-drag-scroll";
 
-/** Moves the track to `target`; returns a function that stops the move. */
 export type CarouselGlide = (
   track: HTMLElement,
   target: number,
@@ -32,28 +31,20 @@ export interface CarouselSlideProps {
   children: ReactNode;
   className: string;
   index: number;
-  /** The child's own key, or its index. */
   slideKey: string | number;
 }
 
 export interface CarouselProps {
   children: ReactNode;
-  /** @deprecated Use `classNames.arrow`. */
   arrowClassName?: string;
   className?: string;
   classNames?: PartClassNames<"carousel">;
-  /** The slide part whose corners round the rack's ends. */
   frameSelector?: string;
-  /** Replaces the default glide (the ui's `glide` motion through `motion`). */
   glide?: CarouselGlide;
-  /** @deprecated Use `classNames.slide`. */
   itemClassName?: string;
   label?: string;
-  /** Fires a page before the end, to load more. */
   onNearEnd?: () => void;
-  /** Arrows stay hidden until the slides are ready (an entrance still playing). */
   ready?: boolean;
-  /** Draws each slide; the default is a plain `div`. */
   renderSlide?: (props: CarouselSlideProps) => ReactNode;
 }
 
@@ -61,12 +52,6 @@ const defaultSlide = ({ children, className }: CarouselSlideProps) => (
   <div className={className}>{children}</div>
 );
 
-/**
- * A horizontal rack of cards. It scrolls by touch, wheel and mouse drag;
- * arrows glide a page at a time; `onNearEnd` fires a page before the end.
- *
- *   <Carousel label="Popular" classNames={{ slide: "w-48" }}>{cards}</Carousel>
- */
 export function Carousel({
   arrowClassName,
   children,
@@ -222,7 +207,6 @@ export function Carousel({
   );
 }
 
-/** Keeps each slide keyed by its child, whatever `renderSlide` returns. */
 function SlideSlot({ children }: { children: ReactNode }) {
   return children;
 }

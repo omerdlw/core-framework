@@ -13,7 +13,6 @@ export interface TooltipProps {
   className?: string;
   classNames?: PartClassNames<"tooltip">;
   collisionPadding?: number;
-  /** Attributes for the floating label (data hooks, ids). */
   contentProps?: Omit<
     ComponentProps<typeof TooltipPrimitive.Content>,
     "children" | "className" | "side"
@@ -25,17 +24,10 @@ export interface TooltipProps {
   open?: boolean;
   position?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
-  /** The label; a string or any node. */
   text: ReactNode;
   triggerRef?: Ref<HTMLButtonElement>;
 }
 
-/**
- * A frosted label on hover and focus. Mount one `TooltipProvider` (Radix) near
- * the root for shared delays.
- *
- *   <Tooltip text="Save"><Button intent="ghost" icon>…</Button></Tooltip>
- */
 export function Tooltip({
   children,
   className,
@@ -74,7 +66,9 @@ export function Tooltip({
           })}
           style={{ zIndex: Z_INDEX.TOOLTIP, ...contentProps?.style }}
         >
-          <span className={parts.tooltip.label({ className: classNames?.label })}>
+          <span
+            className={parts.tooltip.label({ className: classNames?.label })}
+          >
             {text}
           </span>
         </TooltipPrimitive.Content>

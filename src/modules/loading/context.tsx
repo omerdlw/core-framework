@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIsomorphicLayoutEffect } from "@/hooks";
-import {
-  getOrCreateGlobalContext,
-  useRegistryValue,
-} from "@/kernel";
+import { getOrCreateGlobalContext, useRegistryValue } from "@/kernel";
 import { createStore } from "@/utils";
 import {
   DEFAULT_LOADING_STATE,
@@ -56,9 +47,6 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const startTimeRef = useRef<number | null>(null);
   const minDurationRef = useRef<number>(0);
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // What is loading, oldest first: the `startLoading` switch and each
-  // `withLoading` task. The overlay shows the latest and stays up until the
-  // last one ends, so one task finishing does not hide another.
   const tasksRef = useRef<LoadingTask[]>([]);
   const nextTaskRef = useRef(1);
 
@@ -89,7 +77,10 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       tasks.push({ key, state: nextState });
       tasksRef.current = tasks;
       startTimeRef.current ??= Date.now();
-      minDurationRef.current = Math.max(minDurationRef.current, nextState.minDuration);
+      minDurationRef.current = Math.max(
+        minDurationRef.current,
+        nextState.minDuration,
+      );
       setManualState({ ...nextState, isLoading: true });
     },
     [clearStopTimer],
@@ -156,7 +147,10 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       options: LoadingOptions | string = {},
     ): Promise<T> => {
       const key = nextTaskRef.current++;
-      beginTask(key, typeof options === "string" ? { message: options } : options);
+      beginTask(
+        key,
+        typeof options === "string" ? { message: options } : options,
+      );
       try {
         return typeof task === "function" ? await task() : await task;
       } finally {

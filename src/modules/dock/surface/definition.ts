@@ -1,6 +1,12 @@
 "use client";
 
-import { isValidElement, lazy, useCallback, useMemo, type ReactNode } from "react";
+import {
+  isValidElement,
+  lazy,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
 import { isPlainObject } from "@/utils";
 import {
   DOCK_SURFACE_RENDER_MODE,

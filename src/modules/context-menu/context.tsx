@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import {
-  useIsomorphicLayoutEffect,
-  useStore,
-} from "@/hooks";
+import { useIsomorphicLayoutEffect, useStore } from "@/hooks";
 import { getOrCreateGlobalContext } from "@/kernel";
 
 import { createStore } from "@/utils";
@@ -31,7 +22,6 @@ import {
 } from "./types";
 
 export const ContextMenuContext =
-
   getOrCreateGlobalContext<ContextMenuProviderValue | null>(
     "ContextMenuContext",
     null,
@@ -115,4 +105,3 @@ export function ContextMenuProvider({ children }: { children?: ReactNode }) {
     <ContextMenuContext value={contextValue}>{children}</ContextMenuContext>
   );
 }
-

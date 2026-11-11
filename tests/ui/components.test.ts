@@ -15,8 +15,6 @@ import {
   defineUi,
 } from "../../src/ui/index.ts";
 
-// happy-dom rejects a cancelled animation's promise; the components' motion
-// is not under test here, so it resolves instantly.
 MotionGlobalConfig.skipAnimations = true;
 
 const click = async (element: Element) => {
@@ -36,7 +34,12 @@ const key = async (element: Element, name: string) => {
 describe("Button", () => {
   test("without an intent it is bare; with one it draws the recipe", async () => {
     const view = await render(
-      h("div", null, h(Button, null, "bare"), h(Button, { intent: "primary" }, "go")),
+      h(
+        "div",
+        null,
+        h(Button, null, "bare"),
+        h(Button, { intent: "primary" }, "go"),
+      ),
     );
     const [bare, styled] = view.container.querySelectorAll("button");
     assert.ok(!bare.className.includes("h-control-md"));
@@ -46,7 +49,9 @@ describe("Button", () => {
   });
 
   test("loading keeps the label, marks busy and disables", async () => {
-    const view = await render(h(Button, { intent: "neutral", loading: true }, "Save"));
+    const view = await render(
+      h(Button, { intent: "neutral", loading: true }, "Save"),
+    );
     const button = view.container.querySelector("button")!;
     assert.equal(button.getAttribute("aria-busy"), "true");
     assert.equal(button.disabled, true);
@@ -67,7 +72,10 @@ describe("Button", () => {
         },
       },
     });
-    const props = { intent: "brand", elevated: true } as Record<string, unknown>;
+    const props = { intent: "brand", elevated: true } as Record<
+      string,
+      unknown
+    >;
     const view = await render(h(UiProvider, { ui }, h(Button, props, "x")));
     const button = view.container.querySelector("button")!;
     assert.ok(button.className.includes("bg-brand"));
@@ -80,7 +88,10 @@ describe("Switch and Checkbox", () => {
   test("Switch reports the next state and carries its role", async () => {
     let next: boolean | null = null;
     const view = await render(
-      h(Switch, { checked: false, onCheckedChange: (value: boolean) => (next = value) }),
+      h(Switch, {
+        checked: false,
+        onCheckedChange: (value: boolean) => (next = value),
+      }),
     );
     const button = view.container.querySelector('[role="switch"]')!;
     assert.equal(button.getAttribute("aria-checked"), "false");
@@ -99,7 +110,11 @@ describe("Switch and Checkbox", () => {
   test("Checkbox toggles and does not when disabled", async () => {
     const calls: boolean[] = [];
     const view = await render(
-      h(Checkbox, { checked: true, onCheckedChange: (v: boolean) => calls.push(v) }, "Label"),
+      h(
+        Checkbox,
+        { checked: true, onCheckedChange: (v: boolean) => calls.push(v) },
+        "Label",
+      ),
     );
     const box = view.container.querySelector('[role="checkbox"]')!;
     await click(box);
@@ -110,7 +125,9 @@ describe("Switch and Checkbox", () => {
 
 describe("Input", () => {
   test("variant props become classes, not attributes", async () => {
-    const view = await render(h(Input, { size: "sm", shape: "pill", placeholder: "Name" }));
+    const view = await render(
+      h(Input, { size: "sm", shape: "pill", placeholder: "Name" }),
+    );
     const input = view.container.querySelector("input")!;
     assert.ok(input.className.includes("h-control-sm"));
     assert.ok(input.className.includes("rounded-full"));

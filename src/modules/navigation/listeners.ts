@@ -1,4 +1,9 @@
-import { NAVIGATION_PHASE, NAVIGATION_PREFETCH_ATTRIBUTE, NAVIGATION_REASON, NAVIGATION_SOURCE } from "./constants";
+import {
+  NAVIGATION_PHASE,
+  NAVIGATION_PREFETCH_ATTRIBUTE,
+  NAVIGATION_REASON,
+  NAVIGATION_SOURCE,
+} from "./constants";
 import type { NavigationSettings, Navigator } from "./types";
 import {
   internalLinkOf,
@@ -7,10 +12,6 @@ import {
   readWindowLocation,
 } from "./utils";
 
-/**
- * Prefetches internal links on intent: after `intent.delayMs` of mouse hover,
- * and at once on pointerdown or focus. Returns the cleanup.
- */
 export function watchIntent(
   navigator: Pick<Navigator, "prefetch">,
   settings: () => NavigationSettings,
@@ -68,13 +69,6 @@ export function watchIntent(
   };
 }
 
-/**
- * Turns back/forward steps into trips. While a hold wants history steps, the
- * step is swallowed before the router sees it (a capture listener on
- * `window` runs first), the holds run, and the same `popstate` is replayed
- * for the router. Stepping back to the origin during the hold cancels the
- * trip. Returns the cleanup.
- */
 export function watchHistory(
   navigator: Pick<Navigator, "cancel" | "depart" | "holdsHistory" | "store">,
   win: Window = window,
@@ -92,7 +86,6 @@ export function watchHistory(
       active.phase === NAVIGATION_PHASE.LEAVING
     ) {
       if (isSameLocation(to, active.from)) {
-        // Back where the router still is: let it see the step, nothing moves.
         navigator.cancel(NAVIGATION_REASON.RETURNED);
         return;
       }
@@ -120,5 +113,6 @@ export function watchHistory(
   };
 
   win.addEventListener("popstate", onPopState, { capture: true });
-  return () => win.removeEventListener("popstate", onPopState, { capture: true });
+  return () =>
+    win.removeEventListener("popstate", onPopState, { capture: true });
 }

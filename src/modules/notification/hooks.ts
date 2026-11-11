@@ -17,10 +17,7 @@ import {
   TOAST_DURATIONS,
   notificationTheme,
 } from "./constants";
-import {
-  NotificationContext,
-  NOOP_NOTIFICATION_STORE,
-} from "./context";
+import { NotificationContext, NOOP_NOTIFICATION_STORE } from "./context";
 import {
   getActiveNotification,
   getOutcomeMessage,

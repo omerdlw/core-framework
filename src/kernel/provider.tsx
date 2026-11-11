@@ -33,7 +33,6 @@ interface RegistryContextValue {
 }
 
 const RegistryContext = getOrCreateGlobalContext<RegistryContextValue | null>(
-
   "RegistryContext",
   null,
 );

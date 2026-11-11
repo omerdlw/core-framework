@@ -27,11 +27,7 @@ import {
   hasHeightConstraint,
   isSidePosition,
 } from "./layout";
-import {
-  hasSlotContent,
-  isHeaderConfig,
-  resolveHeaderActions,
-} from "./header";
+import { hasSlotContent, isHeaderConfig, resolveHeaderActions } from "./header";
 import { getModalLabel } from "./identity";
 import {
   useModalContainerModel,

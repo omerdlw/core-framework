@@ -18,7 +18,6 @@ export const INERT_MEDIA_ACTIONS: MediaActions = Object.freeze({
   upsertSource: () => {},
 });
 
-
 export const MEDIA_SYNC_DRIFT_SECONDS = 0.3;
 
 export const MEDIA_REGISTRY_KEY = "page-media";

@@ -9,7 +9,10 @@ import {
 } from "../support/themes.ts";
 import { defineMotion, retimeModuleMotion } from "../../src/tokens/index.ts";
 import { defineTheme, ThemeProvider } from "../../src/theme.tsx";
-import { dockTheme, DOCK_SURFACE_PHASE } from "../../src/modules/dock/constants.ts";
+import {
+  dockTheme,
+  DOCK_SURFACE_PHASE,
+} from "../../src/modules/dock/constants.ts";
 import {
   getDockCardDelay,
   getDockItemExitValues,
@@ -64,8 +67,14 @@ const tuned: DockMotion = {
 
 describe("dock surface phases", () => {
   test("every surface phase maps to its own entry; unknown and missing are idle", () => {
-    assert.equal(getDockPhaseMotion(dockMotion, PHASE.IDLE), dockMotion.phases.idle);
-    assert.equal(getDockPhaseMotion(dockMotion, PHASE.OPEN), dockMotion.phases.open);
+    assert.equal(
+      getDockPhaseMotion(dockMotion, PHASE.IDLE),
+      dockMotion.phases.idle,
+    );
+    assert.equal(
+      getDockPhaseMotion(dockMotion, PHASE.OPEN),
+      dockMotion.phases.open,
+    );
     assert.equal(
       getDockPhaseMotion(dockMotion, PHASE.DISMISSING_ACTION),
       dockMotion.phases.dismissAction,
@@ -87,18 +96,26 @@ describe("dock surface phases", () => {
       dockMotion.phases.restoreHeader,
     );
     assert.equal(getDockPhaseMotion(dockMotion, null), dockMotion.phases.idle);
-    assert.equal(getDockPhaseMotion(dockMotion, "nope"), dockMotion.phases.idle);
+    assert.equal(
+      getDockPhaseMotion(dockMotion, "nope"),
+      dockMotion.phases.idle,
+    );
   });
 
   test("the deck follows its resting transition unless the phase plays its own", () => {
     const rest = { expanded: false, surfacePhase: null };
-    assert.equal(getDockStackTransition(dockMotion, rest), dockMotion.transitions.stack);
+    assert.equal(
+      getDockStackTransition(dockMotion, rest),
+      dockMotion.transitions.stack,
+    );
     assert.equal(
       getDockStackTransition(dockMotion, { ...rest, expanded: true }),
       dockMotion.transitions.expand,
     );
     assert.equal(
-      getDockStackTransition(dockMotion, { surfacePhase: PHASE.EXPANDING_BODY }),
+      getDockStackTransition(dockMotion, {
+        surfacePhase: PHASE.EXPANDING_BODY,
+      }),
       dockMotion.transitions.expand,
     );
     assert.deepEqual(
@@ -127,18 +144,29 @@ describe("dock surface phases", () => {
   test("the deck's transform follows the stack transition unless the phase says otherwise", () => {
     const fallback = { duration: 1 };
     assert.equal(
-      getDockStackTransformTransition(dockMotion, PHASE.DISMISSING_ACTION, fallback),
+      getDockStackTransformTransition(
+        dockMotion,
+        PHASE.DISMISSING_ACTION,
+        fallback,
+      ),
       dockMotion.phases.dismissAction.transform,
     );
     assert.equal(
-      getDockStackTransformTransition(dockMotion, PHASE.EXPANDING_BODY, fallback),
+      getDockStackTransformTransition(
+        dockMotion,
+        PHASE.EXPANDING_BODY,
+        fallback,
+      ),
       dockMotion.phases.expandBody.transform,
     );
     assert.equal(
       getDockStackTransformTransition(dockMotion, PHASE.OPEN, fallback),
       fallback,
     );
-    assert.equal(getDockStackTransformTransition(dockMotion, null, fallback), fallback);
+    assert.equal(
+      getDockStackTransformTransition(dockMotion, null, fallback),
+      fallback,
+    );
   });
 
   test("the deck compresses by the phase's scale", () => {
@@ -233,7 +261,6 @@ describe("dock deck", () => {
       scale: 0.8,
       opacity: 1,
     });
-    // The depth fade stops at the theme's floor, and four cards stay in view.
     assert.equal(custom({ position: 3 }).opacity, 0.7);
     assert.equal(custom({ position: 4 }).opacity, 0);
   });
@@ -263,11 +290,14 @@ describe("dock motion under tempo and reduced motion", () => {
   test("tempo stretches what a phase plays, never where the deck rests", () => {
     const slow = retimeModuleMotion(dockMotion, faster);
     const open = slow.phases.open.deck as (d: number) => { duration: number };
-    const base = (dockMotion.phases.open.deck as (d: number) => { duration: number })(300);
+    const base = (
+      dockMotion.phases.open.deck as (d: number) => { duration: number }
+    )(300);
     assert.equal(open(300).duration, base.duration * 2);
     assert.equal(
       (slow.phases.expandBody.transform as { duration: number }).duration,
-      (dockMotion.phases.expandBody.transform as { duration: number }).duration * 2,
+      (dockMotion.phases.expandBody.transform as { duration: number })
+        .duration * 2,
     );
     assert.equal(slow.phases.dismissAction.scale, 0.94);
     assert.deepEqual(slow.deck.stacking, dockMotion.deck.stacking);

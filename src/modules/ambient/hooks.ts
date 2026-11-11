@@ -22,7 +22,9 @@ import type {
   AmbientState,
 } from "./types";
 
-export function useStableObject<T extends object | null | undefined>(value: T): T {
+export function useStableObject<T extends object | null | undefined>(
+  value: T,
+): T {
   const ref = useRef<T>(value);
   if (!shallowEqual(ref.current, value)) {
     ref.current = value;
@@ -40,11 +42,9 @@ export function useAmbientColor(
   const srcKey =
     typeof imageSource === "string" ? imageSource : imageSource?.src;
 
-  // A palette made for this very image (on the server, say) is used as is.
   const seeded =
     srcKey && initialPalette?.source === srcKey ? initialPalette : null;
 
-  // The outcome of the last extraction: `palette` is null when it failed.
   const [result, setResult] = useState<{
     palette: AmbientPalette | null;
     source: string;

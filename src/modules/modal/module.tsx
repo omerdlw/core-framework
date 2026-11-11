@@ -2,20 +2,10 @@
 
 import { useMemo, useRef } from "react";
 import { useIsomorphicLayoutEffect } from "@/hooks";
-import {
-  defineModule,
-  type PageConfig,
-  type PageModuleApi,
-} from "@/kernel";
+import { defineModule, type PageConfig, type PageModuleApi } from "@/kernel";
 import dynamic from "next/dynamic";
-import {
-  ModalContext,
-  ModalProvider,
-} from "./context";
-import {
-  useModal,
-  useModalActions,
-} from "./hooks";
+import { ModalContext, ModalProvider } from "./context";
+import { useModal, useModalActions } from "./hooks";
 import {
   type DefineModalOptions,
   type ModalDefinition,

@@ -15,11 +15,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import {
-  useControllableState,
-  useEscapeKey,
-  useScrollLock,
-} from "@/hooks";
+import { useControllableState, useEscapeKey, useScrollLock } from "@/hooks";
 import { Z_INDEX } from "@/tokens";
 import type { PartClassNames, PartsProps } from "../define";
 import { useUi, useUiMotion } from "../provider";
@@ -35,10 +31,12 @@ export interface SelectOption<T extends string = string> {
   value: T;
 }
 
-/** Per-part classes. `content` is kept as an alias of `menu`. */
 export type SelectClassNames = PartClassNames<"select"> & { content?: string };
 
-export type SelectVariants = PartsProps<"select", "trigger" | "menu" | "option">;
+export type SelectVariants = PartsProps<
+  "select",
+  "trigger" | "menu" | "option"
+>;
 
 type DataAttributes = { [name: `data-${string}`]: string | undefined };
 
@@ -48,16 +46,12 @@ export interface SelectProps<T extends string = string> extends SelectVariants {
   classNames?: SelectClassNames;
   defaultValue?: T;
   disabled?: boolean;
-  /** Shown when there are no options; the ui's `labels.empty` by default. */
   empty?: ReactNode;
-  /** Attributes for the menu while it floats in a portal (outside the page's scope). */
   floatingProps?: HTMLAttributes<HTMLDivElement> & DataAttributes;
   name?: string;
   onChange?: (value: T, option: SelectOption<T>) => void;
   options: readonly SelectOption<T>[];
-  /** Shown before a choice; the ui's `labels.placeholder` by default. */
   placeholder?: ReactNode;
-  /** `popover` floats the menu over the page; `inline` pushes content down. */
   placement?: "inline" | "popover";
   value?: T;
 }
@@ -83,12 +77,6 @@ const MENU_MAX = 256;
 const MENU_GAP = 6;
 const VIEWPORT_MARGIN = 12;
 
-/**
- * A listbox select. Arrow keys move, Enter and Space choose, Escape closes;
- * the menu flips above the trigger when there is no room below.
- *
- *   <Select options={…} value={v} onChange={setV} size="sm" shape="pill" />
- */
 export function Select<T extends string = string>({
   ariaLabel,
   className,
@@ -304,7 +292,9 @@ export function Select<T extends string = string>({
           })}
         >
           {options.length === 0 ? (
-            <div className={parts.select.empty({ className: classNames.empty })}>
+            <div
+              className={parts.select.empty({ className: classNames.empty })}
+            >
               {empty ?? labels.empty}
             </div>
           ) : (
@@ -349,7 +339,11 @@ export function Select<T extends string = string>({
                       })}
                     >
                       {option.icon ? (
-                        <Icon icon={option.icon} size={16} className={iconClass} />
+                        <Icon
+                          icon={option.icon}
+                          size={16}
+                          className={iconClass}
+                        />
                       ) : null}
                       <span className="flex min-w-0 flex-col">
                         <span className="truncate">{option.label}</span>

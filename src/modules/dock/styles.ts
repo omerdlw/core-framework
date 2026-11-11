@@ -104,7 +104,6 @@ export function resolveDockActionClass(
   return resolve(stateClass, resolvedBase, elementClass);
 }
 
-
 export function getDockItemCardProps({
   cardScale,
   cardStyle,
@@ -245,4 +244,3 @@ export function resolveDockVisualStyle(
       hoverStyle?.card?.scale ?? stateStyle?.card?.scale ?? baseStyle?.scale,
   };
 }
-

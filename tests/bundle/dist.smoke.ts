@@ -1,7 +1,3 @@
-// Smoke test for the built package. It imports dist through the package's own
-// "exports" map, the way an app does, and checks that state meant to be shared
-// is shared across subpaths instead of copied into each entry.
-// Run with `npm run test:dist` after `npm run build`.
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

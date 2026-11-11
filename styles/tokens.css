@@ -1,17 +1,3 @@
-/*
- * Design tokens: the vocabulary.
- *
- * Every value a component may name lives here, as a Tailwind theme key.
- * Colours are *roles* (`ink`, `fill`, `glass`, `primary`), never paint: their
- * values come from the palette of the active theme (palette.css, or the
- * app's own), so the dark
- * and the light theme can each be art-directed on their own terms.
- *
- * `@theme inline` matters for colours: the utility reads the palette variable
- * at the element, so a scope such as `.on-photo` can swap the palette for its
- * subtree without redeclaring the Tailwind keys.
- */
-
 @theme {
   --color-*: initial;
 
@@ -73,12 +59,6 @@
 
   --ease-*: initial;
   --ease-out-expo: var(--curve-expo);
-  /*
-   * The three CSS-only curves are measured like the engine's: the share of
-   * the time used when each reaches 50% / 90% of the way is quart 26 / 58,
-   * cream 28 / 60 and phosphor 31 / 64. A curve that reaches 90% before half
-   * of its time leaves the second half of a long fade as an invisible tail.
-   */
   --ease-out-quart: cubic-bezier(0.3, 0.41, 0.28, 1);
   --ease-out-quint: var(--curve-silk);
   --ease-in-out-cubic: var(--curve-glide);
@@ -92,10 +72,9 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-app, ui-sans-serif), ui-sans-serif, system-ui,
-    sans-serif;
+  --font-sans:
+    var(--font-app, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
 
-  /* the page and the ink drawn on it */
   --color-page: var(--page);
   --color-ink: var(--ink);
   --color-ink-lead: var(--ink-lead);
@@ -103,7 +82,6 @@
   --color-ink-muted: var(--ink-muted);
   --color-ink-faint: var(--ink-faint);
 
-  /* surfaces: a fill and its ring, at rest, hovered, chosen */
   --color-fill: var(--fill);
   --color-fill-hover: var(--fill-hover);
   --color-fill-active: var(--fill-active);
@@ -114,38 +92,23 @@
   --color-line: var(--line);
   --color-plate: var(--plate);
 
-  /* layers: glass for chrome, veil over a picture, dim behind a modal */
   --color-glass: var(--glass);
   --color-veil: var(--veil);
   --color-dim: var(--dim);
 
-  /* the primary action, and ink on a bright accent */
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
   --color-on-accent: var(--on-accent);
 
-  /* the accent: a chosen control, a checked box; ink unless a theme sets it */
   --color-accent: var(--accent);
   --color-danger: var(--danger);
 }
 
-/*
- * Geometry. Every interactive block sits on one height ladder so that controls
- * placed side by side (dock actions, a field and its button, a row of chips)
- * share a baseline and a centre line. The same ladder drives `h-control-*`,
- * `size-control-*` and `min-h-control-*`; the TypeScript mirror is
- * src/design/geometry.ts.
- *
- *   xs 24 · sm 32 · chrome 36 · md 40 · lg 48
- *
- * Fibonacci spacing is the layout rhythm: 5 · 8 · 13 · 21 · 34 · 55 · 89.
- */
 @theme static {
   --spacing-control-xs: 1.5rem;
   --spacing-control-sm: 2rem;
   --spacing-control-chrome: 2.25rem;
   --spacing-control-md: 2.5rem;
   --spacing-control-lg: 3rem;
-
 }

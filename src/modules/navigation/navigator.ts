@@ -51,11 +51,6 @@ const afterPaint = (callback: () => void) => {
   else setTimeout(callback, 0);
 };
 
-/**
- * The navigation state machine: one active trip at a time, from the first
- * intent through holds and the router call to arrival. Pure: no React, no
- * Next; the provider binds a router and reports arrivals.
- */
 export function createNavigator(options: NavigatorOptions = {}): Navigator {
   const now = options.now ?? Date.now;
   const settings = options.settings ?? getNavigationSettings;
@@ -66,7 +61,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
 
   const store = createStore<NavigationState>(
     createNavigationState(locationKeyOf(readLocation() ?? "") || ""),
-    // Payload values belong to the app; freezing them would surprise it.
     { freezeSnapshots: false },
   );
 
@@ -74,16 +68,11 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   let controller: AbortController | null = null;
   let patience: Timer | null = null;
   let replay: (() => void) | null = null;
-  // Bumped on every location change, so a settled trip is an arrival only
-  // until the page it landed on is left.
   let visit = 0;
   let landedVisit = -1;
 
   let nextHoldId = 0;
-  const holds = new Map<
-    number,
-    { history: boolean; hold: NavigationHold }
-  >();
+  const holds = new Map<number, { history: boolean; hold: NavigationHold }>();
   const providers: { key: string; value: unknown }[] = [];
   const warmed = new Map<string, number>();
   const intentListeners = new Set<NavigationIntentListener>();
@@ -126,7 +115,11 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   function settle(
     id: number,
     status: NavigationStatus,
-    details: { arrivedAt?: string; error?: unknown; reason?: string | null } = {},
+    details: {
+      arrivedAt?: string;
+      error?: unknown;
+      reason?: string | null;
+    } = {},
   ): boolean {
     const trip = active();
     if (!trip || trip.id !== id) return false;
@@ -154,7 +147,11 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     return { ...payload, ...extra } as NavigationPayload;
   }
 
-  function begin(href: string, source: string, extra?: Partial<NavigationPayload>) {
+  function begin(
+    href: string,
+    source: string,
+    extra?: Partial<NavigationPayload>,
+  ) {
     const previous = active();
     if (previous)
       settle(previous.id, NAVIGATION_STATUS.CANCELLED, {
@@ -190,8 +187,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       report("Navigation commit", error);
       return false;
     }
-    // A push that keeps the pathname changes no pathname to watch; read the
-    // location once the router has written it.
     if (isSamePathname(routing.to, routing.from)) {
       nextFrame(() => {
         const location = readLocation();
@@ -295,7 +290,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     if (!isSafeInternalHref(to)) return null;
     const trip = begin(to, source);
     if (!go) {
-      // The browser already moved; the router follows on its own.
       commit(trip.id, () => {});
       return latest(trip.id);
     }
@@ -319,14 +313,12 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     const trip = state.active;
     if (!trip) return;
     if (trip.phase === NAVIGATION_PHASE.ROUTING) {
-      // Seeing the origin again is not an arrival (an effect re-ran).
       if (isSameLocation(key, trip.from) && !isSameLocation(key, trip.to))
         return;
       settle(trip.id, NAVIGATION_STATUS.COMPLETED, { arrivedAt: key });
     } else if (isSameLocation(key, trip.to)) {
       settle(trip.id, NAVIGATION_STATUS.COMPLETED, { arrivedAt: key });
     } else if (!isSameLocation(key, trip.from)) {
-      // Something else moved the page while this trip was still leaving.
       settle(trip.id, NAVIGATION_STATUS.CANCELLED, {
         reason: NAVIGATION_REASON.SUPERSEDED,
       });
@@ -430,7 +422,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
 
   function dispose(): void {
     clearPatience();
-    // Never leave the browser on a URL the page did not follow.
     const go = replay;
     replay = null;
     go?.();

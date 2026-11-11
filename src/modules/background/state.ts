@@ -40,14 +40,15 @@ export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   width: null,
 });
 
-export const DEFAULT_BACKGROUND_COMPUTED: BackgroundStateComputed = Object.freeze({
-  ...DEFAULT_BACKGROUND,
-  hasBackground: false,
-  isVideo: false,
-  isYouTube: false,
-  posterUrl: null,
-  youtubeVideoId: null,
-});
+export const DEFAULT_BACKGROUND_COMPUTED: BackgroundStateComputed =
+  Object.freeze({
+    ...DEFAULT_BACKGROUND,
+    hasBackground: false,
+    isVideo: false,
+    isYouTube: false,
+    posterUrl: null,
+    youtubeVideoId: null,
+  });
 
 export const INERT_BACKGROUND_ACTIONS: BackgroundActions = Object.freeze({
   resetBackground: () => {},

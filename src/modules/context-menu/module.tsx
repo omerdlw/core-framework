@@ -1,20 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  defineModule,
-  type PageConfig,
-  type PageModuleApi,
-} from "@/kernel";
+import { defineModule, type PageConfig, type PageModuleApi } from "@/kernel";
 import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
-import {
-  ContextMenuContext,
-  ContextMenuProvider,
-} from "./context";
-import {
-  useContextMenu,
-  useContextMenuActions,
-} from "./hooks";
+import { ContextMenuContext, ContextMenuProvider } from "./context";
+import { useContextMenu, useContextMenuActions } from "./hooks";
 import { ContextMenuGlobal } from "./overlay";
 import {
   type ContextMenuConfig,

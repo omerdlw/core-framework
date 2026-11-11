@@ -65,7 +65,6 @@ registerHooks({
     }
 
     let basePath = null;
-    // The starter templates import the framework the way an app does.
     if (specifier === "@omerdlw/base-framework") {
       basePath = path.join(SRC_ROOT, "index");
     } else if (specifier.startsWith("@omerdlw/base-framework/")) {

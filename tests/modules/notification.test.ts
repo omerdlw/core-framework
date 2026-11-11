@@ -3,9 +3,7 @@ import { afterEach, describe, mock, test } from "node:test";
 import assert from "node:assert/strict";
 import { act, createElement as h } from "react";
 import { renderHook } from "../support/render.ts";
-import {
-  NotificationProvider,
-} from "../../src/modules/notification/context.tsx";
+import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import {
   NotificationListener,
   useNotificationState,

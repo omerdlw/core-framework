@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  defineModule,
-  type PageConfig,
-  type PageModuleApi,
-} from "@/kernel";
+import { defineModule, type PageConfig, type PageModuleApi } from "@/kernel";
 import { NotificationContext, NotificationProvider } from "./context";
 import { useToast } from "./hooks";
 import { NotificationLayer } from "./overlay";

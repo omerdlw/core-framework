@@ -8,7 +8,8 @@ import { splitVariants } from "../split";
 export type SwitchVariants = PartsProps<"switch", "track" | "thumb">;
 
 export interface SwitchProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
+  extends
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
     SwitchVariants {
   checked?: boolean;
   classNames?: PartClassNames<"switch">;
@@ -16,7 +17,6 @@ export interface SwitchProps
   ref?: Ref<HTMLButtonElement>;
 }
 
-/** An on/off setting that applies at once (no submit). */
 export function Switch({
   checked = false,
   className,

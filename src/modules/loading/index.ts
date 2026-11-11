@@ -1,11 +1,7 @@
 "use client";
 
 export { LoadingOverlay } from "./overlay";
-export {
-  LoadingContext,
-  LoadingProvider,
-  NOOP_LOADING_STORE,
-} from "./context";
+export { LoadingContext, LoadingProvider, NOOP_LOADING_STORE } from "./context";
 export {
   useLoading,
   useLoadingActions,

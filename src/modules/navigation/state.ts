@@ -62,6 +62,5 @@ export function settleTrip(
   return settled;
 }
 
-/** Where a trip ends up: where it landed, else where it was headed. */
 export const tripDestination = (trip: NavigationTrip): string =>
   trip.arrivedAt ?? trip.to;

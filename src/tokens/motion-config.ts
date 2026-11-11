@@ -1,10 +1,5 @@
 import { REDUCED_MOTION_TRANSITION } from "./motion";
 
-// Motion is owned by the app, like its styles. The app names its own
-// durations, easings and springs and writes every module's motion with them;
-// the framework only reads the tempo and the reduced-motion policy, and applies
-// both to whatever the app wrote.
-
 export type MotionEase = readonly [number, number, number, number];
 
 export type ReducedMotionPolicy = "user" | "always" | "never";
@@ -19,9 +14,7 @@ export interface MotionSpring {
 }
 
 export interface MotionTokensInput {
-  /** Stretches every module duration, delay, stagger, timer and spring. */
   readonly tempo?: number;
-  /** "user" follows the OS setting. */
   readonly reducedMotion?: ReducedMotionPolicy;
   readonly durations?: Readonly<Record<string, number>>;
   readonly easings?: Readonly<Record<string, MotionEase>>;
@@ -87,8 +80,7 @@ function isSpring(value: Plain): boolean {
 
 function isTransition(value: Plain): boolean {
   return (
-    isSpring(value) ||
-    TIME_KEYS.some((key) => typeof value[key] === "number")
+    isSpring(value) || TIME_KEYS.some((key) => typeof value[key] === "number")
   );
 }
 
@@ -100,10 +92,9 @@ function retimeTransition(value: Plain, clock: MotionClock): Plain {
     next[key] = isPlainObject(entry) ? retimeNode(entry, clock) : entry;
   }
   for (const key of TIME_KEYS) {
-    if (typeof value[key] === "number") next[key] = (value[key] as number) * tempo;
+    if (typeof value[key] === "number")
+      next[key] = (value[key] as number) * tempo;
   }
-  // A spring takes tempo× as long at the same damping ratio when its
-  // stiffness falls by tempo² and its damping by tempo.
   if (typeof value.stiffness === "number") {
     next.stiffness = value.stiffness / (tempo * tempo);
   }
@@ -125,7 +116,6 @@ function retimeNode(value: unknown, clock: MotionClock): unknown {
   return next;
 }
 
-/** Applies tempo, or the reduced-motion collapse, to transitions anywhere in a motion tree. */
 export function retime<T>(value: T, clock: MotionClock): T {
   if (clock.tempo === 1 && !clock.reduced) return value;
   return retimeNode(value, clock) as T;
@@ -145,18 +135,15 @@ function retimeSeconds(value: unknown, clock: MotionClock): unknown {
   return next;
 }
 
-/**
- * Retimes a module's resolved motion. Every number under its `timings` key is
- * seconds (choreography timers, staggers); everything else is walked for
- * transitions.
- */
 export function retimeModuleMotion<M>(motion: M, clock: MotionClock): M {
   if (clock.tempo === 1 && !clock.reduced) return motion;
   if (!isPlainObject(motion)) return retime(motion, clock);
   const next: Plain = {};
   for (const [key, entry] of Object.entries(motion)) {
     next[key] =
-      key === "timings" ? retimeSeconds(entry, clock) : retimeNode(entry, clock);
+      key === "timings"
+        ? retimeSeconds(entry, clock)
+        : retimeNode(entry, clock);
   }
   return next as M;
 }
@@ -167,7 +154,6 @@ export function cssEasing(ease: unknown): string {
   return "ease";
 }
 
-/** A CSS `transition` value for one property, from a motion tween. */
 export function cssTransition(
   property: string,
   transition: { duration?: number; delay?: number; ease?: unknown },

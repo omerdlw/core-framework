@@ -68,7 +68,8 @@ describe("ambient page", () => {
 
   describe("dom utilities", () => {
     test("resolveTargetElement correctly resolves element references", async () => {
-      const { resolveTargetElement } = await import("../../src/modules/ambient/index.ts");
+      const { resolveTargetElement } =
+        await import("../../src/modules/ambient/index.ts");
       const div = document.createElement("div");
       div.id = "target-element";
       document.body.appendChild(div);
@@ -82,7 +83,8 @@ describe("ambient page", () => {
     });
 
     test("applyScopedCssVariables sets and cleanly cleans up styles", async () => {
-      const { applyScopedCssVariables } = await import("../../src/modules/ambient/index.ts");
+      const { applyScopedCssVariables } =
+        await import("../../src/modules/ambient/index.ts");
       const div = document.createElement("div");
       div.style.setProperty("--ambient-vibrant", "blue");
 
@@ -99,15 +101,20 @@ describe("ambient page", () => {
     });
 
     test("applyScopedCssVariables stacks: the latest wins, removing one reveals the one beneath", async () => {
-      const { applyScopedCssVariables } = await import("../../src/modules/ambient/index.ts");
+      const { applyScopedCssVariables } =
+        await import("../../src/modules/ambient/index.ts");
       const div = document.createElement("div");
       div.style.setProperty("--ambient-vibrant", "blue");
 
-      const first = applyScopedCssVariables(div, { "--ambient-vibrant": "red", "--ambient-shadow": "black" });
-      const second = applyScopedCssVariables(div, { "--ambient-vibrant": "green" });
+      const first = applyScopedCssVariables(div, {
+        "--ambient-vibrant": "red",
+        "--ambient-shadow": "black",
+      });
+      const second = applyScopedCssVariables(div, {
+        "--ambient-vibrant": "green",
+      });
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
 
-      // Taken off out of order: the later one is still on top.
       first();
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
       assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
@@ -117,20 +124,27 @@ describe("ambient page", () => {
 
     test("a lingering theme stays until the next one takes over, or its time runs out", async (t) => {
       t.mock.timers.enable({ apis: ["setTimeout"] });
-      const { applyScopedCssVariables } = await import("../../src/modules/ambient/index.ts");
+      const { applyScopedCssVariables } =
+        await import("../../src/modules/ambient/index.ts");
       const div = document.createElement("div");
       document.body.appendChild(div);
 
-      const leaving = applyScopedCssVariables(div, { "--ambient-vibrant": "red", "--ambient-shadow": "black" }, { linger: 1_000 });
+      const leaving = applyScopedCssVariables(
+        div,
+        { "--ambient-vibrant": "red", "--ambient-shadow": "black" },
+        { linger: 1_000 },
+      );
       leaving();
       t.mock.timers.tick(500);
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "red");
 
-      // The next page's theme replaces it at once, even the variables it leaves out…
-      const next = applyScopedCssVariables(div, { "--ambient-vibrant": "green" }, { linger: 1_000 });
+      const next = applyScopedCssVariables(
+        div,
+        { "--ambient-vibrant": "green" },
+        { linger: 1_000 },
+      );
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
       assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
-      // …and the old timer cannot take the new theme down.
       t.mock.timers.tick(1_000);
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
 
@@ -145,7 +159,8 @@ describe("ambient page", () => {
 
   describe("defineAmbient", () => {
     test("creates a frozen definition with config and use hook", async () => {
-      const { defineAmbient } = await import("../../src/modules/ambient/index.ts");
+      const { defineAmbient } =
+        await import("../../src/modules/ambient/index.ts");
       const config = { image: "/banner.png", transition: false };
       const def = defineAmbient(config);
 

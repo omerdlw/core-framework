@@ -248,28 +248,33 @@ describe("normalizePageControls", () => {
 
 describe("resolveSlot", () => {
   test("returns null for null, undefined, or false", async () => {
-    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    const { resolveSlot } =
+      await import("../../src/modules/controls/entries.ts");
     assert.equal(resolveSlot(null, {}), null);
     assert.equal(resolveSlot(undefined, {}), null);
     assert.equal(resolveSlot(false, {}), null);
   });
 
   test("returns valid React elements directly", async () => {
-    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    const { resolveSlot } =
+      await import("../../src/modules/controls/entries.ts");
     const el = h("div", null, "Hello");
     assert.equal(resolveSlot(el, {}), el);
   });
 
   test("calls functional components with props", async () => {
-    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
-    const Component = (props: { title: string }) => h("span", null, props.title);
+    const { resolveSlot } =
+      await import("../../src/modules/controls/entries.ts");
+    const Component = (props: { title: string }) =>
+      h("span", null, props.title);
     const result = resolveSlot(Component, { title: "Test Title" }) as any;
     assert.equal(result.type, Component);
     assert.deepEqual(result.props, { title: "Test Title" });
   });
 
   test("returns primitive values directly", async () => {
-    const { resolveSlot } = await import("../../src/modules/controls/entries.ts");
+    const { resolveSlot } =
+      await import("../../src/modules/controls/entries.ts");
     assert.equal(resolveSlot("plain text", {}), "plain text");
     assert.equal(resolveSlot(42, {}), 42);
   });
@@ -277,7 +282,8 @@ describe("resolveSlot", () => {
 
 describe("defineControls", () => {
   test("returns a frozen definition with id, order, and use hook", async () => {
-    const { defineControls } = await import("../../src/modules/controls/index.ts");
+    const { defineControls } =
+      await import("../../src/modules/controls/index.ts");
     const definition = defineControls({
       id: "header-controls",
       order: 10,

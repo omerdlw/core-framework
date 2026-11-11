@@ -1,11 +1,5 @@
 "use client";
 
-/*
- * @omerdlw/base-framework/ui — the component library. Every component draws
- * its classes from the ui in effect (`<UiProvider ui={defineUi(...)}>`, or the
- * defaults), so an app restyles all of them from one file. See docs/ui.md.
- */
-
 export * from "./recipes";
 export { UiProvider, useUi, useUiMotion } from "./provider";
 
@@ -66,7 +60,11 @@ export {
   type SkeletonLinesProps,
   type SkeletonVariants,
 } from "./components/skeleton";
-export { Switch, type SwitchProps, type SwitchVariants } from "./components/switch";
+export {
+  Switch,
+  type SwitchProps,
+  type SwitchVariants,
+} from "./components/switch";
 export {
   Tooltip,
   TooltipProvider,

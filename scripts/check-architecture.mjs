@@ -12,7 +12,6 @@ const walk = (dir) => {
 if (fs.existsSync("src")) walk("src");
 const fileSet = new Set(files);
 
-
 function resolveImport(from, specifier) {
   let base;
   if (specifier.startsWith("@/")) base = path.join("src", specifier.slice(2));
@@ -114,7 +113,9 @@ if (fs.existsSync(modulesDir)) {
         }
       }
       for (const target of graph.get(file) ?? []) {
-        const moduleMatch = target.replace(/\\/g, "/").match(/^src\/modules\/([^/]+)\//);
+        const moduleMatch = target
+          .replace(/\\/g, "/")
+          .match(/^src\/modules\/([^/]+)\//);
         if (moduleMatch && moduleMatch[1] !== entry.name) {
           read.add(moduleMatch[1]);
         }

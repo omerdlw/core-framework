@@ -163,24 +163,15 @@ export type ModalLayout =
   | "bottom-mobile"
   | "side-mobile";
 
-/** How the dialog moves at one position. */
 export interface ModalPositionMotion {
-  /** `hidden` → `visible` → `exit`. */
   variants: Variants;
-  /** The dialog's own transition at this position, if any. */
   transition?: Transition;
 }
 
-/** The motion a modal plays, written by the app in its modal theme. */
 export interface ModalMotion {
-  /** The page dim behind every modal: `hidden` → `visible` → `exit`. */
   backdrop: Variants;
-  /** A ModalContainer's body: `hidden` → `visible` → `exit`. */
   content: Variants;
-  /** A ModalContainer's header row. */
   header: Variants;
-  /** A ModalContainer's footer row. */
   footer: Variants;
-  /** The dialog itself, per position. */
   positions: Readonly<Record<ModalPosition, ModalPositionMotion>>;
 }

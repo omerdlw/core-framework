@@ -19,15 +19,11 @@ import type {
 import { readWindowLocation } from "./utils";
 
 export const NavigationContext =
-  getOrCreateGlobalContext<NavigationRuntime | null>(
-    "NavigationContext",
-    null,
-  );
+  getOrCreateGlobalContext<NavigationRuntime | null>("NavigationContext", null);
 
 const noop = () => {};
 const NOT_HANDLED: NavigationResult = Object.freeze({ ok: false, trip: null });
 
-/** What readers get without the module: no trips, nothing held or warmed. */
 export const INERT_NAVIGATION_ACTIONS: NavigationActions = Object.freeze({
   arrival: () => null,
   arrive: noop,
@@ -60,10 +56,7 @@ export function NavigationProvider({ children }: { children?: ReactNode }) {
   }, [navigator, pathname]);
 
   useEffect(() => watchHistory(navigator), [navigator]);
-  useEffect(
-    () => watchIntent(navigator, getNavigationSettings),
-    [navigator],
-  );
+  useEffect(() => watchIntent(navigator, getNavigationSettings), [navigator]);
   useEffect(() => () => navigator.dispose(), [navigator]);
 
   const runtime = useMemo<NavigationRuntime>(

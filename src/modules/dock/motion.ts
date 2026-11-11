@@ -9,10 +9,6 @@ import {
   type DockSurfaceTimings,
 } from "./types";
 
-// The dock plays only what the app's dock theme gives it. What stays here is
-// mechanics: which of the app's transitions a state uses, and the parts of a
-// target that come from layout rather than from motion.
-
 export function useDockMotion(): DockMotion {
   return useModuleMotion(dockTheme);
 }
@@ -25,10 +21,6 @@ const IMMEDIATE_SURFACE_TIMINGS: DockSurfaceTimings = Object.freeze({
   restoreHeader: 0,
 });
 
-/**
- * The app's surface phase timings. A dock state provider can run without the
- * dock's theme (nothing is drawn then), and its phases advance immediately.
- */
 export function useDockSurfaceTimings(): DockSurfaceTimings {
   return (
     useOptionalModuleMotion(dockTheme)?.timings ?? IMMEDIATE_SURFACE_TIMINGS
@@ -43,8 +35,6 @@ export const DOCK_COMPOSITOR_STYLE = Object.freeze({
   transform: "translateZ(0)",
 } as const);
 
-// A layer leaving a card whose content is out of sight goes at once. Played,
-// its exit would show through as the card's content comes into light.
 export const DOCK_UNSEEN_EXIT = Object.freeze({
   opacity: 0,
   transition: Object.freeze({ duration: 0 }),
@@ -144,7 +134,6 @@ const SURFACE_PHASE_KEYS: Readonly<Record<string, DockSurfacePhaseKey>> =
     [DOCK_SURFACE_PHASE.RESTORING_HEADER]: "restoreHeader",
   });
 
-/** What the app's theme plays in a surface phase; a missing or unknown phase is `idle`. */
 export function getDockPhaseMotion(
   motion: DockMotion,
   surfacePhase?: string | null,
@@ -158,7 +147,9 @@ export function getDockStackTransformTransition(
   surfacePhase: string | null | undefined,
   fallbackTransition: Transition,
 ) {
-  return getDockPhaseMotion(motion, surfacePhase).transform ?? fallbackTransition;
+  return (
+    getDockPhaseMotion(motion, surfacePhase).transform ?? fallbackTransition
+  );
 }
 
 export function getDockStackTransition(
@@ -175,13 +166,14 @@ export function getDockStackTransition(
 ) {
   const { deck } = getDockPhaseMotion(motion, surfacePhase);
   if (typeof deck === "function") {
-    return deck(resizeDistance > 0 ? resizeDistance : motion.deck.resizeFallback);
+    return deck(
+      resizeDistance > 0 ? resizeDistance : motion.deck.resizeFallback,
+    );
   }
   if (deck) return deck;
   return expanded ? motion.transitions.expand : motion.transitions.stack;
 }
 
-/** The transition of a layout move (`layout="position"`), apart from the part's other animations. */
 export function getDockLayoutTransition(motion: DockMotion) {
   return { layout: motion.transitions.layout };
 }

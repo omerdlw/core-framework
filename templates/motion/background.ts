@@ -3,8 +3,6 @@ import { motion } from "./tokens";
 
 const { durations, easings } = motion;
 
-// defineTheme(backgroundTheme, { slots, motion: backgroundMotion })
-// A page can still pass its own `background.animation`; it wins field by field.
 export const backgroundMotion: BackgroundMotion = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },

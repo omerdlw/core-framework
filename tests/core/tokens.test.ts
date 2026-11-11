@@ -18,7 +18,10 @@ describe("motion builders", () => {
   });
 
   test("gpuTransform rounds into a translate3d + scale string", () => {
-    assert.equal(gpuTransform(4.6, 0.98765), "translate3d(0px, 5px, 0) scale(0.988)");
+    assert.equal(
+      gpuTransform(4.6, 0.98765),
+      "translate3d(0px, 5px, 0) scale(0.988)",
+    );
     assert.equal(gpuTransform(), "translate3d(0px, 0px, 0) scale(1)");
   });
 
@@ -29,10 +32,23 @@ describe("motion builders", () => {
       enterEase: OUT,
       exitEase: IN,
     });
-    assert.deepEqual(swap.visible.transition, { type: "tween", duration: 0.4, ease: OUT });
-    assert.deepEqual(swap.exit.transition, { type: "tween", duration: 0.2, ease: IN });
+    assert.deepEqual(swap.visible.transition, {
+      type: "tween",
+      duration: 0.4,
+      ease: OUT,
+    });
+    assert.deepEqual(swap.exit.transition, {
+      type: "tween",
+      duration: 0.2,
+      ease: IN,
+    });
 
-    const spring = { type: "spring" as const, stiffness: 400, damping: 30, mass: 0.5 };
+    const spring = {
+      type: "spring" as const,
+      stiffness: 400,
+      damping: 30,
+      mass: 0.5,
+    };
     assert.deepEqual(press({ tapScale: 0.95, spring }).transition, spring);
   });
 

@@ -1,12 +1,5 @@
 import { defineMotion } from "@omerdlw/base-framework/tokens";
 
-// Your app's motion vocabulary. The framework ships no animation of its own:
-// every module plays what your theme files give it, written with these words.
-// This folder is the framework's original motion, as a starting point; copy it
-// into your app (e.g. src/config/theme/motion/) and make it yours.
-//
-// tempo stretches everything a module animates (durations, delays, staggers,
-// choreography timers, springs). Write values at tempo 1.
 export const motion = defineMotion({
   tempo: 1,
   reducedMotion: "user",
@@ -20,17 +13,11 @@ export const motion = defineMotion({
     cinematic: 0.86,
   },
   easings: {
-    // How things arrive.
     enter: [0.25, 1, 0.5, 1],
-    // Arrivals that should read as a reveal.
     emphasized: [0.16, 1, 0.3, 1],
-    // Heavy surfaces settling.
     weighted: [0.22, 1, 0.36, 1],
-    // A move between two resting points.
     move: [0.65, 0, 0.35, 1],
-    // How things leave.
     exit: [0.5, 0, 1, 1],
-    // A landing that slightly overshoots.
     overshoot: [0.34, 1.56, 0.64, 1],
   },
   springs: {
@@ -43,5 +30,7 @@ export const motion = defineMotion({
   },
 });
 
-export const tween = (duration: number, ease: readonly [number, number, number, number]) =>
-  ({ type: "tween", duration, ease }) as const;
+export const tween = (
+  duration: number,
+  ease: readonly [number, number, number, number],
+) => ({ type: "tween", duration, ease }) as const;

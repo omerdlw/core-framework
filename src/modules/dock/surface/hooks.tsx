@@ -529,8 +529,7 @@ export function useIsSurfaceExtensionsVisible(
   }, [activeItem?.surfaceExtensions, activeItem?.extensions]);
 
   return Boolean(
-    isSurface &&
-      ((isBodyVisible && dynamicCount > 0) || descriptorCount > 0),
+    isSurface && ((isBodyVisible && dynamicCount > 0) || descriptorCount > 0),
   );
 }
 
@@ -629,10 +628,7 @@ export function useDockSurfaceShellModel({
     )
       return;
     const { dismiss } = dockMotion.drag;
-    if (
-      info.offset.y > dismiss.offset ||
-      info.velocity.y > dismiss.velocity
-    ) {
+    if (info.offset.y > dismiss.offset || info.velocity.y > dismiss.velocity) {
       onClose();
     }
   };

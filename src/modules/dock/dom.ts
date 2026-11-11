@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  type RefObject,
-} from "react";
+import { useCallback, useEffect, useRef, type RefObject } from "react";
 import {
   DOCK_FOCUSABLE_SELECTOR,
   DOCK_FOCUS_RESTORE_BLOCKED_REASONS,

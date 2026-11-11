@@ -858,7 +858,8 @@ describe("surface transitions", () => {
       });
       assert.deepEqual(transitionSurface(base, close(9), TIMINGS).effects, []);
       assert.deepEqual(
-        transitionSurface(createSurfaceTransitionState(), CLOSE_ALL, TIMINGS).effects,
+        transitionSurface(createSurfaceTransitionState(), CLOSE_ALL, TIMINGS)
+          .effects,
         [],
       );
     });
@@ -2283,7 +2284,11 @@ describe("dock display", () => {
 
 describe("dock pending route hold", () => {
   const home = { name: "home", path: "/", title: "Home" };
-  const directors = { name: "directors", path: "/directors", title: "Directors" };
+  const directors = {
+    name: "directors",
+    path: "/directors",
+    title: "Directors",
+  };
   const account = { name: "account", path: "/account", title: "Account" };
   const movie = { name: "movie-1", path: "/movie/1", title: "Movie" };
   const match = (items: any[], pathname: string) =>
@@ -2317,15 +2322,16 @@ describe("dock pending route hold", () => {
     document.body.appendChild(container);
     const root = createRoot(container);
     const show = (items: any[], pathname: string, isNavigating = false) =>
-      act(async () =>
-        root.render(h(Probe, { isNavigating, items, pathname })),
-      );
+      act(async () => root.render(h(Probe, { isNavigating, items, pathname })));
     return { seen, show, unmount: () => act(async () => root.unmount()) };
   }
 
   test("only the root prefix and the first-card fallback count as no match", () => {
     const items = [home, directors, account];
-    assert.deepEqual(match(items, "/movie/1"), { isFallback: true, item: home });
+    assert.deepEqual(match(items, "/movie/1"), {
+      isFallback: true,
+      item: home,
+    });
     assert.equal(match(items, "/directors").isFallback, false);
     assert.equal(match(items, "/account/other").isFallback, false);
     assert.equal(match(items, "/account/other").item, account);
@@ -2440,12 +2446,10 @@ describe("surface card facing the page", () => {
   const Panel = () => null;
 
   test("the card shows the surface only between the page's leaving and return", async () => {
-    const { isSurfaceLayerShown } = await import(
-      "../../src/modules/dock/cards.tsx"
-    );
-    const { DOCK_SURFACE_PHASE } = await import(
-      "../../src/modules/dock/constants.ts"
-    );
+    const { isSurfaceLayerShown } =
+      await import("../../src/modules/dock/cards.tsx");
+    const { DOCK_SURFACE_PHASE } =
+      await import("../../src/modules/dock/constants.ts");
     const shows = (surfacePhase: string) =>
       isSurfaceLayerShown({ isSurface: true, surfacePhase });
 
@@ -2460,9 +2464,8 @@ describe("surface card facing the page", () => {
   });
 
   test("a surface keeps the page's action for the phases it faces the page", async () => {
-    const { applySurfaceToDockItem } = await import(
-      "../../src/modules/dock/surface/view-model.ts"
-    );
+    const { applySurfaceToDockItem } =
+      await import("../../src/modules/dock/surface/view-model.ts");
     const action = { label: "Where to watch?" };
     const item: any = applySurfaceToDockItem(
       { action, name: "movie", path: "/movie/1" } as any,

@@ -11,20 +11,16 @@ const GLYPH: Readonly<Record<string, number>> = { md: 16, sm: 14 };
 
 export type CheckboxVariants = PartProps<"checkbox", "box">;
 
-export interface CheckboxIndicatorProps
-  extends Omit<CheckboxVariants, "checked"> {
+export interface CheckboxIndicatorProps extends Omit<
+  CheckboxVariants,
+  "checked"
+> {
   checked: boolean;
   className?: string;
-  /** Overrides the ui's `icons.check`. */
   icon?: string;
-  /** Plays the loader in place of the check while a change is saving. */
   pending?: boolean;
 }
 
-/**
- * The check alone, for a row that is itself the checkbox (it carries
- * `role="checkbox"` or `aria-pressed` and the `group` class).
- */
 export function CheckboxIndicator({
   className,
   icon,
@@ -36,7 +32,9 @@ export function CheckboxIndicator({
     props as Record<string, unknown>,
     parts.checkbox.box,
   );
-  const size = String(variants.size ?? parts.checkbox.box.def.defaultVariants?.size ?? "md");
+  const size = String(
+    variants.size ?? parts.checkbox.box.def.defaultVariants?.size ?? "md",
+  );
   return (
     <span
       aria-hidden="true"
@@ -56,7 +54,8 @@ export function CheckboxIndicator({
 }
 
 export interface CheckboxProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
+  extends
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
     Omit<CheckboxIndicatorProps, "className"> {
   children?: ReactNode;
   classNames?: PartClassNames<"checkbox">;
@@ -64,7 +63,6 @@ export interface CheckboxProps
   ref?: Ref<HTMLButtonElement>;
 }
 
-/** A labelled checkbox: the check, then `children` as its label. */
 export function Checkbox({
   checked,
   children,

@@ -1,17 +1,5 @@
 import { extractHere, type AmbientExtractRequest } from "../pipeline";
 
-// `@omerdlw/base-framework/ambient/worker`: runs extraction off the main thread.
-//
-//   // ambient.worker.ts (in the app)
-//   import { serveAmbientWorker } from "@omerdlw/base-framework/ambient/worker";
-//   serveAmbientWorker();
-//
-//   // once, on the client
-//   configureAmbient({
-//     worker: () =>
-//       new Worker(new URL("./ambient.worker.ts", import.meta.url), { type: "module" }),
-//   });
-
 export const AMBIENT_WORKER_REQUEST = "ambient:extract";
 export const AMBIENT_WORKER_RESPONSE = "ambient:palette";
 
@@ -21,12 +9,17 @@ export interface AmbientWorkerRequest extends AmbientExtractRequest {
 }
 
 export interface AmbientWorkerScope {
-  addEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+  addEventListener(
+    type: "message",
+    listener: (event: MessageEvent) => void,
+  ): void;
   postMessage(message: unknown): void;
-  removeEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+  removeEventListener(
+    type: "message",
+    listener: (event: MessageEvent) => void,
+  ): void;
 }
 
-/** Answers extraction requests in a worker. Returns a function that stops it. */
 export function serveAmbientWorker(
   scope: AmbientWorkerScope = globalThis as unknown as AmbientWorkerScope,
 ): () => void {
@@ -39,7 +32,11 @@ export function serveAmbientWorker(
     } catch {
       result = { palette: null, supported: true };
     }
-    scope.postMessage({ ...result, id: request.id, type: AMBIENT_WORKER_RESPONSE });
+    scope.postMessage({
+      ...result,
+      id: request.id,
+      type: AMBIENT_WORKER_RESPONSE,
+    });
   };
   scope.addEventListener("message", onMessage);
   return () => scope.removeEventListener("message", onMessage);

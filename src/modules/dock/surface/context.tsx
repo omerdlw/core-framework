@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-} from "react";
+import { createContext, use, useCallback, useEffect, useMemo } from "react";
 import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
 import {
@@ -86,7 +80,12 @@ export class SurfaceHeaderActionStore {
   getAction = (surfaceId: SurfaceKey) => {
     const sId = surfaceId != null ? String(surfaceId) : "active";
     const { actionsBySurface } = this.store.getSnapshot();
-    return actionsBySurface[sId] ?? actionsBySurface.active ?? actionsBySurface.global ?? null;
+    return (
+      actionsBySurface[sId] ??
+      actionsBySurface.active ??
+      actionsBySurface.global ??
+      null
+    );
   };
 
   setAction = (surfaceId: SurfaceKey, action: DockSlotContent) => {

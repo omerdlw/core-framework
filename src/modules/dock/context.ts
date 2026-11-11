@@ -125,7 +125,8 @@ export function useDockLoadingState(): LoadingStateWithPage {
   return useOptionalLoadingState();
 }
 
-export const useDockLoadingActions: () => LoadingActions = useOptionalLoadingActions;
+export const useDockLoadingActions: () => LoadingActions =
+  useOptionalLoadingActions;
 
 export const useDockNotificationVisible: () => boolean = useNotificationVisible;
 
@@ -133,4 +134,3 @@ export const statusActionDefaults: {
   error: ComponentType<ErrorActionsProps> | null;
   guard: ComponentType<GuardActionsProps> | null;
 } = { error: null, guard: null };
-

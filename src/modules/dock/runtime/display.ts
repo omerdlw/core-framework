@@ -91,7 +91,6 @@ export function buildDockItems({
 
 export interface DockBaseMatch {
   item: DockItem | null;
-  /** No card claims the path: `item` is the root card or the first one. */
   isFallback: boolean;
 }
 
@@ -154,7 +153,6 @@ export function resolveBaseActiveItemMatch({
           isSamePath(entry?.path, prefixMatchedRawItem?.path) ||
           (entry?.name && entry.name === prefixMatchedRawItem?.name),
       ) || prefixMatchedRawItem;
-    // The root is a prefix of every path, so it says nothing about this one.
     return {
       item,
       isFallback: normalizePath(prefixMatchedRawItem.path) === "/",
@@ -163,10 +161,6 @@ export function resolveBaseActiveItemMatch({
   return { item: rawItems[0] || null, isFallback: true };
 }
 
-/**
- * The card to show while the path has no card of its own: the one that was on
- * top before the path changed, as long as the hold for this path is open.
- */
 export function selectPendingRouteItem({
   match,
   heldItem,
@@ -195,7 +189,6 @@ export function usePendingRouteHold(
   const [lastMatched, setLastMatched] = useState<DockItem | null>(() =>
     match.isFallback ? null : match.item,
   );
-  // Starts closed: the first page has nothing before it to hold.
   const [hold, setHold] = useState(() => ({
     isOpen: false,
     pathname: normalizedPathname,
@@ -208,7 +201,6 @@ export function usePendingRouteHold(
     setHold({ isOpen: true, pathname: normalizedPathname });
   }
 
-  // The countdown starts once the navigation commits, not while it runs.
   useEffect(() => {
     if (!hold.isOpen || isNavigating) return;
     const timer = setTimeout(
@@ -231,7 +223,8 @@ export function usePendingRouteHold(
   });
   const isHeld = selected !== match.item;
   return useMemo(
-    () => (isHeld && selected ? { ...selected, isRoutePending: true } : selected),
+    () =>
+      isHeld && selected ? { ...selected, isRoutePending: true } : selected,
     [isHeld, selected],
   );
 }
@@ -265,7 +258,6 @@ export function resolveActiveItem({
   surfaceActions: SurfaceViewModelOptions;
   isPageLoading: boolean;
   attention: DockAttention;
-  /** Already resolved (and possibly held) base card; resolved here if absent. */
   baseActiveItem?: DockItem | null;
 }): DockItem | null {
   const baseActiveItem =

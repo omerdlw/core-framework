@@ -85,10 +85,9 @@ describe("resolveLoadingState", () => {
     assert.equal(resolved.isPageLoading, true);
     assert.equal(resolved.message, "Manual task");
 
-    const resolvedInactive = resolveLoadingState(
-      DEFAULT_LOADING_STATE,
-      { isLoading: false },
-    );
+    const resolvedInactive = resolveLoadingState(DEFAULT_LOADING_STATE, {
+      isLoading: false,
+    });
     assert.equal(resolvedInactive.isLoading, false);
     assert.equal(resolvedInactive.isPageLoading, false);
   });
@@ -121,15 +120,25 @@ describe("calculateRemainingMinDuration", () => {
   test("calculates remaining duration accurately", () => {
     const startTime = 1000;
     const minDuration = 400;
-    assert.equal(calculateRemainingMinDuration(startTime, minDuration, 1100), 300);
-    assert.equal(calculateRemainingMinDuration(startTime, minDuration, 1400), 0);
-    assert.equal(calculateRemainingMinDuration(startTime, minDuration, 1500), 0);
+    assert.equal(
+      calculateRemainingMinDuration(startTime, minDuration, 1100),
+      300,
+    );
+    assert.equal(
+      calculateRemainingMinDuration(startTime, minDuration, 1400),
+      0,
+    );
+    assert.equal(
+      calculateRemainingMinDuration(startTime, minDuration, 1500),
+      0,
+    );
   });
 });
 
 describe("defineLoading", () => {
   test("creates a frozen definition from string shorthand", async () => {
-    const { defineLoading } = await import("../../src/modules/loading/index.ts");
+    const { defineLoading } =
+      await import("../../src/modules/loading/index.ts");
     const def = defineLoading("Please wait...");
     assert.ok(Object.isFrozen(def));
     assert.equal(def.id, "loading");
@@ -138,7 +147,8 @@ describe("defineLoading", () => {
   });
 
   test("creates a frozen definition with custom options and id", async () => {
-    const { defineLoading } = await import("../../src/modules/loading/index.ts");
+    const { defineLoading } =
+      await import("../../src/modules/loading/index.ts");
     const def = defineLoading({
       id: "auth-loading",
       message: "Authenticating",
@@ -154,16 +164,22 @@ describe("defineLoading", () => {
 
 describe("withLoading action", () => {
   test("INERT_LOADING_ACTIONS.withLoading resolves functions and promises", async () => {
-    const { INERT_LOADING_ACTIONS } = await import("../../src/modules/loading/index.ts");
-    const fnResult = await INERT_LOADING_ACTIONS.withLoading(async () => "result-from-fn");
+    const { INERT_LOADING_ACTIONS } =
+      await import("../../src/modules/loading/index.ts");
+    const fnResult = await INERT_LOADING_ACTIONS.withLoading(
+      async () => "result-from-fn",
+    );
     assert.equal(fnResult, "result-from-fn");
 
-    const promiseResult = await INERT_LOADING_ACTIONS.withLoading(Promise.resolve("result-from-promise"));
+    const promiseResult = await INERT_LOADING_ACTIONS.withLoading(
+      Promise.resolve("result-from-promise"),
+    );
     assert.equal(promiseResult, "result-from-promise");
   });
 
   test("INERT_LOADING_ACTIONS.withLoading propagates rejection", async () => {
-    const { INERT_LOADING_ACTIONS } = await import("../../src/modules/loading/index.ts");
+    const { INERT_LOADING_ACTIONS } =
+      await import("../../src/modules/loading/index.ts");
     await assert.rejects(
       async () => {
         await INERT_LOADING_ACTIONS.withLoading(async () => {
@@ -178,7 +194,8 @@ describe("withLoading action", () => {
 describe("LoadingProvider", () => {
   const mount = async () => {
     const { renderHook } = await import("../support/render.ts");
-    const { LoadingProvider } = await import("../../src/modules/loading/context.tsx");
+    const { LoadingProvider } =
+      await import("../../src/modules/loading/context.tsx");
     const { useLoading } = await import("../../src/modules/loading/hooks.ts");
     const { RegistryProvider } = await import("../../src/core/kernel/index.ts");
     const { createElement: h } = await import("react");
@@ -196,8 +213,14 @@ describe("LoadingProvider", () => {
     let first!: Promise<void>;
     let second!: Promise<void>;
     await act(async () => {
-      first = view.result.current.withLoading(new Promise<void>((resolve) => (finishFirst = resolve)), "Saving");
-      second = view.result.current.withLoading(new Promise<void>((resolve) => (finishSecond = resolve)), "Uploading");
+      first = view.result.current.withLoading(
+        new Promise<void>((resolve) => (finishFirst = resolve)),
+        "Saving",
+      );
+      second = view.result.current.withLoading(
+        new Promise<void>((resolve) => (finishSecond = resolve)),
+        "Uploading",
+      );
     });
     assert.equal(view.result.current.isLoading, true);
     assert.equal(view.result.current.message, "Uploading");
@@ -206,7 +229,6 @@ describe("LoadingProvider", () => {
       finishSecond();
       await second;
     });
-    // The first task still runs: loading stays, with its message.
     assert.equal(view.result.current.isLoading, true);
     assert.equal(view.result.current.message, "Saving");
 

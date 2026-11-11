@@ -14,17 +14,18 @@ export const DEFAULT_LOADING_STATE: LoadingState = Object.freeze({
   message: null,
 });
 
-export const DEFAULT_LOADING_STATE_WITH_PAGE: LoadingStateWithPage = Object.freeze({
-  ...DEFAULT_LOADING_STATE,
-  isPageLoading: false,
-});
+export const DEFAULT_LOADING_STATE_WITH_PAGE: LoadingStateWithPage =
+  Object.freeze({
+    ...DEFAULT_LOADING_STATE,
+    isPageLoading: false,
+  });
 
 export const INERT_LOADING_ACTIONS: LoadingActions = Object.freeze({
   setLoading: () => {},
   setSkeleton: () => {},
   startLoading: () => {},
   stopLoading: () => {},
-  withLoading: async <T,>(task: Promise<T> | (() => Promise<T>)) =>
+  withLoading: async <T>(task: Promise<T> | (() => Promise<T>)) =>
     typeof task === "function" ? task() : task,
 });
 

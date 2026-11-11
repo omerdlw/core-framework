@@ -15,7 +15,6 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   src?: string | null;
 }
 
-/** Up to two initials of a name, or "?" when there is none. */
 export function initialsOf(name?: string): string {
   const parts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
   if (parts.length === 0) return "?";
@@ -23,7 +22,6 @@ export function initialsOf(name?: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-/** A round portrait, or the initials of `name` when there is none. */
 export function Avatar({
   alt,
   children,
@@ -45,7 +43,9 @@ export function Avatar({
     <span
       ref={ref}
       style={{ height: dimension, width: dimension, ...style }}
-      className={parts.avatar.root({ className: [classNames?.root, className] })}
+      className={parts.avatar.root({
+        className: [classNames?.root, className],
+      })}
       {...props}
     >
       {src && src !== failedSrc ? (

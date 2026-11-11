@@ -1,15 +1,9 @@
-/*
- * Utilities the design system adds to Tailwind: the type scale, the time
- * ladder as transition durations, and a few layout helpers.
- */
-
 @utility center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Time: rungs of the ladder (time.css; an app may rewrite them at runtime). */
 @utility tempo-quick {
   --touch-in: var(--step-n1);
   --touch-out: var(--step-n1);
@@ -39,7 +33,6 @@
   transition-duration: var(--step-3);
 }
 
-/* Type: size and line height travel together; `leading-*` can still override. */
 @utility type-micro {
   font-size: var(--type-micro);
   line-height: var(--tw-leading, var(--type-micro--line-height));
@@ -109,7 +102,6 @@
   line-height: var(--tw-leading, var(--type-display-2xl--line-height));
 }
 
-/* A scroller that keeps scrolling but draws no bar. */
 @utility scrollbar-none {
   scrollbar-width: none;
   &::-webkit-scrollbar {

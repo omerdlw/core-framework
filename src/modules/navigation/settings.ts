@@ -27,8 +27,6 @@ const createDefaults = (): NavigationSettings => ({
   timeoutMs: NAVIGATION_TIMEOUT_MS,
 });
 
-// Kept on globalThis so every bundled copy of this module (one per package
-// entry) shares one configuration.
 const SETTINGS_KEY = Symbol.for("@omerdlw/base-framework/navigation/settings");
 type GlobalWithSettings = typeof globalThis & {
   [SETTINGS_KEY]?: NavigationSettings;
@@ -55,12 +53,9 @@ export function mergeNavigationSettings(
   return { ...base, ...defined, intent: nextIntent };
 }
 
-/**
- * Sets intent prefetch, the warm cache, hold and arrival windows and the
- * route timeout for every navigator. Returns a function that restores the
- * previous settings.
- */
-export function configureNavigation(input: NavigationSettingsInput): () => void {
+export function configureNavigation(
+  input: NavigationSettingsInput,
+): () => void {
   const previous = getNavigationSettings();
   const next = mergeNavigationSettings(previous, input);
   scope[SETTINGS_KEY] = next;

@@ -1,22 +1,6 @@
 import { defineRecipe } from "./recipe";
 import { FILL, LAYER, STATE, TONES } from "./tones";
 
-/*
- * The default recipe of every component part. Each one names colour roles,
- * the control ladder and the type scale only (styles/tokens.css), so it looks
- * right in any app that loads the stylesheet, and an app restyles it through
- * `defineUi` without touching the component.
- */
-
-/* ── Button ────────────────────────────────────────────────────────────── */
-
-/**
- *   intent  neutral · outline · chosen · primary · danger · armed · glass · ghost
- *   size    xs 24 · sm 32 · chrome 36 · md 40 · lg 48
- *   shape   card · pill · thumb
- *   icon    a square control holding only a glyph
- *   width   auto · full · fill (shares a row with its siblings)
- */
 const buttonRoot = defineRecipe({
   base: [
     "center relative inline-flex cursor-pointer items-center justify-center font-medium select-none outline-none",
@@ -56,25 +40,12 @@ const buttonRoot = defineRecipe({
   },
 });
 
-/** A button with no `intent`: no surface, for a caller that draws its own. */
 const buttonBare = defineRecipe({
   base: "disabled:cursor-not-allowed disabled:opacity-50 disabled:aria-busy:cursor-wait disabled:aria-busy:opacity-100",
 });
 
-/** The label and the loader laid over it while the button is busy. */
 const buttonBusy = defineRecipe({ base: "inline-grid place-items-center" });
 
-/* ── Input ─────────────────────────────────────────────────────────────── */
-
-/**
- * A text field: a quiet fill with a ring that steps up on hover and focus.
- * Fields answer `focus:` rather than `focus-visible:`, because a pointer that
- * lands in a field is about to type.
- *
- *   appearance  field · bare (no surface; the caller draws one)
- *   size        sm 32 · md 40 · lg 48 · area (a textarea)
- *   shape       card · pill
- */
 const inputField = defineRecipe({
   base: "w-full min-w-0 outline-none disabled:cursor-not-allowed disabled:opacity-50",
   variants: {
@@ -91,14 +62,9 @@ const inputField = defineRecipe({
     },
     shape: { card: "rounded-card", pill: "rounded-full" },
   },
-  // No default size: a bare `ui.parts.input.field()` sizes nothing, for a
-  // caller that sets its own box; `<Input>` itself defaults to `md`.
   defaultVariants: { appearance: "field", shape: "card" },
 });
 
-/* ── Switch ────────────────────────────────────────────────────────────── */
-
-/** The track: a fill at rest, the primary colour when on. */
 const switchTrack = defineRecipe({
   base: [
     "group/switch ui-still relative inline-flex shrink-0 cursor-pointer items-center rounded-full bg-fill-hover p-0.5 ring-1 ring-edge ring-inset",
@@ -111,7 +77,6 @@ const switchTrack = defineRecipe({
   defaultVariants: { size: "md" },
 });
 
-/** The thumb: it stretches while pressed, as if pulled, then lands. */
 const switchThumb = defineRecipe({
   base: [
     "pointer-events-none block translate-x-0 rounded-full bg-ink-body transition-[translate,width,background-color] duration-reveal ease-out-cream",
@@ -127,20 +92,10 @@ const switchThumb = defineRecipe({
   defaultVariants: { size: "md" },
 });
 
-/* ── Checkbox ──────────────────────────────────────────────────────────── */
-
-/** The labelled checkbox: the check, then its label. */
 const checkboxRoot = defineRecipe({
   base: "group inline-flex cursor-pointer items-center gap-2.5 type-body text-ink-body select-none hover:text-ink focus-visible:text-ink disabled:cursor-not-allowed disabled:opacity-50",
 });
 
-/**
- * The check: a ring at rest that fills with the accent when checked. It
- * answers the hover of the `group` it sits in, so a whole row can be the target.
- *
- *   size    sm 20 · md 24
- *   reveal  hint the check inside an empty ring while the group is pointed at
- */
 const checkboxBox = defineRecipe({
   base: "center relative z-10 shrink-0 rounded-full ring-1 ring-inset",
   variants: {
@@ -175,16 +130,6 @@ const checkboxGlyph = defineRecipe({
   ],
 });
 
-/* ── Segmented control ─────────────────────────────────────────────────── */
-
-/**
- * A strip of tabs on a quiet track, the chosen one marked by a pill that
- * slides to it.
- *
- *   size   sm 32 · md 40
- *   shape  pill · card
- *   width  auto (as wide as its tabs) · fill (tabs share the row)
- */
 const segmentedRoot = defineRecipe({
   base: "relative max-w-full items-stretch gap-0.5 overflow-x-auto bg-fill p-0.5 ring-1 ring-edge ring-inset select-none scrollbar-none",
   variants: {
@@ -220,21 +165,10 @@ const segmentedPill = defineRecipe({
   defaultVariants: { shape: "pill" },
 });
 
-/** The chosen tab's own fill, before the pill has measured it. */
 const segmentedChosen = defineRecipe({ base: "bg-accent/15" });
 
 const segmentedCount = defineRecipe({ base: "-ml-0.5 tabular-nums" });
 
-/* ── Select ────────────────────────────────────────────────────────────── */
-
-/*
- * Three parts that share `size` and `shape`, so a trigger, its menu and the
- * menu's options always agree. Options and menu stay concentric: inner
- * radius = outer radius - padding.
- *
- *   size   sm 32 · md 40
- *   shape  card · pill
- */
 const selectRoot = defineRecipe({
   base: "relative inline-flex w-full flex-col gap-1.5",
 });
@@ -274,8 +208,6 @@ const selectMenu = defineRecipe({
     size: { sm: "p-1", md: "p-1.5" },
     shape: { card: "rounded-card", pill: "" },
   },
-  // Pill options are fully round, so the menu wraps them concentrically:
-  // half the option height plus the menu padding.
   compoundVariants: [
     { shape: "pill", size: "sm", class: "rounded-[18px]" },
     { shape: "pill", size: "md", class: "rounded-sheet" },
@@ -304,7 +236,6 @@ const selectOption = defineRecipe({
   defaultVariants: { shape: "card", size: "md" },
 });
 
-/** The fill that slides under the highlighted option. */
 const selectHighlight = defineRecipe({
   base: "rounded-[inherit] bg-fill-hover",
 });
@@ -325,8 +256,6 @@ const selectEmpty = defineRecipe({
   base: "px-3 py-2 text-center type-meta text-ink-muted",
 });
 
-/* ── Carousel ──────────────────────────────────────────────────────────── */
-
 const carouselRoot = defineRecipe({ base: "relative w-full" });
 
 const carouselTrack = defineRecipe({
@@ -335,7 +264,6 @@ const carouselTrack = defineRecipe({
 
 const carouselSlide = defineRecipe({ base: "shrink-0" });
 
-/** An arrow at one end of the rack; it shrinks away when there is nowhere to go. */
 const carouselArrow = defineRecipe({
   base: [
     "center absolute top-1/2 z-10 size-control-chrome -translate-y-1/2 cursor-pointer transition-[opacity,scale,background-color] duration-move ease-out-expo sm:size-control-md",
@@ -351,9 +279,6 @@ const carouselArrow = defineRecipe({
   defaultVariants: { visible: true },
 });
 
-/* ── Tooltip ───────────────────────────────────────────────────────────── */
-
-/** A frosted label; its open and close play in styles/effects.css (`.ui-tooltip`). */
 const tooltipContent = defineRecipe({
   base: [
     "ui-tooltip relative max-w-[min(16rem,calc(100vw-1.5rem))] rounded-card px-3 pt-1.5 pb-[7px] type-meta font-medium text-balance select-none",
@@ -361,12 +286,8 @@ const tooltipContent = defineRecipe({
   ],
 });
 
-/** The label inside the tip: its light sweeps across it as it opens. */
 const tooltipLabel = defineRecipe({ base: "ui-tooltip-label block" });
 
-/* ── Loader ────────────────────────────────────────────────────────────── */
-
-/** Three bouncing dots (styles/effects.css, `.ui-dots`). */
 const loaderRoot = defineRecipe({
   base: "pointer-events-none shrink-0 leading-none select-none",
   variants: {
@@ -382,11 +303,6 @@ const loaderSpinner = defineRecipe({
   base: "inline-flex animate-spin items-center justify-center align-middle leading-none",
 });
 
-/* ── Skeleton ──────────────────────────────────────────────────────────── */
-
-/**
- *   tone  block (shimmers) · soft (rests)
- */
 const skeletonBlock = defineRecipe({
   base: "",
   variants: { tone: { block: "ui-skeleton", soft: "ui-skeleton-soft" } },
@@ -395,15 +311,6 @@ const skeletonBlock = defineRecipe({
 
 const skeletonLine = defineRecipe({ base: "flex h-[1lh] items-center" });
 
-/* ── Image ─────────────────────────────────────────────────────────────── */
-
-/*
- * An image is two parts: the frame, which holds the space and shows the
- * skeleton while loading, and the picture, which fades in once decoded.
- *
- *   layout  fill (the frame fills its box) · intrinsic (wraps the picture)
- *   fit     cover · contain
- */
 const imageFrame = defineRecipe({
   base: "relative overflow-hidden select-none",
   variants: {
@@ -431,8 +338,6 @@ const imageFallback = defineRecipe({
   base: "relative h-full w-full overflow-hidden select-none",
 });
 
-/* ── Avatar ────────────────────────────────────────────────────────────── */
-
 const avatarRoot = defineRecipe({
   base: "relative inline-flex shrink-0 items-center justify-center overflow-hidden bg-fill-hover text-ink-body select-none",
 });
@@ -443,12 +348,8 @@ const avatarInitials = defineRecipe({
   base: "flex h-full w-full items-center justify-center type-meta font-medium uppercase",
 });
 
-/* ── Indicators ────────────────────────────────────────────────────────── */
-
-/** The shared-layout fill under the active row of a highlight group. */
 const highlightFill = defineRecipe({ base: "-z-10 rounded-card bg-fill" });
 
-/** The registry of default recipes, by component then part. */
 export const DEFAULT_RECIPES = {
   button: { root: buttonRoot, bare: buttonBare, busy: buttonBusy },
   input: { field: inputField },

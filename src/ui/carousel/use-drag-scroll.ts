@@ -3,10 +3,6 @@
 import { type RefObject, useEffect } from "react";
 import { DRAG_THRESHOLD } from "./track";
 
-/**
- * A mouse can drag the track sideways; a drag that moved swallows the click
- * that ends it, so a card is not opened by accident.
- */
 export function useDragScroll(ref: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const track = ref.current;

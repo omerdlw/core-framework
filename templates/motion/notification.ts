@@ -5,7 +5,6 @@ const { durations, easings } = motion;
 
 const enter = tween(durations.moderate, easings.emphasized);
 
-// defineTheme(notificationTheme, { slots, motion: notificationMotion })
 export const notificationMotion: NotificationMotion = {
   transition: enter,
   toast: {

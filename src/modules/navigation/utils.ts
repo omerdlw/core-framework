@@ -5,12 +5,10 @@ export function isSafeInternalHref(value: unknown): boolean {
   return href.startsWith("/") && !href.startsWith("//");
 }
 
-/** The pathname of an href, without search, hash or trailing slash. */
 export function pathOf(href: string): string {
   return normalizePath(String(href).split(/[?#]/)[0]) || "/";
 }
 
-/** An href's location key: normalized pathname plus its search and hash. */
 export function locationKeyOf(href: string): string {
   const value = String(href).trim();
   const cut = value.search(/[?#]/);
@@ -32,7 +30,6 @@ export function readWindowLocation(): string | null {
   return locationKeyOf(`${pathname}${search}${hash}`);
 }
 
-/** The link with an internal href around `target`, or `null`. */
 export function internalLinkOf(target: EventTarget | null): Element | null {
   if (typeof Element === "undefined" || !(target instanceof Element))
     return null;

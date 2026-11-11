@@ -1,21 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-/** The attribute published on <html> while the lock is held. */
 export const SCROLL_LOCK = "data-scroll-lock";
-
-/**
- * While a floating layer that owns the wheel is open (a select's list), the page
- * behind it does not scroll. Only the layer's own scroller moves, and when it
- * reaches an end the wheel stops there instead of carrying on to the page.
- *
- * The lock is counted, so two layers can hold it and the page is released when
- * the last one lets go. The hold is published as `data-scroll-lock` on `<html>`;
- * an app's own scroll driver can stand down while it is there.
- * Nothing changes `overflow`, so the scrollbar stays and nothing shifts.
- *
- *   useScrollLock(isOpen);
- */
 
 let holds = 0;
 let startY = 0;

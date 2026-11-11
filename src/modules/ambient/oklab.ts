@@ -1,8 +1,5 @@
 import type { OklchColor } from "./types";
 
-// Pure OKLab / OKLCH math shared by the client, the worker and the server.
-// Nothing here touches the DOM or React.
-
 export type Lab = [l: number, a: number, b: number];
 export type Rgb = [r: number, g: number, b: number];
 
@@ -18,20 +15,29 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function smoothstep(edge0: number, edge1: number, value: number): number {
+export function smoothstep(
+  edge0: number,
+  edge1: number,
+  value: number,
+): number {
   const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
 }
 
-/** 8-bit sRGB channels → OKLab. */
 export function srgbToOklab(r: number, g: number, b: number): Lab {
   const lr = LINEAR_LUT[r & 255];
   const lg = LINEAR_LUT[g & 255];
   const lb = LINEAR_LUT[b & 255];
 
-  const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
-  const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
-  const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+  const l = Math.cbrt(
+    0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb,
+  );
+  const m = Math.cbrt(
+    0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb,
+  );
+  const s = Math.cbrt(
+    0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb,
+  );
 
   return [
     0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
@@ -40,7 +46,6 @@ export function srgbToOklab(r: number, g: number, b: number): Lab {
   ];
 }
 
-/** OKLCH → linear sRGB; channels outside 0–1 mean the colour is out of gamut. */
 export function oklchToLinearSrgb(l: number, c: number, h: number): Rgb {
   const a = c * Math.cos(h * DEG);
   const b = c * Math.sin(h * DEG);
@@ -62,11 +67,6 @@ export function labToLch([l, a, b]: Lab): OklchColor {
 
 const inGamut = (rgb: Rgb) => rgb.every((v) => v >= -1e-5 && v <= 1 + 1e-5);
 
-/**
- * The most chroma sRGB can show at this lightness and hue (binary search on
- * the gamut boundary). Dark blues and purples have far more room than dark
- * greens or yellows, which is why one fixed chroma never looks right.
- */
 export function maxChroma(l: number, h: number): number {
   if (l <= 0 || l >= 1) return 0;
   let low = 0;
@@ -79,7 +79,6 @@ export function maxChroma(l: number, h: number): number {
   return low;
 }
 
-/** Share of the available chroma a colour uses (0 grey … 1 on the gamut edge). */
 export function relativeChroma({ c, h, l }: OklchColor): number {
   const room = maxChroma(l, h);
   return room <= 0 ? 0 : clamp(c / room, 0, 1);
@@ -90,7 +89,6 @@ export function hueDistance(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-/** WCAG 2 relative luminance of an OKLCH colour (gamut-clipped). */
 export function luminance({ c, h, l }: OklchColor): number {
   const [r, g, b] = oklchToLinearSrgb(l, c, h).map((v) => clamp(v, 0, 1));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -112,11 +110,6 @@ export function formatOklch({ c, h, l }: OklchColor): string {
   return `oklch(${round(clamp(l, 0, 1), 3).toFixed(3)} ${round(chroma, 3).toFixed(3)} ${round(chroma === 0 ? 0 : h, 1).toFixed(1)})`;
 }
 
-/**
- * A tone of a hue at lightness `l`, using `rel` of the chroma sRGB allows
- * there (never more than `cap`). This keeps a hue's character across a whole
- * ramp: dark tones of blue stay blue instead of collapsing to grey.
- */
 export function toneOf(
   h: number,
   l: number,
@@ -127,11 +120,6 @@ export function toneOf(
   return { c: Math.min(cap, clamp(rel, 0, 1) * room), h, l };
 }
 
-/**
- * Text colour for a background: a near-white or near-black carrying a hint of
- * the background's hue, pushed toward pure white / black until it reaches
- * `minContrast` (WCAG 2 ratio).
- */
 export function onColorFor(
   background: OklchColor,
   minContrast = 4.5,

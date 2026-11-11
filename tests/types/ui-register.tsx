@@ -1,4 +1,3 @@
-// Type-level checks for the ui registry: compiled by `npm run type-check`.
 import { createElement as h } from "react";
 import { Button, Select, Switch, defineUi } from "@omerdlw/base-framework/ui";
 
@@ -22,11 +21,9 @@ declare module "@omerdlw/base-framework/ui/recipes" {
   }
 }
 
-// An app variant value and an app variant type-check on the component…
 h(Button, { intent: "brand", elevated: true });
 h(Button, { intent: "primary", size: "lg" });
 h(Switch, { size: "lg" });
-// …and so does the server-safe recipe.
 ui.parts.button.root({ intent: "brand", elevated: false });
 
 // @ts-expect-error: a value nobody defined

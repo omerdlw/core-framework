@@ -61,12 +61,20 @@ describe("extendRecipe", () => {
       defaultVariants: { tone: "neon" },
     });
     assert.equal(tidy(resolveRecipe(next)), "chip brand n");
-    assert.equal(tidy(resolveRecipe(next, { tone: "loud" })), "chip brand l louder");
+    assert.equal(
+      tidy(resolveRecipe(next, { tone: "loud" })),
+      "chip brand l louder",
+    );
   });
 
   test("adds a whole new variant", () => {
-    const next = extendRecipe(chip, { variants: { elevated: { true: "shadow" } } });
-    assert.equal(tidy(resolveRecipe(next, { elevated: true })), "chip q shadow");
+    const next = extendRecipe(chip, {
+      variants: { elevated: { true: "shadow" } },
+    });
+    assert.equal(
+      tidy(resolveRecipe(next, { elevated: true })),
+      "chip q shadow",
+    );
   });
 
   test("reset keeps only the override", () => {
@@ -115,7 +123,9 @@ describe("defineUi", () => {
 
   test("a later class of the same family wins through the ui's cn", () => {
     const ui = defineUi({
-      parts: { button: { root: { variants: { shape: { card: "rounded-panel" } } } } },
+      parts: {
+        button: { root: { variants: { shape: { card: "rounded-panel" } } } },
+      },
     });
     const classes = ui.parts.button.root({ intent: "neutral" }).split(" ");
     assert.ok(classes.includes("rounded-panel"));
@@ -148,7 +158,10 @@ describe("defineUi", () => {
 
   test("a bare input field sizes nothing; the caller sets its box", () => {
     assert.ok(!defaultUi.parts.input.field().includes("h-control"));
-    assert.match(defaultUi.parts.input.field({ size: "md" }), /\bh-control-md\b/);
+    assert.match(
+      defaultUi.parts.input.field({ size: "md" }),
+      /\bh-control-md\b/,
+    );
   });
 
   test("a compiled recipe exposes its data", () => {

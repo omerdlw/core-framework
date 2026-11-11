@@ -9,7 +9,6 @@ import { Icon } from "./icon";
 import { SlidingPill, useSlidingPill } from "./indicator";
 
 export interface SegmentedItem<K extends string> {
-  /** A count after the label, shown when above zero. */
   count?: number;
   icon?: string;
   key: K;
@@ -22,24 +21,18 @@ export type SegmentedControlVariants = Omit<
   "active"
 >;
 
-export interface SegmentedControlProps<K extends string>
-  extends SegmentedControlVariants {
+export interface SegmentedControlProps<
+  K extends string,
+> extends SegmentedControlVariants {
   ariaLabel?: string;
   className?: string;
   classNames?: PartClassNames<"segmented">;
   items: readonly SegmentedItem<K>[];
   onChange: (key: K) => void;
   value: K;
-  /** Glyph size in px; by default 12 at `sm`, 14 otherwise. */
   iconSize?: number;
 }
 
-/**
- * Tabs that switch a view in place.
- *
- *   <SegmentedControl items={…} value={tab} onChange={setTab} />
- *   <SegmentedControl items={…} value={tab} onChange={setTab} size="md" width="fill" />
- */
 export function SegmentedControl<K extends string>({
   ariaLabel,
   className,
@@ -96,9 +89,11 @@ export function SegmentedControl<K extends string>({
               active,
               className: [
                 classNames?.segment,
-                active && !pill && parts.segmented.chosen({
-                  className: classNames?.chosen,
-                }),
+                active &&
+                  !pill &&
+                  parts.segmented.chosen({
+                    className: classNames?.chosen,
+                  }),
               ],
             })}
             data-pill-target={active ? "" : undefined}
@@ -110,7 +105,11 @@ export function SegmentedControl<K extends string>({
             {item.icon ? <Icon icon={item.icon} size={glyph} /> : null}
             <span>{item.label}</span>
             {item.count !== undefined && item.count > 0 ? (
-              <span className={parts.segmented.count({ className: classNames?.count })}>
+              <span
+                className={parts.segmented.count({
+                  className: classNames?.count,
+                })}
+              >
                 {item.count}
               </span>
             ) : null}

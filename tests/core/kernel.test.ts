@@ -37,18 +37,14 @@ import {
   useLoadingRegistration,
   useLoadingState,
 } from "../../src/modules/loading/index.ts";
-import {
-  ModalProvider,
-} from "../../src/modules/modal/context.tsx";
+import { ModalProvider } from "../../src/modules/modal/context.tsx";
 import {
   useModal,
   useModalActions,
   useModalState,
 } from "../../src/modules/modal/hooks.ts";
 import { modalModule } from "../../src/modules/modal/module.tsx";
-import {
-  NotificationProvider,
-} from "../../src/modules/notification/context.tsx";
+import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import {
   useNotificationActions,
   useNotificationState,
@@ -61,9 +57,7 @@ import {
   useAmbientTheme,
 } from "../../src/modules/ambient/hooks.ts";
 import { ambientModule } from "../../src/modules/ambient/module.tsx";
-import {
-  ContextMenuProvider,
-} from "../../src/modules/context-menu/context.tsx";
+import { ContextMenuProvider } from "../../src/modules/context-menu/context.tsx";
 import {
   useContextMenu,
   useContextMenuActions,

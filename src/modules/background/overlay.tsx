@@ -11,11 +11,7 @@ import {
 import { cn, report } from "@/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { retime } from "@/tokens";
-import {
-  useModuleTheme,
-  useMotionTokens,
-  type ResolvedTheme,
-} from "@/theme";
+import { useModuleTheme, useMotionTokens, type ResolvedTheme } from "@/theme";
 import { backgroundTheme } from "./constants";
 import {
   DEFAULT_COLOR,
@@ -40,10 +36,7 @@ import {
 import { useBackgroundActions, useBackgroundState } from "./hooks";
 import { parseYouTubeUrlConfig } from "./youtube/parse";
 import { YouTubeBackgroundPlayer } from "./youtube/player";
-import {
-  type BackgroundActions,
-  type BackgroundThemeSlot,
-} from "./types";
+import { type BackgroundActions, type BackgroundThemeSlot } from "./types";
 
 type Theme = ResolvedTheme<BackgroundThemeSlot>;
 
@@ -340,7 +333,6 @@ export function useBackgroundOverlayModel() {
     : image;
   const backgroundMotion = useBackgroundMotion();
   const { reduced, tempo } = useMotionTokens();
-  // A page's own animation is app motion too: it follows the same tempo.
   const motionConfig = useMemo(
     () =>
       getBackgroundMotionConfig(

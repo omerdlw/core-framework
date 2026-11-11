@@ -1,10 +1,6 @@
 "use client";
 
-export {
-  MediaContext,
-  MediaProvider,
-  NOOP_MEDIA_STORE,
-} from "./context";
+export { MediaContext, MediaProvider, NOOP_MEDIA_STORE } from "./context";
 export {
   useMedia,
   useMediaActions,

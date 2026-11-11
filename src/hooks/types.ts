@@ -15,4 +15,3 @@ export interface UseHotkeyOptions {
   preventDefault?: boolean;
   stopPropagation?: boolean;
 }
-

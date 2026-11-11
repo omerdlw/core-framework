@@ -17,10 +17,7 @@ export {
 } from "./hooks";
 export { createNavigator } from "./navigator";
 export { watchHistory, watchIntent } from "./listeners";
-export {
-  configureNavigation,
-  getNavigationSettings,
-} from "./settings";
+export { configureNavigation, getNavigationSettings } from "./settings";
 export {
   NAVIGATION_EVENTS,
   NAVIGATION_PHASE,

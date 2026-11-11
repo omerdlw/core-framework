@@ -11,7 +11,6 @@ export interface SkeletonBlockProps extends SkeletonVariants {
   style?: CSSProperties;
 }
 
-/** A placeholder that holds the shape of what is loading. */
 export function SkeletonBlock({ className, style, tone }: SkeletonBlockProps) {
   const { parts } = useUi();
   return (
@@ -25,14 +24,11 @@ export function SkeletonBlock({ className, style, tone }: SkeletonBlockProps) {
 
 export interface SkeletonLinesProps {
   className?: string;
-  /** Height of each bar; a line of text is `1lh` tall around it. */
   height?: string;
-  /** Widths on a phone, when they differ. */
   phone?: readonly string[];
   widths: readonly string[];
 }
 
-/** Lines of text still loading: one rounded bar per width. */
 export function SkeletonLines({
   className,
   height = "0.62em",

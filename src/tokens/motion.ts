@@ -1,7 +1,3 @@
-// Builders for the motion an app writes in its theme files. They hold shapes
-// (travel, scale, how a duration grows with distance), never the app's timing:
-// every duration, easing and spring is passed in.
-
 export const REDUCED_MOTION_TRANSITION = Object.freeze({
   duration: 0.08,
   ease: "linear",

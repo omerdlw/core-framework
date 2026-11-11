@@ -48,15 +48,8 @@ export {
   resolvePageAmbientTheme,
 } from "./module";
 
-export {
-  AmbientContext,
-  AmbientProvider,
-} from "./context";
+export { AmbientContext, AmbientProvider } from "./context";
 
-export {
-  useAmbient,
-  useAmbientColor,
-  useAmbientTheme,
-} from "./hooks";
+export { useAmbient, useAmbientColor, useAmbientTheme } from "./hooks";
 
 export type * from "./types";

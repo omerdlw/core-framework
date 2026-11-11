@@ -1,13 +1,7 @@
-/*
- * The carousel's track: where it can scroll, where a glide should land, and
- * the clip that rounds its ends. Pure functions of the track element.
- */
-
 export const EDGE_TOLERANCE = 4;
 export const DRAG_THRESHOLD = 5;
 const SCROLL_STEP = 0.8;
 
-/** The picture band of a slide, whose corners round the rack's ends. */
 export const FRAME_SELECTOR = "[data-carousel-frame]";
 
 export interface ScrollState {
@@ -23,7 +17,6 @@ export function readScroll(track: HTMLElement): ScrollState {
   };
 }
 
-/** The card edge nearest to one page along, snapped to the ends. */
 export function glideTarget(track: HTMLElement, direction: -1 | 1): number {
   const max = track.scrollWidth - track.clientWidth;
   const wanted = track.scrollLeft + track.clientWidth * SCROLL_STEP * direction;
@@ -49,13 +42,6 @@ export function glideTarget(track: HTMLElement, direction: -1 | 1): number {
   return target;
 }
 
-/**
- * A carousel's ends take the corners of the cards it holds, so a card half
- * scrolled out is cut along a rounded edge, not a square one. The corners
- * are read from the first card's frame, by layout so a slide's entrance
- * does not skew them; a caption under the frame stays square, only the
- * picture band is rounded.
- */
 export function rackClip(
   track: HTMLElement,
   selector = FRAME_SELECTOR,

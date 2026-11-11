@@ -1,18 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
 
-/*
- * Recipes: the class contract of a component part.
- *
- * A recipe is plain data (a base, named variants, compound variants and
- * defaults), so an app can extend one before it is ever called: add a class to
- * a variant, add a whole new variant value, or reset the part and write it
- * from scratch. `defineUi` compiles the merged data into resolvers once.
- *
- * Every class must be written out literally: Tailwind finds classes by reading
- * source files, so a class assembled at runtime is never generated.
- */
-
-/** Classes in any shape `clsx` accepts, including readonly (`as const`) arrays. */
 export type Classes =
   | string
   | number
@@ -23,20 +10,19 @@ export type Classes =
   | readonly Classes[]
   | { readonly [className: string]: unknown };
 
-export type VariantMap = Readonly<Record<string, Readonly<Record<string, Classes>>>>;
+export type VariantMap = Readonly<
+  Record<string, Readonly<Record<string, Classes>>>
+>;
 
-/** `"true" | "false"` keys select with a boolean, like `cva`. */
 type ValueOf<K> = K extends "true" | "false" ? boolean | K : K;
 
-/** The props a recipe answers: one optional choice per variant. */
 export type SelectionOf<V> = {
   -readonly [K in keyof V]?: ValueOf<keyof V[K] & string> | null;
 };
 
 type CompoundMatch<V> = {
   -readonly [K in keyof V]?:
-    | ValueOf<keyof V[K] & string>
-    | readonly ValueOf<keyof V[K] & string>[];
+    ValueOf<keyof V[K] & string> | readonly ValueOf<keyof V[K] & string>[];
 };
 
 export type CompoundVariant<V> = CompoundMatch<V> & {
@@ -51,12 +37,6 @@ export interface RecipeDef<V extends VariantMap = VariantMap> {
   readonly defaultVariants?: SelectionOf<V>;
 }
 
-/**
- * How an app changes a recipe. Classes are appended to the default's (the
- * app's `cn` lets a later class replace an earlier one of the same family);
- * new variant keys and values are added; `reset: true` drops the default and
- * keeps only what is written here.
- */
 export interface RecipeOverride<V extends VariantMap = VariantMap> {
   readonly reset?: boolean;
   readonly base?: Classes;
@@ -83,18 +63,20 @@ type Union<A, B> = {
     (K extends keyof B ? B[K] : {});
 };
 
-/** The variants of `D` once `O` is applied to it. */
 export type MergedVariants<D, O> = O extends { readonly reset: true }
   ? VariantsOf<O>
   : Union<VariantsOf<D>, VariantsOf<O>>;
 
-/** A compiled recipe: call it with the variant props to get the class string. */
 export interface Recipe<V = VariantMap> {
-  (props?: SelectionOf<V> & { readonly class?: Classes; readonly className?: Classes }): string;
+  (
+    props?: SelectionOf<V> & {
+      readonly class?: Classes;
+      readonly className?: Classes;
+    },
+  ): string;
   readonly def: RecipeDef;
 }
 
-/** The props of a compiled recipe, for a component that forwards them. */
 export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
 
 const key = (value: unknown): string | null =>
@@ -116,11 +98,6 @@ function matches(
   return true;
 }
 
-/**
- * The classes for one set of props, in source order: base, then each variant,
- * then the compound variants that match, then the caller's `class`/`className`.
- * `undefined` takes the default; `null` turns a variant off.
- */
 export function resolveRecipe(
   def: RecipeDef,
   props: Record<string, unknown> = {},
@@ -145,7 +122,6 @@ export function resolveRecipe(
   return out;
 }
 
-/** Applies an override to a recipe's data (see `RecipeOverride`). */
 export function extendRecipe(
   base: RecipeDef,
   override: RecipeOverride | undefined,
@@ -181,14 +157,12 @@ export function extendRecipe(
   };
 }
 
-/** Declares a recipe's data, keeping its literal variant names for typing. */
 export function defineRecipe<const V extends VariantMap = {}>(
   def: RecipeDef<V>,
 ): RecipeDef<V> {
   return def;
 }
 
-/** Compiles recipe data into a resolver that merges through `merge`. */
 export function compileRecipe<V>(
   def: RecipeDef,
   merge: (...inputs: ClassValue[]) => string,
@@ -199,6 +173,5 @@ export function compileRecipe<V>(
   return recipe;
 }
 
-/** `clsx` over `Classes`, for code that joins classes without merging. */
 export const joinClasses = (...inputs: Classes[]): string =>
   clsx(inputs as ClassValue[]);

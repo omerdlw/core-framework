@@ -33,7 +33,6 @@ import { notificationMotion } from "../../templates/motion/notification.ts";
 import { contextMenuMotion } from "../../templates/motion/context-menu.ts";
 import { backgroundMotion } from "../../templates/motion/background.ts";
 
-// Inputs the starter's motion functions are played with.
 const CUSTOM_SAMPLES = [undefined, 0, 1, 2, 3, 5, 9, -2, "14", 0.5];
 
 const TIME_KEYS = [
@@ -53,11 +52,6 @@ const isTransition = (value: Record<string, unknown>) =>
   typeof value.damping === "number" ||
   TIME_KEYS.some((key) => typeof value[key] === "number");
 
-/**
- * Walks a motion tree at tempo 1 next to the same tree retimed, calling
- * `onTransition` for every transition pair and requiring everything else to
- * be unchanged. Functions are compared at sample inputs.
- */
 function walkPairs(
   base: unknown,
   next: unknown,
@@ -66,7 +60,10 @@ function walkPairs(
 ) {
   if (typeof base === "function") {
     assert.equal(typeof next, "function", path);
-    for (const sample of [...CUSTOM_SAMPLES, { y: -10, scale: 0.94, position: 2 }]) {
+    for (const sample of [
+      ...CUSTOM_SAMPLES,
+      { y: -10, scale: 0.94, position: 2 },
+    ]) {
       const call = (fn: any) => {
         try {
           return { value: fn(sample) };
@@ -80,7 +77,12 @@ function walkPairs(
         assert.deepEqual(now, was, path);
         continue;
       }
-      walkPairs(was.value, (now as any).value, onTransition, `${path}(${JSON.stringify(sample)})`);
+      walkPairs(
+        was.value,
+        (now as any).value,
+        onTransition,
+        `${path}(${JSON.stringify(sample)})`,
+      );
     }
     return;
   }
@@ -118,7 +120,10 @@ describe("defineMotion", () => {
 
   test("a tempo must be a positive number", () => {
     for (const tempo of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
-      assert.throws(() => defineMotion({ tempo }), /tempo must be a positive number/);
+      assert.throws(
+        () => defineMotion({ tempo }),
+        /tempo must be a positive number/,
+      );
     }
   });
 });
@@ -160,34 +165,56 @@ describe("retime", () => {
   });
 
   test("a spring takes tempo× as long at the same damping ratio", () => {
-    const spring = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.35 };
+    const spring = {
+      type: "spring" as const,
+      stiffness: 420,
+      damping: 34,
+      mass: 0.35,
+    };
     const slow = retime(spring, { reduced: false, tempo: 1.6 });
-    const ratio = (s: typeof spring) => s.damping / (2 * Math.sqrt(s.stiffness * s.mass));
-    const period = (s: typeof spring) => 2 * Math.PI * Math.sqrt(s.mass / s.stiffness);
+    const ratio = (s: typeof spring) =>
+      s.damping / (2 * Math.sqrt(s.stiffness * s.mass));
+    const period = (s: typeof spring) =>
+      2 * Math.PI * Math.sqrt(s.mass / s.stiffness);
     assert.equal(slow.mass, spring.mass);
     assert.ok(Math.abs(ratio(slow) - ratio(spring)) < 1e-12);
     assert.ok(Math.abs(period(slow) / period(spring) - 1.6) < 1e-12);
   });
 
   test("functions are retimed on what they return", () => {
-    const variants = { visible: (i: number) => ({ transition: { delay: i * 0.1, duration: 0.3 } }) };
+    const variants = {
+      visible: (i: number) => ({
+        transition: { delay: i * 0.1, duration: 0.3 },
+      }),
+    };
     const slow = retime(variants, { reduced: false, tempo: 3 });
-    assert.deepEqual(slow.visible(2), { transition: { delay: 0.2 * 3, duration: 0.3 * 3 } });
+    assert.deepEqual(slow.visible(2), {
+      transition: { delay: 0.2 * 3, duration: 0.3 * 3 },
+    });
   });
 
   test("reduced motion collapses every transition to the reduced one", () => {
     const tree = {
       spring: { type: "spring", stiffness: 300, damping: 20 },
-      visible: { opacity: 1, transition: { delay: 0.3, duration: 1.2, ease: [0, 0, 1, 1] } },
+      visible: {
+        opacity: 1,
+        transition: { delay: 0.3, duration: 1.2, ease: [0, 0, 1, 1] },
+      },
     };
     assert.deepEqual(retime(tree, { reduced: true, tempo: 2 }), {
       spring: { type: "tween", ...REDUCED_MOTION_TRANSITION },
-      visible: { opacity: 1, transition: { type: "tween", ...REDUCED_MOTION_TRANSITION } },
+      visible: {
+        opacity: 1,
+        transition: { type: "tween", ...REDUCED_MOTION_TRANSITION },
+      },
     });
   });
 
   test("a module's timings are seconds: stretched by tempo, capped when reduced", () => {
-    const motion = { timings: { hold: 0.5, lead: 0.05 }, other: { range: [0, 180] } };
+    const motion = {
+      timings: { hold: 0.5, lead: 0.05 },
+      other: { range: [0, 180] },
+    };
     assert.deepEqual(retimeModuleMotion(motion, { reduced: false, tempo: 2 }), {
       other: { range: [0, 180] },
       timings: { hold: 1, lead: 0.1 },
@@ -205,34 +232,61 @@ describe("retime", () => {
       const now = next[key];
       const at = `${path}.${key}`;
       if (TIME_KEYS.includes(key)) assert.equal(now, was * tempo, at);
-      else if (key === "stiffness") assert.equal(now, was / (tempo * tempo), at);
+      else if (key === "stiffness")
+        assert.equal(now, was / (tempo * tempo), at);
       else if (key === "damping") assert.equal(now, was / tempo, at);
-      else if (isPlain(was) && isTransition(was)) assertStretched(was, now, tempo, at);
+      else if (isPlain(was) && isTransition(was))
+        assertStretched(was, now, tempo, at);
       else assert.deepEqual(now, was, at);
     }
   }
 
-  const withoutTimings = ({ timings, ...rest }: Record<string, unknown>) => rest;
+  const withoutTimings = ({ timings, ...rest }: Record<string, unknown>) =>
+    rest;
 
   for (const [name, motion] of Object.entries(STARTERS)) {
     test(`at tempo 2 the ${name} starter takes exactly twice as long, and moves the same`, () => {
-      const slow = retimeModuleMotion(motion, { reduced: false, tempo: 2 }) as any;
+      const slow = retimeModuleMotion(motion, {
+        reduced: false,
+        tempo: 2,
+      }) as any;
       let transitions = 0;
-      walkPairs(withoutTimings(motion as any), withoutTimings(slow), (base, next, path) => {
-        transitions += 1;
-        assertStretched(base, next, 2, path);
-      });
+      walkPairs(
+        withoutTimings(motion as any),
+        withoutTimings(slow),
+        (base, next, path) => {
+          transitions += 1;
+          assertStretched(base, next, 2, path);
+        },
+      );
       assert.ok(transitions > 0);
-      for (const [key, seconds] of Object.entries((motion as any).timings ?? {})) {
-        assert.equal(slow.timings[key], (seconds as number) * 2, `timings.${key}`);
+      for (const [key, seconds] of Object.entries(
+        (motion as any).timings ?? {},
+      )) {
+        assert.equal(
+          slow.timings[key],
+          (seconds as number) * 2,
+          `timings.${key}`,
+        );
       }
     });
 
     test(`with reduced motion every ${name} transition is the reduced one`, () => {
-      const reduced = retimeModuleMotion(motion, { reduced: true, tempo: 1 }) as any;
-      walkPairs(withoutTimings(motion as any), withoutTimings(reduced), (_base, next, path) => {
-        assert.deepEqual(next, { type: "tween", ...REDUCED_MOTION_TRANSITION }, path);
-      });
+      const reduced = retimeModuleMotion(motion, {
+        reduced: true,
+        tempo: 1,
+      }) as any;
+      walkPairs(
+        withoutTimings(motion as any),
+        withoutTimings(reduced),
+        (_base, next, path) => {
+          assert.deepEqual(
+            next,
+            { type: "tween", ...REDUCED_MOTION_TRANSITION },
+            path,
+          );
+        },
+      );
       for (const seconds of Object.values(reduced.timings ?? {})) {
         assert.ok((seconds as number) <= REDUCED_MOTION_TRANSITION.duration);
       }
@@ -254,10 +308,19 @@ describe("cssTransition", () => {
 });
 
 describe("module motion from the theme", () => {
-  type SampleMotion = { enter: { duration: number }; timings: { hold: number } };
+  type SampleMotion = {
+    enter: { duration: number };
+    timings: { hold: number };
+  };
   const spec = defineThemeSpec<"root", SampleMotion>("sample-motion");
-  const sampleMotion: SampleMotion = { enter: { duration: 0.4 }, timings: { hold: 0.2 } };
-  const entry = defineTheme(spec, { slots: { root: "x" }, motion: sampleMotion });
+  const sampleMotion: SampleMotion = {
+    enter: { duration: 0.4 },
+    timings: { hold: 0.2 },
+  };
+  const entry = defineTheme(spec, {
+    slots: { root: "x" },
+    motion: sampleMotion,
+  });
   const wrap =
     (themes: any[], motion?: any) =>
     ({ children }: { children?: ReactNode }) =>
@@ -281,7 +344,10 @@ describe("module motion from the theme", () => {
       },
       { wrapper: wrap([entry], tokens) },
     );
-    assert.deepEqual(view.result.current, { enter: { duration: 0.8 }, timings: { hold: 0.4 } });
+    assert.deepEqual(view.result.current, {
+      enter: { duration: 0.8 },
+      timings: { hold: 0.4 },
+    });
     await view.rerender(h(wrap([entry], tokens), null));
     assert.ok(seen.every((motion) => motion === seen[0]));
   });
@@ -292,7 +358,10 @@ describe("module motion from the theme", () => {
       { wrapper: wrap([entry], defineMotion({ reducedMotion: "always" })) },
     );
     assert.equal(result.current.tokens.reduced, true);
-    assert.deepEqual(result.current.motion.enter, { type: "tween", ...REDUCED_MOTION_TRANSITION });
+    assert.deepEqual(result.current.motion.enter, {
+      type: "tween",
+      ...REDUCED_MOTION_TRANSITION,
+    });
   });
 
   test("never reduces when the app opts out", async () => {
@@ -303,9 +372,12 @@ describe("module motion from the theme", () => {
   });
 
   test("hands the app's vocabulary to app code", async () => {
-    const { result } = await renderHook(() => useMotionTokens<typeof starterTokens>(), {
-      wrapper: wrap([entry], starterTokens),
-    });
+    const { result } = await renderHook(
+      () => useMotionTokens<typeof starterTokens>(),
+      {
+        wrapper: wrap([entry], starterTokens),
+      },
+    );
     assert.deepEqual(result.current.easings.enter, [0.25, 1, 0.5, 1]);
     assert.equal(result.current.tempo, 1);
   });
@@ -359,13 +431,15 @@ describe("reduced motion reaches every module", () => {
   test("CoreProvider wraps module overlays in it, and leaves app content alone", async () => {
     const overlay: { value?: string } = {};
     const content: { value?: string } = {};
-    const probeModule = defineModule({ id: "motionProbe", Overlay: readPolicy(overlay) });
+    const probeModule = defineModule({
+      id: "motionProbe",
+      Overlay: readPolicy(overlay),
+    });
     const Themed = withThemes();
     await render(
       h(
         ThemeProvider,
         { motion: defineMotion({ reducedMotion: "always" }), themes: [] },
-        // A nested ThemeProvider without motion keeps the app's motion.
         h(
           Themed,
           null,
@@ -382,12 +456,21 @@ describe("a module plays the app's motion", () => {
   const notificationThemeConfig = (motion?: unknown) => ({
     id: notificationTheme.id,
     config: {
-      slots: { layer: "layer", toast: "toast", toastDocked: "docked", toastMessage: "message" },
+      slots: {
+        layer: "layer",
+        toast: "toast",
+        toastDocked: "docked",
+        toastMessage: "message",
+      },
       ...(motion ? { motion } : {}),
     },
   });
 
-  function Toaster({ onReady }: { onReady: (toast: (m: string) => void) => void }) {
+  function Toaster({
+    onReady,
+  }: {
+    onReady: (toast: (m: string) => void) => void;
+  }) {
     onReady(useToast());
     return null;
   }
@@ -421,7 +504,10 @@ describe("a module plays the app's motion", () => {
     const originalError = console.error;
     console.error = () => {};
     try {
-      await assert.rejects(showToast(), /Motion for theme "notification" is missing/);
+      await assert.rejects(
+        showToast(),
+        /Motion for theme "notification" is missing/,
+      );
     } finally {
       console.error = originalError;
     }

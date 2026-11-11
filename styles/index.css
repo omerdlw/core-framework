@@ -1,22 +1,3 @@
-/*
- * @omerdlw/base-framework/styles.css — the design system's stylesheet.
- * Import it once, right after Tailwind:
- *
- *   @import "tailwindcss";
- *   @import "@omerdlw/base-framework/styles.css";
- *   @import "./my-palette.css";   (optional: your own roles, tokens, effects)
- *
- *   tokens       the vocabulary: type, radius, easing, geometry, colour roles
- *   palette      default dark and light values for every role (zero specificity)
- *   time         the time ladder (--step-*) and its curves (zero specificity)
- *   utilities    type-*, duration-*, center, scrollbar-none
- *   interaction  hover / focus / press / disabled for every control in a scene
- *   effects      sheen, iris, glyph, skeleton, loader, tooltip, turn
- *
- * The `@source` below lets Tailwind find the classes the components' recipes
- * name, so an app needs no `@source` of its own for the library.
- */
-
 @source "../dist";
 
 @import "./tokens.css";

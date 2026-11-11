@@ -6,9 +6,6 @@ export type ReportSink = (
   level: ReportLevel,
 ) => void;
 
-// The sink lives on globalThis so every bundled copy of this module (the
-// server-safe and client builds each carry one) reads the sink that
-// GlobalErrorListener installs.
 const GLOBAL_SINK_KEY = Symbol.for("__base_framework_report_sink__");
 type GlobalWithSink = typeof globalThis & {
   [GLOBAL_SINK_KEY]?: ReportSink | null;

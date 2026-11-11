@@ -3,14 +3,8 @@
 import { useMemo } from "react";
 import { defineModule, type PageModuleApi } from "@/kernel";
 import { LOADING_REGISTRY_KEY } from "./constants";
-import {
-  LoadingContext,
-  LoadingProvider,
-} from "./context";
-import {
-  useLoading,
-  useLoadingActions,
-} from "./hooks";
+import { LoadingContext, LoadingProvider } from "./context";
+import { useLoading, useLoadingActions } from "./hooks";
 import { selectPageLoading } from "./state";
 import { LoadingOverlay } from "./overlay";
 import {

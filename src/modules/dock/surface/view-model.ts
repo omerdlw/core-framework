@@ -1,9 +1,6 @@
 import { isPlainObject } from "@/utils";
 import { DOCK_SURFACE_PHASE } from "../constants";
-import {
-  resolveComponentType,
-  resolveRenderableContent,
-} from "../helpers";
+import { resolveComponentType, resolveRenderableContent } from "../helpers";
 import { normalizeExtensions } from "./definition";
 import {
   type ActiveSurfaceStep,

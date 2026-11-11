@@ -10,9 +10,7 @@ import {
 } from "react";
 import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
-import {
-  INITIAL_NOTIFICATION_STATE,
-} from "./constants";
+import { INITIAL_NOTIFICATION_STATE } from "./constants";
 import { createNotificationEntry } from "./state";
 import {
   type NotificationActions,

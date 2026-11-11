@@ -166,7 +166,6 @@ export function useRoutePrefetch(
     navigator = null,
   }: {
     intentDelayMs?: number;
-    /** When set, prefetches go through its shared warm cache instead. */
     navigator?: Pick<NavigationActions, "prefetch"> | null;
   } = {},
 ) {
@@ -325,17 +324,14 @@ function emitDockEvent(eventType: string, data: Record<string, unknown> = {}) {
 
 function useDockNavigator(router: NavigationRouter): Navigator {
   const shared = useModule("navigation");
-  // Without the navigation module the dock runs a navigator of its own: the
-  // same machine, bound to its router, without the global listeners.
-  const [own] = useState(() =>
-    shared ? null : createNavigator({ router }),
-  );
+  const [own] = useState(() => (shared ? null : createNavigator({ router })));
   useEffect(() => {
     own?.setRouter(router);
   }, [own, router]);
   useEffect(() => (own ? () => own.dispose() : undefined), [own]);
   return useMemo(
-    () => own ?? ({ ...shared!.actions, dispose: () => {}, store: shared!.store }),
+    () =>
+      own ?? { ...shared!.actions, dispose: () => {}, store: shared!.store },
     [own, shared],
   );
 }
@@ -378,7 +374,6 @@ export function useDockNavigation() {
     settledTripRef.current = lastTransaction;
     if (!lastTransaction) return;
     if (lastTransaction.status === NAVIGATION_STATUS.COMPLETED) {
-      // A push that kept the pathname moved no pathname; catch up with it.
       syncLocationKey();
     } else if (
       lastTransaction.status === NAVIGATION_STATUS.TIMED_OUT ||
@@ -448,13 +443,7 @@ export function useDockNavigation() {
       }
       return false;
     },
-    [
-      closeSurface,
-      continuity,
-      guards,
-      navigator,
-      prepareRouteReset,
-    ],
+    [closeSurface, continuity, guards, navigator, prepareRouteReset],
   );
 
   const navigate = useCallback(

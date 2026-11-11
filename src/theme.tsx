@@ -16,10 +16,6 @@ import {
   type MotionTokens,
 } from "@/tokens";
 
-/**
- * A module's theme contract: the slots it styles and, for modules that
- * animate, the motion it plays. Both are written by the app.
- */
 export interface ThemeSpec<S extends string = string, M = never> {
   readonly id: string;
   readonly _slots?: S;
@@ -101,12 +97,10 @@ export function ThemeProvider({
   themes,
 }: {
   children?: ReactNode;
-  /** The app's motion tokens, from `defineMotion` (tempo, reduced-motion policy, vocabulary). */
   motion?: MotionTokens;
   themes: readonly ThemeEntry[];
 }) {
   const configs = new Map(themes.map((entry) => [entry.id, entry.config]));
-  // A nested ThemeProvider without motion keeps the app's motion from above.
   const inherited = useContext(MotionContext) !== NO_MOTION_PROVIDER;
   return createElement(
     ThemeContext.Provider,
@@ -140,10 +134,9 @@ export function useTheme<S extends string>(
 
 export { useTheme as useModuleTheme };
 
-/** The app's motion tokens, plus whether reduced motion is in effect. */
-export function useMotionTokens<
-  T extends MotionTokens = MotionTokens,
->(): T & { readonly reduced: boolean } {
+export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
+  readonly reduced: boolean;
+} {
   const state = useContext(MotionContext);
   return useMemo(
     () => ({ ...(state.tokens as T), reduced: state.reduced }),
@@ -153,11 +146,6 @@ export function useMotionTokens<
 
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();
 
-/**
- * The motion a module plays, as the app wrote it in `defineTheme(spec, { motion })`,
- * retimed by the app's tempo or collapsed for reduced motion. Stable per
- * (tokens, theme) so it can be a dependency.
- */
 export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
   const config = useContext(ThemeContext).get(spec.id);
   const state = useContext(MotionContext);
@@ -170,7 +158,6 @@ export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
   return resolveModuleMotion(state, config.motion) as M;
 }
 
-/** Like useModuleMotion, but null when the app hasn't themed the module. */
 export function useOptionalModuleMotion<M>(
   spec: ThemeSpec<string, M>,
 ): M | null {
@@ -192,11 +179,6 @@ function resolveModuleMotion(state: MotionState, motion: object): unknown {
   return byConfig.get(motion);
 }
 
-/**
- * Applies the app's reduced-motion policy to the motion components inside a
- * module (positional values such as width, height, x and scale jump instead of
- * animating). CoreProvider wraps every module backdrop and overlay in it.
- */
 export function ModuleMotionConfig({ children }: { children?: ReactNode }) {
   const { tokens } = useContext(MotionContext);
   return createElement(

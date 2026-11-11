@@ -1,13 +1,3 @@
-/*
- * Time. One geometric ladder, `step(n) = 0.5s × φⁿ` (the same as `step()` in
- * @omerdlw/base-framework/ui/recipes), and the curves the eases are named for.
- * Every rung is scaled by `--tempo`, so a slower or quicker interface is one
- * variable.
- *
- * Set at zero specificity (`:where`), so an app that writes the ladder itself,
- * at build time or from a motion engine at runtime, wins without a fight.
- */
-
 @layer base {
   :where(:root) {
     --step-n6: calc(28ms * var(--tempo, 1));

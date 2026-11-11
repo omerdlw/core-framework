@@ -11,11 +11,7 @@ import {
   type DefineControlsOptions,
 } from "./types";
 import { normalizePageControls, resolveSlot } from "./entries";
-import {
-  areLayoutsEqual,
-  getDockElement,
-  measureLayout,
-} from "./layout";
+import { areLayoutsEqual, getDockElement, measureLayout } from "./layout";
 
 export function useControlsLayout(): ControlsLayout | null {
   const [layout, setLayout] = useState<ControlsLayout | null>(null);

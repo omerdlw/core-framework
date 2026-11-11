@@ -6,19 +6,10 @@ import {
   useRequiredContext,
   useStore,
 } from "@/hooks";
-import {
-  useModuleRegistration,
-  type RegistryMetadata,
-} from "@/kernel";
+import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
 import { useModuleTheme } from "@/theme";
-import {
-  INERT_LOADING_ACTIONS,
-  loadingTheme,
-} from "./constants";
-import {
-  LoadingContext,
-  NOOP_LOADING_STORE,
-} from "./context";
+import { INERT_LOADING_ACTIONS, loadingTheme } from "./constants";
+import { LoadingContext, NOOP_LOADING_STORE } from "./context";
 import {
   type LoadingActions,
   type LoadingPageConfig,

@@ -5,7 +5,11 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 
 describe("package architecture boundaries", () => {
-  function scanDir(dir: string, filter: (file: string, path: string) => boolean, onFile: (fullPath: string, content: string) => void) {
+  function scanDir(
+    dir: string,
+    filter: (file: string, path: string) => boolean,
+    onFile: (fullPath: string, content: string) => void,
+  ) {
     if (!fs.existsSync(dir)) return;
     const files = fs.readdirSync(dir);
     for (const file of files) {
@@ -23,8 +27,14 @@ describe("package architecture boundaries", () => {
       path.resolve("src/tokens"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
-        assert.ok(!content.includes("@/kernel"), `${fullPath} imports from @/kernel`);
-        assert.ok(!content.includes("@/modules"), `${fullPath} imports from @/modules`);
+        assert.ok(
+          !content.includes("@/kernel"),
+          `${fullPath} imports from @/kernel`,
+        );
+        assert.ok(
+          !content.includes("@/modules"),
+          `${fullPath} imports from @/modules`,
+        );
       },
     );
   });
@@ -34,7 +44,10 @@ describe("package architecture boundaries", () => {
       path.resolve("src/ui"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
-        assert.ok(!content.includes("@/modules"), `${fullPath} imports from @/modules`);
+        assert.ok(
+          !content.includes("@/modules"),
+          `${fullPath} imports from @/modules`,
+        );
       },
     );
   });
@@ -45,10 +58,19 @@ describe("package architecture boundaries", () => {
       if (seen.has(file)) return;
       seen.add(file);
       const content = fs.readFileSync(file, "utf8");
-      assert.ok(!/from "react"|from "motion\/react"|"use client"/.test(content), `${file} pulls React into ui/recipes`);
-      for (const match of content.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^;]*?from\s+"(\.[^"]+)"/gm)) {
+      assert.ok(
+        !/from "react"|from "motion\/react"|"use client"/.test(content),
+        `${file} pulls React into ui/recipes`,
+      );
+      for (const match of content.matchAll(
+        /^\s*(?:import|export)\s+(?!type\b)[^;]*?from\s+"(\.[^"]+)"/gm,
+      )) {
         const base = path.resolve(path.dirname(file), match[1]);
-        const next = [`${base}.ts`, `${base}.tsx`, path.join(base, "index.ts")].find((candidate) => fs.existsSync(candidate));
+        const next = [
+          `${base}.ts`,
+          `${base}.tsx`,
+          path.join(base, "index.ts"),
+        ].find((candidate) => fs.existsSync(candidate));
         if (next) visit(next);
       }
     };
@@ -61,13 +83,18 @@ describe("package architecture boundaries", () => {
       path.resolve("src/kernel"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
-        assert.ok(!content.includes("@/modules"), `${fullPath} imports from @/modules`);
+        assert.ok(
+          !content.includes("@/modules"),
+          `${fullPath} imports from @/modules`,
+        );
       },
     );
   });
 
   test("architecture check script runs without cycles or undeclared peers", () => {
-    const result = execSync("node scripts/check-architecture.mjs", { encoding: "utf8" });
+    const result = execSync("node scripts/check-architecture.mjs", {
+      encoding: "utf8",
+    });
     assert.ok(result.includes("Architecture check passed"), result);
   });
 });

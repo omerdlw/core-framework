@@ -8,13 +8,13 @@ import { splitVariants } from "../split";
 export type InputVariants = PartProps<"input", "field">;
 
 export interface InputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "size">,
+  extends
+    Omit<InputHTMLAttributes<HTMLInputElement>, "size">,
     Omit<InputVariants, "size"> {
   ref?: Ref<HTMLInputElement>;
   size?: Exclude<InputVariants["size"], "area">;
 }
 
-/** A single-line field. `<Input placeholder="Name" />` is a 40px card field. */
 export function Input({
   className,
   ref,
@@ -35,14 +35,14 @@ export function Input({
 }
 
 export interface TextareaProps
-  extends TextareaHTMLAttributes<HTMLTextAreaElement>,
+  extends
+    TextareaHTMLAttributes<HTMLTextAreaElement>,
     Omit<InputVariants, "size"> {
   maxHeight?: number;
   minHeight?: number;
   ref?: Ref<HTMLTextAreaElement>;
 }
 
-/** A multi-line field, bounded by `minHeight` and `maxHeight` in px. */
 export function Textarea({
   className,
   maxHeight,

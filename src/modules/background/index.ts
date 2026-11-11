@@ -1,10 +1,7 @@
 "use client";
 
 export { BackgroundOverlay } from "./overlay";
-export {
-  BackgroundContext,
-  BackgroundProvider,
-} from "./context";
+export { BackgroundContext, BackgroundProvider } from "./context";
 export {
   useBackground,
   useBackgroundActions,

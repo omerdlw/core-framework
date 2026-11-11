@@ -1,23 +1,4 @@
-/*
- * The interaction contract: how every control answers hover, focus-visible,
- * press and disabled, once, for the whole interface. Components do not
- * restate these behaviours; they opt in by living inside a scene
- * (`.ui-motion` or `.ui-scene`) and by naming state colours through their
- * recipes (TONES in @omerdlw/base-framework/ui/recipes).
- *
- *   rest     the role's idle colours; transitions decay slowly (--touch-out)
- *   hover    = focus-visible; light arrives fast (--touch-in)
- *   focus    one outline drawn by the system, never by a component
- *   press    the control sinks: scale(--press)
- *   disabled opacity 0.5, no pointer (recipe), no press (here)
- *
- * A control opts out of the press with `.ui-still` or `[data-still]`, and out
- * of the system's focus outline with `[data-own-focus]`.
- */
-
 @layer base {
-  /* A theme swap is one cut, not hundreds of crossfades: set
-     `data-theme-switching` on <html> for the frame the theme changes. */
   :root[data-theme-switching] *,
   :root[data-theme-switching] *::before,
   :root[data-theme-switching] *::after {
@@ -39,8 +20,6 @@
     --focus-offset-rest: 5px;
   }
 }
-
-/* ── Focus ─────────────────────────────────────────────────────────────── */
 
 :where(.ui-motion, .ui-scene)
   :where(
@@ -65,17 +44,6 @@
   outline-offset: var(--focus-offset);
 }
 @layer components {
-  /* ── Colour transitions: the two beats ─────────────────────────────── */
-
-  /*
-   * What a control holds (an icon, a label, a count) fades with it. The
-   * control names that transition once, in a variable its contents inherit,
-   * and every element in a scene takes whatever it inherited. Matching
-   * "anything inside a control" directly would test each element's whole
-   * ancestry against the control list below (substring class tests among
-   * them) on every style recalculation; a page restyled by its tint pays
-   * that for thousands of elements a frame.
-   */
   :where(.ui-motion, .ui-scene)
     :where(
       button,
@@ -111,7 +79,6 @@
       text-decoration-color var(--touch-t) var(--touch-e),
       fill var(--touch-t) var(--touch-e), stroke var(--touch-t) var(--touch-e);
   }
-  /* Outside every control the variable is unset and so is the transition. */
   :where(.ui-motion, .ui-scene) :where(:not([data-placement])) {
     transition: var(--touch-kids);
   }
@@ -174,8 +141,6 @@
     --touch-e: var(--ease-out-cream);
   }
 
-  /* ── Press ─────────────────────────────────────────────────────────── */
-
   :where(.ui-motion, .ui-scene)
     :where(button, a[href], summary, [role="button"]):where(
       :not(
@@ -189,15 +154,11 @@
     --press-t: var(--press-in);
     scale: var(--press);
   }
-  /* Wide targets sink less, so their edges do not travel far. */
   :where(.ui-scene) :where(a[href]),
   :where(.ui-motion, .ui-scene) :where(.w-full, .flex-1) {
     --press: var(--press-wide);
   }
 
-  /* ── Opt-in helpers ────────────────────────────────────────────────── */
-
-  /* Fades opacity with the same two beats (labels that swap, idle pictures). */
   .ui-fade {
     transition:
       opacity var(--touch-t) var(--touch-e),
@@ -211,7 +172,6 @@
       filter var(--press-t) var(--ease-out-cream);
   }
 
-  /* A glyph inside a control swells a little when the control is pointed at. */
   :where(.ui-motion, .ui-scene)
     :where(button, a[href], [role="button"], [role="menuitem"], [role="tab"])
     > iconify-icon,
@@ -269,8 +229,6 @@
     }
   }
 
-  /* A ghost control: its fill fades in place on hover and focus. No scale:
-     a fill that grows out of the centre reads as a cheap ripple. */
   .ui-iris {
     isolation: isolate;
   }

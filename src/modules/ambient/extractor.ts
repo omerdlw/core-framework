@@ -37,19 +37,16 @@ function cachePalette(key: string, palette: AmbientPalette): void {
   paletteCache.set(key, palette);
 }
 
-/**
- * Seeds the client cache with a palette computed elsewhere (usually on the
- * server), so the same image is never extracted again in this tab.
- */
-export function primeAmbientPalette(src: string, palette: AmbientPalette): void {
+export function primeAmbientPalette(
+  src: string,
+  palette: AmbientPalette,
+): void {
   if (src && palette) cachePalette(src, { ...palette, source: src });
 }
 
 export function getCachedAmbientPalette(src: string): AmbientPalette | null {
   return paletteCache.get(src) ?? null;
 }
-
-// ─── Worker ──────────────────────────────────────────────────────────────
 
 interface WorkerSlot {
   factory: () => Worker;
@@ -81,7 +78,8 @@ function workerSlot(factory: () => Worker): WorkerSlot | null {
   }
   const created: WorkerSlot = { factory, next: 1, pending: new Map(), worker };
   worker.addEventListener("message", (event: MessageEvent) => {
-    const message = event.data as (AmbientExtractResult & { id: number; type: string }) | null;
+    const message = event.data as
+      (AmbientExtractResult & { id: number; type: string }) | null;
     if (message?.type !== AMBIENT_WORKER_RESPONSE) return;
     created.pending.get(message.id)?.(message);
     created.pending.delete(message.id);
@@ -114,8 +112,6 @@ function extractInWorker(
   });
 }
 
-// ─── Main thread ─────────────────────────────────────────────────────────
-
 function loadImageElement(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const image = new Image();
@@ -131,7 +127,6 @@ async function extractOnMainThread(
   const result = await extractHere(request);
   if (result.supported) return result.palette;
 
-  // No createImageBitmap: decode through an <img> instead.
   const blob = await fetchImageBlob(request.src, request.proxyUrl);
   if (!blob || typeof URL.createObjectURL !== "function") return null;
   const objectUrl = URL.createObjectURL(blob);
@@ -152,8 +147,6 @@ async function extractOnMainThread(
     URL.revokeObjectURL(objectUrl);
   }
 }
-
-// ─── Public ──────────────────────────────────────────────────────────────
 
 function absoluteUrl(src: string): string {
   try {
@@ -198,10 +191,6 @@ async function extractPalette(
   return extractOnMainThread(request);
 }
 
-/**
- * Extracts the palette of an image (cached, with concurrent requests for the
- * same image shared). Resolves `null` on any failure and never throws.
- */
 export async function extractPaletteFromImage(
   imageSource: AmbientImageSource,
   options: AmbientExtractOptions = {},
@@ -212,7 +201,9 @@ export async function extractPaletteFromImage(
   const strategy = options.strategy ?? getAmbientSettings().strategy;
   if (strategy === "none") return getCachedAmbientPalette(src);
 
-  const key = options.analysis ? `${src}#${JSON.stringify(options.analysis)}` : src;
+  const key = options.analysis
+    ? `${src}#${JSON.stringify(options.analysis)}`
+    : src;
   const cached = paletteCache.get(key);
   if (cached) return cached;
 

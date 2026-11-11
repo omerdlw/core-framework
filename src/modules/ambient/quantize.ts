@@ -1,25 +1,14 @@
 export interface KMeansResult {
-  /** Index of the cluster each point belongs to. */
   assignment: Int32Array;
-  /** `k × 3` OKLab centroids. */
   centroids: Float64Array;
-  /** Number of clusters actually found (≤ the requested k). */
   k: number;
 }
 
 export interface KMeansOptions {
   iterations?: number;
-  /** Weight of ΔL² against Δa² + Δb²; below 1 favours hue over lightness. */
   lightnessWeight?: number;
 }
 
-/**
- * Weighted k-means in OKLab with deterministic seeding (the heaviest point,
- * then repeatedly the point that is heaviest × furthest from every seed), so
- * the same pixels always give the same palette on the server and the client.
- *
- * `points` holds `n × 3` OKLab values and `weights` one weight per point.
- */
 export function kmeans(
   points: Float64Array,
   weights: Float64Array,
@@ -57,7 +46,7 @@ export function kmeans(
         best = i;
       }
     }
-    if (best < 0) break; // every remaining point sits on a seed
+    if (best < 0) break;
     centroids.set(points.subarray(best * 3, best * 3 + 3), found * 3);
   }
 
@@ -92,7 +81,7 @@ export function kmeans(
     }
     for (let j = 0; j < found; j++) {
       const w = sums[j * 4 + 3];
-      if (w <= 0) continue; // an empty cluster keeps its seed
+      if (w <= 0) continue;
       centroids[j * 3] = sums[j * 4] / w;
       centroids[j * 3 + 1] = sums[j * 4 + 1] / w;
       centroids[j * 3 + 2] = sums[j * 4 + 2] / w;

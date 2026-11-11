@@ -136,8 +136,6 @@ class ErrorReporter {
   }
 }
 
-// One reporter per page, shared across bundled copies of this module, so a
-// handler added through "/error" is the one GlobalErrorListener reports to.
 const GLOBAL_REPORTER_KEY = Symbol.for("__base_framework_error_reporter__");
 type GlobalWithReporter = typeof globalThis & {
   [GLOBAL_REPORTER_KEY]?: ErrorReporter;

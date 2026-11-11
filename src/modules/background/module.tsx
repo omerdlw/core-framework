@@ -3,14 +3,8 @@
 import { useMemo } from "react";
 import { defineModule, type PageModuleApi } from "@/kernel";
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
-import {
-  BackgroundContext,
-  BackgroundProvider,
-} from "./context";
-import {
-  useBackground,
-  useBackgroundActions,
-} from "./hooks";
+import { BackgroundContext, BackgroundProvider } from "./context";
+import { useBackground, useBackgroundActions } from "./hooks";
 import { normalizeBackgroundInput } from "./state";
 import { BackgroundOverlay } from "./overlay";
 import {

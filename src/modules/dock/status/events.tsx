@@ -3,10 +3,7 @@
 import { type ComponentType } from "react";
 import { EVENT_TYPES, globalEvents } from "@/events";
 import { toUserMessage } from "@/utils";
-import {
-  type QueuedApiError,
-  type ScheduleStatusClearOptions,
-} from "../types";
+import { type QueuedApiError, type ScheduleStatusClearOptions } from "../types";
 import {
   API_ERROR_BATCH_DELAY,
   DOCK_EVENTS,

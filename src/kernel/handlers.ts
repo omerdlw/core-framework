@@ -1,8 +1,5 @@
 import { DEFAULT_SOURCE, REGISTRY_LIFECYCLES } from "./constants";
-import {
-  normalizeRegistryMetadata,
-  validateRegistryMetadata,
-} from "./schema";
+import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
 import { isObject, report } from "@/utils";
 import type {
   AnyCoreModule,

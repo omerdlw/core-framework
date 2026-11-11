@@ -1,14 +1,3 @@
-/*
- * The default palettes: a role for every colour token (tokens.css), in a dark
- * and a light theme. The theme is `data-theme="light" | "dark"` on <html>;
- * dark is the fallback. A subtree that sits on a photograph takes `.on-photo`
- * and keeps the dark palette in either theme.
- *
- * Every rule is at zero specificity (`:where`), so an app's own palette
- * (`:root { --ink-rgb: …; }`) replaces any of these without `!important`,
- * whichever file loads first.
- */
-
 @layer base {
   :where(:root),
   :where(:root[data-theme="light"] .on-photo) {
@@ -45,7 +34,6 @@
     --accent: var(--ink);
     --danger: oklch(70.4% 0.191 22.216);
 
-    /* 3:1 against the page or better (WCAG 1.4.11) */
     --focus-ring: rgb(var(--ink-rgb) / 0.45);
     --selection: rgb(var(--ink-rgb) / 0.3);
   }
@@ -84,7 +72,6 @@
     --accent: var(--ink);
     --danger: oklch(58% 0.21 26);
 
-    /* 4:1 on paper */
     --focus-ring: rgb(var(--ink-rgb) / 0.55);
   }
 

@@ -1,15 +1,16 @@
 import { analyzeAmbientPixels } from "../analyze";
-import { isIpLiteral, isPrivateAddress, isPrivateHostname, normalizeHost } from "./address";
+import {
+  isIpLiteral,
+  isPrivateAddress,
+  isPrivateHostname,
+  normalizeHost,
+} from "./address";
 import { resolveAnalysis } from "../settings";
 import type {
   AmbientAnalysisOptions,
   AmbientPalette,
   AmbientPixels,
 } from "../types";
-
-// `@omerdlw/base-framework/ambient/server`: palettes computed in Node (RSC,
-// route handlers, build scripts), to be cached and handed to the client as
-// `initialPalette`. Nothing here is client code.
 
 export {
   AMBIENT_ANALYSIS_VERSION,
@@ -29,7 +30,6 @@ export {
 } from "../oklab";
 export type * from "../types";
 
-/** Decodes image bytes into RGBA pixels no larger than `size` on the long side. */
 export type AmbientDecoder = (
   bytes: Uint8Array,
   size: number,
@@ -37,22 +37,12 @@ export type AmbientDecoder = (
 
 export interface AmbientServerOptions {
   analysis?: Partial<AmbientAnalysisOptions>;
-  /** Which URLs may be fetched. Default: public http(s) hosts only. */
   allow?: (url: URL) => boolean;
-  /** Keep results in an in-process cache (default `true`). */
   cache?: boolean;
-  /** Default: `sharp` (loaded on first use; it ships with Next.js). */
   decode?: AmbientDecoder;
   fetch?: typeof fetch;
-  /** Extra fetch options, e.g. `{ next: { revalidate: 86400 } }`. */
   init?: RequestInit;
   maxBytes?: number;
-  /**
-   * Resolves a host name to its IP addresses, checked before every request
-   * (redirects included): a request whose host resolves to any loopback,
-   * private, link-local or reserved address is refused. Default: `node:dns`.
-   * `false` skips the check (only do that behind an `allow` list).
-   */
   resolve?: ((hostname: string) => Promise<string[]>) | false;
   timeoutMs?: number;
 }
@@ -61,11 +51,6 @@ const MAX_BYTES = 12 * 1024 * 1024;
 const TIMEOUT_MS = 8_000;
 const CACHE_LIMIT = 500;
 
-/**
- * Public http(s) URLs only: no credentials, no localhost / private / link-local
- * names or IP literals (in any spelling the URL parser accepts). Host names
- * are also resolved and checked before fetching (`resolve`).
- */
 export function isPublicImageUrl(url: URL): boolean {
   return (
     (url.protocol === "https:" || url.protocol === "http:") &&
@@ -89,7 +74,9 @@ async function reachesOnlyPublic(
   if (resolve === false) return true;
   const host = normalizeHost(url.hostname);
   try {
-    const addresses = isIpLiteral(host) ? [host] : await (resolve ?? lookupAll)(host);
+    const addresses = isIpLiteral(host)
+      ? [host]
+      : await (resolve ?? lookupAll)(host);
     return addresses.length > 0 && !addresses.some(isPrivateAddress);
   } catch {
     return false;
@@ -102,7 +89,11 @@ interface SharpLike {
 interface SharpPipeline {
   ensureAlpha(): SharpPipeline;
   raw(): SharpPipeline;
-  resize(width: number, height: number, options: Record<string, unknown>): SharpPipeline;
+  resize(
+    width: number,
+    height: number,
+    options: Record<string, unknown>,
+  ): SharpPipeline;
   rotate(): SharpPipeline;
   toBuffer(options: { resolveWithObject: true }): Promise<{
     data: Uint8Array;
@@ -110,7 +101,6 @@ interface SharpPipeline {
   }>;
 }
 
-/** Thrown (not swallowed) when no decoder is available: a setup error, not a bad image. */
 export class AmbientDecoderMissingError extends Error {
   override name = "AmbientDecoderMissingError";
 }
@@ -119,7 +109,9 @@ let sharpModule: Promise<SharpLike> | null = null;
 const SHARP = "sharp";
 
 function loadSharp(): Promise<SharpLike> {
-  sharpModule ??= import(/* webpackIgnore: true */ /* turbopackIgnore: true */ SHARP)
+  sharpModule ??= import(
+    /* webpackIgnore: true */ /* turbopackIgnore: true */ SHARP
+  )
     .then((mod: { default?: SharpLike }) => (mod.default ?? mod) as SharpLike)
     .catch((error: unknown) => {
       sharpModule = null;
@@ -131,7 +123,6 @@ function loadSharp(): Promise<SharpLike> {
   return sharpModule;
 }
 
-/** The default decoder: `sharp`, resized inside libvips. */
 export const sharpDecoder: AmbientDecoder = async (bytes, size) => {
   const sharp = await loadSharp();
   const { data, info } = await sharp(bytes, { failOn: "none" })
@@ -143,7 +134,10 @@ export const sharpDecoder: AmbientDecoder = async (bytes, size) => {
   return { data, height: info.height, width: info.width };
 };
 
-async function readLimited(response: Response, maxBytes: number): Promise<Uint8Array> {
+async function readLimited(
+  response: Response,
+  maxBytes: number,
+): Promise<Uint8Array> {
   const declared = Number(response.headers.get("content-length"));
   if (declared > maxBytes) throw new Error("ambient/server: image too large");
   if (!response.body) return new Uint8Array(await response.arrayBuffer());
@@ -170,13 +164,15 @@ async function readLimited(response: Response, maxBytes: number): Promise<Uint8A
   return bytes;
 }
 
-/** The palette of image bytes (JPEG, PNG, WebP, AVIF… whatever the decoder reads). */
 export async function extractAmbientPaletteFromBytes(
   bytes: Uint8Array,
   options: Pick<AmbientServerOptions, "analysis" | "decode"> = {},
 ): Promise<AmbientPalette> {
   const analysis = resolveAnalysis(options.analysis);
-  const pixels = await (options.decode ?? sharpDecoder)(bytes, analysis.sampleSize);
+  const pixels = await (options.decode ?? sharpDecoder)(
+    bytes,
+    analysis.sampleSize,
+  );
   return analyzeAmbientPixels(pixels, analysis);
 }
 
@@ -204,9 +200,6 @@ async function fetchAndExtract(
   let current = url;
   for (let hop = 0; hop <= 5; hop++) {
     if (!allow(current)) return null;
-    // Checked on every hop. The fetch resolves the name again, so a host that
-    // changes its answer in between (DNS rebinding) is only ruled out by an
-    // `allow` list of hosts you trust.
     if (!(await reachesOnlyPublic(current, options.resolve))) return null;
     const response = await doFetch(current, {
       ...options.init,
@@ -230,14 +223,6 @@ async function fetchAndExtract(
   return null;
 }
 
-/**
- * Fetches an image and returns its palette, or `null` when it cannot be
- * fetched or decoded. `source` is the URL, so a client theme given the same
- * image and this palette as `initialPalette` does not extract it again.
- *
- * Wrap it in the app's cache (`"use cache"`, `unstable_cache`…) to keep
- * palettes across requests; an in-process cache is kept as well.
- */
 export async function extractAmbientPalette(
   src: string | URL,
   options: AmbientServerOptions = {},

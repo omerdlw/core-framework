@@ -1,20 +1,10 @@
 "use client";
 
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/utils";
 import { Spinner } from "@/atoms";
 import { applyVideoPlaybackState } from "../playback";
-import {
-  getYouTubeStreamUrl,
-  getYouTubeThumbnailUrl,
-} from "./parse";
+import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "./parse";
 import { useYouTubeIframePlayer } from "./iframe";
 import { type YouTubeBackgroundPlayerProps } from "../types";
 

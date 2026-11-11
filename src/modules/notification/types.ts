@@ -79,10 +79,7 @@ export interface NotificationPageApi {
 export type NotificationThemeSlot =
   "layer" | "toast" | "toastDocked" | "toastMessage";
 
-/** The motion a toast plays, written by the app in its notification theme. */
 export interface NotificationMotion {
-  /** `hidden` → `visible` → `exit`. */
   toast: Variants;
-  /** The toast's own transition, for state changes a variant doesn't time. */
   transition: Transition;
 }

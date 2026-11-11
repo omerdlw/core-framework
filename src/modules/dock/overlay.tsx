@@ -82,21 +82,11 @@ import {
   type DockActionSlot,
 } from "./cards";
 import { type DockCommandEntry } from "./runtime/commands";
-import {
-  getLineClampStyle,
-  splitStyle,
-  getImageIconStyle,
-} from "./styles";
-import {
-  useDockActionClass,
-  useDockTheme,
-} from "./hooks";
+import { getLineClampStyle, splitStyle, getImageIconStyle } from "./styles";
+import { useDockActionClass, useDockTheme } from "./hooks";
 import { useDockActions } from "./context";
 import { isValidComponentType, formatMediaTime } from "./helpers";
-import {
-  DOCK_HUD_RENDER_MODE,
-  DOCK_SURFACE_PHASE,
-} from "./constants";
+import { DOCK_HUD_RENDER_MODE, DOCK_SURFACE_PHASE } from "./constants";
 import { useDockHudViewModel } from "./hud";
 import { useDockBreadcrumbsCardModel } from "./routing/breadcrumbs";
 import { useDockModel } from "./runtime/dock";
@@ -588,11 +578,6 @@ export const DockCardHeader = memo(function DockCardHeader({
   const theme = useDockTheme();
   return (
     <div className={theme.slots.header}>
-      {/*
-       * Only the identity (icon, title, description) swaps when the item
-       * changes. The command bar sits outside that keyed block, so its
-       * commands animate only when the commands themselves change.
-       */}
       <div className={theme.slots.headerRow}>
         <div style={HEADER_IDENTITY_STYLE}>
           <AnimatePresence mode="popLayout" initial={false}>
@@ -1414,8 +1399,6 @@ export function StandardItemContent({
   pathname,
 }: StandardItemContentProps) {
   const dockMotion = useDockMotion();
-  // One element plays the action's whole life: arriving, dismissed in place
-  // when a surface opens from it, and leaving when it goes.
   const actionVariants = useMemo(
     () => ({
       ...dockMotion.variants.textCrossfade,

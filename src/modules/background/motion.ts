@@ -2,16 +2,12 @@ import { type Transition } from "motion/react";
 import { cssEasing } from "@/tokens";
 import { useModuleMotion } from "@/theme";
 import { backgroundTheme } from "./constants";
-import {
-  type BackgroundAnimationConfig,
-  type BackgroundMotion,
-} from "./types";
+import { type BackgroundAnimationConfig, type BackgroundMotion } from "./types";
 
 export function useBackgroundMotion() {
   return useModuleMotion(backgroundTheme);
 }
 
-// A page's own animation wins field by field over the app's background motion.
 export function getBackgroundMotionConfig(
   motion: BackgroundMotion,
   animation?: BackgroundAnimationConfig | null,
@@ -30,8 +26,7 @@ export function getBackgroundExitTransition(
   config: ReturnType<typeof getBackgroundMotionConfig>,
 ): Transition {
   const own = config.exit.transition as
-    | { duration?: number; ease?: unknown }
-    | undefined;
+    { duration?: number; ease?: unknown } | undefined;
   const fallback = motion.exit.transition as { ease?: unknown } | undefined;
   const factor = Number.isFinite(config.exitDurationFactor)
     ? Math.max(0, config.exitDurationFactor)
@@ -41,8 +36,7 @@ export function getBackgroundExitTransition(
     delay: 0,
     duration:
       own?.duration ??
-      (config.transition.duration ?? motion.transition.duration ?? 0) *
-        factor,
+      (config.transition.duration ?? motion.transition.duration ?? 0) * factor,
     ease: own?.ease ?? fallback?.ease,
   } as Transition;
 }

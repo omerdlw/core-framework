@@ -23,8 +23,6 @@ interface CoreProviderSlots {
   overlays?: ReactNode;
 }
 
-// Every module's backdrop and overlay plays under the app's reduced-motion
-// policy; app content outside the modules keeps its own motion settings.
 function ModuleBoundary({
   children,
   name,

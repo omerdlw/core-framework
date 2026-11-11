@@ -70,9 +70,7 @@ function getObservedHeight(
   element: HTMLElement | null,
 ): number {
   const rawBorderBoxSize = entry?.borderBoxSize as
-    | ReadonlyArray<ResizeObserverSize>
-    | ResizeObserverSize
-    | undefined;
+    ReadonlyArray<ResizeObserverSize> | ResizeObserverSize | undefined;
   const borderBoxSize = Array.isArray(rawBorderBoxSize)
     ? rawBorderBoxSize[0]
     : (rawBorderBoxSize as ResizeObserverSize | undefined);
@@ -218,9 +216,6 @@ export function useDockHeightController({
       rafRef.current = null;
     }
 
-    // While a surface opens and closes, the card faces the page with its
-    // header and action, so it keeps the page's measured size rather than
-    // dropping to the bare header in between.
     const { content } = heightRef.current;
     const height = getContainerHeight({
       cardContentHeight: content,

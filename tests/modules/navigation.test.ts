@@ -152,7 +152,11 @@ describe("createNavigator", () => {
     assert.equal(location, "/b");
     assert.deepEqual(
       events.map((event) => event.type),
-      [NAVIGATION_EVENTS.START, NAVIGATION_EVENTS.COMMIT, NAVIGATION_EVENTS.END],
+      [
+        NAVIGATION_EVENTS.START,
+        NAVIGATION_EVENTS.COMMIT,
+        NAVIGATION_EVENTS.END,
+      ],
     );
     assert.equal(events[2].payload.trip.status, "completed");
   });
@@ -388,9 +392,12 @@ describe("createNavigator", () => {
       ran.push("history");
       return gate.promise;
     });
-    navigator.hold(() => {
-      ran.push("links only");
-    }, { history: false });
+    navigator.hold(
+      () => {
+        ran.push("links only");
+      },
+      { history: false },
+    );
     assert.equal(navigator.holdsHistory(), true);
 
     let replayed = 0;
@@ -631,8 +638,14 @@ describe("navigation module", () => {
       gate.resolve();
       await pending;
     });
-    assert.deepEqual(navigationTestState.routerCalls, [["push", "/b", undefined]]);
-    assert.equal(seen.arrival?.payload.palette, "warm", "loading.tsx can read it");
+    assert.deepEqual(navigationTestState.routerCalls, [
+      ["push", "/b", undefined],
+    ]);
+    assert.equal(
+      seen.arrival?.payload.palette,
+      "warm",
+      "loading.tsx can read it",
+    );
 
     navigationTestState.pathname = "/b";
     window.history.replaceState(null, "", "/b");
@@ -667,7 +680,9 @@ describe("navigation module", () => {
     await act(async () => {
       assert.equal(await seen.dock.navigate("/b"), true);
     });
-    assert.deepEqual(navigationTestState.routerCalls, [["push", "/b", undefined]]);
+    assert.deepEqual(navigationTestState.routerCalls, [
+      ["push", "/b", undefined],
+    ]);
     assert.equal(seen.active?.source, "dock");
     assert.equal(seen.dock.activeTransaction?.id, seen.active?.id);
   });
@@ -688,7 +703,9 @@ describe("navigation module", () => {
     await act(async () => {
       assert.equal(await seen.dock.navigate("/b"), true);
     });
-    assert.deepEqual(navigationTestState.routerCalls, [["push", "/b", undefined]]);
+    assert.deepEqual(navigationTestState.routerCalls, [
+      ["push", "/b", undefined],
+    ]);
     assert.equal(seen.dock.activeTransaction?.to, "/b");
     assert.equal(seen.dock.activeTransaction?.status, "pending");
 
@@ -706,9 +723,8 @@ describe("navigation module", () => {
       seen.dock = useDockNavigation();
       return null;
     }
-    const { useDockGuard } = await import(
-      "../../src/modules/dock/routing/guards.ts"
-    );
+    const { useDockGuard } =
+      await import("../../src/modules/dock/routing/guards.ts");
     function Guard() {
       useDockGuard({ when: true, message: "Unsaved" });
       return null;
@@ -739,7 +755,9 @@ describe("navigation module", () => {
     await act(async () => {
       (guardSeen as any).onConfirm();
     });
-    assert.deepEqual(navigationTestState.routerCalls, [["push", "/b", undefined]]);
+    assert.deepEqual(navigationTestState.routerCalls, [
+      ["push", "/b", undefined],
+    ]);
     off();
   });
 });

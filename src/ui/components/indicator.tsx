@@ -14,16 +14,8 @@ import {
 import { LayoutGroup, motion } from "motion/react";
 import { useUi, useUiMotion } from "../provider";
 
-/*
- * Indicators: a fill that slides after the pointer or the choice, on the ui's
- * `follow` motion. `SlidingHighlight` uses shared layout (one per group, by
- * `layoutId`); `SlidingPill` measures the chosen element and moves to it, for
- * a strip that scrolls.
- */
-
 const INSTANT = { duration: 0 } as const;
 
-/** A shared-layout fill under the active row of a group. */
 export function SlidingHighlight({
   className,
   layoutId,
@@ -47,18 +39,12 @@ export function SlidingHighlight({
 }
 
 export interface PillBox {
-  /** Set when the strip wraps onto rows: the pill then follows y and height too. */
   height?: number;
   width: number;
   x: number;
   y?: number;
 }
 
-/**
- * Measures the element matching `selector` inside the list, again when `key`
- * changes. `wrapping` also measures the row (y, height), for a list that can
- * break onto several rows or stack; its pill then needs no `inset-y`.
- */
 export function useSlidingPill<T extends HTMLElement>(
   selector: string,
   key: unknown,
@@ -102,7 +88,6 @@ export function useSlidingPill<T extends HTMLElement>(
   return { box, ref };
 }
 
-/** The fill drawn under the measured element. */
 export function SlidingPill({
   box,
   className,
@@ -132,15 +117,6 @@ export function SlidingPill({
   );
 }
 
-/*
- * A list of rows shares one hover: a single fill slides after the pointer or
- * the keyboard focus, so no row draws a hover background of its own.
- *
- *   <HighlightGroup>
- *     {rows.map((row) => <Row key={row.id} … />)}   // each calls useHighlight(row.id)
- *   </HighlightGroup>
- */
-
 interface Tracker {
   active: string | null;
   focus: (key: string | null) => void;
@@ -150,7 +126,6 @@ interface Tracker {
 
 const HighlightContext = createContext<Tracker | null>(null);
 
-/** Holds the shared highlight for the rows inside it. */
 export function HighlightGroup({
   children,
   className,
@@ -182,7 +157,6 @@ export function HighlightGroup({
   );
 }
 
-/** The highlight for one row: render `node` inside it and spread `props` on it. */
 export function useHighlight(key: string, className?: string) {
   const tracker = use(HighlightContext);
   return {
@@ -203,7 +177,6 @@ export function useHighlight(key: string, className?: string) {
   };
 }
 
-/** Clears the highlight when the pointer enters a part that is not a row. */
 export function useHighlightReset() {
   const tracker = use(HighlightContext);
   return { onPointerEnter: () => tracker?.hover(null) };

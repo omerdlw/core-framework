@@ -4,9 +4,7 @@ import assert from "node:assert/strict";
 import { act, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RegistryProvider } from "../../src/core/kernel/index.ts";
-import {
-  BackgroundProvider,
-} from "../../src/modules/background/context.tsx";
+import { BackgroundProvider } from "../../src/modules/background/context.tsx";
 import {
   useBackgroundActions,
   useBackgroundState,
@@ -544,7 +542,8 @@ describe("background utils", () => {
 
   describe("gradient and fade mask generation", () => {
     test("generateBaseGradient creates direction-aware linear gradient", async () => {
-      const { generateBaseGradient } = await import("../../src/modules/background/visual.ts");
+      const { generateBaseGradient } =
+        await import("../../src/modules/background/visual.ts");
       const leftGrad = generateBaseGradient("left", "#111");
       assert.ok(leftGrad.startsWith("linear-gradient(to right, #111 0%"));
 
@@ -553,16 +552,26 @@ describe("background utils", () => {
     });
 
     test("generateEdgeGradient creates softened edge gradients", async () => {
-      const { generateEdgeGradient } = await import("../../src/modules/background/visual.ts");
+      const { generateEdgeGradient } =
+        await import("../../src/modules/background/visual.ts");
       const leftGrad = generateEdgeGradient("left", "#000");
-      assert.ok(leftGrad.startsWith("linear-gradient(to right, color-mix(in srgb, #000 95%, transparent) 0%"));
+      assert.ok(
+        leftGrad.startsWith(
+          "linear-gradient(to right, color-mix(in srgb, #000 95%, transparent) 0%",
+        ),
+      );
 
       const rightGrad = generateEdgeGradient("right", "#fff");
-      assert.ok(rightGrad.startsWith("linear-gradient(to left, color-mix(in srgb, #fff 95%, transparent) 0%"));
+      assert.ok(
+        rightGrad.startsWith(
+          "linear-gradient(to left, color-mix(in srgb, #fff 95%, transparent) 0%",
+        ),
+      );
     });
 
     test("generateSmoothstepStops creates smooth perceptual transitions", async () => {
-      const { generateSmoothstepStops } = await import("../../src/modules/background/visual.ts");
+      const { generateSmoothstepStops } =
+        await import("../../src/modules/background/visual.ts");
       const inStops = generateSmoothstepStops(25, "in", "black");
       assert.equal(inStops.length, 7);
       assert.equal(inStops[0], "transparent 0.0%");
@@ -574,15 +583,24 @@ describe("background utils", () => {
     });
 
     test("getEdgeFadeMask returns undefined when disabled and linear-gradient when enabled", async () => {
-      const { getEdgeFadeMask } = await import("../../src/modules/background/visual.ts");
-      assert.equal(getEdgeFadeMask({ leftPercent: 0, rightPercent: 0 }), undefined);
+      const { getEdgeFadeMask } =
+        await import("../../src/modules/background/visual.ts");
+      assert.equal(
+        getEdgeFadeMask({ leftPercent: 0, rightPercent: 0 }),
+        undefined,
+      );
 
-      const mask = getEdgeFadeMask({ leftPercent: 20, rightPercent: 20, color: "#000" });
+      const mask = getEdgeFadeMask({
+        leftPercent: 20,
+        rightPercent: 20,
+        color: "#000",
+      });
       assert.ok(mask?.startsWith("linear-gradient(to right,"));
     });
 
     test("resolveGradientSettings resolves numeric, string, object, and boolean inputs", async () => {
-      const { resolveGradientSettings } = await import("../../src/modules/background/visual.ts");
+      const { resolveGradientSettings } =
+        await import("../../src/modules/background/visual.ts");
       const disabled = resolveGradientSettings({ fadeEdges: false });
       assert.equal(disabled.enabled, false);
       assert.equal(disabled.leftPercent, 0);
@@ -595,11 +613,16 @@ describe("background utils", () => {
       const str = resolveGradientSettings({ fadeEdges: "18.5" });
       assert.equal(str.leftPercent, 18.5);
 
-      const obj = resolveGradientSettings({ fadeEdges: { left: 15, right: 35 } });
+      const obj = resolveGradientSettings({
+        fadeEdges: { left: 15, right: 35 },
+      });
       assert.equal(obj.leftPercent, 15);
       assert.equal(obj.rightPercent, 35);
 
-      const fromSliders = resolveGradientSettings({ leftGradient: 3, rightGradient: 2 });
+      const fromSliders = resolveGradientSettings({
+        leftGradient: 3,
+        rightGradient: 2,
+      });
       assert.ok(fromSliders.leftPercent > 0);
       assert.ok(fromSliders.leftOpacity > 0);
     });

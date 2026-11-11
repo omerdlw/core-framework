@@ -39,11 +39,7 @@ import {
   type DockSlotContent,
   type StandardItemContentProps,
 } from "./types";
-import {
-  DOCK_SURFACE_PHASE,
-  DOCK_EVENTS,
-  PLAYBACK_RATES,
-} from "./constants";
+import { DOCK_SURFACE_PHASE, DOCK_EVENTS, PLAYBACK_RATES } from "./constants";
 import { type DockCommandEntry } from "./runtime/commands";
 import {
   resolveDockHeaderKey,
@@ -55,11 +51,7 @@ import {
   useElementHeight,
 } from "./layout";
 import { useDockHasMedia, useDockMedia, useDockMediaActions } from "./context";
-import {
-  getDockCardDelay,
-  getDockPhaseMotion,
-  useDockMotion,
-} from "./motion";
+import { getDockCardDelay, getDockPhaseMotion, useDockMotion } from "./motion";
 import { resolveDockRoutePolicy, useRoutePrefetch } from "./routing/navigation";
 
 const bannerPreloadCache = new Set<string>();
@@ -133,9 +125,6 @@ function sortToolbarActionsByOrder(
   );
 }
 
-// A surface's card still shows the page it was opened from while the page's
-// action leaves and again while the page comes back; in between it shows the
-// surface.
 const PAGE_FACING_SURFACE_PHASES: ReadonlySet<string> = new Set([
   DOCK_SURFACE_PHASE.DISMISSING_ACTION,
   DOCK_SURFACE_PHASE.COLLAPSING_BODY,
@@ -329,8 +318,6 @@ export function useActionSlot(
   { isTop = false }: { isTop?: boolean } = {},
 ): DockActionSlot {
   const { isLoading, path, isStatus, isSurface, surfacePhase } = item;
-  // A surface marks the card an overlay; facing the page, it is the page's,
-  // with the page's action.
   const isOverlay = Boolean(item.isOverlay && !isSurface);
   const action = isSurface ? item.restingAction : item.action;
   const showsSurface = isSurfaceLayerShown({ isSurface, surfacePhase });
@@ -346,9 +333,6 @@ export function useActionSlot(
     if (isTop && hasMedia && ownsPathname(path, pathname)) {
       return { kind: "media" };
     }
-    // A page card that has left the top keeps no action: mid-navigation the
-    // stack reorders before the pathname moves, and the card it pushed back
-    // still matches the old path.
     if (!isTop && !isOverlay) return null;
 
     if (
@@ -535,9 +519,6 @@ export function useDockCardItemModel({
     };
   }, [effectiveStyle, isActive, isStatusCard, showBorder, theme]);
   const showsSurfaceLayer = isSurfaceLayerShown(item);
-  // The action stays on the card while a surface opens from it, leaving in
-  // place, and is back on it while the surface closes, so the card resizes
-  // once, straight between its two sizes.
   const renderedActionSlot =
     showsSurfaceLayer || isTopHudActive ? null : actionSlot;
   const isActionDismissed = Boolean(
@@ -630,8 +611,8 @@ export function useDockCardItemModel({
   );
   const isCollapsedGhostCard = Boolean(
     !expanded &&
-      position >= dockMotion.deck.stacking.visible.stack &&
-      !isExtensionShelf,
+    position >= dockMotion.deck.stacking.visible.stack &&
+    !isExtensionShelf,
   );
   const {
     className: cardClassName,

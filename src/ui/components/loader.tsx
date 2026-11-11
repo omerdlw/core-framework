@@ -6,11 +6,9 @@ import { useUi } from "../provider";
 import { Icon } from "./icon";
 
 export interface LoaderProps {
-  /** Content whose size the loader keeps while it plays over it. */
   children?: ReactNode;
   className?: string;
   color?: string;
-  /** Dot height in px. */
   size?: number;
 }
 
@@ -30,7 +28,6 @@ function Dots({ color, size }: { color?: string; size: number }) {
   );
 }
 
-/** Three bouncing dots, inline at 1em, or laid over `children`. */
 export function Loader({ children, className, color, size = 14 }: LoaderProps) {
   const { cn, labels, parts } = useUi();
   const over = Boolean(children);
@@ -56,12 +53,10 @@ export function Loader({ children, className, color, size = 14 }: LoaderProps) {
 
 export interface SpinnerProps {
   className?: string;
-  /** Overrides the ui's `icons.spinner`. */
   icon?: string;
   size?: number;
 }
 
-/** A spinning glyph, for a loader that sits beside text. */
 export function Spinner({ className, icon, size = 15 }: SpinnerProps) {
   const { icons, labels, parts } = useUi();
   return (

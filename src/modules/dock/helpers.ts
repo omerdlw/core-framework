@@ -4,10 +4,7 @@ import {
   isObject as isObjectLike,
   type CoreSchedulerOptions,
 } from "@/utils";
-import {
-  type DockComponent,
-  type DockHudDescriptor,
-} from "./types";
+import { type DockComponent, type DockHudDescriptor } from "./types";
 
 export function toObject(value: unknown): Record<string, unknown> {
   return isObjectLike(value) ? (value as Record<string, unknown>) : {};

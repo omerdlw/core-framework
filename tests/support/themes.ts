@@ -18,7 +18,10 @@ export const loadingThemeConfig = defineTheme(loadingTheme, {
   },
 });
 
-export const primitivesThemeConfig = { id: "primitives", config: { slots: {} } };
+export const primitivesThemeConfig = {
+  id: "primitives",
+  config: { slots: {} },
+};
 export const ambientThemeConfig = {
   id: "ambient",
   config: {

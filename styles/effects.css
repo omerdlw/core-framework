@@ -1,15 +1,3 @@
-/*
- * Effects the components compose. Each is a class a recipe names, so an app
- * can use one on its own elements too.
- *
- *   .ui-sheen           a glint that crosses the primary action on hover
- *   .ui-develop         an element coming out of the soft as it mounts
- *   .ui-turn            a chevron that turns over
- *   .ui-skeleton        a placeholder that shimmers (`-soft` rests, `.ui-pulse` breathes)
- *   .ui-dots / .ui-dot  three bouncing dots
- *   .ui-tooltip         a tip that opens and closes; `.ui-tooltip-label` sweeps in
- */
-
 @layer components {
   .ui-sheen {
     isolation: isolate;
@@ -59,7 +47,6 @@
     animation: ui-develop var(--step-0) var(--ease-out-cream) both;
   }
 
-  /* Reduced motion: no glint, and a part still comes up by opacity alone. */
   @keyframes ui-develop-quiet {
     from {
       opacity: 0;
@@ -81,8 +68,6 @@
       rotate var(--step-1) var(--ease-out-cream);
   }
 
-  /* ── Skeleton ──────────────────────────────────────────────────────── */
-
   .ui-skeleton,
   .ui-skeleton-soft {
     overflow: hidden;
@@ -94,7 +79,6 @@
   .ui-skeleton-soft {
     background-color: var(--fill);
   }
-  /* the shimmer crosses the stronger block only */
   .ui-skeleton::after {
     background: linear-gradient(90deg, transparent, var(--fill), transparent);
     content: "";
@@ -107,9 +91,6 @@
     .ui-skeleton::after {
       animation: ui-shimmer var(--step-3) var(--ease-in-out-cubic) infinite;
     }
-    /* Off screen (an image still waiting for its lazy load) the shimmer
-       rests: a hundred running glints are a hundred layers repainted every
-       frame, for nobody. */
     .ui-skeleton[data-far]::after {
       animation: none;
     }
@@ -131,8 +112,6 @@
       opacity: 0.4;
     }
   }
-
-  /* ── Loader ────────────────────────────────────────────────────────── */
 
   .ui-dots {
     align-items: center;
@@ -174,8 +153,6 @@
       opacity: 1;
     }
   }
-
-  /* ── Tooltip ───────────────────────────────────────────────────────── */
 
   .ui-tooltip-label {
     -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
@@ -220,8 +197,6 @@
     }
   }
 
-  /* Reduced motion: the dots breathe, the tip fades without scale or sweep,
-     a chevron still turns but at once. */
   @media (prefers-reduced-motion: reduce) {
     .ui-dot {
       animation: ui-breathe 1.2s ease-in-out infinite both;

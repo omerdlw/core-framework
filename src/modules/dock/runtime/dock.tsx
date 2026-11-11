@@ -41,14 +41,8 @@ import {
   type DockRouteSnapshot,
   type DockViewBridge,
 } from "../types";
-import {
-  useDockKeyboard,
-  useDockRouteReset,
-} from "../dom";
-import {
-  useDockHeightController,
-  useDockViewport,
-} from "../layout";
+import { useDockKeyboard, useDockRouteReset } from "../dom";
+import { useDockHeightController, useDockViewport } from "../layout";
 import {
   DockContext,
   useDockActions,
@@ -92,8 +86,6 @@ export function useDockLayout({
       activeItem ?? null,
       pathname,
     );
-    // A held card may outlive its registration (the old page unmounted while
-    // the new one loads); it still goes on top.
     const isHeldOutsideStack =
       registeredIndex === -1 && Boolean(activeItem?.isRoutePending);
     const items = isHeldOutsideStack

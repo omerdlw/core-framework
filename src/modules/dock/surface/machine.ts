@@ -373,7 +373,6 @@ function createTransitionResult(
   return { state, effects: [...effects] };
 }
 
-// Phase timings are the app's, in seconds; the scheduler counts whole ms.
 function createScheduledTransition(
   seconds: number,
   label: string,

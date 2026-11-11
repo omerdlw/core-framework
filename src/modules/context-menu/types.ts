@@ -252,16 +252,10 @@ export interface ContextMenuPageApi extends ContextMenuActions {
   set: (contextMenu: ContextMenuPageConfig | null) => void;
 }
 
-/** The motion a context menu plays, written by the app in its context-menu theme. */
 export interface ContextMenuMotion {
-  /** The menu surface: `hidden` → `visible` → `exit`. */
   pop: Variants;
-  /** The header inside the menu: `hidden` → `visible`. */
   content: Variants;
-  /** Each row: `hidden` → `visible`; `visible` may be a function of the row index. */
   item: Variants;
-  /** The pressed state of an action row. */
   itemTap: TargetAndTransition;
-  /** An action row's own transition (used by `itemTap`). */
   itemTransition: Transition;
 }

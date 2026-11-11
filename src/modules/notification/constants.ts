@@ -16,8 +16,10 @@ export const SESSION_EXPIRED_MESSAGE = USER_MESSAGES.unauthorized;
 
 export const DOCK_STACK_ELEMENT_ID = "dock-card-stack";
 
-export const notificationTheme =
-  defineThemeSpec<NotificationThemeSlot, NotificationMotion>("notification");
+export const notificationTheme = defineThemeSpec<
+  NotificationThemeSlot,
+  NotificationMotion
+>("notification");
 
 export const INITIAL_NOTIFICATION_STATE: NotificationState = Object.freeze({
   notifications: {},
@@ -28,4 +30,3 @@ export const INERT_NOTIFICATION_ACTIONS: NotificationActions = Object.freeze({
   dismissNotification: () => {},
   showNotification: () => null,
 });
-

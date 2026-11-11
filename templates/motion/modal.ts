@@ -1,4 +1,7 @@
-import type { ModalMotion, ModalPositionMotion } from "@omerdlw/base-framework/modules/modal";
+import type {
+  ModalMotion,
+  ModalPositionMotion,
+} from "@omerdlw/base-framework/modules/modal";
 import { motion, tween } from "./tokens";
 
 const { durations, easings, springs } = motion;
@@ -8,7 +11,6 @@ const REST = "translate3d(0, 0px, 0) scale(1)";
 const surfaceEnter = tween(durations.slow, easings.enter);
 const surfaceExit = tween(durations.fast, easings.exit);
 
-// Edge sheets slide fully in from their edge.
 const sheet = (offset: string): ModalPositionMotion => ({
   variants: {
     hidden: { opacity: 0, transform: offset },
@@ -17,7 +19,6 @@ const sheet = (offset: string): ModalPositionMotion => ({
   },
 });
 
-// A header or footer row settles a little after the dialog, from its own side.
 const row = (offset: string, delay: number) => ({
   hidden: { opacity: 0, transform: offset },
   visible: {
@@ -32,7 +33,6 @@ const row = (offset: string, delay: number) => ({
   },
 });
 
-// defineTheme(modalTheme, { slots, motion: modalMotion })
 export const modalMotion: ModalMotion = {
   backdrop: {
     hidden: { opacity: 0 },
@@ -57,7 +57,10 @@ export const modalMotion: ModalMotion = {
   positions: {
     center: {
       variants: {
-        hidden: { opacity: 0, transform: "translate3d(0px, 12px, 0) scale(0.95)" },
+        hidden: {
+          opacity: 0,
+          transform: "translate3d(0px, 12px, 0) scale(0.95)",
+        },
         visible: {
           opacity: 1,
           transform: REST,

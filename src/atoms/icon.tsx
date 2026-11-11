@@ -3,8 +3,10 @@
 import { Icon as IconifyIcon } from "@iconify-icon/react";
 import type { ComponentProps, CSSProperties } from "react";
 
-export interface IconProps
-  extends Omit<ComponentProps<typeof IconifyIcon>, "icon" | "size"> {
+export interface IconProps extends Omit<
+  ComponentProps<typeof IconifyIcon>,
+  "icon" | "size"
+> {
   icon: string | ComponentProps<typeof IconifyIcon>["icon"];
   size?: number | string;
   color?: string;

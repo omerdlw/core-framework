@@ -36,9 +36,7 @@ export function Tooltip({
       onOpenChange={onOpenChange}
       open={open}
     >
-      <TooltipPrimitive.Trigger asChild>
-        {children}
-      </TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
 
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content

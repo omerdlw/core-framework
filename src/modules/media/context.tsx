@@ -4,11 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getOrCreateGlobalContext } from "@/kernel";
 import { createStore } from "@/utils";
 import { DEFAULT_MEDIA_STATE } from "./constants";
-import {
-  bindFollowers,
-  sameElements,
-  toggleElement,
-} from "./playback";
+import { bindFollowers, sameElements, toggleElement } from "./playback";
 import {
   createMediaState,
   findDisplacedAudio,

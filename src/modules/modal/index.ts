@@ -1,11 +1,7 @@
 "use client";
 
 export { Modal, ModalContainer } from "./overlay";
-export {
-  ModalContext,
-  ModalProvider,
-  type ModalContextValue,
-} from "./context";
+export { ModalContext, ModalProvider, type ModalContextValue } from "./context";
 export {
   useModal,
   useModalActions,
@@ -41,9 +37,5 @@ export {
   getFocusableElements,
   trapFocus,
 } from "./dom";
-export {
-  hasSlotContent,
-  isHeaderConfig,
-  resolveHeaderActions,
-} from "./header";
+export { hasSlotContent, isHeaderConfig, resolveHeaderActions } from "./header";
 export type * from "./types";

@@ -1,10 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// tsc keeps the `@/` path alias in the declarations it emits, and consumers
-// cannot resolve it (or resolve it to their own `@/`). Rewrite every `@/x`
-// specifier in dist/**/*.d.ts to a path relative to the file.
-
 const DIST = path.resolve("dist");
 const ALIAS = /(\bfrom\s+|\bimport\(\s*)(["'])@\/([^"']+)\2/g;
 
