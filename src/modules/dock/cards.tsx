@@ -346,6 +346,10 @@ export function useActionSlot(
     if (isTop && hasMedia && ownsPathname(path, pathname)) {
       return { kind: "media" };
     }
+    // A page card that has left the top keeps no action: mid-navigation the
+    // stack reorders before the pathname moves, and the card it pushed back
+    // still matches the old path.
+    if (!isTop && !isOverlay) return null;
 
     if (
       !shouldRenderInlineAction(

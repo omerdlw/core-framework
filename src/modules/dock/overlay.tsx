@@ -548,6 +548,12 @@ export const DockIcon = memo(function DockIcon({
   );
 });
 
+const HEADER_IDENTITY_STYLE = {
+  flex: "1 1 0%",
+  minWidth: 0,
+  position: "relative",
+} as const;
+
 export const DockCardHeader = memo(function DockCardHeader({
   item: propItem,
   link,
@@ -582,80 +588,91 @@ export const DockCardHeader = memo(function DockCardHeader({
   const theme = useDockTheme();
   return (
     <div className={theme.slots.header}>
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div
-          key={headerKey}
-          variants={dockMotion.variants.headerSwap}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          transition={dockMotion.transitions.headerSwap}
-          className={theme.slots.headerRow}
-          style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
-        >
-          <div className={theme.slots.headerIcon}>
-            {item.icon ? (
-              <DockIcon
-                animated={false}
-                icon={
-                  showVideoIcon
-                    ? isPlaying
-                      ? "mdi:pause"
-                      : "mdi:play"
-                    : item.icon
-                }
-                iconOverlay={effectiveIconOverlay}
-                style={itemStyle.icon}
-                onClick={isIconInteractive ? handleIconClick : null}
-                ariaLabel={
-                  isIconInteractive
-                    ? showVideoIcon
-                      ? isPlaying
-                        ? "Pause"
-                        : "Play"
-                      : "Open"
-                    : undefined
-                }
-              />
-            ) : (
-              <div className={theme.slots.headerIconEmpty} />
-            )}
-            {!showVideoIcon && !effectiveIconOverlay && <Badge badge={badge} />}
-          </div>
-
-          <div className={theme.slots.headerBody}>
-            <div className={theme.slots.headerText}>
-              <div className={theme.slots.headerTitleRow}>
-                <DockTitle
-                  animated={false}
-                  text={item.title || item.name}
-                  style={{
-                    ...itemStyle.title,
-                    className: cn(
-                      itemStyle.title?.className,
-                      theme.slots.headerTitle,
-                    ),
-                  }}
-                />
+      {/*
+       * Only the identity (icon, title, description) swaps when the item
+       * changes. The command bar sits outside that keyed block, so its
+       * commands animate only when the commands themselves change.
+       */}
+      <div className={theme.slots.headerRow}>
+        <div style={HEADER_IDENTITY_STYLE}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={headerKey}
+              variants={dockMotion.variants.headerSwap}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={dockMotion.transitions.headerSwap}
+              className={theme.slots.headerRow}
+              style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+            >
+              <div className={theme.slots.headerIcon}>
+                {item.icon ? (
+                  <DockIcon
+                    animated={false}
+                    icon={
+                      showVideoIcon
+                        ? isPlaying
+                          ? "mdi:pause"
+                          : "mdi:play"
+                        : item.icon
+                    }
+                    iconOverlay={effectiveIconOverlay}
+                    style={itemStyle.icon}
+                    onClick={isIconInteractive ? handleIconClick : null}
+                    ariaLabel={
+                      isIconInteractive
+                        ? showVideoIcon
+                          ? isPlaying
+                            ? "Pause"
+                            : "Play"
+                          : "Open"
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <div className={theme.slots.headerIconEmpty} />
+                )}
+                {!showVideoIcon && !effectiveIconOverlay && (
+                  <Badge badge={badge} />
+                )}
               </div>
-              {Boolean(description) && (
-                <DockDescription
-                  animated={false}
-                  text={description}
-                  style={itemStyle.description}
-                />
-              )}
-            </div>
-            {isTop && !item.isStatus ? (
-              <DockCommandBar
-                activeItem={activeItem || item}
-                contextCommands={contextCommands}
-                hasBanner={hasBanner}
-              />
-            ) : null}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+
+              <div className={theme.slots.headerBody}>
+                <div className={theme.slots.headerText}>
+                  <div className={theme.slots.headerTitleRow}>
+                    <DockTitle
+                      animated={false}
+                      text={item.title || item.name}
+                      style={{
+                        ...itemStyle.title,
+                        className: cn(
+                          itemStyle.title?.className,
+                          theme.slots.headerTitle,
+                        ),
+                      }}
+                    />
+                  </div>
+                  {Boolean(description) && (
+                    <DockDescription
+                      animated={false}
+                      text={description}
+                      style={itemStyle.description}
+                    />
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {isTop && !item.isStatus ? (
+          <DockCommandBar
+            activeItem={activeItem || item}
+            contextCommands={contextCommands}
+            hasBanner={hasBanner}
+          />
+        ) : null}
+      </div>
     </div>
   );
 });
@@ -1262,14 +1279,9 @@ export const LoadingItemContent = memo(function LoadingItemContent() {
     <div className={theme.slots.loading}>
       <div className={cn(theme.slots.loadingIcon, dockMotion.skeleton)} />
       <div className={theme.slots.loadingText}>
+        <div className={cn(theme.slots.loadingTitle, dockMotion.skeleton)} />
         <div
-          className={cn(theme.slots.loadingTitle, dockMotion.skeleton)}
-        />
-        <div
-          className={cn(
-            theme.slots.loadingDescription,
-            dockMotion.skeleton,
-          )}
+          className={cn(theme.slots.loadingDescription, dockMotion.skeleton)}
         />
       </div>
     </div>
@@ -1732,7 +1744,9 @@ export const DockCardItem = memo(function DockCardItem({
                   : "visible"
               }
               exit={layerExit}
-              transition={getDockPhaseMotion(dockMotion, item.surfacePhase).header}
+              transition={
+                getDockPhaseMotion(dockMotion, item.surfacePhase).header
+              }
               style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
               className={theme.slots.cardStandard}
             >
@@ -1841,7 +1855,9 @@ export const DockMediaControls = memo(function DockMediaControls({
 
       <div className={theme.slots.mediaGroup}>
         <motion.div
-          {...getDockActionMotionProps(dockMotion, { disabled: isDraggingVolume })}
+          {...getDockActionMotionProps(dockMotion, {
+            disabled: isDraggingVolume,
+          })}
           data-active={isDraggingVolume}
           className={theme.slots.mediaVolume}
         >
@@ -1893,9 +1909,12 @@ export const DockMediaControls = memo(function DockMediaControls({
               transition={dockMotion.transitions.press}
               style={{
                 left: `${effectiveVolume * 100}%`,
-                transition: getDockMediaVolumeThumbPositionTransition(dockMotion, {
-                  isDragging: isDraggingVolume,
-                }),
+                transition: getDockMediaVolumeThumbPositionTransition(
+                  dockMotion,
+                  {
+                    isDragging: isDraggingVolume,
+                  },
+                ),
               }}
             />
           </div>
@@ -2096,13 +2115,12 @@ export function Dock(): ReactPortal | null {
             activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
             activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
           ),
-          surfacePhase: activeItem?.isSurface
-            ? activeItem?.surfacePhase
-            : null,
+          surfacePhase: activeItem?.isSurface ? activeItem?.surfacePhase : null,
         })}
         transition={{
           default: dockStackTransition,
-          transform: getDockStackTransformTransition(dockMotion, 
+          transform: getDockStackTransformTransition(
+            dockMotion,
             activeItem?.isSurface ? activeItem?.surfacePhase : null,
             dockStackTransition,
           ),
