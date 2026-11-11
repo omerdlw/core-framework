@@ -8,6 +8,7 @@ export { useGlobalEvent } from "./use-global-event";
 export { useIsFullscreenStateActive } from "./use-fullscreen-state";
 export { useControllableState } from "./use-controllable-state";
 export { useHotkey, useEscapeKey } from "./use-hotkey";
+export { SCROLL_LOCK, useScrollLock } from "./use-scroll-lock";
 
 export type * from "./types";
 

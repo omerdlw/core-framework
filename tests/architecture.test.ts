@@ -29,6 +29,33 @@ describe("package architecture boundaries", () => {
     );
   });
 
+  test("src/ui must not import from @/modules", () => {
+    scanDir(
+      path.resolve("src/ui"),
+      (file) => /\.(ts|tsx)$/.test(file),
+      (fullPath, content) => {
+        assert.ok(!content.includes("@/modules"), `${fullPath} imports from @/modules`);
+      },
+    );
+  });
+
+  test("the server-safe ui entry never reaches React", () => {
+    const seen = new Set<string>();
+    const visit = (file: string) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      const content = fs.readFileSync(file, "utf8");
+      assert.ok(!/from "react"|from "motion\/react"|"use client"/.test(content), `${file} pulls React into ui/recipes`);
+      for (const match of content.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^;]*?from\s+"(\.[^"]+)"/gm)) {
+        const base = path.resolve(path.dirname(file), match[1]);
+        const next = [`${base}.ts`, `${base}.tsx`, path.join(base, "index.ts")].find((candidate) => fs.existsSync(candidate));
+        if (next) visit(next);
+      }
+    };
+    visit(path.resolve("src/ui/recipes.ts"));
+    assert.ok(seen.size > 3);
+  });
+
   test("src/kernel must not import from @/modules", () => {
     scanDir(
       path.resolve("src/kernel"),

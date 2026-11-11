@@ -1,0 +1,36 @@
+/*
+ * Time. One geometric ladder, `step(n) = 0.5s × φⁿ` (the same as `step()` in
+ * @omerdlw/base-framework/ui/recipes), and the curves the eases are named for.
+ * Every rung is scaled by `--tempo`, so a slower or quicker interface is one
+ * variable.
+ *
+ * Set at zero specificity (`:where`), so an app that writes the ladder itself,
+ * at build time or from a motion engine at runtime, wins without a fight.
+ */
+
+@layer base {
+  :where(:root) {
+    --step-n6: calc(28ms * var(--tempo, 1));
+    --step-n5: calc(45ms * var(--tempo, 1));
+    --step-n4: calc(73ms * var(--tempo, 1));
+    --step-n3: calc(118ms * var(--tempo, 1));
+    --step-n2: calc(191ms * var(--tempo, 1));
+    --step-n1: calc(309ms * var(--tempo, 1));
+    --step-0: calc(500ms * var(--tempo, 1));
+    --step-1: calc(809ms * var(--tempo, 1));
+    --step-2: calc(1309ms * var(--tempo, 1));
+    --step-3: calc(2118ms * var(--tempo, 1));
+    --step-4: calc(3427ms * var(--tempo, 1));
+    --step-5: calc(5545ms * var(--tempo, 1));
+    --step-6: calc(8972ms * var(--tempo, 1));
+
+    --curve-linear: cubic-bezier(0, 0, 1, 1);
+    --curve-fade: cubic-bezier(0.45, 0, 0.15, 1);
+    --curve-silk: cubic-bezier(0.5, 0.05, 0.1, 1);
+    --curve-pour: cubic-bezier(0.45, 0.08, 0.08, 1);
+    --curve-expo: cubic-bezier(0.36, 0.08, 0.08, 1);
+    --curve-glide: cubic-bezier(0.65, 0, 0.35, 1);
+    --curve-dolly: cubic-bezier(0.5, 0, 0.12, 1);
+    --curve-fall: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+}

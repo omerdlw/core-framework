@@ -36,6 +36,9 @@ Foundational Libraries & Primitives:
   ├─ @omerdlw/base-framework/result    (Functional Result<T, E> error handling: ok, err, createSafeAction)
   ├─ @omerdlw/base-framework/events    (Cross-cutting decoupled event bus: globalEvents, EVENT_TYPES)
   ├─ @omerdlw/base-framework/atoms     (Unstyled accessible UI atoms: Button, Icon, Spinner, Tooltip)
+  ├─ @omerdlw/base-framework/ui        (Styled, fully customizable components: Button, Input, Select, Switch, Checkbox, SegmentedControl, Carousel, …)
+  ├─ @omerdlw/base-framework/ui/recipes (Server-safe defineUi, recipes, createCn, tones)
+  ├─ @omerdlw/base-framework/styles.css (Design tokens, palettes, time ladder, interaction contract, effects)
   ├─ @omerdlw/base-framework/tokens    (Hardware GPU motion presets, easing curves, Z-index hierarchy)
   ├─ @omerdlw/base-framework/hooks     (useStore, useGlobalEvent, useClickOutside, useRequiredContext)
   ├─ @omerdlw/base-framework/utils     (cn, clamp, debounce, throttle, createStore, createScheduler, report)
@@ -54,6 +57,7 @@ Whether you are a software architect or an AI Pair Programmer (Antigravity, Curs
 | :--- | :--- | :--- |
 | **[`getting-started.md`](./getting-started.md)** | All Developers | Step-by-step Next.js 16 installation, Tailwind CSS v4 `@source` configuration, and root layout setup. |
 | **[`architecture-and-rules.md`](./architecture-and-rules.md)** | Architects & Agents | The package layer hierarchy, 10 inviolable rules, import boundaries, decision tree, anti-patterns. |
+| **[`ui.md`](./ui.md)** | Designers & Developers | The component library: `defineUi()`, recipes and overrides, `<UiProvider>`, tokens stylesheet, every component's parts and variants. |
 | **[`theming.md`](./theming.md)** | Designers & Developers | Visual customization guide: `defineThemeSpec()`, `defineTheme()`, `<ThemeProvider>`, and slot reference. |
 | **[`custom-modules.md`](./custom-modules.md)** | Advanced Developers | Authoring custom modules via `defineModule()`, topological dependencies, and `usePage()` augmentation. |
 | **[`core-engine.md`](./core-engine.md)** | Developers & Agents | `CoreProvider`, Theme engine, Event bus, Motion & Z-index tokens, Pure utils, scheduler, and reactive stores. |

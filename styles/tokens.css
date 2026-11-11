@@ -1,0 +1,151 @@
+/*
+ * Design tokens: the vocabulary.
+ *
+ * Every value a component may name lives here, as a Tailwind theme key.
+ * Colours are *roles* (`ink`, `fill`, `glass`, `primary`), never paint: their
+ * values come from the palette of the active theme (palette.css, or the
+ * app's own), so the dark
+ * and the light theme can each be art-directed on their own terms.
+ *
+ * `@theme inline` matters for colours: the utility reads the palette variable
+ * at the element, so a scope such as `.on-photo` can swap the palette for its
+ * subtree without redeclaring the Tailwind keys.
+ */
+
+@theme {
+  --color-*: initial;
+
+  --font-*: initial;
+
+  --text-*: initial;
+  --type-micro: 10px;
+  --type-micro--line-height: 12px;
+  --type-label: 11px;
+  --type-label--line-height: 16px;
+  --type-meta: 12px;
+  --type-meta--line-height: 16px;
+  --type-control: 13px;
+  --type-control--line-height: 16px;
+  --type-body: 14px;
+  --type-body--line-height: 20px;
+  --type-copy: 15px;
+  --type-copy--line-height: 24px;
+  --type-base: 16px;
+  --type-base--line-height: 24px;
+  --type-prose: 16px;
+  --type-prose--line-height: 28px;
+  --type-prose-wide: 17px;
+  --type-prose-wide--line-height: 30px;
+  --type-title: 18px;
+  --type-title--line-height: 28px;
+  --type-heading: 24px;
+  --type-heading--line-height: 32px;
+  --type-display-xs: 36px;
+  --type-display-xs--line-height: 1;
+  --type-display-sm: 48px;
+  --type-display-sm--line-height: 1;
+  --type-display-md: 60px;
+  --type-display-md--line-height: 1;
+  --type-display-lg: 72px;
+  --type-display-lg--line-height: 1;
+  --type-display-xl: 96px;
+  --type-display-xl--line-height: 1;
+  --type-display-2xl: 128px;
+  --type-display-2xl--line-height: 1;
+
+  --leading-*: initial;
+
+  --tracking-*: initial;
+
+  --radius-*: initial;
+  --radius-mark: 3px;
+  --radius-thumb: 8px;
+  --radius-inset: 10px;
+  --radius-tile: 12px;
+  --radius-card: 16px;
+  --radius-panel: 20px;
+  --radius-sheet: 24px;
+  --radius-shell: 26px;
+
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  --ease-*: initial;
+  --ease-out-expo: var(--curve-expo);
+  /*
+   * The three CSS-only curves are measured like the engine's: the share of
+   * the time used when each reaches 50% / 90% of the way is quart 26 / 58,
+   * cream 28 / 60 and phosphor 31 / 64. A curve that reaches 90% before half
+   * of its time leaves the second half of a long fade as an invisible tail.
+   */
+  --ease-out-quart: cubic-bezier(0.3, 0.41, 0.28, 1);
+  --ease-out-quint: var(--curve-silk);
+  --ease-in-out-cubic: var(--curve-glide);
+  --ease-in-cubic: cubic-bezier(0.5, 0, 1, 1);
+  --ease-out-cream: cubic-bezier(0.33, 0.45, 0.34, 1);
+  --ease-phosphor: cubic-bezier(0.32, 0.36, 0.39, 1);
+  --ease-fade: var(--curve-fade);
+
+  --default-transition-duration: var(--step-n2);
+  --default-transition-timing-function: var(--ease-out-quart);
+}
+
+@theme inline {
+  --font-sans: var(--font-app, ui-sans-serif), ui-sans-serif, system-ui,
+    sans-serif;
+
+  /* the page and the ink drawn on it */
+  --color-page: var(--page);
+  --color-ink: var(--ink);
+  --color-ink-lead: var(--ink-lead);
+  --color-ink-body: var(--ink-body);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  /* surfaces: a fill and its ring, at rest, hovered, chosen */
+  --color-fill: var(--fill);
+  --color-fill-hover: var(--fill-hover);
+  --color-fill-active: var(--fill-active);
+  --color-edge: var(--edge);
+  --color-edge-hover: var(--edge-hover);
+  --color-edge-focus: var(--edge-focus);
+  --color-rule: var(--rule);
+  --color-line: var(--line);
+  --color-plate: var(--plate);
+
+  /* layers: glass for chrome, veil over a picture, dim behind a modal */
+  --color-glass: var(--glass);
+  --color-veil: var(--veil);
+  --color-dim: var(--dim);
+
+  /* the primary action, and ink on a bright accent */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-on-accent: var(--on-accent);
+
+  /* the accent: a chosen control, a checked box; ink unless a theme sets it */
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+}
+
+/*
+ * Geometry. Every interactive block sits on one height ladder so that controls
+ * placed side by side (dock actions, a field and its button, a row of chips)
+ * share a baseline and a centre line. The same ladder drives `h-control-*`,
+ * `size-control-*` and `min-h-control-*`; the TypeScript mirror is
+ * src/design/geometry.ts.
+ *
+ *   xs 24 · sm 32 · chrome 36 · md 40 · lg 48
+ *
+ * Fibonacci spacing is the layout rhythm: 5 · 8 · 13 · 21 · 34 · 55 · 89.
+ */
+@theme static {
+  --spacing-control-xs: 1.5rem;
+  --spacing-control-sm: 2rem;
+  --spacing-control-chrome: 2.25rem;
+  --spacing-control-md: 2.5rem;
+  --spacing-control-lg: 3rem;
+
+}

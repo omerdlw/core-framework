@@ -1,0 +1,204 @@
+import { clsx, type ClassValue } from "clsx";
+
+/*
+ * Recipes: the class contract of a component part.
+ *
+ * A recipe is plain data (a base, named variants, compound variants and
+ * defaults), so an app can extend one before it is ever called: add a class to
+ * a variant, add a whole new variant value, or reset the part and write it
+ * from scratch. `defineUi` compiles the merged data into resolvers once.
+ *
+ * Every class must be written out literally: Tailwind finds classes by reading
+ * source files, so a class assembled at runtime is never generated.
+ */
+
+/** Classes in any shape `clsx` accepts, including readonly (`as const`) arrays. */
+export type Classes =
+  | string
+  | number
+  | bigint
+  | boolean
+  | null
+  | undefined
+  | readonly Classes[]
+  | { readonly [className: string]: unknown };
+
+export type VariantMap = Readonly<Record<string, Readonly<Record<string, Classes>>>>;
+
+/** `"true" | "false"` keys select with a boolean, like `cva`. */
+type ValueOf<K> = K extends "true" | "false" ? boolean | K : K;
+
+/** The props a recipe answers: one optional choice per variant. */
+export type SelectionOf<V> = {
+  -readonly [K in keyof V]?: ValueOf<keyof V[K] & string> | null;
+};
+
+type CompoundMatch<V> = {
+  -readonly [K in keyof V]?:
+    | ValueOf<keyof V[K] & string>
+    | readonly ValueOf<keyof V[K] & string>[];
+};
+
+export type CompoundVariant<V> = CompoundMatch<V> & {
+  readonly class?: Classes;
+  readonly className?: Classes;
+};
+
+export interface RecipeDef<V extends VariantMap = VariantMap> {
+  readonly base?: Classes;
+  readonly variants?: V;
+  readonly compoundVariants?: readonly CompoundVariant<V>[];
+  readonly defaultVariants?: SelectionOf<V>;
+}
+
+/**
+ * How an app changes a recipe. Classes are appended to the default's (the
+ * app's `cn` lets a later class replace an earlier one of the same family);
+ * new variant keys and values are added; `reset: true` drops the default and
+ * keeps only what is written here.
+ */
+export interface RecipeOverride<V extends VariantMap = VariantMap> {
+  readonly reset?: boolean;
+  readonly base?: Classes;
+  readonly variants?: {
+    readonly [K in keyof V]?: { readonly [Value in keyof V[K]]?: Classes } & {
+      readonly [value: string]: Classes;
+    };
+  } & { readonly [variant: string]: { readonly [value: string]: Classes } };
+  readonly compoundVariants?: readonly ({
+    readonly class?: Classes;
+    readonly className?: Classes;
+  } & { readonly [variant: string]: unknown })[];
+  readonly defaultVariants?: { readonly [variant: string]: unknown };
+}
+
+export type VariantsOf<R> = R extends { readonly variants?: infer V }
+  ? V extends VariantMap
+    ? V
+    : {}
+  : {};
+
+type Union<A, B> = {
+  readonly [K in keyof A | keyof B]: (K extends keyof A ? A[K] : {}) &
+    (K extends keyof B ? B[K] : {});
+};
+
+/** The variants of `D` once `O` is applied to it. */
+export type MergedVariants<D, O> = O extends { readonly reset: true }
+  ? VariantsOf<O>
+  : Union<VariantsOf<D>, VariantsOf<O>>;
+
+/** A compiled recipe: call it with the variant props to get the class string. */
+export interface Recipe<V = VariantMap> {
+  (props?: SelectionOf<V> & { readonly class?: Classes; readonly className?: Classes }): string;
+  readonly def: RecipeDef;
+}
+
+/** The props of a compiled recipe, for a component that forwards them. */
+export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
+
+const key = (value: unknown): string | null =>
+  value === null || value === undefined ? null : String(value);
+
+function matches(
+  selected: Record<string, string | null>,
+  compound: Record<string, unknown>,
+): boolean {
+  for (const [name, wanted] of Object.entries(compound)) {
+    if (name === "class" || name === "className") continue;
+    const actual = selected[name] ?? null;
+    if (Array.isArray(wanted)) {
+      if (!wanted.some((one) => key(one) === actual)) return false;
+    } else if (key(wanted) !== actual) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * The classes for one set of props, in source order: base, then each variant,
+ * then the compound variants that match, then the caller's `class`/`className`.
+ * `undefined` takes the default; `null` turns a variant off.
+ */
+export function resolveRecipe(
+  def: RecipeDef,
+  props: Record<string, unknown> = {},
+): ClassValue[] {
+  const out: ClassValue[] = [def.base as ClassValue];
+  const variants = def.variants ?? {};
+  const defaults = (def.defaultVariants ?? {}) as Record<string, unknown>;
+  const selected: Record<string, string | null> = {};
+
+  for (const name of Object.keys(variants)) {
+    const value = props[name] === undefined ? defaults[name] : props[name];
+    const chosen = key(value);
+    selected[name] = chosen;
+    if (chosen !== null) out.push(variants[name][chosen] as ClassValue);
+  }
+  for (const compound of def.compoundVariants ?? []) {
+    if (matches(selected, compound as Record<string, unknown>)) {
+      out.push(compound.class as ClassValue, compound.className as ClassValue);
+    }
+  }
+  out.push(props.class as ClassValue, props.className as ClassValue);
+  return out;
+}
+
+/** Applies an override to a recipe's data (see `RecipeOverride`). */
+export function extendRecipe(
+  base: RecipeDef,
+  override: RecipeOverride | undefined,
+): RecipeDef {
+  if (!override) return base;
+  const { reset, ...rest } = override;
+  if (reset) return rest as RecipeDef;
+
+  const variants: Record<string, Record<string, Classes>> = {};
+  for (const [name, values] of Object.entries(base.variants ?? {})) {
+    variants[name] = { ...values };
+  }
+  for (const [name, values] of Object.entries(rest.variants ?? {})) {
+    const target = (variants[name] ??= {});
+    for (const [value, classes] of Object.entries(values)) {
+      target[value] =
+        target[value] === undefined ? classes : [target[value], classes];
+    }
+  }
+
+  return {
+    base: rest.base === undefined ? base.base : [base.base, rest.base],
+    variants,
+    compoundVariants: [
+      ...(base.compoundVariants ?? []),
+      ...((rest.compoundVariants ?? []) as RecipeDef["compoundVariants"] &
+        object),
+    ],
+    defaultVariants: {
+      ...base.defaultVariants,
+      ...(rest.defaultVariants as RecipeDef["defaultVariants"]),
+    },
+  };
+}
+
+/** Declares a recipe's data, keeping its literal variant names for typing. */
+export function defineRecipe<const V extends VariantMap = {}>(
+  def: RecipeDef<V>,
+): RecipeDef<V> {
+  return def;
+}
+
+/** Compiles recipe data into a resolver that merges through `merge`. */
+export function compileRecipe<V>(
+  def: RecipeDef,
+  merge: (...inputs: ClassValue[]) => string,
+): Recipe<V> {
+  const recipe = ((props?: Record<string, unknown>) =>
+    merge(...resolveRecipe(def, props))) as Recipe<V>;
+  Object.defineProperty(recipe, "def", { value: def, enumerable: true });
+  return recipe;
+}
+
+/** `clsx` over `Classes`, for code that joins classes without merging. */
+export const joinClasses = (...inputs: Classes[]): string =>
+  clsx(inputs as ClassValue[]);
