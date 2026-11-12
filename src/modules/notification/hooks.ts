@@ -66,6 +66,7 @@ export function useNotificationState(): NotificationState {
 export function useNotification(): NotificationState & NotificationActions {
   const actions = useNotificationActions();
   const state = useNotificationState();
+  // stable identity: part of the public hook contract
   return useMemo(() => ({ ...actions, ...state }), [actions, state]);
 }
 
@@ -176,6 +177,7 @@ export function useToast(defaultDuration?: number | null): ToastController {
 
   const resolvedDefaultDuration = defaultDuration ?? TOAST_DURATIONS.DEFAULT;
 
+  // stable identity: part of the public hook contract
   const triggerToast = useCallback(
     (message: ReactNode, options?: ToastOptionsInput): string | null =>
       showNotification(
@@ -185,6 +187,7 @@ export function useToast(defaultDuration?: number | null): ToastController {
     [resolvedDefaultDuration, showNotification],
   );
 
+  // stable identity: part of the public hook contract
   const dismiss = useCallback(
     (id?: string) => {
       if (id) dismissNotification(id);
@@ -193,6 +196,7 @@ export function useToast(defaultDuration?: number | null): ToastController {
     [dismissAllNotifications, dismissNotification],
   );
 
+  // stable identity: part of the public hook contract
   const fromResult = useCallback(
     <T = unknown, E = unknown, R = unknown>(
       result: R,
@@ -208,6 +212,7 @@ export function useToast(defaultDuration?: number | null): ToastController {
 
   const promise = useToastPromise({ dismiss, showNotification, triggerToast });
 
+  // stable identity: part of the public hook contract
   return useMemo<ToastController>(
     () =>
       Object.assign(
@@ -259,10 +264,8 @@ export function useNotificationContainerModel() {
     () => true,
     () => false,
   );
-  const activeEntry = useMemo(
-    () => getActiveNotification(notifications),
-    [notifications],
-  );
+  // Returns an entry of `notifications`, so its identity is already stable.
+  const activeEntry = getActiveNotification(notifications);
 
   const theme = useTheme(notificationTheme);
 

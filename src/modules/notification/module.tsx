@@ -24,6 +24,7 @@ function useNotificationPage(
   page: PageModuleApi,
 ): NotificationPageApi {
   const toast = useToast(duration);
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       set: (notification: NotificationPageConfig) => page.set({ notification }),
