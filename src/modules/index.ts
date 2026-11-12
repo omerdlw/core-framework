@@ -22,6 +22,10 @@ export {
   notificationModule,
 };
 
+/**
+ * Every built-in module, in the order they are mounted. Pass it to the core
+ * provider to enable them all.
+ */
 export const defaultModules = Object.freeze([
   backgroundModule,
   ambientModule,
