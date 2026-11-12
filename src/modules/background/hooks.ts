@@ -21,6 +21,9 @@ const NOOP_BACKGROUND_STORE = createStore<BackgroundStateComputed>(
   DEFAULT_BACKGROUND_COMPUTED,
 );
 
+/**
+ * Registers a background for the current page and removes it on unmount.
+ */
 export function useBackgroundRegistration(
   config: BackgroundPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -28,6 +31,9 @@ export function useBackgroundRegistration(
   useModuleRegistration("background", config, options);
 }
 
+/**
+ * Reads the resolved background state. Must be used inside `BackgroundProvider`.
+ */
 export function useBackgroundState(): BackgroundStateComputed {
   const { store } = useRequiredContext(
     BackgroundContext,
@@ -37,6 +43,9 @@ export function useBackgroundState(): BackgroundStateComputed {
   return useStore(store);
 }
 
+/**
+ * Returns the stable background actions. Must be used inside `BackgroundProvider`.
+ */
 export function useBackgroundActions(): BackgroundActions {
   return useRequiredContext(
     BackgroundContext,
@@ -45,6 +54,9 @@ export function useBackgroundActions(): BackgroundActions {
   ).actions;
 }
 
+/**
+ * Registers an optional page background and returns the state merged with the actions.
+ */
 export function useBackground(
   config?: BackgroundPageConfig | null,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -57,6 +69,10 @@ export function useBackground(
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
 
+/**
+ * Like `useBackgroundState`, but returns defaults outside a provider.
+ * An optional selector narrows the subscription.
+ */
 export function useOptionalBackgroundState(): BackgroundStateComputed;
 export function useOptionalBackgroundState<T>(
   selector: (state: BackgroundStateComputed) => T,
@@ -74,6 +90,9 @@ export function useOptionalBackgroundState<T = BackgroundStateComputed>(
   );
 }
 
+/**
+ * Like `useBackgroundActions`, but returns inert no-op actions outside a provider.
+ */
 export function useOptionalBackgroundActions(): BackgroundActions {
   const ctx = use(BackgroundContext);
   return ctx?.actions ?? INERT_BACKGROUND_ACTIONS;

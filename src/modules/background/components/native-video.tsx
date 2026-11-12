@@ -1,10 +1,11 @@
 "use client";
 
-import { type CSSProperties } from "react";
+import {
+  type NativeVideoProps,
+  useNativeVideoModel,
+} from "../hooks/use-native-video-model";
 
-import { useNativeVideoModel } from "../hooks/use-native-video-model";
-import { type BackgroundActions } from "../types";
-
+/** A plain `<video>` background that plays, loops and reports its element. */
 export function NativeVideo({
   corp,
   isLoop,
@@ -17,19 +18,7 @@ export function NativeVideo({
   src,
   style,
   className,
-}: {
-  className: string;
-  corp: number;
-  isLoop: boolean;
-  isMuted: boolean;
-  isPlaying?: boolean;
-  playbackRate: number;
-  setVideoElement: BackgroundActions["setVideoElement"];
-  setVideoPlaying: BackgroundActions["setVideoPlaying"];
-  shouldAutoPlay: boolean;
-  src: string | undefined;
-  style: CSSProperties;
-}) {
+}: NativeVideoProps) {
   const { videoRef, handleEnded, handleTimeUpdate, handleLoadedData } =
     useNativeVideoModel({
       corp,

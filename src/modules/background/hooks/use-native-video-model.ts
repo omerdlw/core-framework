@@ -7,18 +7,7 @@ import { report } from "@/foundation/utils";
 import { applyVideoPlaybackState } from "../model/playback";
 import { type BackgroundActions } from "../types";
 
-export function useNativeVideoModel({
-  corp,
-  isMuted,
-  isPlaying,
-  playbackRate,
-  setVideoElement,
-  setVideoPlaying,
-  shouldAutoPlay,
-  src,
-  style: _style,
-  className: _className,
-}: {
+export interface NativeVideoProps {
   className: string;
   corp: number;
   isLoop: boolean;
@@ -30,7 +19,20 @@ export function useNativeVideoModel({
   shouldAutoPlay: boolean;
   src: string | undefined;
   style: CSSProperties;
-}) {
+}
+
+export function useNativeVideoModel({
+  corp,
+  isMuted,
+  isPlaying,
+  playbackRate,
+  setVideoElement,
+  setVideoPlaying,
+  shouldAutoPlay,
+  src,
+  style: _style,
+  className: _className,
+}: NativeVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const handleEnded = useCallback(() => {
     const video = videoRef.current;

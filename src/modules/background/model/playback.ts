@@ -1,3 +1,7 @@
+/**
+ * Applies the configured play state and playback rate to a video element,
+ * handling blocked autoplay.
+ */
 export function applyVideoPlaybackState({
   isPlaying,
   playbackRate,
@@ -57,6 +61,9 @@ export function applyVideoPlaybackState({
     });
 }
 
+/**
+ * Plays or pauses a video element right away, inside a user gesture, with the configured mute.
+ */
 export function triggerVideoPlaybackDirect(
   videoElement: HTMLVideoElement | null | undefined,
   nextPlaying: boolean,
@@ -79,6 +86,9 @@ export function triggerVideoPlaybackDirect(
   }
 }
 
+/**
+ * Sets the muted flag on a video element immediately; unmuting restores an audible volume.
+ */
 export function syncVideoMutedDirect(
   videoElement: HTMLVideoElement | null | undefined,
   nextMuted: boolean,
@@ -90,6 +100,9 @@ export function syncVideoMutedDirect(
   }
 }
 
+/**
+ * Sets the loop flag on a video element immediately.
+ */
 export function syncVideoLoopDirect(
   videoElement: HTMLVideoElement | null | undefined,
   nextLoop: boolean,

@@ -1,14 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
-import { useOptionalMediaActions } from "@/modules/media";
 import { useStore } from "@/react/hooks";
 
-import { BACKGROUND_MEDIA_ID, BACKGROUND_REGISTRY_KEY } from "./constants";
+import { BACKGROUND_REGISTRY_KEY } from "./constants";
+import { useBackgroundMediaSource } from "./hooks/use-background-media-source";
+import { mergeOverridePatch } from "./model/override";
 import {
   syncVideoLoopDirect,
   syncVideoMutedDirect,
@@ -28,6 +29,9 @@ import {
   type ScopedOverride,
 } from "./types";
 
+/**
+ * React context carrying the background store and actions; null outside a provider.
+ */
 export const BackgroundContext =
   getOrCreateGlobalContext<BackgroundContextValue | null>(
     "BackgroundContext",
@@ -42,6 +46,10 @@ function useSafePathname(): string | null {
   }
 }
 
+/**
+ * Owns the page background: resolves it from the registry, applies runtime overrides
+ * and exposes the state store and actions.
+ */
 export function BackgroundProvider({ children }: BackgroundProviderProps) {
   const pathname = useSafePathname();
   const registryBackground =
@@ -105,18 +113,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
           return prev;
         }
         const normalizedNext = normalizeBackgroundInput(rawNext);
-        const mergedPatch: Partial<BackgroundState> = {
-          ...(currentPatch || {}),
-          ...normalizedNext,
-          ...(currentPatch?.videoOptions || normalizedNext.videoOptions
-            ? {
-                videoOptions: {
-                  ...(currentPatch?.videoOptions || {}),
-                  ...(normalizedNext.videoOptions || {}),
-                },
-              }
-            : {}),
-        };
+        const mergedPatch = mergeOverridePatch(currentPatch, normalizedNext);
         return {
           patch: mergedPatch,
           pathname: currentPath,
@@ -191,28 +188,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     };
   }, [overrideStore]);
 
-  const media = useOptionalMediaActions();
-  const { isPlaying, isVideo, videoElement } = state;
-  const isLoop = Boolean(state.videoOptions?.loop);
-  useEffect(() => {
-    if (!isVideo) {
-      media.removeSource(BACKGROUND_MEDIA_ID);
-      return;
-    }
-    media.upsertSource({
-      controls: {
-        setMuted: actions.setVideoMuted,
-        toggle: actions.toggleVideo,
-        toggleLoop: actions.toggleLoop,
-      },
-      element: videoElement ?? null,
-      id: BACKGROUND_MEDIA_ID,
-      isPlaying,
-      kind: "video",
-      loop: isLoop,
-    });
-  }, [actions, isLoop, isPlaying, isVideo, media, videoElement]);
-  useEffect(() => () => media.removeSource(BACKGROUND_MEDIA_ID), [media]);
+  useBackgroundMediaSource(state, actions);
 
   const value = useMemo<BackgroundContextValue>(
     () => ({ actions, store: stateStore }),

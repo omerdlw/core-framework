@@ -1,5 +1,3 @@
-"use client";
-
 import { type CSSProperties, memo } from "react";
 
 import { type Theme } from "../lib/theme";

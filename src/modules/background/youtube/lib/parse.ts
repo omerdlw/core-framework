@@ -74,6 +74,10 @@ function getIdFromUrl(url: URL): string | null {
     : null;
 }
 
+/**
+ * Extracts the video id from a YouTube URL or `yt:` reference, or null.
+ * Bare ids count only with `allowBareId`.
+ */
 export function extractYouTubeVideoId(
   input?: string | null,
   options: { allowBareId?: boolean } = {},
@@ -90,10 +94,16 @@ export function extractYouTubeVideoId(
   return url ? getIdFromUrl(url) : null;
 }
 
+/**
+ * Whether a string is a YouTube video URL.
+ */
 export function isYouTubeUrl(input?: string | null): boolean {
   return Boolean(extractYouTubeVideoId(input));
 }
 
+/**
+ * Whether a URL can be played as a video: a YouTube link, the proxy route, a blob or a video file.
+ */
 export function isDirectVideoUrl(input?: string | null): boolean {
   if (!input || typeof input !== "string") return false;
   const trimmed = input.trim();
@@ -109,6 +119,9 @@ export function isDirectVideoUrl(input?: string | null): boolean {
   return /\.(mp4|webm|mov|m4v|ogg|ogv|m3u8)$/i.test(cleanPath);
 }
 
+/**
+ * Reads the video id, start and end times and list id from a YouTube URL, or null.
+ */
 export function parseYouTubeUrlConfig(
   input?: string | null,
   options: { allowBareId?: boolean } = {},
@@ -126,6 +139,9 @@ export function parseYouTubeUrlConfig(
   };
 }
 
+/**
+ * URL of the module's YouTube proxy route for a video, stream kind and quality.
+ */
 export function getYouTubeStreamUrl(
   videoId: string,
   options: {
@@ -142,6 +158,9 @@ export function getYouTubeStreamUrl(
   return `/api/background/youtube?${params.toString()}`;
 }
 
+/**
+ * Thumbnail URL for a video, through the proxy by default.
+ */
 export function getYouTubeThumbnailUrl(
   videoId: string,
   proxied = true,

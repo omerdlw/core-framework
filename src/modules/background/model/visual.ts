@@ -14,6 +14,9 @@ const objectPosition = (value: string): CSSProperties => ({
   objectPosition: value,
 });
 
+/**
+ * Maps Tailwind-style `bg-*` tokens to the object-fit/position styles they stand for.
+ */
 export const BG_TOKEN_TO_OBJECT_STYLE: Readonly<Record<string, CSSProperties>> =
   Object.freeze({
     "bg-bottom": objectPosition("bottom"),
@@ -32,6 +35,9 @@ export const BG_TOKEN_TO_OBJECT_STYLE: Readonly<Record<string, CSSProperties>> =
     "bg-top": objectPosition("top"),
   });
 
+/**
+ * The `object-fit` values accepted for a background video.
+ */
 export const OBJECT_FITS = Object.freeze([
   "contain",
   "cover",
@@ -40,10 +46,16 @@ export const OBJECT_FITS = Object.freeze([
   "scale-down",
 ]);
 
+/**
+ * Color used for gradients and overlays when none is configured.
+ */
 export const DEFAULT_COLOR = "currentColor";
 
 const WIDTH_CLASS = /^(w-|max-w-|min-w-)/;
 
+/**
+ * Splits class names into the object-fit/position styles, the width class and the rest.
+ */
 export function resolveVideoClassNames(
   ...inputs: (string | null | undefined)[]
 ): {
@@ -68,6 +80,9 @@ export function resolveVideoClassNames(
   };
 }
 
+/**
+ * Fills the video options with their defaults.
+ */
 export function resolveVideoOptions(options: VideoOptions = {}) {
   return {
     codec: options.codec || "auto",
@@ -83,6 +98,9 @@ export function resolveVideoOptions(options: VideoOptions = {}) {
   };
 }
 
+/**
+ * CSS gradient that fades a color in from the given side.
+ */
 export const generateBaseGradient = (
   direction: "left" | "right",
   color: string,
@@ -91,6 +109,9 @@ export const generateBaseGradient = (
   return `linear-gradient(${to}, ${color} 0%, color-mix(in srgb, ${color} 85%, transparent) 15%, color-mix(in srgb, ${color} 50%, transparent) 45%, color-mix(in srgb, ${color} 18%, transparent) 75%, transparent 100%)`;
 };
 
+/**
+ * CSS gradient for a video edge that fades a color in from the given side.
+ */
 export const generateEdgeGradient = (
   direction: "left" | "right",
   color: string,
@@ -198,6 +219,9 @@ export function generateSmoothstepStops(
   });
 }
 
+/**
+ * CSS mask image that fades a video's left and right edges to transparent.
+ */
 export function getEdgeFadeMask({
   color = DEFAULT_COLOR,
   leftPercent = 0,
@@ -217,4 +241,14 @@ export function getEdgeFadeMask({
       ? generateSmoothstepStops(rightPercent, "out", color)
       : [`${color} 100%`];
   return `linear-gradient(to right, ${leftStops.join(", ")}, ${rightStops.join(", ")})`;
+}
+
+/** Turns a configured width into a CSS length; numbers are pixels. */
+export function resolveCssWidth(
+  rawWidth: string | number | null | undefined,
+): string | undefined {
+  if (rawWidth === undefined || rawWidth === null || rawWidth === "") {
+    return undefined;
+  }
+  return typeof rawWidth === "number" ? `${rawWidth}px` : String(rawWidth);
 }

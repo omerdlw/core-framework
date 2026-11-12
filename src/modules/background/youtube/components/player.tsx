@@ -8,6 +8,10 @@ import { Spinner } from "@/react/ui/components/loader";
 import { type YouTubeBackgroundPlayerProps } from "../../types";
 import { useYouTubeBackgroundPlayerModel } from "../hooks/use-youtube-background-player-model";
 
+/**
+ * Plays a YouTube video as a background: a proxied native stream first, with the
+ * iframe player as fallback.
+ */
 export const YouTubeBackgroundPlayer = memo(function YouTubeBackgroundPlayer({
   codec = "auto",
   corp = 0,

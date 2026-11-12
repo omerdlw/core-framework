@@ -4,11 +4,20 @@ import { type CSSProperties, type ReactNode } from "react";
 import { type ModuleRuntime, type RegistryMetadata } from "@/core/kernel";
 import { type ResolvedTheme } from "@/react/theme";
 
+/**
+ * Quality levels the YouTube proxy can serve.
+ */
 export type YouTubeVideoQuality =
   "auto" | "2160p" | "1440p" | "1080p" | "720p" | "480p" | "360p";
 
+/**
+ * Video codecs the YouTube proxy can serve.
+ */
 export type YouTubeVideoCodec = "auto" | "hevc" | "av1" | "h264" | "vp9";
 
+/**
+ * Playback options for a background video.
+ */
 export interface VideoOptions {
   autoplay?: boolean;
   className?: string;
@@ -29,11 +38,17 @@ export interface VideoOptions {
   width?: string | number | null;
 }
 
+/**
+ * How much of the left and right video edges fade out (number or CSS length).
+ */
 export interface FadeEdges {
   left?: number | string;
   right?: number | string;
 }
 
+/**
+ * Enter, exit and transition motion of the background.
+ */
 export interface BackgroundMotion {
   initial: TargetAndTransition;
   animate: TargetAndTransition;
@@ -42,6 +57,9 @@ export interface BackgroundMotion {
   exitDurationFactor: number;
 }
 
+/**
+ * Per-background override of the theme's background motion.
+ */
 export interface BackgroundAnimationConfig {
   animate?: TargetAndTransition;
   exit?: TargetAndTransition;
@@ -50,17 +68,26 @@ export interface BackgroundAnimationConfig {
   transition?: Transition;
 }
 
+/**
+ * Opacity and blend mode of the noise layer.
+ */
 export interface BackgroundNoiseStyle {
   mixBlendMode?: string;
   opacity?: number;
 }
 
+/**
+ * Inline style for a background image or video, plus gradient strength and class name.
+ */
 export interface BackgroundMediaStyle extends CSSProperties {
   className?: string;
   leftGradient?: number;
   rightGradient?: number;
 }
 
+/**
+ * Everything that describes a page background: media, overlay, gradients and video options.
+ */
 export interface BackgroundState {
   animation?: BackgroundAnimationConfig | null;
   className?: string;
@@ -85,6 +112,9 @@ export interface BackgroundState {
   width?: string | number | null;
 }
 
+/**
+ * `BackgroundState` plus the fields derived from it.
+ */
 export interface BackgroundStateComputed extends BackgroundState {
   hasBackground: boolean;
   isVideo: boolean;
@@ -93,6 +123,9 @@ export interface BackgroundStateComputed extends BackgroundState {
   youtubeVideoId: string | null;
 }
 
+/**
+ * Imperative controls for the background and its video.
+ */
 export interface BackgroundActions {
   resetBackground: () => void;
   setBackground: (patch: Partial<BackgroundState> | string) => void;
@@ -104,10 +137,16 @@ export interface BackgroundActions {
   toggleVideo: () => void;
 }
 
+/**
+ * Props of `BackgroundProvider`.
+ */
 export interface BackgroundProviderProps {
   children?: ReactNode;
 }
 
+/**
+ * A reusable background from `defineBackground`: its config and a hook to apply it.
+ */
 export interface DefinedBackground {
   config: Partial<BackgroundState>;
   id: string;
@@ -117,23 +156,38 @@ export interface DefinedBackground {
   ) => BackgroundStateComputed & BackgroundActions;
 }
 
+/**
+ * Value of `BackgroundContext`: the state store and the actions.
+ */
 export type BackgroundContextValue = ModuleRuntime<
   BackgroundStateComputed,
   BackgroundActions
 >;
 
+/**
+ * What a page may declare as its `background`: an image URL or a partial state.
+ */
 export type BackgroundPageConfig =
   string | (Partial<BackgroundState> & { registry?: RegistryMetadata });
 
+/**
+ * The background controls a page receives, plus `set` to replace its background.
+ */
 export interface BackgroundPageApi extends BackgroundActions {
   set: (background: BackgroundPageConfig) => void;
 }
 
+/**
+ * A runtime background patch and the pathname it applies to.
+ */
 export interface ScopedOverride {
   patch: Partial<BackgroundState> | null;
   pathname: string | null;
 }
 
+/**
+ * Parsed parts of a YouTube URL.
+ */
 export interface YouTubeUrlConfig {
   endTime: number;
   listId: string | null;
@@ -142,6 +196,9 @@ export interface YouTubeUrlConfig {
   videoId: string;
 }
 
+/**
+ * Contract the iframe player implements so it can stand in for a `<video>` element.
+ */
 export interface YouTubeProxyController {
   getCurrentTime: () => number;
   getDuration: () => number;
@@ -159,6 +216,9 @@ export interface YouTubeProxyController {
   setVolume: (volume: number) => void;
 }
 
+/**
+ * Props of `YouTubeBackgroundPlayer`.
+ */
 export interface YouTubeBackgroundPlayerProps {
   codec?: string;
   corp?: number;
@@ -182,6 +242,9 @@ export interface YouTubeBackgroundPlayerProps {
   videoStyle: CSSProperties;
 }
 
+/**
+ * Names of the styled parts of the background that a theme provides.
+ */
 export type BackgroundThemeSlot =
   | "root"
   | "image"

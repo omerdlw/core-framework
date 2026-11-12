@@ -11,6 +11,9 @@ import {
   isYouTubeUrl,
 } from "../youtube/lib/parse";
 
+/**
+ * Background state used when nothing is registered.
+ */
 export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   animation: null,
   className: "",
@@ -40,6 +43,9 @@ export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   width: null,
 });
 
+/**
+ * `DEFAULT_BACKGROUND` with its derived fields, for use outside a provider.
+ */
 export const DEFAULT_BACKGROUND_COMPUTED: BackgroundStateComputed =
   Object.freeze({
     ...DEFAULT_BACKGROUND,
@@ -50,6 +56,9 @@ export const DEFAULT_BACKGROUND_COMPUTED: BackgroundStateComputed =
     youtubeVideoId: null,
   });
 
+/**
+ * No-op actions returned when no `BackgroundProvider` is mounted.
+ */
 export const INERT_BACKGROUND_ACTIONS: BackgroundActions = Object.freeze({
   resetBackground: () => {},
   setBackground: () => {},
@@ -61,6 +70,10 @@ export const INERT_BACKGROUND_ACTIONS: BackgroundActions = Object.freeze({
   toggleVideo: () => {},
 });
 
+/**
+ * Turns a patch or a URL string into a partial state; video and YouTube URLs
+ * become `video`, anything else `image`.
+ */
 export function normalizeBackgroundInput(
   patch: Partial<BackgroundState> | string | null | undefined = {},
 ): Partial<BackgroundState> {
@@ -88,6 +101,9 @@ export function normalizeBackgroundInput(
   return nextPatch;
 }
 
+/**
+ * Merges a patch (or an image URL) over a base state; `videoOptions` are merged key by key.
+ */
 export function mergeBackgroundState(
   baseState: BackgroundState,
   patch: Partial<BackgroundState> | string = {},
@@ -138,6 +154,9 @@ export function mergeBackgroundState(
   };
 }
 
+/**
+ * Resolves the effective state from the registry entry and the override for the current path.
+ */
 export function resolveBackgroundState(
   registryBackground: Partial<BackgroundState> | null,
   override: ScopedOverride,
@@ -150,6 +169,9 @@ export function resolveBackgroundState(
   return patch ? mergeBackgroundState(base, patch) : base;
 }
 
+/**
+ * Adds the derived fields (has background, video kind, YouTube id, poster) to a background state.
+ */
 export function computeBackgroundState(
   background: BackgroundState,
 ): BackgroundStateComputed {

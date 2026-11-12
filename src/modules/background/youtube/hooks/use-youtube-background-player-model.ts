@@ -1,17 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { applyVideoPlaybackState } from "../../model/playback";
 import { type YouTubeBackgroundPlayerProps } from "../../types";
+import { syncCompanionAudioElements } from "../lib/audio";
+import { scheduleRetryTimer } from "../lib/timing";
 import {
-  AUDIO_SYNC_EVENTS,
-  resolveCompanionVolume,
-  setElementMuted,
-  unlockAudioOnGesture,
-} from "../lib/audio";
-import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "../lib/parse";
+  endVideoPlayback,
+  handleCompanionAudioError,
+  onCanPlay,
+  onError,
+  onLoadedData,
+  onLoadedMetadata,
+  onPause,
+  onPlay,
+  onPlaying,
+  onSeeked,
+  onTimeUpdate,
+  playWithMutedFallback,
+  type VideoEventContext,
+} from "../lib/video-events";
 import { useYouTubeIframePlayer } from "./use-youtube-iframe-player";
+import { useYouTubeStreamSources } from "./use-youtube-stream-sources";
+import { useYouTubeVideoSync } from "./use-youtube-video-sync";
 
 export function useYouTubeBackgroundPlayerModel({
   codec = "auto",
@@ -75,316 +86,82 @@ export function useYouTubeBackgroundPlayerModel({
     errorRetryCountRef.current = 0;
     audioErrorRetryCountRef.current = 0;
   }, [forceIframe, videoId]);
-  const videoStreamUrl = useMemo(
-    () => getYouTubeStreamUrl(videoId, { codec, quality, stream: "video" }),
-    [codec, quality, videoId],
-  );
-  const audioStreamUrl = useMemo(
-    () => getYouTubeStreamUrl(videoId, { stream: "audio" }),
-    [videoId],
-  );
-  const resolvedPoster = showPoster
-    ? posterUrl || getYouTubeThumbnailUrl(videoId, true)
-    : null;
+  const { audioStreamUrl, resolvedPoster, videoStreamUrl } =
+    useYouTubeStreamSources({ codec, posterUrl, quality, showPoster, videoId });
   const syncCompanionAudio = useCallback((forceSeek = false) => {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video || !audio) return;
-
-    try {
-      const targetRate = Number(video.playbackRate) || 1;
-      if (audio.playbackRate !== targetRate) audio.playbackRate = targetRate;
-
-      if (
-        audio.readyState < 2 ||
-        !Number.isFinite(audio.duration) ||
-        audio.duration <= 0
-      ) {
-        return;
-      }
-
-      const volume = resolveCompanionVolume(video.volume);
-      if (Math.abs(audio.volume - volume) > 0.005) audio.volume = volume;
-
-      const isSilent = Boolean(video.muted) || volume === 0;
-      if (audio.muted !== isSilent) audio.muted = isSilent;
-
-      if (video.paused || video.ended || video.seeking) {
-        if (!audio.paused) audio.pause();
-        return;
-      }
-
-      const now = performance.now();
-      const drift = Math.abs(audio.currentTime - video.currentTime);
-      const maxDrift = isSilent ? 0.5 : 0.35;
-      if (
-        forceSeek ||
-        (drift > maxDrift && now - lastAudioSeekAtRef.current > 1500)
-      ) {
-        lastAudioSeekAtRef.current = now;
-        audio.currentTime = video.currentTime;
-      }
-
-      if (audio.paused) audio.play().catch(() => {});
-    } catch {}
+    syncCompanionAudioElements({
+      audio: audioRef.current,
+      forceSeek,
+      seekClock: lastAudioSeekAtRef,
+      video: videoRef.current,
+    });
   }, []);
   const playWithFallback = useCallback(
     (video: HTMLVideoElement, forceSeek: boolean, unlockAudio: boolean) => {
-      const onPlayed = () => {
-        setVideoPlaying(true);
-        syncCompanionAudio(forceSeek);
-      };
-      video
-        .play()
-        .then(onPlayed)
-        .catch((error: { name?: string } | undefined) => {
-          if (error?.name !== "NotAllowedError") return;
-          video.muted = true;
-          video
-            .play()
-            .then(() => {
-              onPlayed();
-              if (!unlockAudio) return;
-              unlockAudioOnGesture(() => {
-                const current = videoRef.current;
-                if (!live.current.isMuted && current) {
-                  setElementMuted(current, false);
-                }
-              });
-            })
-            .catch(() => {});
-        });
+      playWithMutedFallback({
+        forceSeek,
+        live,
+        setVideoPlaying,
+        syncCompanionAudio,
+        unlockAudio,
+        video,
+        videoRef,
+      });
     },
     [setVideoPlaying, syncCompanionAudio],
   );
   const scheduleRetry = (callback: () => void, delay: number) => {
-    const timerId = window.setTimeout(() => {
-      retryTimerIdsRef.current.delete(timerId);
-      try {
-        callback();
-      } catch {}
-    }, delay);
-    retryTimerIdsRef.current.add(timerId);
+    scheduleRetryTimer(retryTimerIdsRef.current, callback, delay);
   };
   const handleEnded = useCallback(() => {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video) return;
-
-    if (video.loop || live.current.isLoop) {
-      const resetTime = Math.max(0, live.current.startTime || 0);
-      video.currentTime = resetTime;
-      if (audio && audio.readyState >= 2) audio.currentTime = resetTime;
-      video
-        .play()
-        .then(() => {
-          setVideoPlaying(true);
-          syncCompanionAudio(true);
-        })
-        .catch(() => {});
-      return;
-    }
-
-    video.pause();
-    if (audio && !audio.paused) audio.pause();
-    setVideoPlaying(false);
-  }, [setVideoPlaying, syncCompanionAudio]);
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (video.currentTime > 0 && video.readyState >= 2) {
-      setIsFrameReady(true);
-      setIsBuffering(false);
-    }
-
-    const duration = Number(video.duration) || 0;
-    const { corp: activeCorp, endTime: activeEndTime } = live.current;
-    const effectiveEnd =
-      activeEndTime > 0
-        ? activeEndTime
-        : activeCorp > 0 && duration > 0
-          ? duration - activeCorp
-          : 0;
-
-    if (effectiveEnd > 0 && video.currentTime >= effectiveEnd) handleEnded();
-  };
-  const handlePlay = () => {
-    const video = videoRef.current;
-    hasLoadedVideoRef.current = true;
-    if (video && !live.current.isMuted && video.muted) {
-      setElementMuted(video, false);
-    }
-    if (!video || video.readyState < 2) setIsBuffering(true);
-    setVideoPlaying(true);
-    syncCompanionAudio(false);
-  };
-  const handlePlaying = () => {
-    hasLoadedVideoRef.current = true;
-    setIsFrameReady(true);
-    setIsBuffering(false);
-    setVideoPlaying(true);
-    syncCompanionAudio(false);
-  };
-  const handlePause = () => {
-    const video = videoRef.current;
-    syncCompanionAudio(false);
-    setIsBuffering(false);
-    if (video && !video.seeking && !video.ended && !live.current.isPlaying) {
-      setVideoPlaying(false);
-    }
-  };
-  const handleSeeked = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    setIsFrameReady(true);
-    if (video.readyState >= 2 && (!live.current.isPlaying || !video.paused)) {
-      setIsBuffering(false);
-    }
-    syncCompanionAudio(true);
-    if (live.current.isPlaying && video.paused) {
-      video
-        .play()
-        .then(() => {
-          setVideoPlaying(true);
-          syncCompanionAudio(true);
-        })
-        .catch(() => {});
-    }
-  };
-  const handleCanPlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    hasLoadedVideoRef.current = true;
-    if (!live.current.isPlaying) {
-      setIsFrameReady(true);
-      setIsBuffering(false);
-    } else if (video.paused) {
-      setElementMuted(video, Boolean(live.current.isMuted));
-      playWithFallback(video, false, true);
-    }
-  };
-  const handleLoadedMetadata = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    hasLoadedVideoRef.current = true;
-    if (startTime > 0 && video.currentTime < startTime) {
-      video.currentTime = startTime;
-      if (audioRef.current) audioRef.current.currentTime = startTime;
-    }
-  };
-  const handleLoadedData = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    hasLoadedVideoRef.current = true;
-    video.playbackRate = playbackRate;
-    setElementMuted(video, Boolean(live.current.isMuted));
-    if (startTime > 0 && video.currentTime < startTime) {
-      video.currentTime = startTime;
-    }
-    if (!live.current.isPlaying) {
-      setIsFrameReady(true);
-      setIsBuffering(false);
-    } else if (video.paused) {
-      playWithFallback(video, true, false);
-    }
-  };
-  const handleError = () => {
-    const video = videoRef.current;
-
-    if (video && hasLoadedVideoRef.current) {
-      const resumeTime = video.currentTime || 0;
-      scheduleRetry(() => {
-        video.load();
-        video.currentTime = resumeTime;
-        if (live.current.isPlaying) video.play().catch(() => {});
-      }, 150);
-      return;
-    }
-
-    errorRetryCountRef.current += 1;
-    if (video && errorRetryCountRef.current <= 1) {
-      scheduleRetry(() => video.load(), 200);
-      return;
-    }
-    setUseIframeFallback(true);
-  };
-  const handleAudioError = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audioErrorRetryCountRef.current += 1;
-    if (audioErrorRetryCountRef.current <= 1) {
-      scheduleRetry(() => {
-        audio.load();
-        if (videoRef.current) {
-          audio.currentTime = videoRef.current.currentTime || 0;
-        }
-      }, 200);
-      return;
-    }
-
-    if (!live.current.isMuted) {
-      setUseIframeFallback(true);
-    }
-  }, []);
-  useEffect(() => {
-    if (useIframeFallback) return undefined;
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    const retryTimerIds = retryTimerIdsRef.current;
-    if (!video) {
-      setVideoElement(null);
-      return undefined;
-    }
-
-    setVideoElement(video);
-
-    const onSync = () => syncCompanionAudio(false);
-    const onSeeked = () => syncCompanionAudio(true);
-    for (const event of AUDIO_SYNC_EVENTS) {
-      video.addEventListener(event, onSync);
-    }
-    video.addEventListener("seeked", onSeeked);
-    const syncTimer = window.setInterval(onSync, 1000);
-
-    return () => {
-      window.clearInterval(syncTimer);
-      retryTimerIds.forEach((timerId) => window.clearTimeout(timerId));
-      retryTimerIds.clear();
-      for (const event of AUDIO_SYNC_EVENTS) {
-        video.removeEventListener(event, onSync);
-      }
-      video.removeEventListener("seeked", onSeeked);
-      try {
-        video.pause();
-        audio?.pause();
-      } catch {}
-    };
-  }, [setVideoElement, syncCompanionAudio, useIframeFallback, videoStreamUrl]);
-  useEffect(() => {
-    const video = videoRef.current;
-    if (useIframeFallback || !video) return;
-    applyVideoPlaybackState({
-      isPlaying,
-      playbackRate,
+    endVideoPlayback({
+      audioRef,
+      live,
       setVideoPlaying,
-      videoElement: video,
+      syncCompanionAudio,
+      videoRef,
     });
-    syncCompanionAudio();
-  }, [
+  }, [setVideoPlaying, syncCompanionAudio]);
+  const handleAudioError = useCallback(() => {
+    handleCompanionAudioError({
+      audioErrorRetryCountRef,
+      audioRef,
+      live,
+      scheduleRetry,
+      setUseIframeFallback,
+      videoRef,
+    });
+  }, []);
+  const videoContext: VideoEventContext = {
+    audioRef,
+    errorRetryCountRef,
+    handleEnded,
+    hasLoadedVideoRef,
+    live,
+    playWithFallback,
+    playbackRate,
+    scheduleRetry,
+    setIsBuffering,
+    setIsFrameReady,
+    setUseIframeFallback,
+    setVideoPlaying,
+    startTime,
+    syncCompanionAudio,
+    videoRef,
+  };
+  useYouTubeVideoSync({
+    audioRef,
+    isMuted,
     isPlaying,
     playbackRate,
+    retryTimerIdsRef,
+    setVideoElement,
     setVideoPlaying,
     syncCompanionAudio,
     useIframeFallback,
-  ]);
-  useEffect(() => {
-    const video = videoRef.current;
-    if (useIframeFallback || !video) return;
-    if (video.muted !== isMuted) setElementMuted(video, isMuted);
-    syncCompanionAudio(true);
-  }, [isMuted, syncCompanionAudio, useIframeFallback]);
+    videoRef,
+    videoStreamUrl,
+  });
   useYouTubeIframePlayer({
     enabled: useIframeFallback,
     hostRef: iframeHostRef,
@@ -416,15 +193,15 @@ export function useYouTubeBackgroundPlayerModel({
     resolvedPoster,
     syncCompanionAudio,
     handleEnded,
-    handleTimeUpdate,
-    handlePlay,
-    handlePlaying,
-    handlePause,
-    handleSeeked,
-    handleCanPlay,
-    handleLoadedMetadata,
-    handleLoadedData,
-    handleError,
+    handleTimeUpdate: () => onTimeUpdate(videoContext),
+    handlePlay: () => onPlay(videoContext),
+    handlePlaying: () => onPlaying(videoContext),
+    handlePause: () => onPause(videoContext),
+    handleSeeked: () => onSeeked(videoContext),
+    handleCanPlay: () => onCanPlay(videoContext),
+    handleLoadedMetadata: () => onLoadedMetadata(videoContext),
+    handleLoadedData: () => onLoadedData(videoContext),
+    handleError: () => onError(videoContext),
     handleAudioError,
     isCovered,
     showSpinnerOverlay,

@@ -1,31 +1,31 @@
 "use client";
 
-import { type CSSProperties, useMemo } from "react";
+import { useMemo } from "react";
 
-import { cn } from "@/foundation/recipes/cn";
-import { retime } from "@/foundation/utils/tempo";
-import { useMotionTokens, useTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 
 import { backgroundTheme } from "../constants";
 import { useBackgroundActions, useBackgroundState } from "../hooks";
-import {
-  DEFAULT_COLOR,
-  getEdgeFadeMask,
-  getVisualStyle,
-  OBJECT_FITS,
-  resolveGradientSettings,
-  resolveVideoClassNames,
-  resolveVideoOptions,
-} from "../model/visual";
-import {
-  getBackgroundExitTransition,
-  getBackgroundMotionConfig,
-  toCssDelay,
-  toCssDuration,
-  toCssEasing,
-  useBackgroundMotion,
-} from "../motion";
+import { getVisualStyle, resolveVideoOptions } from "../model/visual";
 import { parseYouTubeUrlConfig } from "../youtube/lib/parse";
+import { useBackgroundMotionModel } from "./use-background-motion-model";
+import { useVideoFrameModel } from "./use-video-frame-model";
+
+/** Identity of the current backdrop, so a change cross-fades instead of morphing. */
+function resolveBackgroundKey({
+  image,
+  isVideo,
+  video,
+  youtubeVideoId,
+}: {
+  image: string | null | undefined;
+  isVideo: boolean;
+  video: string | null | undefined;
+  youtubeVideoId: string | undefined;
+}) {
+  if (!isVideo) return image;
+  return youtubeVideoId ? `youtube:${youtubeVideoId}` : video;
+}
 
 export function useBackgroundOverlayModel() {
   const {
@@ -61,21 +61,14 @@ export function useBackgroundOverlayModel() {
   );
   const startTime = videoOptions?.startTime ?? youtubeConfig?.startTime ?? 0;
   const endTime = videoOptions?.endTime ?? youtubeConfig?.endTime ?? 0;
-  const backgroundKey = isVideo
-    ? youtubeConfig
-      ? `youtube:${youtubeConfig.videoId}`
-      : video
-    : image;
-  const backgroundMotion = useBackgroundMotion();
-  const { reduced, still, tempo } = useMotionTokens();
-  const motionConfig = useMemo(
-    () =>
-      getBackgroundMotionConfig(
-        backgroundMotion,
-        retime(animation, { reduced, still, tempo }),
-      ),
-    [animation, backgroundMotion, reduced, still, tempo],
-  );
+  const backgroundKey = resolveBackgroundKey({
+    image,
+    isVideo,
+    video,
+    youtubeVideoId: youtubeConfig?.videoId,
+  });
+  const { exitTransition, motionConfig, overlayTransitionStyle } =
+    useBackgroundMotionModel(animation);
   const {
     baseStyle,
     leftGradient: styleLeft,
@@ -91,82 +84,32 @@ export function useBackgroundOverlayModel() {
     mixBlendMode: noiseBlendMode,
     ...noiseInlineStyle
   } = noiseStyle || {};
-  const overlayTransitionStyle = useMemo<CSSProperties>(
-    () => ({
-      transitionDelay: toCssDelay(motionConfig.transition.delay),
-      transitionDuration: toCssDuration(
-        motionConfig.transition.duration,
-        backgroundMotion.transition.duration,
-      ),
-      transitionProperty: "opacity",
-      transitionTimingFunction: toCssEasing(motionConfig.transition.ease),
-    }),
-    [backgroundMotion.transition.duration, motionConfig.transition],
-  );
-  const rawWidth = width ?? videoOptions?.width ?? videoStyle?.width;
-  const resolvedWidth =
-    rawWidth === undefined || rawWidth === null || rawWidth === ""
-      ? undefined
-      : typeof rawWidth === "number"
-        ? `${rawWidth}px`
-        : String(rawWidth);
-  const rawFit = fit ?? videoOptions?.fit ?? videoOptions?.objectFit;
   const theme = useTheme(backgroundTheme);
-  const fitStyle = useMemo<CSSProperties>(
-    () =>
-      rawFit && OBJECT_FITS.includes(rawFit)
-        ? { objectFit: rawFit as CSSProperties["objectFit"] }
-        : {},
-    [rawFit],
-  );
-  const classNames = resolveVideoClassNames(
-    videoClassName,
+  const {
+    classNames,
+    gradientSettings,
+    hasCustomWidth,
+    maskImage,
+    resolvedWidth,
+    sharedVideoStyle,
+    videoClasses,
+  } = useVideoFrameModel({
+    baseStyle,
     className,
-    videoOptions?.videoClassName,
-    videoOptions?.className,
-    videoStyle?.className,
-  );
-  const hasCustomWidth = Boolean(resolvedWidth || classNames.width);
-  const gradientSettings = useMemo(
-    () =>
-      resolveGradientSettings({
-        fadeEdges,
-        hasWidth: hasCustomWidth,
-        leftGradient,
-        rightGradient,
-      }),
-    [fadeEdges, hasCustomWidth, leftGradient, rightGradient],
-  );
-  const maskImage = useMemo(
-    () =>
-      gradientSettings.enabled
-        ? getEdgeFadeMask({
-            color: overlayColor || DEFAULT_COLOR,
-            leftPercent: gradientSettings.leftPercent,
-            rightPercent: gradientSettings.rightPercent,
-          })
-        : undefined,
-    [gradientSettings, overlayColor],
-  );
+    fadeEdges,
+    fit,
+    leftGradient,
+    overlayColor,
+    position,
+    rightGradient,
+    theme,
+    videoClassName,
+    videoOptions,
+    videoStyle,
+    width,
+  });
   const framePosition =
     position === "left" || position === "right" ? position : "center";
-  const videoClasses = cn(theme.slots.video, classNames.other);
-  const objectPosition = baseStyle.objectPosition || position || undefined;
-  const sharedVideoStyle = useMemo<CSSProperties>(
-    () => ({
-      ...classNames.objectStyle,
-      ...fitStyle,
-      ...(objectPosition ? { objectPosition } : {}),
-      ...(maskImage ? { WebkitMaskImage: maskImage, maskImage } : {}),
-      ...baseStyle,
-    }),
-    [baseStyle, classNames.objectStyle, fitStyle, maskImage, objectPosition],
-  );
-  const exitTransition = useMemo(
-    () => getBackgroundExitTransition(backgroundMotion, motionConfig),
-    [backgroundMotion, motionConfig],
-  );
-
   return {
     className,
     hasBackground,
@@ -210,3 +153,7 @@ export function useBackgroundOverlayModel() {
     theme,
   };
 }
+
+export type BackgroundOverlayModel = ReturnType<
+  typeof useBackgroundOverlayModel
+>;

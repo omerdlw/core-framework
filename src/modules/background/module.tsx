@@ -16,6 +16,9 @@ import {
   type DefinedBackground,
 } from "./types";
 
+/**
+ * Normalizes the `background` field of a page config into a state patch, or null when absent.
+ */
 export function selectPageBackground(
   background: BackgroundPageConfig | null | undefined,
 ): Partial<BackgroundState> | null {
@@ -36,6 +39,10 @@ function useBackgroundPage(
   );
 }
 
+/**
+ * The background module definition: install it on the framework to render a page
+ * backdrop (image or video) and to let pages set it through `page.background`.
+ */
 export const backgroundModule = defineModule({
   id: "background",
   context: BackgroundContext,
@@ -66,6 +73,10 @@ declare module "@omerdlw/base-framework/kernel" {
   }
 }
 
+/**
+ * Defines a reusable background. Its `use` hook registers it for the page and
+ * returns the state and actions. A string is shorthand for an image URL.
+ */
 export function defineBackground(
   definition: (Partial<BackgroundState> & { id?: string }) | string = {},
 ): DefinedBackground {
