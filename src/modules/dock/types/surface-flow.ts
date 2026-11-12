@@ -17,6 +17,7 @@ import type {
   SurfaceState,
 } from "./surface";
 
+/** One step of a multi-step surface flow. */
 export interface SurfaceStep {
   action?: DockSlotContent;
   closeLabel?: string | null;
@@ -38,6 +39,7 @@ export interface SurfaceStep {
   trailing?: DockSlotContent;
 }
 
+/** Data a surface hands back to the page that opened it. */
 export interface SurfaceReturnHandshake {
   focusKey: string | null;
   pathname: string;
@@ -45,15 +47,18 @@ export interface SurfaceReturnHandshake {
   returnOnCancel: boolean;
 }
 
+/** Input for creating a return hand-off. */
 export type SurfaceReturnHandshakeInput =
   string | Partial<SurfaceReturnHandshake> | null | undefined;
 
+/** Context given to a surface flow factory. */
 export interface SurfaceFlowCreateContext {
   flowId: string;
   input: unknown;
   snapshot: unknown;
 }
 
+/** Input accepted when defining a surface flow. */
 export interface SurfaceFlowDefinitionInput {
   createSurface: (context: SurfaceFlowCreateContext) => SurfaceInput;
   id: string;
@@ -64,6 +69,7 @@ export interface SurfaceFlowDefinitionInput {
   singleton?: boolean;
 }
 
+/** A normalized surface flow definition. */
 export interface SurfaceFlowDefinition {
   createSurface: (context: SurfaceFlowCreateContext) => SurfaceInput;
   id: string;
@@ -73,6 +79,7 @@ export interface SurfaceFlowDefinition {
   singleton: boolean;
 }
 
+/** A running surface flow instance. */
 export interface SurfaceFlowSession {
   flowId: string;
   input: unknown;
@@ -82,8 +89,10 @@ export interface SurfaceFlowSession {
   surfaceId?: SurfaceId;
 }
 
+/** Lifecycle state of a surface flow. */
 export type SurfaceFlowState = Omit<SurfaceFlowSession, "input" | "surfaceId">;
 
+/** Handle to control a running surface flow. */
 export interface SurfaceFlowHandle {
   cancel: (data?: unknown) => boolean;
   complete: (data?: unknown) => boolean;
@@ -94,6 +103,7 @@ export interface SurfaceFlowHandle {
   update: (snapshot: unknown) => boolean;
 }
 
+/** Describes a surface: content or component, size and behaviour. */
 export interface SurfaceDescriptor {
   action?: DockSlotContent;
   allowSwipeDismiss?: boolean;
@@ -125,8 +135,10 @@ export interface SurfaceDescriptor {
   width?: number | string | null;
 }
 
+/** A surface registered with the dock. */
 export type SurfaceEntry = SurfaceDescriptor;
 
+/** Function that builds a surface entry. */
 export type SurfaceEntryFactory = ((
   config?: DockComponentProps,
 ) => SurfaceDescriptor | null) & {
@@ -134,14 +146,17 @@ export type SurfaceEntryFactory = ((
   isSurfaceFactory?: boolean;
 };
 
+/** Anything accepted as a surface: descriptor, component or node. */
 export type SurfaceInput =
   SurfaceDescriptor | SurfaceEntryFactory | DockComponent | ReactNode;
 
+/** Options for opening a surface. */
 export interface OpenSurfaceOptions extends Partial<SurfaceDescriptor> {
   flowSession?: SurfaceFlowSession | null;
   preserveUrl?: boolean;
 }
 
+/** A surface definition after normalization. */
 export interface NormalizedSurfaceDefinition {
   action: DockSlotContent | null;
   allowSwipeDismiss: boolean;
@@ -169,6 +184,7 @@ export interface NormalizedSurfaceDefinition {
   width: number | string | null;
 }
 
+/** Options for `defineStepSurface`. */
 export interface DefineStepSurfaceOptions {
   currentStepIndex?: number;
   defaultProps?: DockComponentProps;
@@ -179,6 +195,7 @@ export interface DefineStepSurfaceOptions {
   [key: string]: unknown;
 }
 
+/** Value held by the surface flow context. */
 export interface SurfaceFlowContextValue extends Partial<
   Pick<
     DockSurfaceActions,
@@ -194,6 +211,7 @@ export interface SurfaceFlowContextValue extends Partial<
 
 type PropsResolver<T> = T | ((props: DockComponentProps) => T);
 
+/** Definition built with the surface flow builder. */
 export interface SurfaceBuilderDefinition extends Omit<
   SurfaceDescriptor,
   "description" | "icon" | "props" | "title"
@@ -205,6 +223,7 @@ export interface SurfaceBuilderDefinition extends Omit<
   loader?: () => Promise<{ default: DockComponent }>;
 }
 
+/** Factory used by the surface flow builder. */
 export interface SurfaceBuilderFactory {
   (
     props?: DockComponentProps,
@@ -220,11 +239,13 @@ export interface SurfaceBuilderFactory {
   ) => Promise<SurfaceResult> | undefined;
 }
 
+/** A surface factory bound to its props. */
 export interface BoundSurfaceFactory extends SurfaceBuilderFactory {
   config: SurfaceBuilderDefinition | DefineStepSurfaceOptions;
   use: () => SurfaceHandle;
 }
 
+/** Anything that can produce a surface. */
 export type SurfaceFactoryLike = ((
   props?: DockComponentProps,
   overrides?: Partial<SurfaceDescriptor>,
@@ -233,13 +254,16 @@ export type SurfaceFactoryLike = ((
   id?: string | null;
 };
 
+/** Input accepted by `useSurface`. */
 export type UseSurfaceInput = string | SurfaceFactoryLike | SurfaceDescriptor;
 
+/** Function that opens a surface. */
 export type SurfaceOpenFn = (
   props?: DockComponentProps,
   overrides?: Partial<SurfaceDescriptor>,
 ) => Promise<SurfaceResult>;
 
+/** Controls on a surface handle: open, close and update. */
 export interface SurfaceHandleControls {
   close: (result?: SurfaceResult) => void;
   closeAll: (result?: SurfaceResult) => void;
@@ -247,9 +271,11 @@ export interface SurfaceHandleControls {
   surfaceStack: ResolvedSurfaceEntry[];
 }
 
+/** Handle returned by `defineSurface` for a surface with typed props. */
 export type SurfaceHandle = [SurfaceOpenFn, SurfaceHandleControls] &
   SurfaceHandleControls & { open: SurfaceOpenFn };
 
+/** Handle for a surface defined without fixed props. */
 export interface GeneralSurfaceHandle {
   closeAllSurfaces: DockSurfaceActions["closeAllSurfaces"];
   closeSurface: DockSurfaceActions["closeSurface"];
@@ -257,6 +283,7 @@ export interface GeneralSurfaceHandle {
   surfaceStack: ResolvedSurfaceEntry[];
 }
 
+/** Input for returning from a surface flow. */
 export interface SurfaceFlowReturnInput {
   restoreReturnScroll?: boolean;
   returnFocusKey?: string | null;

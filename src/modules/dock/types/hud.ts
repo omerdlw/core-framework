@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { DockComponent, DockComponentProps } from "./card";
 import type { DockIconSource } from "./media";
 
+/** An action button shown inside a HUD. */
 export interface DockHudAction {
   label: string;
   onClick: () => void;
@@ -10,6 +11,7 @@ export interface DockHudAction {
   variant?: "primary" | "destructive" | "muted";
 }
 
+/** A normalized HUD: content or component, priority and dismissal rules. */
 export interface DockHudDescriptor {
   actions?: DockHudAction[];
   autoDismissMs?: number | null;
@@ -31,14 +33,17 @@ export interface DockHudDescriptor {
   title?: string;
 }
 
+/** Per-call overrides merged into a HUD definition. */
 export type DockHudOverrides = Partial<DockHudDescriptor>;
 
+/** Handle returned by `defineHud` for a HUD with typed props. */
 export interface DockHudHandle {
   dismiss: (clearHudFn: (id?: string) => void) => void;
   id: string;
   update: (nextProps?: DockComponentProps) => void;
 }
 
+/** Function that shows a HUD from a handle. */
 export interface DockHudTrigger {
   clear: (id?: string) => void;
   hide: (targetId?: string) => void;
@@ -48,13 +53,16 @@ export interface DockHudTrigger {
   ) => DockHudHandle | null;
 }
 
+/** Handle for a HUD defined without fixed props. */
 export interface GeneralHudHandle {
   clearHud: (id?: string) => void;
   setHud: (descriptor: DockHudDescriptor) => void;
 }
 
+/** Return value of `useHud`. */
 export type UseHudReturn = DockHudTrigger | GeneralHudHandle;
 
+/** API surface of a HUD handle: show, hide and hook-based use. */
 export interface DockHudDefinition {
   config: Omit<DockHudDescriptor, "props"> & {
     defaultProps?: DockComponentProps;
@@ -74,6 +82,7 @@ export interface DockHudDefinition {
   useTrigger: () => DockHudTrigger;
 }
 
+/** HUD state for selection mode. */
 export interface SelectionModeState {
   count: number;
   hasSelection: boolean;
@@ -82,8 +91,10 @@ export interface SelectionModeState {
   selectedIds: (string | number)[];
 }
 
+/** HUD content attached to a long-running operation. */
 export type DockOperationHud = DockHudDescriptor | DockComponent | ReactNode;
 
+/** Loosely typed input accepted when starting an operation. */
 export interface DockOperationInput {
   cancellable?: boolean;
   description?: string | null;
@@ -98,6 +109,7 @@ export interface DockOperationInput {
   startedAt?: number;
 }
 
+/** A normalized long-running operation shown in the dock. */
 export interface DockOperation {
   cancellable: boolean;
   description: string | null;
@@ -115,10 +127,12 @@ export interface DockOperation {
   status: string;
 }
 
+/** Queue of operations tracked by the dock. */
 export interface DockOperationState {
   entries: DockOperation[];
 }
 
+/** Action dispatched to the operation reducer. */
 export interface DockOperationAction {
   endedAt?: number;
   id?: string | number | null;
@@ -129,6 +143,7 @@ export interface DockOperationAction {
   type: string;
 }
 
+/** Operation controls: start, update, complete, cancel and clear. */
 export interface DockOperationActions {
   cancel: (id: string | number, result?: unknown) => boolean;
   clear: (id?: string | number | null) => void;
@@ -137,6 +152,7 @@ export interface DockOperationActions {
   update: (id: string | number, patch?: Partial<DockOperationInput>) => boolean;
 }
 
+/** Options for `defineHud`. */
 export interface DefineHudOptions {
   autoDismissMs?: number | null;
   component?: DockComponent | null;

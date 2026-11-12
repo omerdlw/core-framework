@@ -8,18 +8,22 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "@/react/theme";
 
+/** Name of a styleable card section: card, icon, title or description. */
 export type DockStyleSectionName = "card" | "icon" | "title" | "description";
 
+/** Class name and inline style for one card section. */
 export type DockVisualStyleSection = Omit<CSSProperties, "scale"> & {
   className?: string;
   scale?: number;
   size?: number;
 };
 
+/** Style sections keyed by section name. */
 export type DockVisualStyleSections = Partial<
   Record<DockStyleSectionName, DockVisualStyleSection>
 >;
 
+/** Style input for a card, with active, inactive and hover variants. */
 export interface DockVisualStyleInput extends DockVisualStyleSections {
   active?: DockVisualStyleSections;
   background?: CSSProperties["background"];
@@ -29,6 +33,7 @@ export interface DockVisualStyleInput extends DockVisualStyleSections {
   scale?: number;
 }
 
+/** Resolved style for each card section. */
 export interface DockVisualStyle extends Record<
   DockStyleSectionName,
   DockVisualStyleSection
@@ -36,6 +41,7 @@ export interface DockVisualStyle extends Record<
   scale?: number;
 }
 
+/** Theme overrides for status cards. */
 export interface DockStatusTheme {
   card?: { className?: string };
   icon?: { className?: string };
@@ -43,6 +49,7 @@ export interface DockStatusTheme {
   description?: { className?: string; opacity?: number };
 }
 
+/** Inputs for computing a stacked card's props. */
 export interface DockItemCardPropsOptions {
   cardScale?: number;
   cardStyle?: DockVisualStyleSection;
@@ -55,6 +62,7 @@ export interface DockItemCardPropsOptions {
   visibleCount?: number;
 }
 
+/** Names of the theme slots the dock styles. */
 export type DockThemeSlot =
   | "stack"
   | "backdrop"
@@ -159,14 +167,17 @@ export type DockThemeSlot =
   | "actionStack"
   | "actionSurface";
 
+/** Class names and inline styles for every dock theme slot. */
 export type DockTheme = ResolvedTheme<DockThemeSlot>;
 
+/** Exit animation target for a card: offset, scale and stack position. */
 export interface DockCardExitInput {
   y: number;
   scale: number | null;
   position: number;
 }
 
+/** Durations of the surface transition phases. */
 export interface DockSurfaceTimings {
   dismissAction: number;
   anticipation: number;
@@ -175,8 +186,10 @@ export interface DockSurfaceTimings {
   restoreHeader: number;
 }
 
+/** Key of a surface transition phase. */
 export type DockSurfacePhaseKey = keyof DockSurfaceTimings | "idle" | "open";
 
+/** Motion settings for one surface phase. */
 export interface DockSurfacePhaseMotion {
   deck: Transition | ((distancePx: number) => Transition) | null;
   transform: Transition | null;
@@ -186,6 +199,7 @@ export interface DockSurfacePhaseMotion {
   headerReturn: Transition | null;
 }
 
+/** Offsets, scales and opacity for stacked cards. */
 export interface DockDeckStacking {
   collapsed: {
     offsetY: number;
@@ -198,6 +212,7 @@ export interface DockDeckStacking {
   visible: { stack: number; extensions: number; status: number };
 }
 
+/** Motion tokens for the dock: transitions, variants and deck settings. */
 export interface DockMotion {
   transitions: {
     stack: Transition;

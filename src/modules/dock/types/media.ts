@@ -3,8 +3,10 @@ import type { CSSProperties, ReactNode } from "react";
 import type { DockEventHandler } from "./card";
 import type { DockVisualStyleSection } from "./theme";
 
+/** Icon given as an icon name, image URL or node. */
 export type DockIconSource = ReactNode;
 
+/** Banner given as a URL or an object with position, size and opacity. */
 export type DockBannerSource =
   | string
   | {
@@ -21,12 +23,14 @@ export type DockBannerSource =
     }
   | null;
 
+/** Small overlay drawn on top of a card icon. */
 export interface DockIconOverlayConfig {
   icon: DockIconSource;
   title?: string;
   onClick?: DockEventHandler;
 }
 
+/** Banner accepted by `useDockBanner`. */
 export type DockBannerInput =
   | string
   | {
@@ -42,6 +46,7 @@ export type DockBannerInput =
       url?: string | null;
     };
 
+/** Props of `DockCardBanner`. */
 export interface DockCardBannerProps {
   banner?: DockBannerSource;
   bannerUrl?: string | null;
@@ -57,6 +62,7 @@ export interface DockCardBannerProps {
   className?: string;
 }
 
+/** Props of `DockIcon`. */
 export interface DockIconProps {
   icon: DockIconSource;
   iconOverlay?: DockIconOverlayConfig | null;
@@ -66,6 +72,7 @@ export interface DockIconProps {
   animated?: boolean;
 }
 
+/** Props of the icon overlay. */
 export interface DockIconOverlayProps {
   overlay?: DockIconOverlayConfig | null;
 }

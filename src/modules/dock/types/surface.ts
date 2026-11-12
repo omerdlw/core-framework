@@ -16,18 +16,23 @@ import type {
   SurfaceStep,
 } from "./surface-flow";
 
+/** Value a surface resolves with when it closes. */
 export type SurfaceResult = unknown;
 
+/** Header content set by a surface. */
 export interface SurfaceHeaderConfig {
   description?: string;
   icon?: DockIconSource;
   title?: string;
 }
 
+/** Unique id of an open surface. */
 export type SurfaceId = number;
 
+/** Where an extension sits in the extensions bar. */
 export type SurfaceExtensionAlign = "left" | "center" | "right";
 
+/** An extension shown below a surface card. */
 export interface SurfaceExtension {
   align?: SurfaceExtensionAlign | "start" | "end";
   className?: string;
@@ -40,8 +45,10 @@ export interface SurfaceExtension {
   unstyled?: boolean;
 }
 
+/** Input accepted when registering an extension. */
 export type SurfaceExtensionInput = SurfaceExtension | ReactElement;
 
+/** An extension after normalization. */
 export interface NormalizedSurfaceExtension {
   align: SurfaceExtensionAlign;
   className: string;
@@ -53,6 +60,7 @@ export interface NormalizedSurfaceExtension {
   unstyled: boolean;
 }
 
+/** Name of a surface field that is carried over when a surface is merged or updated. */
 export type SurfacePayloadKey =
   | "action"
   | "closeLabel"
@@ -68,11 +76,13 @@ export type SurfacePayloadKey =
   | "title"
   | "trailing";
 
+/** Values that travel with a surface. */
 export type SurfacePayload = Pick<
   NormalizedSurfaceDefinition,
   SurfacePayloadKey
 >;
 
+/** One surface in the open surface stack. */
 export interface SurfaceStackEntry extends Omit<
   NormalizedSurfaceDefinition,
   SurfacePayloadKey
@@ -82,14 +92,17 @@ export interface SurfaceStackEntry extends Omit<
   payloadId: string;
 }
 
+/** A surface entry with its content resolved. */
 export type ResolvedSurfaceEntry = Partial<SurfacePayload> & SurfaceStackEntry;
 
+/** A surface entry ready to render. */
 export type RenderableSurfaceEntry = Partial<NormalizedSurfaceDefinition> & {
   flow?: SurfaceFlowState | null;
   id?: SurfaceId | null;
   payloadId?: string;
 };
 
+/** The currently active step of a surface. */
 export interface ActiveSurfaceStep extends RenderableSurfaceEntry {
   canGoBack?: boolean;
   isFirstStep?: boolean;
@@ -98,6 +111,7 @@ export interface ActiveSurfaceStep extends RenderableSurfaceEntry {
   totalSteps?: number;
 }
 
+/** State of the surface stack. */
 export interface SurfaceState {
   activeSurfaceEntry: ResolvedSurfaceEntry | null;
   activeSurfaceId: SurfaceId | null;
@@ -106,6 +120,7 @@ export interface SurfaceState {
   surfaceStack: ResolvedSurfaceEntry[];
 }
 
+/** State of the surface transition machine. */
 export interface SurfaceTransitionState {
   closingSurfaceIds: readonly SurfaceId[];
   phase: string;
@@ -113,6 +128,7 @@ export interface SurfaceTransitionState {
   surfaceLifecycle: string;
 }
 
+/** Event sent to the surface transition machine. */
 export interface SurfaceTransitionEvent {
   skipActionDismiss?: boolean;
   surfaceId?: SurfaceId | null;
@@ -120,6 +136,7 @@ export interface SurfaceTransitionEvent {
   value?: unknown;
 }
 
+/** Side effect requested by a surface transition. */
 export interface SurfaceTransitionEffect {
   delayMs?: number;
   event?: SurfaceTransitionEvent;
@@ -129,16 +146,19 @@ export interface SurfaceTransitionEffect {
   type: string;
 }
 
+/** New state and effects produced by a surface transition. */
 export interface SurfaceTransitionResult {
   effects: readonly SurfaceTransitionEffect[];
   state: SurfaceTransitionState;
 }
 
+/** Lifecycle phase of a surface. */
 export interface SurfaceLifecycleState {
   surfaceIds: SurfaceId[];
   surfaceLifecycle: string;
 }
 
+/** Surface-related fields of a dock item. */
 export interface DockItemSurfaceFields {
   allowSwipeDismiss?: boolean;
   backLabel?: string | null;
@@ -182,6 +202,7 @@ export interface DockItemSurfaceFields {
   width?: number | string | null;
 }
 
+/** Actions for opening and closing surfaces. */
 export interface DockSurfaceActions {
   cancelSurfaceFlow: (flowId: string, result?: SurfaceResult) => boolean;
   closeAllSurfaces: (result?: SurfaceResult) => void;
@@ -206,11 +227,13 @@ export interface DockSurfaceActions {
   updateSurfaceFlow: (flowId: string, snapshot: unknown) => boolean;
 }
 
+/** A surface slot given as a props record, a component or a function. */
 export type DockSurfaceSlot =
   | Record<string, unknown>
   | DockComponent
   | ((props: Record<string, unknown>) => unknown);
 
+/** Options for building a surface view model. */
 export interface SurfaceViewModelOptions extends Partial<
   Pick<
     DockSurfaceActions,
@@ -227,6 +250,7 @@ export interface SurfaceViewModelOptions extends Partial<
   surfacePhase?: string;
 }
 
+/** Props of the surface shell. */
 export interface DockSurfaceShellProps {
   ref?: React.Ref<HTMLElement>;
   title?: string;

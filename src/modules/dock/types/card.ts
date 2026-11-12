@@ -37,23 +37,29 @@ import type {
   DockVisualStyleSection,
 } from "./theme";
 
+/** A component type a dock HUD, surface or action can render. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dock components accept arbitrary component props
 export type DockComponent = ComponentType<any>;
 
+/** Props bag passed to dock-rendered components. */
 export type DockComponentProps = Record<string, unknown>;
 
+/** Click-style handler used by dock buttons and cards. */
 export type DockEventHandler = {
   bivarianceHack(event?: SyntheticEvent): void;
 }["bivarianceHack"];
 
+/** Content accepted by an action slot: a node or a component. */
 export type DockSlotContent = ReactNode | DockComponent;
 
+/** Visibility, value and colour of a card badge. */
 export interface DockBadgeState {
   color?: string;
   value?: string | number | null;
   visible: boolean;
 }
 
+/** Describes one command-bar action: its key, content, order and visibility. */
 export interface DockActionDescriptor {
   badge?: string | number | null;
   className?: string | null;
@@ -68,9 +74,11 @@ export interface DockActionDescriptor {
   visible?: boolean;
 }
 
+/** Per-call overrides merged into an action definition. */
 export type DockActionOverrides =
   Partial<DockActionDescriptor> | DockEventHandler;
 
+/** A reusable action definition created with `defineDockAction`. */
 export interface DockActionDefinition {
   bind: (overrides?: DockActionOverrides) => DockActionDescriptor;
   config: DockActionDescriptor;
@@ -80,6 +88,7 @@ export interface DockActionDefinition {
   use: (overrides?: DockActionOverrides) => void;
 }
 
+/** Visual fields of a dock item: title, icon, banner, style and width. */
 export interface DockItemPresentationFields {
   action?: DockSlotContent;
   actions?: DockSlotContent;
@@ -103,6 +112,7 @@ export interface DockItemPresentationFields {
   width?: number | string | null;
 }
 
+/** Runtime flags of a dock item: status, HUD, overlay and surface state. */
 export interface DockItemRuntimeFields {
   disabled?: boolean;
   isAnchoredToBottom?: boolean;
@@ -120,6 +130,7 @@ export interface DockItemRuntimeFields {
   mediaAction?: boolean;
 }
 
+/** One card in the dock stack, combining presentation, route and runtime fields. */
 export interface DockItem
   extends
     DockItemRouteFields,
@@ -127,6 +138,7 @@ export interface DockItem
     DockItemSurfaceFields,
     DockItemRuntimeFields {}
 
+/** Snapshot of the dock store: items, active item, HUD, surfaces and height. */
 export interface DockState {
   activeItem: DockItem | null;
   activeOperation: DockOperation | null;
@@ -151,6 +163,7 @@ export interface DockState {
   surfaceStack: ResolvedSurfaceEntry[];
 }
 
+/** Dock actions used by the dock itself, not meant for app code. */
 export interface DockInternalActions {
   setIsHovered: (hovered: boolean) => void;
   cancelActiveTransaction: (reason?: string) => void;
@@ -164,6 +177,7 @@ export interface DockInternalActions {
   ) => void;
 }
 
+/** Dock actions that change UI state such as expansion, HUD and search. */
 export interface DockUiActions {
   clearHud: (id?: string) => void;
   operations: DockOperationActions;
@@ -176,9 +190,11 @@ export interface DockUiActions {
   unregisterContextAction: (key: string) => void;
 }
 
+/** All actions available from `useDockActions`. */
 export interface DockActions
   extends DockRouteActions, DockSurfaceActions, DockUiActions {}
 
+/** Current dock height and width as reported by `useDockDimensions`. */
 export interface DockDimensions {
   baseHeight: number;
   cardWidth: number;
@@ -187,6 +203,7 @@ export interface DockDimensions {
   stackWidth: number;
 }
 
+/** Props of `DockProvider`. */
 export interface DockProviderProps {
   breadcrumbConfig?: BreadcrumbConfig | null;
   children?: ReactNode;
@@ -195,6 +212,7 @@ export interface DockProviderProps {
   scheduler?: DockScheduler | null;
 }
 
+/** Value held by the dock context: the store and its actions. */
 export interface DockContextValue {
   actions: DockActions;
   runtimeActions: {
@@ -207,11 +225,13 @@ export interface DockContextValue {
   guards: DockGuardRegistry;
 }
 
+/** Hooks the dock view uses to publish route snapshots and register the navigator. */
 export interface DockViewBridge {
   publishRoute: (snapshot: DockRouteSnapshot) => void;
   setNavigator: (navigate: DockActions["navigate"] | null) => void;
 }
 
+/** Card fields a page can set through `useDockConfig`. */
 export type DockPageCardFields = Omit<DockItemPresentationFields, "actions"> &
   Pick<
     DockItemRouteFields,
@@ -226,6 +246,7 @@ export type DockPageCardFields = Omit<DockItemPresentationFields, "actions"> &
   Pick<DockItemRuntimeFields, "isLoading" | "isOverlay"> &
   Pick<DockItemSurfaceFields, "dismissible">;
 
+/** Page-level dock configuration accepted by `useDockConfig`. */
 export interface DockPageConfig extends DockPageCardFields {
   actions?: Partial<DockActionDescriptor>[];
   breadcrumbs?: unknown[];
@@ -234,6 +255,7 @@ export interface DockPageConfig extends DockPageCardFields {
   surfaces?: Record<string, DockSurfaceSlot>;
 }
 
+/** Object returned when a page registers a dock config. */
 export type DockPageApi = DockActions & {
   set: (dock: DockPageConfig) => void;
   surface: (
@@ -242,6 +264,7 @@ export type DockPageApi = DockActions & {
   ) => unknown;
 };
 
+/** Which layer is on top of the dock and which companion shows beside it. */
 export interface DockScene {
   companion: "notification" | "breadcrumbs" | null;
   expanded: boolean;
@@ -249,6 +272,7 @@ export interface DockScene {
   topKind: "surface" | "status-overlay" | "status" | "hud" | "route";
 }
 
+/** Options for `defineDockAction`. */
 export interface DefineDockActionOptions {
   badge?: string | number | null;
   className?: string | null;
@@ -263,6 +287,7 @@ export interface DefineDockActionOptions {
   [key: string]: unknown;
 }
 
+/** Props of `DockDescription`. */
 export interface DockDescriptionProps {
   text?: string | number | null;
   style?: DockVisualStyleSection;
@@ -270,12 +295,14 @@ export interface DockDescriptionProps {
   animated?: boolean;
 }
 
+/** Props of `DockTitle`. */
 export interface DockTitleProps {
   text?: string | number | null;
   style?: DockVisualStyleSection;
   animated?: boolean;
 }
 
+/** Props of `DockCardHeader`. */
 export interface DockCardHeaderProps {
   item?: DockItem;
   link?: DockItem;
@@ -292,6 +319,7 @@ export interface DockCardHeaderProps {
   contextCommands?: DockActionDescriptor[];
 }
 
+/** Props of a single dock card. */
 export interface DockCardItemProps {
   ref?: React.Ref<HTMLDivElement>;
   activeItem?: DockItem | null;
@@ -316,6 +344,7 @@ export interface DockCardItemProps {
   contextCommands?: DockActionDescriptor[];
 }
 
+/** Props of the standard (non-surface) card content. */
 export interface StandardItemContentProps {
   item?: DockItem;
   link?: DockItem;
@@ -333,11 +362,13 @@ export interface StandardItemContentProps {
   pathname: string;
 }
 
+/** Inputs for computing the dock container height. */
 export interface ContainerHeightOptions {
   cardContentHeight?: number | string | null;
   isHud?: boolean;
 }
 
+/** Options for the dock height controller hook. */
 export interface UseDockHeightControllerOptions {
   contentKey?: unknown;
   isHud?: boolean;
@@ -345,6 +376,8 @@ export interface UseDockHeightControllerOptions {
   surfacePhase?: string;
 }
 
+/** Scheduler used for dock timers. */
 export type DockScheduler = ReturnType<typeof createScheduler>;
 
+/** Identifier of a task queued on the dock scheduler. */
 export type DockScheduledTaskId = ReturnType<DockScheduler["schedule"]>;
