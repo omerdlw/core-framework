@@ -53,17 +53,20 @@ function CarouselArrow({
   visible,
 }: CarouselArrowProps) {
   const { icons, labels, parts } = useUi();
-  const icon = side === "left" ? icons.previous : icons.next;
+  const isLeft = side === "left";
+  const icon = isLeft ? icons.previous : icons.next;
+  const label = isLeft ? labels.previous : labels.next;
+  const direction = isLeft ? -1 : 1;
   return (
     <Button
       aria-hidden={!visible}
-      aria-label={side === "left" ? labels.previous : labels.next}
+      aria-label={label}
       className={parts.carousel.arrow({
         side,
         visible,
         className: [classNames.arrow, arrowClassName],
       })}
-      onClick={() => onClick(side === "left" ? -1 : 1)}
+      onClick={() => onClick(direction)}
       tabIndex={visible ? 0 : -1}
     >
       {icon ? (

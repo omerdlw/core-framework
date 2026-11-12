@@ -7,6 +7,7 @@ import {
   defineMotion,
   type MotionClock,
   type MotionTokens,
+  NEUTRAL_TEMPO,
   retimeModuleMotion,
 } from "@/foundation/utils/tempo";
 import { getOrCreateGlobalContext } from "@/react/context";
@@ -70,8 +71,6 @@ const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
 const ThemeContext = getOrCreateGlobalContext<
   ReadonlyMap<string, ThemeEntry["config"]>
 >("ThemeContext", EMPTY);
-
-const NEUTRAL_TEMPO = 1;
 
 interface MotionState extends MotionClock {
   readonly tokens: MotionTokens;

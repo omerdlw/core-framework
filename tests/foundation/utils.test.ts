@@ -472,6 +472,13 @@ describe("user messages", () => {
       USER_MESSAGES.generic,
     );
     assert.equal(toUserMessage(null), USER_MESSAGES.generic);
+    // A NaN status is not an HTTP status, so network detection still applies.
+    assert.equal(
+      toUserMessage(
+        Object.assign(new TypeError("Failed to fetch"), { status: NaN }),
+      ),
+      USER_MESSAGES.network,
+    );
     assert.equal(toUserMessage(undefined, { fallback: "Custom" }), "Custom");
   });
 

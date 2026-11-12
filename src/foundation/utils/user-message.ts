@@ -71,7 +71,8 @@ function messageForStatus(
     return USER_MESSAGES.timeout;
   }
   if (status >= STATUS_SERVER_ERROR_MIN) return USER_MESSAGES.server;
-  if (status < STATUS_CLIENT_ERROR_MIN) return undefined;
+  // Written as a negation so a NaN status is not treated as an HTTP error.
+  if (!(status >= STATUS_CLIENT_ERROR_MIN)) return undefined;
 
   const authored = readPayloadMessage(error);
   if (authored) return authored;

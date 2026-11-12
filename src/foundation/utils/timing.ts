@@ -1,11 +1,12 @@
-const DEFAULT_WAIT_MS = 300;
+const DEFAULT_DEBOUNCE_MS = 300;
+const DEFAULT_THROTTLE_MS = 300;
 
 /**
  * Delays calls until `wait` ms pass without a new one. The result has `cancel()`.
  */
 export function debounce<T extends (...args: never[]) => void>(
   func: T,
-  wait = DEFAULT_WAIT_MS,
+  wait = DEFAULT_DEBOUNCE_MS,
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   function debounced(...args: Parameters<T>): void {
@@ -29,7 +30,7 @@ export function debounce<T extends (...args: never[]) => void>(
  */
 export function throttle<T extends (...args: never[]) => void>(
   func: T,
-  limit = DEFAULT_WAIT_MS,
+  limit = DEFAULT_THROTTLE_MS,
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let lastRan = 0;
   let timerId: ReturnType<typeof setTimeout> | null = null;

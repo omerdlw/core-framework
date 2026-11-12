@@ -45,7 +45,7 @@ export type MotionTokens<T extends MotionTokensInput = MotionTokensInput> =
     }
   >;
 
-const NEUTRAL_TEMPO = 1;
+export const NEUTRAL_TEMPO = 1;
 
 /**
  * Validates and freezes motion tokens, applying defaults for tempo and policy.
@@ -110,8 +110,8 @@ function retimeTransition(value: Plain, clock: MotionClock): Plain {
   for (const [key, entry] of Object.entries(value)) {
     next[key] = isPlainObject(entry) ? retimeNode(entry, clock) : entry;
   }
-  // Durations scale with tempo; spring stiffness and damping scale inversely
-  // (squared and linear) so the spring settles in proportionally less time.
+  // Durations scale with tempo. Spring stiffness and damping are scaled so the
+  // spring's timing follows tempo while its damping ratio stays the same.
   for (const key of TIME_KEYS) {
     if (typeof value[key] === "number") next[key] = value[key] * tempo;
   }
