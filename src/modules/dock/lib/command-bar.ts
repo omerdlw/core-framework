@@ -2,9 +2,9 @@ import { isValidElement } from "react";
 
 import { isObject, toArray } from "@/foundation/utils";
 
-import { DOCK_SURFACE_PHASE } from "../constants";
 import type { DockCommandEntry } from "../runtime/commands";
 import type { DockActionDescriptor, DockItem } from "../types";
+import { isActiveSurfaceInProgress } from "./card-item";
 
 export function normalizeToolbarActions(actions: unknown): DockCommandEntry[] {
   const arrayActions = toArray(actions);
@@ -37,15 +37,11 @@ export function sortToolbarActionsByOrder(
 export function isActionlessDockItem(
   activeItem: DockItem | null | undefined,
 ): boolean {
-  const isSurfaceActive = Boolean(
-    activeItem?.isSurface &&
-    activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
-  );
   return Boolean(
     activeItem?.isNotFound ||
     activeItem?.path === "not-found" ||
     activeItem?.isMasked ||
-    isSurfaceActive,
+    isActiveSurfaceInProgress(activeItem),
   );
 }
 

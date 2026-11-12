@@ -15,14 +15,13 @@ import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
 
+import { CONTROL_ICON_SIZE } from "../../constants";
 import { useDockTheme } from "../../hooks/use-dock-theme";
 import { getDockLayoutTransition, useDockMotion } from "../../motion";
 import { DockSurfaceHeaderRadiusContext } from "../../surface/context";
 import { useDockSurfaceControlsModel } from "../../surface/hooks/use-surface-controls-model";
 import type { DockItem } from "../../types";
 import { applyControlRadius, getControlRadiusClass } from "./header-button";
-
-const CONTROL_ICON_SIZE = 16;
 
 export const DockSurfaceControls = memo(function DockSurfaceControls({
   activeItem = null,

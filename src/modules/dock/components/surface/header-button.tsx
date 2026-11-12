@@ -6,11 +6,10 @@ import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
 
+import { CONTROL_ICON_SIZE } from "../../constants";
 import { useDockTheme } from "../../hooks/use-dock-theme";
 import { useDockSurfaceHeaderButtonModel } from "../../surface/hooks/use-surface-header-button-model";
 import type { DockIconSource, DockTheme } from "../../types";
-
-const CONTROL_ICON_SIZE = 16;
 
 const ROUNDED_CLASS_PATTERN = /\brounded(?:-[a-zA-Z0-9_-]+)?\b/g;
 

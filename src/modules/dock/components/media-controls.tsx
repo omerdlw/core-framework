@@ -7,6 +7,7 @@ import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
 
+import { CONTROL_ICON_SIZE } from "../constants";
 import { useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMediaControlsModel } from "../hooks/use-media-controls-model";
 import { getVolumeIcon } from "../lib/media";
@@ -17,8 +18,6 @@ import {
   getDockMediaVolumeThumbPositionTransition,
   useDockMotion,
 } from "../motion";
-
-const CONTROL_ICON_SIZE = 16;
 
 export const DockMediaControls = memo(function DockMediaControls({
   className = "",

@@ -1,3 +1,5 @@
+import { clamp } from "@/foundation/utils";
+
 import { PLAYBACK_RATES } from "../constants";
 
 /** Seconds jumped by the skip-back and skip-forward controls. */
@@ -6,6 +8,9 @@ export const MEDIA_SKIP_SECONDS = 10;
 export const VOLUME_KEY_STEP = 0.05;
 /** Volume restored when unmuting from a volume of zero. */
 export const RESTORED_VOLUME = 0.7;
+/** Seconds moved by the arrow keys on the scrubber. */
+export const SCRUBBER_KEY_STEP_SECONDS = 5;
+const LOW_VOLUME_THRESHOLD = 0.5;
 const PERCENT = 100;
 
 /** Formats a 0..1 fraction as a CSS percentage string. */
@@ -37,8 +42,6 @@ export function getSkipForwardTime(current: number, duration: number): number {
     : current + MEDIA_SKIP_SECONDS;
 }
 
-const LOW_VOLUME_THRESHOLD = 0.5;
-
 /** Icon name for the volume button at the given effective volume. */
 export function getVolumeIcon(effectiveVolume: number): string {
   if (effectiveVolume === 0) return "solar:volume-cross-bold";
@@ -46,12 +49,9 @@ export function getVolumeIcon(effectiveVolume: number): string {
   return "solar:volume-loud-bold";
 }
 
-/** Seconds moved by the arrow keys on the scrubber. */
-export const SCRUBBER_KEY_STEP_SECONDS = 5;
-
 /** Playback progress as a 0..1 ratio, 0 while the duration is unknown. */
 export function getProgressRatio(current: number, total: number): number {
-  return total > 0 ? Math.min(1, Math.max(0, current / total)) : 0;
+  return total > 0 ? clamp(current / total, 0, 1) : 0;
 }
 
 /** Pointer offset inside a track and its 0..1 fraction of the track width. */
@@ -59,6 +59,23 @@ export function getTrackPosition(
   clientX: number,
   rect: { left: number; width: number },
 ): { offsetX: number; fraction: number } {
-  const offsetX = Math.min(rect.width, Math.max(0, clientX - rect.left));
+  const offsetX = clamp(clientX - rect.left, 0, rect.width);
   return { offsetX, fraction: rect.width > 0 ? offsetX / rect.width : 0 };
+}
+
+/** Moves the volume fill and thumb to a CSS percentage, skipping missing elements. */
+export function paintVolume(
+  fillElement: HTMLElement | null,
+  thumbElement: HTMLElement | null,
+  percent: string,
+): void {
+  if (fillElement) fillElement.style.width = percent;
+  if (thumbElement) thumbElement.style.left = percent;
+}
+
+/** Volume after one arrow-key step, clamped to 0..1 (not rounded). */
+export function stepVolume(volume: number, direction: 1 | -1): number {
+  return direction === 1
+    ? Math.min(1, volume + VOLUME_KEY_STEP)
+    : Math.max(0, volume - VOLUME_KEY_STEP);
 }

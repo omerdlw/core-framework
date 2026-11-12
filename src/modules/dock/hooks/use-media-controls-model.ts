@@ -3,18 +3,18 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { clamp } from "@/foundation/utils";
-
 import { useDockMedia, useDockMediaActions } from "../context";
 import {
   getNextPlaybackRate,
   getSkipForwardTime,
+  getTrackPosition,
   MEDIA_SKIP_SECONDS,
   normalizePlaybackRate,
+  paintVolume,
   RESTORED_VOLUME,
   roundVolume,
+  stepVolume,
   toPercentString,
-  VOLUME_KEY_STEP,
 } from "../lib/media";
 
 export function useDockMediaControlsModel(_props: { className?: string }) {
@@ -101,10 +101,11 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       const effective = currentMute ? 0 : currentVol;
       const effectivePercent = toPercentString(effective);
 
-      if (volumeFillRef.current)
-        volumeFillRef.current.style.width = effectivePercent;
-      if (volumeThumbRef.current)
-        volumeThumbRef.current.style.left = effectivePercent;
+      paintVolume(
+        volumeFillRef.current,
+        volumeThumbRef.current,
+        effectivePercent,
+      );
     };
 
     syncVolumeState();
@@ -128,15 +129,15 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       const rect = volumeTrackRef.current.getBoundingClientRect();
       if (rect.width <= 0) return;
 
-      const offsetX = clamp(clientX - rect.left, 0, rect.width);
-      const fraction = offsetX / rect.width;
+      const { fraction } = getTrackPosition(clientX, rect);
       const nextVolume = roundVolume(fraction);
       const fractionPercent = toPercentString(fraction);
 
-      if (volumeFillRef.current)
-        volumeFillRef.current.style.width = fractionPercent;
-      if (volumeThumbRef.current)
-        volumeThumbRef.current.style.left = fractionPercent;
+      paintVolume(
+        volumeFillRef.current,
+        volumeThumbRef.current,
+        fractionPercent,
+      );
 
       audibleElement.volume = nextVolume;
       const nextMuted = nextVolume === 0;
@@ -213,17 +214,17 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
         setIsMuted(false);
 
         const restoredPercent = toPercentString(restoredVolume);
-        if (volumeFillRef.current)
-          volumeFillRef.current.style.width = restoredPercent;
-        if (volumeThumbRef.current)
-          volumeThumbRef.current.style.left = restoredPercent;
+        paintVolume(
+          volumeFillRef.current,
+          volumeThumbRef.current,
+          restoredPercent,
+        );
       } else {
         audibleElement.muted = true;
         setVideoMuted?.(true);
         setIsMuted(true);
 
-        if (volumeFillRef.current) volumeFillRef.current.style.width = "0%";
-        if (volumeThumbRef.current) volumeThumbRef.current.style.left = "0%";
+        paintVolume(volumeFillRef.current, volumeThumbRef.current, "0%");
       }
     },
     [isMuted, setVideoMuted, audibleElement, volume],
@@ -254,14 +255,14 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     if (!audibleElement) return;
     if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
       event.preventDefault();
-      const next = Math.max(0, volume - VOLUME_KEY_STEP);
+      const next = stepVolume(volume, -1);
       audibleElement.volume = next;
       const nextMuted = next === 0;
       audibleElement.muted = nextMuted;
       setVideoMuted?.(nextMuted);
     } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
       event.preventDefault();
-      const next = Math.min(1, volume + VOLUME_KEY_STEP);
+      const next = stepVolume(volume, 1);
       audibleElement.volume = next;
       audibleElement.muted = false;
       setVideoMuted?.(false);

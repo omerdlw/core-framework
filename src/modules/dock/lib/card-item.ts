@@ -8,6 +8,7 @@ import type {
   DockVisualStyle,
   DockVisualStyleInput,
 } from "../types";
+import { ownsPathname } from "./card";
 
 /** Layers an item's own style over a status style, section by section. */
 export function mergeStatusStyle(
@@ -90,4 +91,88 @@ export function isStackSurfaceActive(
     activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
     activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
   );
+}
+
+/** Role flags for a card: which layer it belongs to and whether it shows the scrubber. */
+export function resolveCardRoleFlags({
+  activeItem,
+  expanded,
+  hasMedia,
+  hud,
+  isActive,
+  isHudActive,
+  isStatusActive,
+  isSurfaceActive,
+  isTop,
+  item,
+  pathname,
+  statusStyle,
+}: {
+  activeItem: DockItem | null | undefined;
+  expanded: boolean | undefined;
+  hasMedia: boolean;
+  hud: unknown;
+  isActive: boolean;
+  isHudActive: boolean;
+  isStatusActive: boolean;
+  isSurfaceActive: boolean;
+  isTop: boolean;
+  item: DockItem;
+  pathname: string;
+  statusStyle: unknown;
+}) {
+  const isTopHudActive = Boolean(isTop && isHudActive);
+  const isCurrentActive = Boolean(
+    !item.disabled && !item.isInactive && (expanded || isTop || isActive),
+  );
+  const isCurrentHud = Boolean(
+    isHudActive || isTopHudActive || Boolean(hud) || Boolean(item.isHud),
+  );
+  const isCurrentStatus = Boolean(
+    isStatusActive ||
+    Boolean(item.isStatus) ||
+    Boolean(statusStyle) ||
+    Boolean(item.isNotFound),
+  );
+  const isCurrentSurface = Boolean(
+    isSurfaceActive ||
+    Boolean(item.isSurface) ||
+    isActiveSurfaceInProgress(activeItem),
+  );
+  const isHeaderRestoring =
+    item.surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER;
+  const showVideoScrubber = Boolean(
+    isTop &&
+    hasMedia &&
+    ownsPathname(item.path, pathname) &&
+    (!item.isSurface || isHeaderRestoring) &&
+    !item.isStatus,
+  );
+  return {
+    isCurrentActive,
+    isCurrentHud,
+    isCurrentStatus,
+    isCurrentSurface,
+    isTopHudActive,
+    showVideoScrubber,
+  };
+}
+
+/** Where a card sits in the stack: extension shelf, background or ghost. */
+export function resolveCardStackFlags(
+  expanded: boolean | undefined,
+  position: number,
+  hasExtensions: boolean,
+  stacking: DockDeckStacking,
+) {
+  const isExtensionShelf = Boolean(
+    !expanded && position === 1 && hasExtensions,
+  );
+  const isCollapsedBackgroundCard = Boolean(
+    !expanded && position > 0 && !isExtensionShelf,
+  );
+  const isCollapsedGhostCard = Boolean(
+    !expanded && position >= stacking.visible.stack && !isExtensionShelf,
+  );
+  return { isCollapsedBackgroundCard, isCollapsedGhostCard, isExtensionShelf };
 }

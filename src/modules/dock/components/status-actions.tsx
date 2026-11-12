@@ -12,13 +12,12 @@ import { useDockActionClass, useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMotion } from "../motion";
 import type { ErrorActionsProps, GuardActionsProps } from "../types";
 
-function ActionButton({
-  children,
-  onPress,
-}: {
+interface ActionButtonProps {
   children: ReactNode;
   onPress: () => void;
-}) {
+}
+
+function ActionButton({ children, onPress }: ActionButtonProps) {
   const theme = useDockTheme();
   const actionClass = useDockActionClass();
   return (

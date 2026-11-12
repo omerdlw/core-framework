@@ -88,6 +88,12 @@ export const DOCK_SURFACE_PHASE = Object.freeze({
 
 export const VIEWPORT_MARGIN = 24;
 
+/** Pixel size of the icons in dock control buttons. */
+export const CONTROL_ICON_SIZE = 16;
+
+/** Id given to a HUD that does not name one. */
+export const DEFAULT_HUD_ID = "hud";
+
 export const DOCK_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 20,
   extensionShelfHeight: 45,

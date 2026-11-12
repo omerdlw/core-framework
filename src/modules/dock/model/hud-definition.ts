@@ -3,6 +3,7 @@ import { isValidElement, type ReactNode } from "react";
 import { isObject } from "@/foundation/utils";
 
 import {
+  DEFAULT_HUD_ID,
   DOCK_HUD_PRIORITY,
   DOCK_HUD_RENDER_MODE,
   DOCK_OPERATION_STATUS,
@@ -15,7 +16,6 @@ import {
 import type { DockComponent, DockHudDescriptor, DockOperation } from "../types";
 import { normalizeAutoDismiss, normalizePriority } from "./hud";
 
-const DEFAULT_HUD_ID = "hud";
 const DEFAULT_COMPONENT_HUD_ID = "component-hud";
 
 type DismissHandler = DockHudDescriptor["onDismiss"];

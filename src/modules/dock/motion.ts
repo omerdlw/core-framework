@@ -1,4 +1,4 @@
-import { type Transition } from "motion/react";
+import type { TargetAndTransition, Transition } from "motion/react";
 
 import { cssTransition, gpuTransform } from "@/foundation/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/react/theme";
@@ -150,6 +150,25 @@ export function getDockPhaseMotion(
 ): DockSurfacePhaseMotion {
   const key = (surfacePhase && SURFACE_PHASE_KEYS[surfacePhase]) || "idle";
   return motion.phases[key];
+}
+
+/** Variants for the header restoring after a surface closes, using the phase's own timing. */
+export function getDockHeaderRestoreVariants(
+  motion: DockMotion,
+  surfacePhase?: string | null,
+) {
+  const { headerRestore } = motion.variants;
+  const visible = headerRestore.visible as TargetAndTransition;
+  return {
+    hidden: headerRestore.hidden,
+    visible: {
+      ...visible,
+      transition:
+        getDockPhaseMotion(motion, surfacePhase).headerReturn ??
+        visible.transition,
+    },
+    exit: headerRestore.exit,
+  };
 }
 
 export function getDockStackTransformTransition(

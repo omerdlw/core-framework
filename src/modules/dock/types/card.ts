@@ -246,7 +246,7 @@ export type DockPageCardFields = Omit<DockItemPresentationFields, "actions"> &
   Pick<DockItemRuntimeFields, "isLoading" | "isOverlay"> &
   Pick<DockItemSurfaceFields, "dismissible">;
 
-/** Page-level dock configuration accepted by `useDockConfig`. */
+/** Page-level dock config: the `dock` field of a page config and the input to `useDockRegistration`. */
 export interface DockPageConfig extends DockPageCardFields {
   actions?: Partial<DockActionDescriptor>[];
   breadcrumbs?: unknown[];

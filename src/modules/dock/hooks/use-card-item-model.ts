@@ -1,6 +1,5 @@
 "use client";
 
-import type { TargetAndTransition } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   type KeyboardEvent,
@@ -15,16 +14,21 @@ import { useModule } from "@/core/kernel";
 
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockHasMedia } from "../context";
-import { isSurfaceLayerShown, ownsPathname } from "../lib/card";
+import { isSurfaceLayerShown } from "../lib/card";
 import {
   applyStatusSlots,
-  isActiveSurfaceInProgress,
   mergeStatusStyle,
+  resolveCardRoleFlags,
+  resolveCardStackFlags,
   resolveVisibleCardCount,
 } from "../lib/card-item";
 import { getDockItemCardProps, resolveDockVisualStyle } from "../lib/styles";
 import { getItemMeasurementKey, getRouteMeasurementKey } from "../model/layout";
-import { getDockCardDelay, getDockPhaseMotion, useDockMotion } from "../motion";
+import {
+  getDockCardDelay,
+  getDockHeaderRestoreVariants,
+  useDockMotion,
+} from "../motion";
 import { useRoutePrefetch } from "../routing/hooks/use-route-prefetch";
 import { resolveDockRoutePolicy } from "../routing/model/policy";
 import type { DockCardItemProps } from "../types";
@@ -62,33 +66,27 @@ export function useDockCardItemModel({
     navigator: navigation?.actions,
   });
   const hasMedia = useDockHasMedia();
-  const isTopHudActive = Boolean(isTop && isHudActive);
-  const isCurrentActive = Boolean(
-    !item.disabled && !item.isInactive && (expanded || isTop || isActive),
-  );
-  const isCurrentHud = Boolean(
-    isHudActive || isTopHudActive || Boolean(hud) || Boolean(item.isHud),
-  );
-  const isCurrentStatus = Boolean(
-    isStatusActive ||
-    Boolean(item.isStatus) ||
-    Boolean(statusStyle) ||
-    Boolean(item.isNotFound),
-  );
-  const isCurrentSurface = Boolean(
-    isSurfaceActive ||
-    Boolean(item.isSurface) ||
-    isActiveSurfaceInProgress(activeItem),
-  );
-  const isHeaderRestoring =
-    item.surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER;
-  const showVideoScrubber = Boolean(
-    isTop &&
-    hasMedia &&
-    ownsPathname(item.path, pathname) &&
-    (!item.isSurface || isHeaderRestoring) &&
-    !item.isStatus,
-  );
+  const {
+    isCurrentActive,
+    isCurrentHud,
+    isCurrentStatus,
+    isCurrentSurface,
+    isTopHudActive,
+    showVideoScrubber,
+  } = resolveCardRoleFlags({
+    activeItem,
+    expanded,
+    hasMedia,
+    hud,
+    isActive,
+    isHudActive,
+    isStatusActive,
+    isSurfaceActive,
+    isTop,
+    item,
+    pathname,
+    statusStyle,
+  });
   const badge = useDockBadge(item.name?.toLowerCase(), item.badge);
   const actionSlot = useActionSlot(item, pathname, { isTop });
   const cardContentRef = useRef<HTMLDivElement>(null);
@@ -117,20 +115,10 @@ export function useDockCardItemModel({
     renderedActionSlot || showsSurfaceLayer,
   );
   const dockMotion = useDockMotion();
-  const headerRestoreVariants = useMemo(() => {
-    const { headerRestore } = dockMotion.variants;
-    const visible = headerRestore.visible as TargetAndTransition;
-    return {
-      hidden: headerRestore.hidden,
-      visible: {
-        ...visible,
-        transition:
-          getDockPhaseMotion(dockMotion, item.surfacePhase).headerReturn ??
-          visible.transition,
-      },
-      exit: headerRestore.exit,
-    };
-  }, [dockMotion, item.surfacePhase]);
+  const headerRestoreVariants = useMemo(
+    () => getDockHeaderRestoreVariants(dockMotion, item.surfacePhase),
+    [dockMotion, item.surfacePhase],
+  );
   useElementHeight(
     onContentHeightChange,
     cardContentRef,
@@ -191,17 +179,13 @@ export function useDockCardItemModel({
   const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     if (event.currentTarget.scrollTop !== 0) event.currentTarget.scrollTop = 0;
   }, []);
-  const isExtensionShelf = Boolean(
-    !expanded && position === 1 && hasExtensions,
-  );
-  const isCollapsedBackgroundCard = Boolean(
-    !expanded && position > 0 && !isExtensionShelf,
-  );
-  const isCollapsedGhostCard = Boolean(
-    !expanded &&
-    position >= dockMotion.deck.stacking.visible.stack &&
-    !isExtensionShelf,
-  );
+  const { isCollapsedBackgroundCard, isCollapsedGhostCard, isExtensionShelf } =
+    resolveCardStackFlags(
+      expanded,
+      position,
+      hasExtensions,
+      dockMotion.deck.stacking,
+    );
   const {
     className: cardClassName,
     data: cardData,

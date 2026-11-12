@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 
-import { DOCK_HUD_PRIORITY } from "./constants";
+import { DEFAULT_HUD_ID, DOCK_HUD_PRIORITY } from "./constants";
 import { useDockActions } from "./context";
 import { areHudDefinitionsEqual } from "./model/hud";
 import { createHudDefinition } from "./model/hud-definition";
@@ -15,8 +15,6 @@ import type {
   DockHudTrigger,
   UseHudReturn,
 } from "./types";
-
-const DEFAULT_HUD_ID = "hud";
 
 /** Shows a HUD while the calling component is mounted and the descriptor is active. */
 export function useDockHud(descriptor: DockHudDescriptor) {
