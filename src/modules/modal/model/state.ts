@@ -1,5 +1,5 @@
-import { MODAL_CHROME, MODAL_POSITIONS } from "./constants";
-import { type ModalEntry, type ModalState } from "./types";
+import { MODAL_CHROME, MODAL_POSITIONS } from "../constants";
+import { type ModalEntry, type ModalState } from "../types";
 
 export function createModalState(modalStack: ModalEntry[] = []): ModalState {
   const activeModal = modalStack[modalStack.length - 1] || null;

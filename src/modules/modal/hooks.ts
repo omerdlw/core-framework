@@ -23,7 +23,7 @@ import {
   modalTheme,
 } from "./constants";
 import { ModalContext } from "./context";
-import { getModalIdentity } from "./identity";
+import { getModalIdentity } from "./model/identity";
 import {
   type ModalActions,
   type ModalComponent,
@@ -39,13 +39,13 @@ import {
   dispatchSmoothScrollLock,
   getFocusableElements,
   trapFocus,
-} from "./dom";
+} from "./lib/dom";
 import {
   getViewportIsMobile,
   isSidePosition,
   isVerticalEdgePosition,
   resolveActivePosition,
-} from "./layout";
+} from "./model/layout";
 
 export function useModalRegistration(
   config: ModalPageConfig | null | undefined,

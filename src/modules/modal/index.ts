@@ -1,6 +1,7 @@
 "use client";
 
-export { Modal, ModalContainer } from "./overlay";
+export { Modal } from "./components/overlay";
+export { ModalContainer } from "./components/modal-container";
 export { ModalContext, ModalProvider, type ModalContextValue } from "./context";
 export {
   useModal,
@@ -20,8 +21,8 @@ export {
   SMOOTH_SCROLL_LOCK_EVENT,
   modalTheme,
 } from "./constants";
-export { createModalState, INITIAL_MODAL_STATE } from "./state";
-export { getModalIdentity, getModalLabel } from "./identity";
+export { createModalState, INITIAL_MODAL_STATE } from "./model/state";
+export { getModalIdentity, getModalLabel } from "./model/identity";
 export {
   getModalLayout,
   getModalPosition,
@@ -31,11 +32,15 @@ export {
   isVerticalEdgePosition,
   normalizePosition,
   resolveActivePosition,
-} from "./layout";
+} from "./model/layout";
 export {
   dispatchSmoothScrollLock,
   getFocusableElements,
   trapFocus,
-} from "./dom";
-export { hasSlotContent, isHeaderConfig, resolveHeaderActions } from "./header";
+} from "./lib/dom";
+export {
+  hasSlotContent,
+  isHeaderConfig,
+  resolveHeaderActions,
+} from "./model/header";
 export type * from "./types";

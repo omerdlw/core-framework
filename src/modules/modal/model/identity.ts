@@ -2,7 +2,7 @@ import {
   type DefineModalOptions,
   type ModalComponent,
   type ModalInput,
-} from "./types";
+} from "../types";
 
 export function getModalIdentity(input: ModalInput | DefineModalOptions): {
   component: ModalComponent | null;

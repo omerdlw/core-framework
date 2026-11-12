@@ -3,12 +3,12 @@ import {
   HEIGHT_CONSTRAINT_PATTERN,
   MODAL_BREAKPOINTS,
   MODAL_POSITIONS,
-} from "./constants";
+} from "../constants";
 import {
   type ModalLayout,
   type ModalPosition,
   type ResponsiveModalPosition,
-} from "./types";
+} from "../types";
 
 export function hasHeightConstraint(className?: string): boolean {
   return (

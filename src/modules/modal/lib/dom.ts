@@ -1,4 +1,4 @@
-import { FOCUSABLE_SELECTOR, SMOOTH_SCROLL_LOCK_EVENT } from "./constants";
+import { FOCUSABLE_SELECTOR, SMOOTH_SCROLL_LOCK_EVENT } from "../constants";
 
 export function dispatchSmoothScrollLock(locked: boolean): void {
   if (typeof window === "undefined") return;

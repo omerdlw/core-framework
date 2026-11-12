@@ -17,10 +17,10 @@ import {
   type ModalPageApi,
   type ModalPageConfig,
 } from "./types";
-import { getModalIdentity } from "./identity";
+import { getModalIdentity } from "./model/identity";
 
 const LazyModal = dynamic(
-  () => import("./overlay").then((view) => view.Modal),
+  () => import("./components/overlay").then((view) => view.Modal),
   {
     ssr: false,
   },

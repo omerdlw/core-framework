@@ -11,9 +11,9 @@ import {
   type ModalProviderProps,
   type ModalState,
 } from "./types";
-import { INITIAL_MODAL_STATE, createModalState } from "./state";
-import { getModalIdentity } from "./identity";
-import { normalizePosition } from "./layout";
+import { INITIAL_MODAL_STATE, createModalState } from "./model/state";
+import { getModalIdentity } from "./model/identity";
+import { normalizePosition } from "./model/layout";
 
 export interface ModalContextValue {
   actions: ModalActions;

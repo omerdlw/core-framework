@@ -13,7 +13,7 @@ import { useModalState } from "../../src/modules/modal/hooks.ts";
 import {
   getModalIdentity,
   getModalLabel,
-} from "../../src/modules/modal/identity.ts";
+} from "../../src/modules/modal/model/identity.ts";
 import {
   getModalLayout,
   getModalPosition,
@@ -23,17 +23,17 @@ import {
   isVerticalEdgePosition,
   normalizePosition,
   resolveActivePosition,
-} from "../../src/modules/modal/layout.ts";
+} from "../../src/modules/modal/model/layout.ts";
 import {
   dispatchSmoothScrollLock,
   getFocusableElements,
   trapFocus,
-} from "../../src/modules/modal/dom.ts";
+} from "../../src/modules/modal/lib/dom.ts";
 import {
   hasSlotContent,
   isHeaderConfig,
   resolveHeaderActions,
-} from "../../src/modules/modal/header.ts";
+} from "../../src/modules/modal/model/header.ts";
 import { SMOOTH_SCROLL_LOCK_EVENT } from "../../src/modules/modal/constants.ts";
 
 describe("modal page", () => {
