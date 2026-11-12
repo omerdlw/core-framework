@@ -104,9 +104,12 @@ export interface RegistrationHandle<T = unknown> {
   validation: string;
 }
 
-export type RegistrySchema = Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style -- module augmentation point; a type alias cannot be merged
+export interface RegistrySchema {
+  [key: string]: unknown;
+}
 
-type RegistryTypeKey = keyof RegistrySchema;
+type RegistryTypeKey = keyof RegistrySchema & string;
 
 export interface NormalizedRegistryMetadata {
   cleanupDelayMs: number | null;

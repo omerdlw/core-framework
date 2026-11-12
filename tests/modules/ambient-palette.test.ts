@@ -304,7 +304,7 @@ describe("ambient: analyzeAmbientPixels", () => {
       const { c } = analyzeAmbientPixels(solid(rgb)).regions.center;
       assert.ok(
         c <= source * 1.25,
-        `${rgb}: C ${source.toFixed(3)} became ${c}`,
+        `${String(rgb)}: C ${source.toFixed(3)} became ${c}`,
       );
     }
   });

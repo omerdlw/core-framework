@@ -90,6 +90,7 @@ function collectModuleRegistrations(
   context: RegistryApplyContext,
 ): ModuleRegistration[] {
   const definition = coreModule.registry;
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
   const toEntries = coreModule.page?.entries;
   if (!definition || !toEntries || slice == null || slice === false) return [];
 

@@ -41,6 +41,7 @@ export function resolveDockHeaderKey({
   const titlePart = link?.title || link?.name || "";
   const descPart = description || "";
   const iconPart = showVideoIcon ? "video" : link?.icon || "no-icon";
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- value is a primitive or string-like label at runtime
   return `${statusPart}:${identityPart}:${iconPart}:${titlePart}:${descPart}`;
 }
 

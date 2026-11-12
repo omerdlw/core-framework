@@ -80,6 +80,7 @@ export interface Recipe<V = VariantMap> {
 export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
 
 const key = (value: unknown): string | null =>
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
   value === null || value === undefined ? null : String(value);
 
 function matches(

@@ -217,7 +217,7 @@ describe("package hooks", () => {
         el.setAttribute("data-fullscreen-state", "active");
       });
 
-      hook.unmount();
+      await hook.unmount();
       el.remove();
     });
   });

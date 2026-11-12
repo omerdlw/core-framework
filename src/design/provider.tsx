@@ -6,16 +6,20 @@ import { useMotionTokens } from "@/theme";
 import { retimeModuleMotion } from "@/utils/tempo";
 import { defaultUi, type RegisteredUi, type Ui, type UiMotion } from "./define";
 
-const UiContext = getOrCreateGlobalContext<Ui>("UiContext", defaultUi);
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- RegisteredUi collapses to Ui here but differs once consumers augment it
+const UiContext = getOrCreateGlobalContext<Ui>("UiContext", defaultUi as Ui);
 
 export function UiProvider({
   children,
   ui,
 }: {
   children?: ReactNode;
-  ui: RegisteredUi;
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents -- RegisteredUi collapses to Ui here but differs once consumers augment it
+  ui: RegisteredUi | Ui;
 }) {
-  return createElement(UiContext.Provider, { value: ui }, children);
+  // RegisteredUi is the augmented Ui; the context stores the base Ui type.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- RegisteredUi collapses to Ui here but differs once consumers augment it
+  return createElement(UiContext.Provider, { value: ui as Ui }, children);
 }
 
 export function useUi(): Ui {

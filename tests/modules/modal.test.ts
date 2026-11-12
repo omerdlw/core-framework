@@ -254,7 +254,7 @@ describe("modal utils: header and scroll lock", () => {
 
     assert.equal(resolveHeaderActions("x"), "x");
     assert.equal(resolveHeaderActions(undefined), null);
-    resolveHeaderActions((props: any) => (received = props.close), close);
+    void resolveHeaderActions((props: any) => (received = props.close), close);
     assert.equal(received, close);
   });
 

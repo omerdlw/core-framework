@@ -61,6 +61,7 @@ export function validateRegistryMetadata(metadata: unknown): ValidationResult {
   const lifecycle = metadata.lifecycle ?? metadata.cleanup;
   if (
     lifecycle !== undefined &&
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
     !REGISTRY_LIFECYCLE_VALUES.has(String(lifecycle))
   ) {
     issues.push(

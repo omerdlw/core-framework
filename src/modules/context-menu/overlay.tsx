@@ -36,6 +36,7 @@ export function ContextMenuHeaderIcon({
     return (
       <div
         className={iconClassName}
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- value is a primitive or string-like label at runtime
         style={{ backgroundImage: `url(${icon})` }}
       />
     );

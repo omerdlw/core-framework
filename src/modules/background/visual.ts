@@ -143,8 +143,10 @@ export function resolveGradientSettings({
   } else if (typeof fadeEdges === "object" && fadeEdges !== null) {
     const edgeObj = fadeEdges as { left?: unknown; right?: unknown };
     if (edgeObj.left !== undefined)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
       leftPercent = parseFloat(String(edgeObj.left)) || 0;
     if (edgeObj.right !== undefined)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
       rightPercent = parseFloat(String(edgeObj.right)) || 0;
   } else if (fadeEdges === false) {
     leftPercent = 0;

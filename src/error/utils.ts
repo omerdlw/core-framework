@@ -72,6 +72,7 @@ export function fingerprint(
       : "";
 
   const errObj = error as { message?: string; name?: string } | null;
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
   const errorMessage = (errObj?.message || String(error || "")).slice(0, 100);
   const errorName = errObj?.name || "UnknownError";
   const route = context.route || "";
@@ -115,6 +116,7 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message.trim();
 
   const errObj = error as { message?: string; toString?: () => string };
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
   return String(errObj?.message || errObj?.toString?.() || error).trim();
 }
 

@@ -81,6 +81,7 @@ export function validateDockEntry(entry: unknown): ValidationResult {
     if (!isRenderable(entry[field]))
       issues.push(`dock.${field} must be a renderable value`);
   });
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
   if (entry.path !== undefined && !String(entry.path).startsWith("/"))
     issues.push("dock.path must start with /");
   if (entry.actions !== undefined && !Array.isArray(entry.actions))

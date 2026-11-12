@@ -293,6 +293,7 @@ function resolveEntryValueFor(
 
   if (activeRecords.length === 0) return undefined;
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
   const merge = definitions.get(type)?.merge;
   if (merge) {
     const sortedRecords = [...activeRecords].sort(compareRecords);

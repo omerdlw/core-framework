@@ -1,5 +1,6 @@
 export function trimToNull(value: unknown): string | null {
   if (value === null || value === undefined) return null;
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
   const trimmed = String(value).trim();
   return trimmed.length > 0 ? trimmed : null;
 }

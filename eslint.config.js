@@ -34,7 +34,8 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",
-      // `||` is used deliberately to also fall back on "", 0 and false.
+      // `||` is used deliberately to also fall back on "", 0 and false;
+      // `??` would change behaviour (312 sites), so the rule stays off.
       "@typescript-eslint/prefer-nullish-coalescing": "off",
       // No-op callbacks and default handlers are intentional.
       "@typescript-eslint/no-empty-function": "off",
@@ -56,17 +57,13 @@ export default tseslint.config(
         "error",
         { allowInterfaces: "always", allowObjectTypes: "always" },
       ],
-      // Open unions like "a" | "b" | string keep editor autocompletion.
+      // Open unions like "a" | "b" | string are deliberate: they keep editor
+      // autocompletion for known values while accepting any string.
       "@typescript-eslint/no-redundant-type-constituents": "off",
-      // Public API object types declare methods; implementations are closures.
-      "@typescript-eslint/unbound-method": "off",
       // Rewriting `a && a.b` changes the falsy value that is returned.
       "@typescript-eslint/prefer-optional-chain": "off",
       // Index loops that also use the index are kept as written.
       "@typescript-eslint/prefer-for-of": "off",
-      // Icons and labels are ReactNode values coerced into keys and text.
-      "@typescript-eslint/no-base-to-string": "off",
-      "@typescript-eslint/restrict-template-expressions": "off",
       // React Compiler diagnostics: warnings until the hooks pass (Task 9).
       "react-hooks/refs": "warn",
       "react-hooks/immutability": "warn",
@@ -126,10 +123,24 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-floating-promises": "off",
-      "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/unbound-method": "off",
+      // `await act(async () => ...)` is the async form of React's act and is
+      // needed to flush effects; those callbacks have no await of their own.
+      "@typescript-eslint/require-await": "off",
+      // node:test registration calls return promises that nothing awaits.
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        {
+          allowForKnownSafeCalls: [
+            {
+              from: "package",
+              package: "node:test",
+              name: ["test", "describe", "it", "suite"],
+            },
+          ],
+        },
+      ],
     },
   },
   {

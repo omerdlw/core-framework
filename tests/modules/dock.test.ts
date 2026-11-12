@@ -1709,6 +1709,7 @@ describe("surface definitions", () => {
 
   test("input that cannot be rendered yields no definition", () => {
     for (const input of [null, undefined, {}, "string", 42]) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- input is a primitive fixture used only as the failure message
       assert.equal(createSurfaceEntryDefinition(input), null, String(input));
     }
   });
