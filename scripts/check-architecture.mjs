@@ -204,10 +204,23 @@ if (fs.existsSync(modulesDir)) {
   }
 }
 
+// Files allowed to exceed MAX_LINES; keep empty, split the file instead.
+const MAX_LINES_ALLOWLIST = [];
+const MAX_LINES = 400;
+for (const file of files) {
+  if (MAX_LINES_ALLOWLIST.includes(posix(file))) continue;
+  const lines = fs.readFileSync(file, "utf8").split("\n").length - 1;
+  if (lines > MAX_LINES) {
+    problems.push(
+      `File length: ${posix(file)} has ${lines} lines (max ${MAX_LINES}); split it by concern.`,
+    );
+  }
+}
+
 if (problems.length > 0) {
   console.error(`Architecture check failed:\n\n${problems.join("\n\n")}`);
   process.exit(1);
 }
 console.log(
-  `Architecture check passed (${files.length} files, no cycles, layers respected, modules isolated, peers declared).`,
+  `Architecture check passed (${files.length} files, no cycles, layers respected, modules isolated, peers declared, files within 400 lines).`,
 );
