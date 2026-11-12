@@ -2,7 +2,7 @@ import "../support/dom.ts";
 
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, mock, test } from "node:test";
-import { act, createContext, createElement as h } from "react";
+import { act, createContext, createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
@@ -34,6 +34,7 @@ import {
   createUnregisterOperation,
 } from "../../src/core/kernel/operations.ts";
 import { createRecordKey } from "../../src/core/kernel/operations-records.ts";
+import { useRegistryActions } from "../../src/core/kernel/provider.tsx";
 import { createStore } from "../../src/foundation/utils/store.ts";
 import { AmbientProvider } from "../../src/modules/ambient/context.tsx";
 import {
@@ -2091,4 +2092,34 @@ test("kernel public surface is unchanged", async () => {
     "useRegistryEntries",
     "useRegistryValue",
   ]);
+});
+
+describe("registry provider identity", () => {
+  test("registry provider does not re-render consumers when the parent re-renders", async () => {
+    let renders = 0;
+    let bump: () => void = () => {};
+
+    function Consumer() {
+      useRegistryActions();
+      renders += 1;
+      return null;
+    }
+    const child = h(Consumer);
+
+    function Parent() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      return h(RegistryProvider, null, child);
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => root.render(h(Parent)));
+    for (let i = 0; i < 3; i += 1) await act(async () => bump());
+    await act(async () => root.unmount());
+    container.remove();
+
+    assert.equal(renders, 1);
+  });
 });

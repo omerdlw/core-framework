@@ -1,6 +1,8 @@
+import path from "node:path";
 import { defineConfig, type Options } from "tsup";
 
 import { ENTRIES } from "./scripts/entries.mjs";
+import { reactCompiler } from "./scripts/esbuild-react-compiler.mjs";
 
 const entryMap = (client: boolean) =>
   Object.fromEntries(
@@ -9,6 +11,39 @@ const entryMap = (client: boolean) =>
       entry.source,
     ]),
   );
+
+interface CompilerEvent {
+  filename: string;
+  kind: string;
+  reason?: string;
+}
+
+const COMPILE_INCLUDE = /src\/(react|core|modules)\/.*\.tsx?$/;
+
+function createCompiler() {
+  const events: CompilerEvent[] = [];
+  return {
+    plugin: reactCompiler({
+      include: COMPILE_INCLUDE,
+      report: (event: CompilerEvent) => events.push(event),
+    }),
+    print(label: string) {
+      const compiled = events.filter((e) => e.kind === "CompileSuccess");
+      const skipped = events.filter((e) => e.kind !== "CompileSuccess");
+      console.log(
+        `React Compiler (${label}): ${compiled.length} compiled, ${skipped.length} skipped`,
+      );
+      for (const event of skipped) {
+        console.log(
+          `  ${path.relative(process.cwd(), event.filename)}: ${event.reason} [${event.kind}]`,
+        );
+      }
+    },
+  };
+}
+
+const serverCompiler = createCompiler();
+const clientCompiler = createCompiler();
 
 const shared: Options = {
   format: ["esm"],
@@ -38,6 +73,11 @@ export default defineConfig([
   {
     ...shared,
     entry: entryMap(false),
+    esbuildPlugins: [serverCompiler.plugin],
+    onSuccess() {
+      serverCompiler.print("server entries");
+      return Promise.resolve();
+    },
   },
   {
     ...shared,
@@ -45,7 +85,9 @@ export default defineConfig([
       js: '"use client";',
     },
     entry: entryMap(true),
+    esbuildPlugins: [clientCompiler.plugin],
     async onSuccess() {
+      clientCompiler.print("client entries");
       const fs = await import("node:fs");
       const path = await import("node:path");
       for (const entry of ENTRIES.filter((e) => e.client)) {

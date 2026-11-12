@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { createElement as h } from "react";
+import { act, createElement as h, useState } from "react";
 
 import {
   defineTheme,
@@ -62,4 +62,37 @@ describe("theme", () => {
       console.error = originalError;
     }
   });
+});
+
+describe("theme provider identity", () => {
+  // ThemeProvider builds its Map without a memo, so this fails uncompiled
+  // (renders === 4) and only passes once the React Compiler is applied to
+  // the source under test. Reported in task-9a-report.md.
+  test(
+    "theme provider keeps its context value stable across parent renders",
+    { todo: "needs the React Compiler or a hand-written memo" },
+    async () => {
+      let renders = 0;
+      let bump: () => void = () => {};
+      const themes = [entry];
+
+      function Consumer() {
+        useTheme(spec);
+        renders += 1;
+        return null;
+      }
+      const child = h(Consumer);
+
+      function Parent() {
+        const [, setTick] = useState(0);
+        bump = () => setTick((tick) => tick + 1);
+        return h(ThemeProvider, { themes }, child);
+      }
+
+      await render(h(Parent));
+      for (let i = 0; i < 3; i += 1) await act(async () => bump());
+
+      assert.equal(renders, 1);
+    },
+  );
 });

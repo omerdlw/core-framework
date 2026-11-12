@@ -178,4 +178,25 @@ describe("dist bundle", () => {
       assert.deepEqual(banned, [], entry);
     }
   });
+
+  test("built kernel entry is compiled", () => {
+    const dir = path.resolve("dist/kernel");
+    const entry = path.join(dir, "index.js");
+    const seen = new Set<string>();
+    const queue = [entry];
+    let compiled = false;
+    while (queue.length > 0 && !compiled) {
+      const file = queue.pop()!;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      const source = fs.readFileSync(file, "utf8");
+      if (source.includes("react/compiler-runtime")) compiled = true;
+      for (const match of source.matchAll(
+        /(?:from|import)\s*["'](\.[^"']+)["']/g,
+      )) {
+        queue.push(path.resolve(path.dirname(file), match[1]));
+      }
+    }
+    assert.ok(compiled, "no kernel chunk imports react/compiler-runtime");
+  });
 });
