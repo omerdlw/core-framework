@@ -4,14 +4,14 @@
 
 ## 1. At a glance
 
-|                      |                                                                                                                       |
-| :------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| **Import**           | `import { usePage, defineModule, definePeer, useModule, … } from "@omerdlw/base-framework/kernel"`                                     |
+|                      |                                                                                                                                             |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Import**           | `import { usePage, defineModule, definePeer, useModule, … } from "@omerdlw/base-framework/kernel"`                                          |
 | **Layer**            | `src/core` (frozen upstream). Knows **no module by name**; never imports `@omerdlw/base-framework/modules/**`, `@/features/**`, `@/app/**`. |
-| **Mounted by**       | `CoreProvider` (`src/core/provider.tsx`) → `ModuleHost`                                                               |
-| **State**            | A scoped, subscribable **registry** (`createRegistryStore`) and a **page controller stack**                           |
-| **Extension points** | `defineModule({...})`, module augmentation of `CoreModules`, `PageConfig`, `RegistrySchema`                           |
-| **Tests**            | `tests/core/kernel.test.ts`                                                                                           |
+| **Mounted by**       | `CoreProvider` (`src/core/provider.tsx`) → `ModuleHost`                                                                                     |
+| **State**            | A scoped, subscribable **registry** (`createRegistryStore`) and a **page controller stack**                                                 |
+| **Extension points** | `defineModule({...})`, module augmentation of `CoreModules`, `PageConfig`, `RegistrySchema`                                                 |
+| **Tests**            | `tests/core/kernel.test.ts`                                                                                                                 |
 
 ## 2. Mental model
 

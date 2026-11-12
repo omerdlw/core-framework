@@ -4,7 +4,11 @@ import { act, createElement as h, useContext, type ReactNode } from "react";
 import { MotionConfigContext } from "motion/react";
 import { render, renderHook } from "../support/render.ts";
 import { withThemes } from "../support/themes.ts";
-import { defineMotion, retime, retimeModuleMotion } from "../../src/utils/tempo.ts";
+import {
+  defineMotion,
+  retime,
+  retimeModuleMotion,
+} from "../../src/utils/tempo.ts";
 import { cssTransition } from "../../src/utils/transform.ts";
 
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
@@ -217,7 +221,10 @@ describe("retime", () => {
       { enter: still, timings: 1 },
     );
     assert.deepEqual(
-      retimeModuleMotion({ timings: { hold: 0.5 } }, { reduced: true, still, tempo: 1 }),
+      retimeModuleMotion(
+        { timings: { hold: 0.5 } },
+        { reduced: true, still, tempo: 1 },
+      ),
       { timings: { hold: 0.08 } },
     );
   });
@@ -253,8 +260,10 @@ describe("retime", () => {
     }
   }
 
-  const withoutTimings = ({ timings, ...rest }: Record<string, unknown>) =>
-    rest;
+  const withoutTimings = ({
+    timings: _timings,
+    ...rest
+  }: Record<string, unknown>) => rest;
 
   for (const [name, motion] of Object.entries(STARTERS)) {
     test(`at tempo 2 the ${name} starter takes exactly twice as long, and moves the same`, () => {
@@ -320,10 +329,10 @@ describe("cssTransition", () => {
 });
 
 describe("module motion from the theme", () => {
-  type SampleMotion = {
+  interface SampleMotion {
     enter: { duration: number };
     timings: { hold: number };
-  };
+  }
   const spec = defineThemeSpec<"root", SampleMotion>("sample-motion");
   const sampleMotion: SampleMotion = {
     enter: { duration: 0.4 },

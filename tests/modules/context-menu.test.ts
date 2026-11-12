@@ -43,7 +43,7 @@ describe("context menu utils", () => {
     test("a throwing handler is reported and swallowed", () => {
       const reported: any[] = [];
       const release = setReportSink((scope, error) =>
-        reported.push([scope, (error as any).message] as any),
+        reported.push([scope, error.message] as any),
       );
 
       const result = safeInvoke(() => {
@@ -60,7 +60,7 @@ describe("context menu utils", () => {
     test("a rejected promise is reported and not left unhandled", async () => {
       const reported: any[] = [];
       const release = setReportSink((scope, error) =>
-        reported.push([scope, (error as any).message] as any),
+        reported.push([scope, error.message] as any),
       );
 
       safeInvoke(() => Promise.reject(new Error("async failed")));

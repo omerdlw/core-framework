@@ -30,7 +30,7 @@ export function isResult(value: unknown): value is Result<unknown, unknown> {
     typeof value === "object" &&
     value !== null &&
     "success" in value &&
-    typeof (value as { success: unknown }).success === "boolean" &&
+    typeof value.success === "boolean" &&
     (("data" in value && (value as { success: boolean }).success === true) ||
       ("error" in value && (value as { success: boolean }).success === false))
   );
@@ -87,6 +87,7 @@ export function match<T, E, R>(
 
 function mapCaught<E>(error: unknown, mapError?: (error: unknown) => E): E {
   if (!(error instanceof UserError)) report("Result", error);
+  // Without mapError the user message stands in for E, by contract.
   return mapError ? mapError(error) : (toUserMessage(error) as unknown as E);
 }
 
@@ -110,7 +111,7 @@ interface SafeActionSchema<TParsed> {
     | { data: TParsed; success: true }
     | {
         error?: {
-          issues?: Array<{ message?: string }>;
+          issues?: { message?: string }[];
           message?: string;
         };
         success: false;
@@ -146,6 +147,7 @@ export function createSafeAction<TArgs extends unknown[], TOutput, E = string>(
             parsed.error?.message ||
             "Invalid input";
           return err(
+            // Without mapError the issue message stands in for E, by contract.
             mapError ? mapError(issueMessage) : (issueMessage as unknown as E),
             errorCode ?? "VALIDATION_ERROR",
           );
@@ -157,13 +159,14 @@ export function createSafeAction<TArgs extends unknown[], TOutput, E = string>(
         const validationResult = validate(...effectiveArgs);
         if (isResult(validationResult)) {
           if (isErr(validationResult)) {
-            return validationResult as ErrorResult<E>;
+            return validationResult;
           }
         } else if (validationResult === false) {
           return err(
             mapError
               ? mapError("Validation failed")
-              : ("Validation failed" as unknown as E),
+              : // Without mapError the default message stands in for E, by contract.
+                ("Validation failed" as unknown as E),
             errorCode ?? "VALIDATION_ERROR",
           );
         } else if (
@@ -173,7 +176,8 @@ export function createSafeAction<TArgs extends unknown[], TOutput, E = string>(
           return err(
             mapError
               ? mapError(validationResult)
-              : (validationResult as unknown as E),
+              : // Without mapError the raw validation result stands in for E, by contract.
+                (validationResult as unknown as E),
             errorCode ?? "VALIDATION_ERROR",
           );
         }
@@ -181,7 +185,7 @@ export function createSafeAction<TArgs extends unknown[], TOutput, E = string>(
 
       const output = await handler(...effectiveArgs);
       if (isResult(output)) {
-        return output as Result<TOutput, E>;
+        return output;
       }
       return ok(output as TOutput);
     } catch (error) {

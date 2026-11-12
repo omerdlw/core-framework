@@ -140,7 +140,7 @@ export function selectPageDock(config: PageConfig): DockPageConfig | null {
 
   const banner = slice.banner ?? slice.bannerUrl;
   if (isObject(banner)) {
-    slice.bannerUrl = (banner.url ?? banner.bannerUrl) as string | undefined;
+    slice.bannerUrl = banner.url ?? banner.bannerUrl;
   } else if (banner !== undefined) {
     slice.bannerUrl = banner;
   }
@@ -205,6 +205,7 @@ export function openPageSurface(
 }
 
 const NO_GUARD: DockPageGuard = Object.freeze({ when: false });
+// Object.freeze narrows the empty array to readonly never[]; the config type is mutable.
 const NO_ACTIONS: NonNullable<DockPageConfig["actions"]> = Object.freeze(
   [],
 ) as unknown as NonNullable<DockPageConfig["actions"]>;

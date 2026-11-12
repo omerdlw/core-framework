@@ -7,6 +7,7 @@
 ## 1. Prerequisites & Tech Stack
 
 Before installing `@omerdlw/base-framework`, verify your environment:
+
 - **Node.js:** `v20.0.0` or higher (Node 22 recommended)
 - **Framework:** Next.js `15.0.0` or `16.0.0+` (App Router)
 - **React:** React `19.0.0+` & React DOM `19.0.0+`
@@ -24,12 +25,12 @@ npm install @omerdlw/base-framework motion @iconify-icon/react @radix-ui/react-t
 
 ### Peer Dependencies Breakdown
 
-| Package | Purpose in Base Framework |
-| :--- | :--- |
-| `motion` (`>=12.0.0`) | Hardware GPU-accelerated motion presets (`translate3d`, `scale`, spring physics). |
-| `@iconify-icon/react` | Unified SVG-free icon rendering via `<Icon icon="solar:..." />`. |
-| `@radix-ui/react-tooltip` | Accessible WAI-ARIA tooltip primitives. |
-| `clsx` & `tailwind-merge` | Backing utilities for `cn()` class merging. |
+| Package                   | Purpose in Base Framework                                                         |
+| :------------------------ | :-------------------------------------------------------------------------------- |
+| `motion` (`>=12.0.0`)     | Hardware GPU-accelerated motion presets (`translate3d`, `scale`, spring physics). |
+| `@iconify-icon/react`     | Unified SVG-free icon rendering via `<Icon icon="solar:..." />`.                  |
+| `@radix-ui/react-tooltip` | Accessible WAI-ARIA tooltip primitives.                                           |
+| `clsx` & `tailwind-merge` | Backing utilities for `cn()` class merging.                                       |
 
 ---
 
@@ -81,11 +82,7 @@ const modules = [
 ];
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <CoreProvider modules={modules}>
-      {children}
-    </CoreProvider>
-  );
+  return <CoreProvider modules={modules}>{children}</CoreProvider>;
 }
 ```
 
@@ -102,7 +99,11 @@ export const metadata = {
   description: "Next.js application built with Base Framework",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-black text-white antialiased">
@@ -144,12 +145,17 @@ export default function HomePage() {
     <main className="p-8">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
       <p className="mt-2 text-white/60">
-        Notice how the dock, background, and title were automatically configured by the microkernel.
+        Notice how the dock, background, and title were automatically configured
+        by the microkernel.
       </p>
 
       <div className="mt-6 flex gap-3">
         <Button
-          onClick={() => page.modules.notification?.toast("Action triggered successfully!", { type: "success" })}
+          onClick={() =>
+            page.modules.notification?.toast("Action triggered successfully!", {
+              type: "success",
+            })
+          }
           className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-black hover:bg-white/90"
         >
           <Icon icon="solar:bell-bold" size={16} />
@@ -167,18 +173,18 @@ export default function HomePage() {
 
 `@omerdlw/base-framework` exposes 11 tree-shakable subpaths. Always import from the dedicated subpath:
 
-| Subpath | Purpose | Key Exports |
-| :--- | :--- | :--- |
-| `@omerdlw/base-framework/kernel` | Microkernel engine | `usePage()`, `defineModule()`, `definePeer()`, `useModule()`, `useModuleState()` |
-| `@omerdlw/base-framework/provider` | Root host component | `CoreProvider` |
-| `@omerdlw/base-framework/modules/*` | 9 UI modules | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc. |
-| `@omerdlw/base-framework/result` | Functional error handling | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()` |
-| `@omerdlw/base-framework/events` | Cross-cutting event bus | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap` |
-| `@omerdlw/base-framework/theme` | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()` |
-| `@omerdlw/base-framework/design` | Unstyled components your `defineUi` styles | `Button`, `Icon`, `Select`, `Carousel`, `UiProvider`, … |
-| `@omerdlw/base-framework/hooks` | Universal React hooks | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()` |
-| `@omerdlw/base-framework/utils` | Pure runtime utilities | `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()`, `defineMotion()`, `gpuTransform()` |
-| `@omerdlw/base-framework/error` | Isolated error boundaries | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()` |
+| Subpath                             | Purpose                                     | Key Exports                                                                                                                 |
+| :---------------------------------- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| `@omerdlw/base-framework/kernel`    | Microkernel engine                          | `usePage()`, `defineModule()`, `definePeer()`, `useModule()`, `useModuleState()`                                            |
+| `@omerdlw/base-framework/provider`  | Root host component                         | `CoreProvider`                                                                                                              |
+| `@omerdlw/base-framework/modules/*` | 9 UI modules                                | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc.                                                    |
+| `@omerdlw/base-framework/result`    | Functional error handling                   | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()`                                                         |
+| `@omerdlw/base-framework/events`    | Cross-cutting event bus                     | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap`                                                                          |
+| `@omerdlw/base-framework/theme`     | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()`               |
+| `@omerdlw/base-framework/design`    | Unstyled components your `defineUi` styles  | `Button`, `Icon`, `Select`, `Carousel`, `UiProvider`, …                                                                     |
+| `@omerdlw/base-framework/hooks`     | Universal React hooks                       | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()`                                               |
+| `@omerdlw/base-framework/utils`     | Pure runtime utilities                      | `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()`, `defineMotion()`, `gpuTransform()` |
+| `@omerdlw/base-framework/error`     | Isolated error boundaries                   | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()`                                                                |
 
 ---
 

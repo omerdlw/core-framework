@@ -6,7 +6,7 @@
 
 |                  |                                                                                                                                                           |
 | :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**       | `import { ComponentError, getErrorReporter, … } from "@omerdlw/base-framework/error"`                                                                                      |
+| **Import**       | `import { ComponentError, getErrorReporter, … } from "@omerdlw/base-framework/error"`                                                                     |
 | **Layer**        | `src/core` (frozen upstream). Client-only (`"use client"`).                                                                                               |
 | **Installed by** | `CoreProvider`: `GlobalError` wraps everything, `ModuleError` is the boundary around every module backdrop/overlay, `GlobalErrorListener` is mounted once |
 | **Emits**        | `EVENT_TYPES.APP_ERROR` (`{ error, errorInfo?, message, resetError? }`)                                                                                   |

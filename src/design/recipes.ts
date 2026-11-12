@@ -35,5 +35,4 @@ export { cn, createCn, type MergeVocabulary } from "./cn";
 export { ANATOMY, type Anatomy } from "./anatomy";
 export { splitVariants, variantNames } from "./split";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UiRegister {}

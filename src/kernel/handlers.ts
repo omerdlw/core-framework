@@ -46,7 +46,7 @@ function createEntryCleanupKey(
 function getCleanupScope(
   context: RegistryApplyContext | null | undefined,
 ): CleanupScope {
-  return context?.cleanupScope || new Map();
+  return context?.cleanupScope || (new Map() as CleanupScope);
 }
 
 function clearCleanupTimer(scope: CleanupScope, cleanupKey: string): void {
@@ -109,7 +109,7 @@ function collectModuleRegistrations(
       continue;
     }
 
-    const payload = isObject(item)
+    const payload: unknown = isObject(item)
       ? Object.fromEntries(
           Object.entries(item).filter(([key]) => key !== "registry"),
         )

@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                                                                                                                                         |
 | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Import**         | `import { useContextMenu, defineContextMenu, … } from "@omerdlw/base-framework/modules/context-menu"`                                                                                                                                                                         |
+| **Import**         | `import { useContextMenu, defineContextMenu, … } from "@omerdlw/base-framework/modules/context-menu"`                                                                                                                                                   |
 | **Module id**      | `contextMenu` (camelCase: `contextMenuModule`; the theme id is `context-menu`)                                                                                                                                                                          |
 | **Renders**        | `ContextMenuGlobal` overlay: one global `contextmenu` listener + one portalled menu                                                                                                                                                                     |
 | **Registry type**  | `contextMenu` — key policy `route`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`), reserved keys `current-page` and `*` |
@@ -14,7 +14,7 @@
 | **Peers (`uses`)** | `dock` (the active dock card supplies the default menu header)                                                                                                                                                                                          |
 | **Theme**          | `contextMenuTheme` slots in `src/config/context-menu.module.theme.ts`                                                                                                                                                                                   |
 | **Window event**   | `context-menu:visibility` (`detail: { isOpen }`)                                                                                                                                                                                                        |
-| **z-index**        | the app's layers, set in the theme `styles`                                                                                                                                                                    |
+| **z-index**        | the app's layers, set in the theme `styles`                                                                                                                                                                                                             |
 | **Tests**          | `tests/modules/context-menu.test.ts`                                                                                                                                                                                                                    |
 
 ## 2. Mental model
@@ -227,19 +227,19 @@ No classes or colors in the module, except the pointer-following `left/top/posit
 
 ## 8. File map
 
-| File           | Responsibility                                                                                                             |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Public barrel.                                                                                                             |
-| `types.ts`     | Config, item, header, context, state, actions, page and theme-slot contracts.                                              |
-| `constants.ts` | Registry keys (`current-page`, `*`), screen margin, visibility event, initial position, `contextMenuTheme`.                |
-| `items.ts`     | Value and boolean resolution, item/header resolution, dock page metadata, safe callback invocation.                       |
-| `dom.ts`       | Menu viewport positioning, keyboard arrow navigation index helper, scroll lock keys detection, class name joining.         |
-| `state.ts`     | Initial and next-open menu state derivation, visibility custom event dispatch.                                             |
-| `resolver.ts`  | Candidate normalization, path/target/route scoring, context building, `resolveContextMenu`, `prepareMenu`.                 |
-| `context.tsx`  | `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`), `useContextMenu*` consumer hooks.                          |
-| `overlay.tsx`  | `ContextMenuGlobal`, portalled renderer, content host, header, item components, and interaction listeners.                |
-| `motion.ts`    | `useContextMenuMotion`. The values come from the app's context-menu theme.                                                 |
-| `module.tsx`   | `contextMenuModule`, page API adapter, `defineContextMenu`, kernel type augmentation.                                     |
+| File           | Responsibility                                                                                                     |
+| :------------- | :----------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                                     |
+| `types.ts`     | Config, item, header, context, state, actions, page and theme-slot contracts.                                      |
+| `constants.ts` | Registry keys (`current-page`, `*`), screen margin, visibility event, initial position, `contextMenuTheme`.        |
+| `items.ts`     | Value and boolean resolution, item/header resolution, dock page metadata, safe callback invocation.                |
+| `dom.ts`       | Menu viewport positioning, keyboard arrow navigation index helper, scroll lock keys detection, class name joining. |
+| `state.ts`     | Initial and next-open menu state derivation, visibility custom event dispatch.                                     |
+| `resolver.ts`  | Candidate normalization, path/target/route scoring, context building, `resolveContextMenu`, `prepareMenu`.         |
+| `context.tsx`  | `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`), `useContextMenu*` consumer hooks.                  |
+| `overlay.tsx`  | `ContextMenuGlobal`, portalled renderer, content host, header, item components, and interaction listeners.         |
+| `motion.ts`    | `useContextMenuMotion`. The values come from the app's context-menu theme.                                         |
+| `module.tsx`   | `contextMenuModule`, page API adapter, `defineContextMenu`, kernel type augmentation.                              |
 
 ## 9. Dependencies
 

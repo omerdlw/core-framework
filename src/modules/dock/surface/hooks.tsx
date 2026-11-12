@@ -20,8 +20,8 @@ import {
   useTransform,
   type PanInfo,
 } from "motion/react";
+import type { DockSurfaceShellProps } from "../types";
 import {
-  DockSurfaceShellProps,
   type DockComponentProps,
   type DockScheduledTaskId,
   type DockScheduler,
@@ -366,14 +366,7 @@ export const DockSurfaceHeaderRadiusContext = createContext<string | null>(
   null,
 );
 
-export function useDockSurfaceHeaderButtonModel({
-  children,
-  className = "",
-  disabled = false,
-  onClick,
-  ariaLabel,
-  icon = null,
-}: {
+export function useDockSurfaceHeaderButtonModel(_props: {
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
@@ -388,12 +381,6 @@ export function useDockSurfaceHeaderButtonModel({
 
 export function useDockSurfaceControlsModel({
   activeItem = null,
-  hasExtensions = false,
-  onClose = null,
-  onBack = null,
-  closeLabel = null,
-  backLabel = null,
-  className = "",
   surfacePhase: propSurfacePhase,
 }: {
   activeItem?: DockItem | null;
@@ -574,17 +561,8 @@ export function useDockSurfaceExtensionsBarModel({
 
 export function useDockSurfaceShellModel({
   ref,
-  title = "",
   onClose = null,
-  onBack = null,
   allowSwipeDismiss = true,
-  closeLabel = "Close surface",
-  backLabel = "Previous step",
-  showControls = false,
-  className = "",
-  contentClassName = "",
-  children,
-  onAnimationComplete = null,
   isActive = true,
   surfaceId = null,
   surfacePhase = DOCK_SURFACE_PHASE.OPEN,

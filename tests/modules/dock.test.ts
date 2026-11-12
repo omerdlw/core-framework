@@ -1221,7 +1221,7 @@ describe("dock utils: values and styling", () => {
 
   test("image icons replace any background styling", () => {
     const style = getImageIconStyle(
-      { background: "red", backgroundImage: "none", color: "blue" } as any,
+      { background: "red", backgroundImage: "none", color: "blue" },
       "/i.png",
     );
 
@@ -1448,20 +1448,20 @@ describe("dock utils: item lists", () => {
 
   test("a throwing keepWhenDescendant policy removes the ancestor", () => {
     const kept = removeAncestorDuplicates([
-      { path: "/a/b" } as any,
+      { path: "/a/b" },
       {
         keepWhenDescendant: () => {
           throw new Error("x");
         },
         path: "/a",
-      } as any,
+      },
     ]);
 
     assert.equal(kept.length, 1);
   });
 
   test("replaceActiveItem swaps one entry without mutating the list", () => {
-    const next = replaceActiveItem(items, 1, { name: "new" } as any);
+    const next = replaceActiveItem(items, 1, { name: "new" });
 
     assert.equal(next[1].name, "new");
     assert.equal(items[1].name, "account");
@@ -1650,7 +1650,7 @@ describe("surface definitions", () => {
   test("a component becomes a component-mode surface with the config as its props", () => {
     const definition = createSurfaceEntryDefinition(Panel, {
       title: "Panel",
-    } as any)!;
+    })!;
 
     assert.equal(definition.renderMode, "component");
     assert.equal(definition.component, Panel);
@@ -1802,7 +1802,7 @@ describe("surface flows", () => {
     const flow = createSurfaceFlowDefinition({
       createSurface,
       id: " signup ",
-    } as any)!;
+    })!;
 
     assert.equal(flow.id, "signup");
     assert.equal(flow.restoreFromUrl, true);
@@ -1819,7 +1819,7 @@ describe("surface flows", () => {
       restoreFromUrl: false,
       returnTo: "/account",
       singleton: false,
-    } as any)!;
+    })!;
 
     assert.equal(flow.restoreFromUrl, false);
     assert.equal(flow.singleton, false);
@@ -1840,7 +1840,7 @@ describe("surface flows", () => {
       createSurface,
       id: "x",
       initialSnapshot: { a: 1 },
-    } as any)!;
+    })!;
 
     const session = createSurfaceFlowSession(flow, { input: { n: 1 } })!;
 
@@ -1856,7 +1856,7 @@ describe("surface flows", () => {
       createSurface,
       id: "x",
       initialSnapshot: { a: 1 },
-    } as any)!;
+    })!;
 
     assert.deepEqual(
       createSurfaceFlowSession(flow, { snapshot: { b: 2 } })!.snapshot,
@@ -1872,7 +1872,7 @@ describe("surface flows", () => {
     const flow = createSurfaceFlowDefinition({
       createSurface,
       id: "x",
-    } as any)!;
+    })!;
     const session = createSurfaceFlowSession(flow)!;
 
     const updated = updateSurfaceFlowSession(session, { step: 2 })!;
@@ -2125,7 +2125,7 @@ describe("dock display", () => {
           hasActiveChild: true,
           isParent: true,
           name: "a",
-        } as any,
+        },
       ],
       searchQuery: "",
     });
@@ -2166,36 +2166,35 @@ describe("dock display", () => {
 
   test("the active item is the one matching the pathname", () => {
     assert.equal(
-      resolveActiveItem(baseArgs({ pathname: "/account" }) as any)!.name,
+      resolveActiveItem(baseArgs({ pathname: "/account" }))!.name,
       "account",
     );
     assert.equal(
-      resolveActiveItem(baseArgs({ pathname: "/account/" }) as any)!.name,
+      resolveActiveItem(baseArgs({ pathname: "/account/" }))!.name,
       "account",
     );
   });
 
   test("a deeper path falls back to the longest matching ancestor", () => {
     assert.equal(
-      resolveActiveItem(
-        baseArgs({ pathname: "/account/settings/billing" }) as any,
-      )!.name,
+      resolveActiveItem(baseArgs({ pathname: "/account/settings/billing" }))!
+        .name,
       "settings",
     );
     assert.equal(
-      resolveActiveItem(baseArgs({ pathname: "/account/other" }) as any)!.name,
+      resolveActiveItem(baseArgs({ pathname: "/account/other" }))!.name,
       "account",
     );
   });
 
   test("an unknown path falls back to the home item or the first one", () => {
     assert.equal(
-      resolveActiveItem(baseArgs({ pathname: "/elsewhere" }) as any)!.name,
+      resolveActiveItem(baseArgs({ pathname: "/elsewhere" }))!.name,
       "home",
     );
     assert.equal(
       resolveActiveItem(
-        baseArgs({ dockItems: [], pathname: "/x", rawItems: [] }) as any,
+        baseArgs({ dockItems: [], pathname: "/x", rawItems: [] }),
       ),
       null,
     );
@@ -2217,7 +2216,7 @@ describe("dock display", () => {
           dockItems: withSource,
           pathname: "/account",
           rawItems: withSource,
-        }) as any,
+        }),
       )!.name,
       "source",
     );
@@ -2227,7 +2226,7 @@ describe("dock display", () => {
           dockItems: withTarget,
           pathname: "/real",
           rawItems: withTarget,
-        }) as any,
+        }),
       )!.name,
       "t",
     );
@@ -2235,9 +2234,8 @@ describe("dock display", () => {
 
   test("on a not-found page the not-found card is active", () => {
     assert.equal(
-      resolveActiveItem(
-        baseArgs({ isNotFoundPage: true, pathname: "/nope" }) as any,
-      )!.name,
+      resolveActiveItem(baseArgs({ isNotFoundPage: true, pathname: "/nope" }))!
+        .name,
       "missing",
     );
   });
@@ -2253,7 +2251,7 @@ describe("dock display", () => {
       baseArgs({
         attention: { kind: DOCK_ATTENTION_KIND.STATUS },
         statusState,
-      }) as any,
+      }),
     );
 
     assert.equal(item.isStatus, true);
@@ -2274,7 +2272,7 @@ describe("dock display", () => {
             title: "x",
             type: "OFFLINE",
           }),
-        }) as any,
+        }),
       );
 
       assert.equal(item.isStatus, undefined);
@@ -2297,7 +2295,7 @@ describe("dock pending route hold", () => {
       isNotFoundPage: false,
       pathname,
       rawItems: items,
-    } as any);
+    });
 
   beforeEach(() => mock.timers.enable({ apis: ["setTimeout"] }));
   afterEach(() => mock.timers.reset());
@@ -2423,8 +2421,8 @@ describe("dock pending route hold", () => {
     const seen: { current: any } = { current: null };
     function Probe() {
       seen.current = useDockLayout({
-        activeItem: { ...account, isRoutePending: true } as any,
-        dockItems: [home, directors] as any,
+        activeItem: { ...account, isRoutePending: true },
+        dockItems: [home, directors],
         pathname: "/movie/1",
       });
       return null;

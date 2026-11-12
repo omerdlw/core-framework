@@ -147,7 +147,7 @@ describe("ambient: analyzeAmbientPixels", () => {
     ]);
     assert.equal(palette.neutral, false);
     for (const role of ["dominant", "vibrant", "muted", "accent"] as const) {
-      const swatch = palette.roles![role];
+      const swatch = palette.roles[role];
       assert.deepEqual(Object.keys(swatch.ramp).map(Number), [
         ...AMBIENT_TONES,
       ]);
@@ -165,7 +165,7 @@ describe("ambient: analyzeAmbientPixels", () => {
       "right",
       "center",
     ] as const) {
-      assert.ok(palette.regions![region].strength > 0.5, region);
+      assert.ok(palette.regions[region].strength > 0.5, region);
     }
   });
 
@@ -191,14 +191,14 @@ describe("ambient: analyzeAmbientPixels", () => {
     const palette = analyzeAmbientPixels(
       image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)),
     );
-    const { accent, dominant } = palette.roles!;
+    const { accent, dominant } = palette.roles;
     assert.ok(hueDistance(accent.h, dominant.h) >= 40);
     assert.equal(accent.fromImage, true);
   });
 
   test("a one-hue image marks its accent as derived", () => {
     const palette = analyzeAmbientPixels(solid(ORANGE));
-    assert.equal(palette.roles!.accent.fromImage, false);
+    assert.equal(palette.roles.accent.fromImage, false);
   });
 
   test("a grey image stays grey: no hue is invented", () => {
@@ -209,9 +209,9 @@ describe("ambient: analyzeAmbientPixels", () => {
     );
     assert.equal(palette.neutral, true);
     assert.equal(parse(palette.shadow).c, 0);
-    for (const swatch of Object.values(palette.roles!))
+    for (const swatch of Object.values(palette.roles))
       assert.equal(swatch.c, 0);
-    for (const region of Object.values(palette.regions!))
+    for (const region of Object.values(palette.regions))
       assert.equal(region.strength, 0);
   });
 
@@ -223,9 +223,9 @@ describe("ambient: analyzeAmbientPixels", () => {
     );
     assert.equal(palette.neutral, true);
     assert.equal(palette.roles.vibrant.c, 0);
-    assert.equal(palette.roles!.accent.fromImage, true);
-    assert.ok(hueDistance(palette.roles!.accent.h, 25) < 25);
-    assert.ok(palette.roles!.accent.c > 0.04);
+    assert.equal(palette.roles.accent.fromImage, true);
+    assert.ok(hueDistance(palette.roles.accent.h, 25) < 25);
+    assert.ok(palette.roles.accent.c > 0.04);
   });
 
   test("a fully transparent image is neutral and does not throw", () => {
@@ -242,12 +242,12 @@ describe("ambient: analyzeAmbientPixels", () => {
       image(60, 40, (x) => (x < 30 ? RED : NAVY)),
     );
     assert.ok(
-      hueDistance(palette.regions!.left.h, 25) < 25,
-      `left ${palette.regions!.left.h}`,
+      hueDistance(palette.regions.left.h, 25) < 25,
+      `left ${palette.regions.left.h}`,
     );
     assert.ok(
-      hueDistance(palette.regions!.right.h, 264) < 25,
-      `right ${palette.regions!.right.h}`,
+      hueDistance(palette.regions.right.h, 264) < 25,
+      `right ${palette.regions.right.h}`,
     );
   });
 
@@ -262,13 +262,10 @@ describe("ambient: analyzeAmbientPixels", () => {
       top: 8,
     });
     const palette = analyzeAmbientPixels(pixels);
-    assert.ok(palette.regions!.top.strength > 0.5);
-    assert.ok(palette.regions!.bottom.strength > 0.5);
+    assert.ok(palette.regions.top.strength > 0.5);
+    assert.ok(palette.regions.bottom.strength > 0.5);
     const off = analyzeAmbientPixels(pixels, { letterbox: false });
-    assert.equal(
-      off.regions!.top.strength < palette.regions!.top.strength,
-      true,
-    );
+    assert.equal(off.regions.top.strength < palette.regions.top.strength, true);
   });
 
   test("a dark image with a black area is not mistaken for letterbox in the middle", () => {
@@ -379,10 +376,10 @@ describe("ambient: CSS variables", () => {
     const vars = resolveAmbientVarMap({ image: "/a.jpg", palette });
     assert.ok(Object.keys(vars).every((name) => name.startsWith("--ambient-")));
     assert.equal(vars["--ambient-shadow"], palette.shadow);
-    assert.equal(vars["--ambient-dominant"], palette.roles!.dominant.color);
-    assert.equal(vars["--ambient-on-accent"], palette.roles!.accent.on);
-    assert.equal(vars["--ambient-vibrant-20"], palette.roles!.vibrant.ramp[20]);
-    assert.equal(vars["--ambient-left"], palette.regions!.left.color);
+    assert.equal(vars["--ambient-dominant"], palette.roles.dominant.color);
+    assert.equal(vars["--ambient-on-accent"], palette.roles.accent.on);
+    assert.equal(vars["--ambient-vibrant-20"], palette.roles.vibrant.ramp[20]);
+    assert.equal(vars["--ambient-left"], palette.regions.left.color);
   });
 
   test("names, tones and groups are configurable", () => {
@@ -398,7 +395,7 @@ describe("ambient: CSS variables", () => {
     });
     assert.equal(vars["--page"], palette.shadow);
     assert.equal(vars["--ambient-shadow"], undefined);
-    assert.equal(vars["--dominant10"], palette.roles!.dominant.ramp[10]);
+    assert.equal(vars["--dominant10"], palette.roles.dominant.ramp[10]);
     assert.equal(vars["--dominant20"], undefined);
     assert.equal(vars["--ambient-left"], undefined);
 
@@ -715,10 +712,10 @@ describe("ambient: server", () => {
       {
         cache: false,
         decode,
-        fetch: (async () => {
+        fetch: async () => {
           fetches++;
           return imageResponse();
-        }) as typeof fetch,
+        },
         resolve: async () => ["93.184.216.34", "10.0.0.5"],
       },
     );
@@ -731,7 +728,7 @@ describe("ambient: server", () => {
       allow: () => true,
       cache: false,
       decode,
-      fetch: (async () => imageResponse()) as typeof fetch,
+      fetch: async () => imageResponse(),
     });
     assert.equal(palette, null);
   });
@@ -762,10 +759,10 @@ describe("ambient: server", () => {
       cache: false,
       decode,
       resolve,
-      fetch: (async () =>
+      fetch: async () =>
         new Response("<html>", {
           headers: { "content-type": "text/html" },
-        })) as typeof fetch,
+        }),
     });
     assert.equal(html, null);
 
@@ -773,7 +770,7 @@ describe("ambient: server", () => {
       cache: false,
       decode,
       resolve,
-      fetch: (async () => imageResponse()) as typeof fetch,
+      fetch: async () => imageResponse(),
       maxBytes: 8,
     });
     assert.equal(big, null);
@@ -788,10 +785,10 @@ describe("ambient: server", () => {
         cache: false,
         decode,
         resolve,
-        fetch: (async () => {
+        fetch: async () => {
           fetches++;
           return imageResponse();
-        }) as typeof fetch,
+        },
       },
     );
     assert.equal(palette, null);

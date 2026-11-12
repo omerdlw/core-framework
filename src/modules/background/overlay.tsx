@@ -43,7 +43,6 @@ type Theme = ResolvedTheme<BackgroundThemeSlot>;
 
 export function useNativeVideoModel({
   corp,
-  isLoop,
   isMuted,
   isPlaying,
   playbackRate,
@@ -604,7 +603,7 @@ export function BackgroundOverlay() {
                   theme={theme}
                   opacity={noiseOpacity}
                   blendMode={noiseBlendMode}
-                  inlineStyle={noiseInlineStyle as CSSProperties}
+                  inlineStyle={noiseInlineStyle}
                   maskImage={maskImage}
                 />
               )}
@@ -649,7 +648,7 @@ export function BackgroundOverlay() {
                 isFixed
                 opacity={noiseOpacity}
                 blendMode={noiseBlendMode}
-                inlineStyle={noiseInlineStyle as CSSProperties}
+                inlineStyle={noiseInlineStyle}
               />
               {overlay && (
                 <SolidOverlay

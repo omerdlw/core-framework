@@ -27,11 +27,7 @@ export type {
   CoreSchedulerOptions,
 } from "./scheduler";
 export { cssEasing, cssTransition, gpuTransform } from "./transform";
-export {
-  defineMotion,
-  retime,
-  retimeModuleMotion,
-} from "./tempo";
+export { defineMotion, retime, retimeModuleMotion } from "./tempo";
 export type {
   MotionClock,
   MotionEase,

@@ -11,7 +11,7 @@ export function createCn(
 ): (...inputs: ClassValue[]) => string {
   const merge = extendTailwindMerge({
     extend: {
-      theme: (vocabulary.theme ?? {}) as Record<string, string[]>,
+      theme: vocabulary.theme ?? {},
       classGroups: Object.fromEntries(
         Object.entries(vocabulary.classGroups ?? {}).map(([group, names]) => [
           group,

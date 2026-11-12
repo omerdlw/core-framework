@@ -71,7 +71,7 @@ function cloneRegistryValue<T>(
     return value;
   }
 
-  const prototype = Object.getPrototypeOf(value);
+  const prototype: unknown = Object.getPrototypeOf(value);
   const isPlainObject =
     !Array.isArray(value) &&
     (prototype === Object.prototype || prototype === null);
@@ -93,9 +93,10 @@ function cloneRegistryValue<T>(
 }
 
 function normalizeInitialEntries(entries: unknown): AppRegistryEntry[] {
-  return (Array.isArray(entries) ? entries : []).filter(
-    (entry): entry is AppRegistryEntry =>
-      entry?.type && entry?.items && typeof entry.items === "object",
+  return (
+    Array.isArray(entries) ? (entries as Partial<AppRegistryEntry>[]) : []
+  ).filter((entry): entry is AppRegistryEntry =>
+    Boolean(entry?.type && entry?.items && typeof entry.items === "object"),
   );
 }
 
@@ -276,7 +277,7 @@ function createRegistrationHandle(
     validation: { enumerable: true, value: operation.validation || "warn" },
   });
 
-  return handle as RegistrationHandle;
+  return handle;
 }
 
 function prepareRegisterOperation(

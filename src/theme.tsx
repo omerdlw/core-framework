@@ -50,7 +50,7 @@ export function defineTheme<S extends string, M = never>(
   spec: ThemeSpec<S, M>,
   config: ThemeConfig<NoInfer<S>, NoInfer<M>>,
 ): ThemeEntry {
-  return { id: spec.id, config: config as ThemeEntry["config"] };
+  return { id: spec.id, config: config };
 }
 
 const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
@@ -86,7 +86,12 @@ function MotionProvider({
     (tokens.reducedMotion === "user" && prefersReduced);
   const state = useMemo<MotionState>(
     () =>
-      Object.freeze({ reduced, still: tokens.still, tempo: tokens.tempo, tokens }),
+      Object.freeze({
+        reduced,
+        still: tokens.still,
+        tempo: tokens.tempo,
+        tokens,
+      }),
     [reduced, tokens],
   );
   return createElement(MotionContext.Provider, { value: state }, children);
@@ -130,7 +135,7 @@ export function useTheme<S extends string>(
   return {
     slots: config.slots,
     styles: config.styles ?? {},
-  } as ResolvedTheme<S>;
+  };
 }
 
 export { useTheme as useModuleTheme };
@@ -188,4 +193,3 @@ export function ModuleMotionConfig({ children }: { children?: ReactNode }) {
     children,
   );
 }
-

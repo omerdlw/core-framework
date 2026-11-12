@@ -11,6 +11,11 @@
     "strict": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"],
       "@omerdlw/base-framework": ["./src/index.ts"],

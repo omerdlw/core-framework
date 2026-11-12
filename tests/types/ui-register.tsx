@@ -1,5 +1,10 @@
 import { createElement as h } from "react";
-import { Button, Select, Switch, defineUi } from "@omerdlw/base-framework/design";
+import {
+  Button,
+  Select,
+  Switch,
+  defineUi,
+} from "@omerdlw/base-framework/design";
 
 const ui = defineUi({
   parts: {

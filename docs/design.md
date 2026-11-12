@@ -38,7 +38,10 @@ export const ui = defineUi({
       root: {
         base: "inline-flex items-center justify-center gap-2 font-medium",
         variants: {
-          intent: { primary: "bg-primary text-on-primary", ghost: "bg-transparent" },
+          intent: {
+            primary: "bg-primary text-on-primary",
+            ghost: "bg-transparent",
+          },
           size: { sm: "h-8 px-3 text-sm", md: "h-10 px-4" },
         },
         defaultVariants: { size: "md" },
@@ -48,7 +51,11 @@ export const ui = defineUi({
     },
     // …every part you use
   },
-  icons: { check: "lucide:check", chevron: "lucide:chevron-down", spinner: "lucide:loader" },
+  icons: {
+    check: "lucide:check",
+    chevron: "lucide:chevron-down",
+    spinner: "lucide:loader",
+  },
   motion: { follow: { type: "spring", stiffness: 500, damping: 40 } },
 });
 
@@ -81,11 +88,11 @@ A nested `UiProvider` restyles a subtree. Mount `TooltipProvider` from the libra
 
 ### 3.1 Parts
 
-| Level | Where | Reach |
-| :--- | :--- | :--- |
-| **Recipes** | `defineUi({ parts })` | one part, everywhere |
-| **Subtree** | a nested `<UiProvider ui={otherUi}>` | one part, below it |
-| **Instance** | `className` (root) and `classNames={{ part: … }}` | one element |
+| Level        | Where                                             | Reach                |
+| :----------- | :------------------------------------------------ | :------------------- |
+| **Recipes**  | `defineUi({ parts })`                             | one part, everywhere |
+| **Subtree**  | a nested `<UiProvider ui={otherUi}>`              | one part, below it   |
+| **Instance** | `className` (root) and `classNames={{ part: … }}` | one element          |
 
 A variant you add arrives as a prop the component never named; it styles the part and never reaches the DOM. A component of your own can live in the same system: `defineUi({ parts: { badge: { root: { … } } } })` and call `ui.parts.badge.root(…)`.
 
@@ -95,16 +102,22 @@ A variant you add arrives as a prop the component never named; it styles the par
 defineUi({
   motion: {
     follow: { type: "spring", stiffness: 500, damping: 40 }, // segmented pill, highlight
-    menu: {                                                  // select menu; custom = 1 or -1 (opens down / up)
+    menu: {
+      // select menu; custom = 1 or -1 (opens down / up)
       initial: (rise) => ({ opacity: 0, y: rise * -8 }),
       animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-      exit: (rise) => ({ opacity: 0, y: rise * -6, transition: { duration: 0.15 } }),
+      exit: (rise) => ({
+        opacity: 0,
+        y: rise * -6,
+        transition: { duration: 0.15 },
+      }),
     },
-    option: {                                                // each option; custom = its index
+    option: {
+      // each option; custom = its index
       initial: { opacity: 0 },
       animate: (index) => ({ opacity: 1, transition: { delay: 0.02 * index } }),
     },
-    glide: { duration: 0.8, ease: [0.5, 0, 0.1, 1] },        // carousel arrows
+    glide: { duration: 0.8, ease: [0.5, 0, 0.1, 1] }, // carousel arrows
   },
 });
 ```
@@ -125,7 +138,10 @@ defineUi({
 defineUi({
   merge: {
     theme: { radius: ["card", "tile"], spacing: ["control-md"] },
-    classGroups: { "font-size": ["type-body", "type-meta"], duration: ["duration-move"] },
+    classGroups: {
+      "font-size": ["type-body", "type-meta"],
+      duration: ["duration-move"],
+    },
   },
 });
 ui.cn("type-body", "type-meta"); // "type-meta"
@@ -139,22 +155,22 @@ ui.cn("type-body", "type-meta"); // "type-meta"
 
 Every part below starts empty. "States" are the variants the component sets itself; give them classes, or leave them blank.
 
-| Component | Parts (`classNames` keys) | States | Notes |
-| :--- | :--- | :--- | :--- |
-| `Button` | `root`, `bare`, `busy`, `busyLabel`, `busySpinner` | — | With an `intent` prop it draws `root`, without one `bare`. `loading` stacks `busyLabel` and `busySpinner` inside `busy`. Pass `href` to render a `next/link` with the same classes. |
-| `Input`, `Textarea` | `field`, `area` | — | `Textarea` draws `field` plus `area`. |
-| `Switch` | `track`, `thumb` | — | `data-state="checked"/"unchecked"` on both; `role="switch"`, `onCheckedChange`. |
-| `Checkbox`, `CheckboxIndicator` | `root`, `box`, `glyph` | `checked` (box, glyph) | `pending` plays the loader. |
-| `SegmentedControl` | `root`, `segment`, `pill`, `chosen`, `icon`, `count` | `active` (segment) | Tabs with a sliding pill; `chosen` paints the active tab until the pill is measured. |
-| `Select` | `root`, `trigger`, `value`, `label`, `placeholder`, `chevron`, `menu`, `option`, `highlight`, `optionBody`, `text`, `description`, `icon`, `check`, `empty` | — | Listbox: arrows, Enter/Space, Escape; flips up; anchor positioning where supported; scroll lock while open. `offset` and `collisionPadding` (px, default 0); the room left in the viewport is `--select-available-height` on the menu. `floatingProps` for the portal. |
-| `Carousel` | `root`, `track`, `slide`, `arrow`, `icon` | `side`, `visible` (arrow) | Touch, wheel, mouse drag; arrow glide; `onNearEnd`. `trackProps` for data hooks; inject `glide`, `renderSlide`, `ready`, `frameSelector` to drive it from your own engine. |
-| `Tooltip`, `TooltipProvider` | `content`, `label` | — | `sideOffset` and `collisionPadding` default to Radix's; `contentProps` for data hooks, `triggerRef`. Radix copies the content's `z-index` to its portal. |
-| `Image` | `frame`, `picture`, `fallback` | `layout` (frame, picture), `loading` (frame) | `loading` is true until the picture decodes (paused off screen); CORS retry; fallback. |
-| `Avatar` | `root`, `image`, `initials` | — | `size` sets width and height inline; without it the root's classes size it. |
-| `Loader`, `Spinner` | `root`, `label`, `overlay`, `dots`, `dot`, `spinner`, `icon` | `over` (root) | Three `dot`s inside `dots`; `size` sets `--loader-size` on `dots`. Over content, `label` keeps the width and `overlay` holds the dots. |
-| `SkeletonBlock`, `SkeletonLines` | `block`, `lines`, `line`, `bar` | — | `SkeletonLines` draws one `bar` per width inside a `line`. |
-| `SlidingPill`, `useSlidingPill`, `SlidingHighlight`, `HighlightGroup`, `useHighlight` | `highlight.fill` | — | Positioned inline (absolute, no pointer events); the `follow` motion moves them. |
-| `Icon` | — | — | Iconify. `size` in px, or let its class size it (`1em`). |
+| Component                                                                             | Parts (`classNames` keys)                                                                                                                                   | States                                       | Notes                                                                                                                                                                                                                                                                  |
+| :------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`                                                                              | `root`, `bare`, `busy`, `busyLabel`, `busySpinner`                                                                                                          | —                                            | With an `intent` prop it draws `root`, without one `bare`. `loading` stacks `busyLabel` and `busySpinner` inside `busy`. Pass `href` to render a `next/link` with the same classes.                                                                                    |
+| `Input`, `Textarea`                                                                   | `field`, `area`                                                                                                                                             | —                                            | `Textarea` draws `field` plus `area`.                                                                                                                                                                                                                                  |
+| `Switch`                                                                              | `track`, `thumb`                                                                                                                                            | —                                            | `data-state="checked"/"unchecked"` on both; `role="switch"`, `onCheckedChange`.                                                                                                                                                                                        |
+| `Checkbox`, `CheckboxIndicator`                                                       | `root`, `box`, `glyph`                                                                                                                                      | `checked` (box, glyph)                       | `pending` plays the loader.                                                                                                                                                                                                                                            |
+| `SegmentedControl`                                                                    | `root`, `segment`, `pill`, `chosen`, `icon`, `count`                                                                                                        | `active` (segment)                           | Tabs with a sliding pill; `chosen` paints the active tab until the pill is measured.                                                                                                                                                                                   |
+| `Select`                                                                              | `root`, `trigger`, `value`, `label`, `placeholder`, `chevron`, `menu`, `option`, `highlight`, `optionBody`, `text`, `description`, `icon`, `check`, `empty` | —                                            | Listbox: arrows, Enter/Space, Escape; flips up; anchor positioning where supported; scroll lock while open. `offset` and `collisionPadding` (px, default 0); the room left in the viewport is `--select-available-height` on the menu. `floatingProps` for the portal. |
+| `Carousel`                                                                            | `root`, `track`, `slide`, `arrow`, `icon`                                                                                                                   | `side`, `visible` (arrow)                    | Touch, wheel, mouse drag; arrow glide; `onNearEnd`. `trackProps` for data hooks; inject `glide`, `renderSlide`, `ready`, `frameSelector` to drive it from your own engine.                                                                                             |
+| `Tooltip`, `TooltipProvider`                                                          | `content`, `label`                                                                                                                                          | —                                            | `sideOffset` and `collisionPadding` default to Radix's; `contentProps` for data hooks, `triggerRef`. Radix copies the content's `z-index` to its portal.                                                                                                               |
+| `Image`                                                                               | `frame`, `picture`, `fallback`                                                                                                                              | `layout` (frame, picture), `loading` (frame) | `loading` is true until the picture decodes (paused off screen); CORS retry; fallback.                                                                                                                                                                                 |
+| `Avatar`                                                                              | `root`, `image`, `initials`                                                                                                                                 | —                                            | `size` sets width and height inline; without it the root's classes size it.                                                                                                                                                                                            |
+| `Loader`, `Spinner`                                                                   | `root`, `label`, `overlay`, `dots`, `dot`, `spinner`, `icon`                                                                                                | `over` (root)                                | Three `dot`s inside `dots`; `size` sets `--loader-size` on `dots`. Over content, `label` keeps the width and `overlay` holds the dots.                                                                                                                                 |
+| `SkeletonBlock`, `SkeletonLines`                                                      | `block`, `lines`, `line`, `bar`                                                                                                                             | —                                            | `SkeletonLines` draws one `bar` per width inside a `line`.                                                                                                                                                                                                             |
+| `SlidingPill`, `useSlidingPill`, `SlidingHighlight`, `HighlightGroup`, `useHighlight` | `highlight.fill`                                                                                                                                            | —                                            | Positioned inline (absolute, no pointer events); the `follow` motion moves them.                                                                                                                                                                                       |
+| `Icon`                                                                                | —                                                                                                                                                           | —                                            | Iconify. `size` in px, or let its class size it (`1em`).                                                                                                                                                                                                               |
 
 Pure helpers for your own racks: `glideTarget`, `rackClip`, `readScroll`, `useDragScroll`.
 

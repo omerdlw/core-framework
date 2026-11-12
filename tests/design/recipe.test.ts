@@ -96,7 +96,10 @@ describe("createCn", () => {
   test("knows no vocabulary of its own", () => {
     const cn = createCn();
     assert.equal(cn("type-body", "type-meta"), "type-body type-meta");
-    assert.equal(cn("rounded-card", "rounded-full"), "rounded-card rounded-full");
+    assert.equal(
+      cn("rounded-card", "rounded-full"),
+      "rounded-card rounded-full",
+    );
   });
 
   test("merges whole app class names in a group", () => {

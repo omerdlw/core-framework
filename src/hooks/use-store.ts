@@ -6,6 +6,7 @@ import { type ExternalStore } from "../utils";
 export function useStore<TState, TSlice = TState>(
   store: ExternalStore<TState>,
   selector: (state: TState) => TSlice = (state: TState) =>
+    // The default selector returns the whole state, so TSlice is TState.
     state as unknown as TSlice,
   isEqual: (a: TSlice, b: TSlice) => boolean = Object.is,
 ): TSlice {

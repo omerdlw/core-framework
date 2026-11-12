@@ -1,0 +1,7 @@
+dist
+node_modules
+*.tgz
+package-lock.json
+.remember
+.superpowers
+docs/superpowers

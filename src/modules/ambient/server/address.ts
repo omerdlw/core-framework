@@ -34,7 +34,7 @@ function isPrivateIPv4([a, b, c]: number[]): boolean {
 
 function parseIPv6(value: string): number[] | null {
   let text = value.split("%")[0];
-  const tail = text.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  const tail = /^(.*:)(\d+\.\d+\.\d+\.\d+)$/.exec(text);
   if (tail) {
     const v4 = parseIPv4(tail[2]);
     if (!v4) return null;
@@ -49,7 +49,7 @@ function parseIPv6(value: string): number[] | null {
   if (halves.length === 1 ? missing !== 0 : missing < 1) return null;
   const groups = [
     ...head,
-    ...Array(halves.length === 2 ? missing : 0).fill("0"),
+    ...Array<string>(halves.length === 2 ? missing : 0).fill("0"),
     ...rest,
   ];
   const words = groups.map((group) =>

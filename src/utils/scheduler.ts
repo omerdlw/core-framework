@@ -47,8 +47,7 @@ export function createScheduler({
   requestFrame = typeof window !== "undefined" &&
   typeof window.requestAnimationFrame === "function"
     ? (cb: FrameRequestCallback) => window.requestAnimationFrame(cb)
-    : (cb: FrameRequestCallback) =>
-        setTimeout(cb, DEFAULT_SCHEDULER_FRAME_MS) as unknown as number,
+    : (cb: FrameRequestCallback) => setTimeout(cb, DEFAULT_SCHEDULER_FRAME_MS),
   scheduleTimer = (cb: () => void, delayMs?: number) => setTimeout(cb, delayMs),
 }: CoreSchedulerOptions = {}) {
   const listeners = new Set<() => void>();

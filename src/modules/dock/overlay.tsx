@@ -51,10 +51,12 @@ import {
   getDockStackTransformTransition,
   useDockMotion,
 } from "./motion";
-import {
+import type {
   DockCardBannerProps,
   DockSurfaceShellProps,
   DockCardItemProps,
+} from "./types";
+import {
   type DockActionDescriptor,
   type DockItem,
   type DockBadgeState,
@@ -1901,7 +1903,7 @@ export const DockMediaControls = memo(function DockMediaControls({
           <motion.button
             {...getDockActionMotionProps(dockMotion)}
             type="button"
-            onClick={handleTogglePip}
+            onClick={() => void handleTogglePip()}
             data-active={isPipActive}
             className={theme.slots.mediaToggle}
             aria-label={

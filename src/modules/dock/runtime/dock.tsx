@@ -89,7 +89,7 @@ export function useDockLayout({
     const isHeldOutsideStack =
       registeredIndex === -1 && Boolean(activeItem?.isRoutePending);
     const items = isHeldOutsideStack
-      ? [activeItem as DockItem, ...registeredItems]
+      ? [activeItem!, ...registeredItems]
       : registeredItems;
     const activeIndex = isHeldOutsideStack ? 0 : registeredIndex;
     const itemsWithActiveItem = replaceActiveItem(
@@ -578,7 +578,7 @@ export function useDockModel() {
       }
       const targetPath = item.targetPath || item.path;
       if (targetPath)
-        navigate(targetPath, {
+        void navigate(targetPath, {
           item,
         });
     };

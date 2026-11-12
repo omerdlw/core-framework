@@ -208,7 +208,7 @@ export function Select<T extends string = string>({
           role="listbox"
           style={{
             ...(floating && anchored
-              ? ({
+              ? {
                   left: "anchor(left)",
                   marginTop: offset,
                   position: "fixed",
@@ -216,9 +216,9 @@ export function Select<T extends string = string>({
                   positionTryFallbacks: "flip-block",
                   top: "anchor(bottom)",
                   width: "anchor-size(width)",
-                } as CSSProperties)
+                }
               : floating
-                ? ({
+                ? {
                     ...({
                       "--select-available-height": `${anchor.maxHeight}px`,
                     } as CSSProperties),
@@ -230,7 +230,7 @@ export function Select<T extends string = string>({
                     ...(anchor.up
                       ? { bottom: anchor.edge, top: "auto" }
                       : { top: anchor.edge }),
-                  } as CSSProperties)
+                  }
                 : null),
             transformOrigin: floating && anchor.up ? "bottom" : "top",
           }}
@@ -334,11 +334,7 @@ export function Select<T extends string = string>({
 
       <button
         ref={triggerRef}
-        style={
-          anchored && placement === "popover"
-            ? ({ anchorName } as CSSProperties)
-            : undefined
-        }
+        style={anchored && placement === "popover" ? { anchorName } : undefined}
         type="button"
         role="combobox"
         aria-label={ariaLabel}

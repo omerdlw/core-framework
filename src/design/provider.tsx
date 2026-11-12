@@ -6,16 +6,16 @@ import { useMotionTokens } from "@/theme";
 import { retimeModuleMotion } from "@/utils/tempo";
 import { defaultUi, type RegisteredUi, type Ui, type UiMotion } from "./define";
 
-const UiContext = getOrCreateGlobalContext<Ui>("UiContext", defaultUi as Ui);
+const UiContext = getOrCreateGlobalContext<Ui>("UiContext", defaultUi);
 
 export function UiProvider({
   children,
   ui,
 }: {
   children?: ReactNode;
-  ui: RegisteredUi | Ui;
+  ui: RegisteredUi;
 }) {
-  return createElement(UiContext.Provider, { value: ui as Ui }, children);
+  return createElement(UiContext.Provider, { value: ui }, children);
 }
 
 export function useUi(): Ui {

@@ -7,25 +7,23 @@ export const REDUCED_MOTION_TRANSITION = Object.freeze({
 
 type Ease = readonly [number, number, number, number];
 
-type TweenOptions = {
+interface TweenOptions {
   duration: number;
   exitDuration: number;
   enterEase: Ease;
   exitEase: Ease;
-};
+}
 
-type Spring = {
+interface Spring {
   type?: "spring";
   stiffness: number;
   damping: number;
   mass: number;
-};
+}
 
 function tween(duration: number, ease: Ease) {
   return Object.freeze({ type: "tween" as const, duration, ease });
 }
-
-
 
 export function durationForDistance(
   distancePx: number,

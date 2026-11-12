@@ -35,7 +35,7 @@ function createDockContinuityState(): DockContinuityState {
 
 function normalizeDockReturnValue(value: unknown): unknown {
   if (value == null || typeof value !== "object") return value ?? null;
-  if (Array.isArray(value)) return [...value];
+  if (Array.isArray(value)) return [...(value as unknown[])];
   return { ...value };
 }
 
@@ -302,9 +302,9 @@ export function useDockContinuity({
           typeof CSS !== "undefined" && CSS.escape
             ? CSS.escape(targetFocusKey)
             : targetFocusKey.replace(/"/g, '\\"');
-        const target = document.querySelector(
+        const target = document.querySelector<HTMLElement>(
           `[data-dock-focus-key="${safeKey}"]`,
-        ) as HTMLElement | null;
+        );
 
         if (!target || typeof target.focus !== "function") return;
         try {

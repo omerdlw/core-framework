@@ -178,7 +178,7 @@ export function getDockItemCardProps({
 }
 
 function toObject(value: unknown): Record<string, unknown> {
-  return isObjectLike(value) ? (value as Record<string, unknown>) : {};
+  return isObjectLike(value) ? value : {};
 }
 
 function pickCardSurfaceStyle(
@@ -193,7 +193,7 @@ function pickCardSurfaceStyle(
 }
 
 function toStyleSections(value: unknown): DockVisualStyleSections {
-  return toObject(value) as DockVisualStyleSections;
+  return toObject(value);
 }
 
 function mergeStyleSection(
@@ -206,7 +206,7 @@ function mergeStyleSection(
     ...toObject(baseStyle?.[section]),
     ...toObject(stateStyle?.[section]),
     ...toObject(hoverStyle?.[section]),
-  } as DockVisualStyleSection;
+  };
 }
 
 export function resolveDockVisualStyle(

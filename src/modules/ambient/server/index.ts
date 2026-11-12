@@ -83,9 +83,10 @@ async function reachesOnlyPublic(
   }
 }
 
-interface SharpLike {
-  (input: Uint8Array, options?: Record<string, unknown>): SharpPipeline;
-}
+type SharpLike = (
+  input: Uint8Array,
+  options?: Record<string, unknown>,
+) => SharpPipeline;
 interface SharpPipeline {
   ensureAlpha(): SharpPipeline;
   raw(): SharpPipeline;

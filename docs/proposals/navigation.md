@@ -9,13 +9,13 @@ Guffin, the first app on the framework, wrote its own navigation layer
 (`src/motion/handoff.tsx`, ~250 lines) because the framework has the pieces
 only inside the dock:
 
-| Guffin needed                                                             | What it wrote                                                                     | What the framework has                                                        |
-| :------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| Prefetch any link on intent (180 ms hover, pointerdown, focus), warm 4 min | `watchIntent`, `warm`, a `Map` of warmed paths, `foresee` listeners               | `useRoutePrefetch`, dock cards only, 90 ms, no shared cache                   |
-| A "trip": what the departing page hands the destination (palette, grade)  | a module-level `trip`, `beginHandoff`, `handoffTo(pathname)`, `useDeparture`      | nothing                                                                       |
-| An exit animation before the route changes                                | a dock **guard** whose `when` resolves `false` after `wait` (a guard used as a delay) | guards can only block                                                         |
-| Give up when the route never commits, and undo the exit                   | `depart()` with two patience timers keyed off `DOCK_EVENTS.NAVIGATE_START`        | the dock's transaction times out, but nobody outside the dock can react to it |
-| The same exit on the browser back button                                  | a capture-phase `popstate` holder (`holdSteps`) that swallows and replays the event | nothing                                                                       |
+| Guffin needed                                                              | What it wrote                                                                         | What the framework has                                                        |
+| :------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- |
+| Prefetch any link on intent (180 ms hover, pointerdown, focus), warm 4 min | `watchIntent`, `warm`, a `Map` of warmed paths, `foresee` listeners                   | `useRoutePrefetch`, dock cards only, 90 ms, no shared cache                   |
+| A "trip": what the departing page hands the destination (palette, grade)   | a module-level `trip`, `beginHandoff`, `handoffTo(pathname)`, `useDeparture`          | nothing                                                                       |
+| An exit animation before the route changes                                 | a dock **guard** whose `when` resolves `false` after `wait` (a guard used as a delay) | guards can only block                                                         |
+| Give up when the route never commits, and undo the exit                    | `depart()` with two patience timers keyed off `DOCK_EVENTS.NAVIGATE_START`            | the dock's transaction times out, but nobody outside the dock can react to it |
+| The same exit on the browser back button                                   | a capture-phase `popstate` holder (`holdSteps`) that swallows and replays the event   | nothing                                                                       |
 
 Every app with page transitions will need the same five things. They belong in
 the framework, behind one state machine that the dock also uses.
@@ -106,17 +106,17 @@ confirmation surface inside the trip; app-wide blockers are out of scope (§7).
 
 ### React (`@omerdlw/base-framework/modules/navigation`)
 
-| Export                                  | Replaces in Guffin                                  |
-| :-------------------------------------- | :-------------------------------------------------- |
-| `navigationModule`                      | —                                                   |
-| `useNavigation()` / `useOptionalNavigation()` | `useRouter` + `depart`                        |
-| `useNavigationHold(fn, deps, options?)` | the guard-as-delay + `depart` + `onReturn` + `holdSteps` |
-| `useNavigationPayload(key, value)`      | `useHeldPalette`, the `--grade` read in `beginHandoff` |
-| `useDeparture()`                        | `useDeparture(pathname)`                            |
-| `useArrival()` / `getArrival(pathname)` | `handoffTo(pathname)` (`getArrival` for `useState` initialisers) |
-| `useNavigationIntent(fn)`               | `foresee`                                           |
-| `configureNavigation(settings)`         | the constants `DWELL`, `WARM_FOR`, `FRESH`, `isFilmPage` |
-| `NAVIGATION_EVENTS`                     | listening to `DOCK_EVENTS.NAVIGATE_START`           |
+| Export                                        | Replaces in Guffin                                               |
+| :-------------------------------------------- | :--------------------------------------------------------------- |
+| `navigationModule`                            | —                                                                |
+| `useNavigation()` / `useOptionalNavigation()` | `useRouter` + `depart`                                           |
+| `useNavigationHold(fn, deps, options?)`       | the guard-as-delay + `depart` + `onReturn` + `holdSteps`         |
+| `useNavigationPayload(key, value)`            | `useHeldPalette`, the `--grade` read in `beginHandoff`           |
+| `useDeparture()`                              | `useDeparture(pathname)`                                         |
+| `useArrival()` / `getArrival(pathname)`       | `handoffTo(pathname)` (`getArrival` for `useState` initialisers) |
+| `useNavigationIntent(fn)`                     | `foresee`                                                        |
+| `configureNavigation(settings)`               | the constants `DWELL`, `WARM_FOR`, `FRESH`, `isFilmPage`         |
+| `NAVIGATION_EVENTS`                           | listening to `DOCK_EVENTS.NAVIGATE_START`                        |
 
 The payload is typed by augmentation, so the framework does not depend on
 ambient:
@@ -132,16 +132,16 @@ declare module "@omerdlw/base-framework/modules/navigation" {
 
 ### Settings (`configureNavigation`, same pattern as `configureAmbient`)
 
-| Setting          | Default  | Meaning                                                                  |
-| :--------------- | :------- | :----------------------------------------------------------------------- |
-| `intent`         | `true`   | Document-level intent prefetch for `a[href]`; `false` turns it off.       |
+| Setting          | Default  | Meaning                                                                    |
+| :--------------- | :------- | :------------------------------------------------------------------------- |
+| `intent`         | `true`   | Document-level intent prefetch for `a[href]`; `false` turns it off.        |
 | `intent.delayMs` | `180`    | Mouse dwell before prefetching. `pointerdown` and `focusin` are immediate. |
-| `intent.match`   | internal | `(href) => boolean`, which links to warm (Guffin: film pages).           |
-| `prefetchKind`   | `"full"` | Passed to `router.prefetch`.                                             |
-| `prefetchTtlMs`  | `240000` | How long a warmed path is not prefetched again.                          |
-| `arrivalTtlMs`   | `20000`  | How long a trip stays readable by `useArrival`.                          |
-| `maxHoldMs`      | `5000`   | Cap on holds; past it the trip commits anyway.                           |
-| `timeoutMs`      | `15000`  | Patience after commit (today's `DOCK_TRANSACTION_TIMEOUT_MS`).           |
+| `intent.match`   | internal | `(href) => boolean`, which links to warm (Guffin: film pages).             |
+| `prefetchKind`   | `"full"` | Passed to `router.prefetch`.                                               |
+| `prefetchTtlMs`  | `240000` | How long a warmed path is not prefetched again.                            |
+| `arrivalTtlMs`   | `20000`  | How long a trip stays readable by `useArrival`.                            |
+| `maxHoldMs`      | `5000`   | Cap on holds; past it the trip commits anyway.                             |
+| `timeoutMs`      | `15000`  | Patience after commit (today's `DOCK_TRANSACTION_TIMEOUT_MS`).             |
 
 Links opt out with `data-prefetch="false"`.
 
@@ -158,7 +158,7 @@ useNavigationHold(
   [wait],
   { enabled: !reduced },
 );
-useNavigationPayload("grade", () => readGrade());   // getter, read at departure
+useNavigationPayload("grade", () => readGrade()); // getter, read at departure
 
 // movie-page-chrome.tsx
 useNavigationPayload("palette", lit);

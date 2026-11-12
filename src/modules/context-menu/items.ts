@@ -35,7 +35,7 @@ export function resolveAsBoolean(
 ): boolean {
   if (typeof value === "function") {
     try {
-      return Boolean(value(context));
+      return Boolean((value as (context?: unknown) => unknown)(context));
     } catch {
       return false;
     }
@@ -53,7 +53,7 @@ export function resolveAsValue<T = unknown>(
 ): T {
   if (typeof value === "function") {
     try {
-      const resolved = value(context);
+      const resolved = (value as (context?: unknown) => T | undefined)(context);
       return resolved === undefined ? (fallback as T) : resolved;
     } catch {
       return fallback as T;
@@ -68,7 +68,8 @@ export function safeInvoke<T = unknown>(
 ): T | undefined {
   if (typeof handler !== "function") return undefined;
   try {
-    const result = handler(...args);
+    const result = (handler as (...args: unknown[]) => unknown)(...args) as
+      Promise<unknown> | undefined;
     if (result && typeof result.then === "function") {
       result.catch((err: unknown) =>
         report("Context menu async callback", err),

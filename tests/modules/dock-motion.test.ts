@@ -325,8 +325,7 @@ describe("dock rendering from the theme", () => {
   const banner = (props: object = {}) =>
     h(DockCardBanner, { bannerUrl: "/banner.png", ...props } as never);
   const imageOpacity = (container: HTMLElement) =>
-    (container.querySelector('[style*="background-image"]') as HTMLElement).style
-      .opacity;
+    container.querySelector('[style*="background-image"]')!.style.opacity;
 
   test("the banner rests at the theme's opacity", async () => {
     const dock = await render(h(withDockMotion(dockMotion), null, banner()));
@@ -346,7 +345,7 @@ describe("dock rendering from the theme", () => {
     const dismiss = async (motion: DockMotion, y: number, vy: number) => {
       const onClose = mock.fn();
       const view = await renderHook(
-        () => useDockSurfaceShellModel({ onClose } as never),
+        () => useDockSurfaceShellModel({ onClose }),
         { wrapper: withDockMotion(motion) },
       );
       view.result.current.handleDragEnd(null, {

@@ -215,7 +215,7 @@ describe("normalizePageControls", () => {
     const list = [entry()];
 
     assert.equal(normalizePageControls(list as any), list);
-    assert.deepEqual(normalizePageControls(entry() as any), [entry()]);
+    assert.deepEqual(normalizePageControls(entry()), [entry()]);
   });
 
   test("left/right shorthand expands into two entries", () => {
@@ -225,7 +225,7 @@ describe("normalizePageControls", () => {
       order: 3,
       path: "/p",
       right: "R",
-    } as any)!;
+    })!;
 
     assert.deepEqual(
       entries.map((e: any) => [e.id, e.side, e.content, e.order, e.path]),
@@ -237,7 +237,7 @@ describe("normalizePageControls", () => {
   });
 
   test("a missing side is simply not registered", () => {
-    const entries = normalizePageControls({ left: "L" } as any)!;
+    const entries = normalizePageControls({ left: "L" })!;
 
     assert.deepEqual(
       entries.map((e: any) => e.id),

@@ -6,8 +6,8 @@
 
 |                 |                                                                                                                                                                   |
 | :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**      | `import { ok, err, type Result, createSafeAction } from "@omerdlw/base-framework/result"`                                                                                          |
-| **Layer**       | `src/core` foundation. **Server-safe**: no React, no `next/*`; imports only `@omerdlw/base-framework/utils` (`UserError`, `toUserMessage`, `report`).                              |
+| **Import**      | `import { ok, err, type Result, createSafeAction } from "@omerdlw/base-framework/result"`                                                                         |
+| **Layer**       | `src/core` foundation. **Server-safe**: no React, no `next/*`; imports only `@omerdlw/base-framework/utils` (`UserError`, `toUserMessage`, `report`).             |
 | **Enforced by** | [Rule 6](../architecture-and-rules.md#rule-6-result-pattern-returns): Server Actions (`"use server"`) must return `Result<T, E>`. Never throw across the network. |
 | **Tests**       | `tests/core/result.test.ts`                                                                                                                                       |
 
@@ -67,19 +67,19 @@ toast.fromResult(result, { success: "Project renamed successfully!" }); // see n
 
 ## 4. API
 
-| Export                                                        | Signature                                    | Description                                                                                                                                          |
-| :------------------------------------------------------------ | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Result<T, E = string>`, `SuccessResult<T>`, `ErrorResult<E>` | types                                        | `readonly` fields; both carry an optional `code`.                                                                                                    |
-| `ok(data, code?)`                                             | `→ SuccessResult<T>`                         | `code` is included only when given.                                                                                                                  |
-| `err(error, code?)`                                           | `→ ErrorResult<E>`                           |                                                                                                                                                      |
-| `isResult(value)`                                             | `(unknown) → value is Result`                | True for objects with a boolean `success` **and** a matching `data` (success) / `error` (failure) key. Used by `toast.promise` and `toast.fromResult`.  |
-| `isOk(r)`, `isErr(r)`                                         | type guards                                  |                                                                                                                                                      |
-| `unwrap(r)`                                                   | `→ T`                                        | Returns `data`, or **throws** (the error itself if it is an `Error`, otherwise `new Error(String(error))`). Trusted internal code only.              |
-| `unwrapOr(r, fallback)`                                       | `→ T`                                        | `data` or the fallback.                                                                                                                              |
-| `map(r, fn)`, `mapErr(r, fn)`                                 | `→ Result`                                   | Transform one branch; `code` is preserved.                                                                                                           |
-| `match(r, { ok, err })`                                       | `→ R`                                        | Branch handling returning a value.                                                                                                                   |
-| `tryCatch(promiseOrFn, mapError?)`                            | `→ Promise<Result<T, E>>`                    | Awaits a promise (or an async function); thrown/rejected → `err(...)`.                                                                               |
-| `createSafeAction(handler, options?)`                         | `→ (...args) => Promise<Result<TOutput, E>>` | See below.                                                                                                                                           |
+| Export                                                        | Signature                                    | Description                                                                                                                                            |
+| :------------------------------------------------------------ | :------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Result<T, E = string>`, `SuccessResult<T>`, `ErrorResult<E>` | types                                        | `readonly` fields; both carry an optional `code`.                                                                                                      |
+| `ok(data, code?)`                                             | `→ SuccessResult<T>`                         | `code` is included only when given.                                                                                                                    |
+| `err(error, code?)`                                           | `→ ErrorResult<E>`                           |                                                                                                                                                        |
+| `isResult(value)`                                             | `(unknown) → value is Result`                | True for objects with a boolean `success` **and** a matching `data` (success) / `error` (failure) key. Used by `toast.promise` and `toast.fromResult`. |
+| `isOk(r)`, `isErr(r)`                                         | type guards                                  |                                                                                                                                                        |
+| `unwrap(r)`                                                   | `→ T`                                        | Returns `data`, or **throws** (the error itself if it is an `Error`, otherwise `new Error(String(error))`). Trusted internal code only.                |
+| `unwrapOr(r, fallback)`                                       | `→ T`                                        | `data` or the fallback.                                                                                                                                |
+| `map(r, fn)`, `mapErr(r, fn)`                                 | `→ Result`                                   | Transform one branch; `code` is preserved.                                                                                                             |
+| `match(r, { ok, err })`                                       | `→ R`                                        | Branch handling returning a value.                                                                                                                     |
+| `tryCatch(promiseOrFn, mapError?)`                            | `→ Promise<Result<T, E>>`                    | Awaits a promise (or an async function); thrown/rejected → `err(...)`.                                                                                 |
+| `createSafeAction(handler, options?)`                         | `→ (...args) => Promise<Result<TOutput, E>>` | See below.                                                                                                                                             |
 
 ### 4.1 How thrown errors become messages
 
@@ -102,11 +102,11 @@ The handler may return a `Result` (returned as is), or a plain value (wrapped in
 
 ## 5. Where Results flow
 
-| Consumer                             | Behaviour                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `toast.fromResult` / `toast.promise` | Toasts `success(data)` or `error` (falling back to `toUserMessage`).                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Notification module                  | Shows `APP_ERROR` / `STATE_CHANGE` events that have `notify: true`.                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Dock                                 | Shows **every** `APP_ERROR` as its error status card (regardless of `notify`).                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Consumer                             | Behaviour                                                                      |
+| :----------------------------------- | :----------------------------------------------------------------------------- |
+| `toast.fromResult` / `toast.promise` | Toasts `success(data)` or `error` (falling back to `toUserMessage`).           |
+| Notification module                  | Shows `APP_ERROR` / `STATE_CHANGE` events that have `notify: true`.            |
+| Dock                                 | Shows **every** `APP_ERROR` as its error status card (regardless of `notify`). |
 
 So a failed `useServerAction` produces a dock error card, plus a toast if you passed `toast: true`.
 

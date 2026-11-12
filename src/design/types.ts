@@ -14,7 +14,7 @@ import type { Icon as IconifyIcon } from "@iconify-icon/react";
 import type * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import type { PartClassNames, PartProps, PartsProps } from "./define";
 
-export type DataAttributes = { [name: `data-${string}`]: string | undefined };
+export type DataAttributes = Record<`data-${string}`, string | undefined>;
 
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   alt?: string;

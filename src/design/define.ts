@@ -52,17 +52,19 @@ export const DEFAULT_LABELS: UiLabels = {
   next: "Scroll right",
 };
 
-type Parts = { readonly [part: string]: unknown };
-type Registry = { readonly [component: string]: Parts };
+type Parts = Readonly<Record<string, unknown>>;
+type Registry = Readonly<Record<string, Parts>>;
 
 export type UiPartOverrides<D extends Registry = Anatomy> = {
   readonly [C in keyof D]?: {
     readonly [P in keyof D[C]]?: RecipeOverride<VariantsOf<D[C][P]>>;
   };
-} & {
-  readonly [component: string]:
-    { readonly [part: string]: RecipeOverride | RecipeDef } | undefined;
-};
+} & Readonly<
+  Record<
+    string,
+    Readonly<Record<string, RecipeOverride | RecipeDef>> | undefined
+  >
+>;
 
 export interface UiConfig {
   readonly parts?: UiPartOverrides;
@@ -121,11 +123,9 @@ function compileParts(
     string,
     Record<string, RecipeOverride> | undefined
   >;
-  const names = new Set([
-    ...Object.keys(ANATOMY),
-    ...Object.keys(overrides),
-  ]);
+  const names = new Set([...Object.keys(ANATOMY), ...Object.keys(overrides)]);
   for (const component of names) {
+    // ANATOMY is a literal table, indexed here by component name.
     const defaults = (ANATOMY as unknown as Registry)[component] ?? {};
     const own = overrides[component] ?? {};
     const parts: Record<string, Recipe> = {};
@@ -147,6 +147,7 @@ export function defineUi<const O extends UiConfig = {}>(config?: O): Ui<O> {
   const own = (config ?? {}) as UiConfig;
   const cn = createCn(own.merge);
   return Object.freeze({
+    // compileParts returns generic parts; the option type narrows them per component.
     parts: compileParts(own, cn) as unknown as UiParts<O>,
     cn,
     motion: Object.freeze({ ...own.motion }),

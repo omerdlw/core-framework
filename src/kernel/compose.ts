@@ -6,10 +6,12 @@ import {
   type ReactNode,
 } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider props are erased at the composition boundary
 export type ProviderComponent<P = any> = ComponentType<
   P & { children?: ReactNode }
 >;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider props are erased at the composition boundary
 export type ProviderEntry<P = any> =
   ProviderComponent<P> | readonly [ProviderComponent<P>, P];
 
@@ -30,6 +32,7 @@ export function Compose({ providers, children }: ComposeProps): JSX.Element {
     (acc, entry) => {
       if (Array.isArray(entry)) {
         const [Component, props] = entry;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- provider props are erased at the composition boundary
         return createElement(Component, props, acc);
       }
       const Component = entry as ProviderComponent;

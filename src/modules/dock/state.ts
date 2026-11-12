@@ -195,7 +195,7 @@ export function createDockOperation({
     startedAt: Number.isFinite(Number(startedAt))
       ? Number(startedAt)
       : Date.now(),
-    status: DOCK_OPERATION_STATUS.PENDING as string,
+    status: DOCK_OPERATION_STATUS.PENDING,
     onCancel: typeof onCancel === "function" ? onCancel : null,
   };
 }

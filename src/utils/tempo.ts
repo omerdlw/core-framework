@@ -39,7 +39,7 @@ export function defineMotion<T extends MotionTokensInput>(
     ...tokens,
     tempo,
     reducedMotion: tokens.reducedMotion ?? "user",
-  }) as MotionTokens<T>;
+  });
 }
 
 export interface MotionClock {
@@ -66,7 +66,7 @@ type Plain = Record<string, unknown>;
 
 function isPlainObject(value: unknown): value is Plain {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value);
+  const prototype: unknown = Object.getPrototypeOf(value);
   return prototype === Object.prototype || prototype === null;
 }
 
@@ -92,8 +92,7 @@ function retimeTransition(value: Plain, clock: MotionClock): Plain {
     next[key] = isPlainObject(entry) ? retimeNode(entry, clock) : entry;
   }
   for (const key of TIME_KEYS) {
-    if (typeof value[key] === "number")
-      next[key] = (value[key] as number) * tempo;
+    if (typeof value[key] === "number") next[key] = value[key] * tempo;
   }
   if (typeof value.stiffness === "number") {
     next.stiffness = value.stiffness / (tempo * tempo);

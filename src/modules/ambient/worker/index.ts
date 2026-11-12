@@ -21,7 +21,7 @@ export interface AmbientWorkerScope {
 }
 
 export function serveAmbientWorker(
-  scope: AmbientWorkerScope = globalThis as unknown as AmbientWorkerScope,
+  scope: AmbientWorkerScope = globalThis,
 ): () => void {
   const onMessage = async (event: MessageEvent) => {
     const request = event.data as AmbientWorkerRequest | null;
@@ -38,6 +38,9 @@ export function serveAmbientWorker(
       type: AMBIENT_WORKER_RESPONSE,
     });
   };
+  // onMessage is async but catches its own errors; the listener ignores its result.
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   scope.addEventListener("message", onMessage);
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   return () => scope.removeEventListener("message", onMessage);
 }

@@ -1,4 +1,8 @@
-type QueryResult = { count?: number | null; data?: any; error?: any };
+interface QueryResult {
+  count?: number | null;
+  data?: any;
+  error?: any;
+}
 
 export interface FakeSupabaseOptions {
   adminDeleteError?: any;

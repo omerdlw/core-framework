@@ -14,6 +14,7 @@
 For in-depth architecture guides and module-by-module references, explore the [`docs/`](./docs) folder:
 
 ### General Architecture Guides
+
 - 🚀 **[Getting Started & Installation](./docs/getting-started.md)** — Step-by-step setup, Tailwind CSS v4, root layout wiring
 - 🏛️ **[System Architecture Map](./docs/README.md)** — Macro overview, task lookup table, conventions
 - 📐 **[Architecture & 10 Rules](./docs/architecture-and-rules.md)** — Package layer hierarchy, boundaries, decision tree
@@ -24,6 +25,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 - 🤖 **[AI Agent Blueprint (`AGENTS.md`)](./templates/AGENTS.md)** — Drop-in rules for AI coding assistants
 
 ### Module & Component Reference
+
 - ⚡ **[Microkernel Engine (`kernel`)](./docs/modules/kernel.md)** — `usePage()`, `defineModule()`, topological registry
 - ⚓ **[Dock Module (`dock`)](./docs/modules/dock.md)** — Floating app chrome, cards, surfaces, flows, HUD, guards
 - 🪟 **[Modal Module (`modal`)](./docs/modules/modal.md)** — Stackable dialogs, focus trap, smooth scroll lock
@@ -100,7 +102,11 @@ Wrap your root `app/layout.tsx`:
 import { Providers } from "./providers";
 import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
@@ -161,20 +167,20 @@ export default function DashboardPage() {
 
 ## 📚 Subpath Export Directory
 
-| Subpath                             | Purpose & Key Exports                                             |
-| :---------------------------------- | :---------------------------------------------------------------- |
-| `@omerdlw/base-framework`           | Root exports of all sub-systems                                   |
-| `@omerdlw/base-framework/kernel`    | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`  |
-| `@omerdlw/base-framework/provider`  | `CoreProvider` composition pipeline & `ModuleHost`                |
-| `@omerdlw/base-framework/result`    | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                |
-| `@omerdlw/base-framework/events`    | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)               |
-| `@omerdlw/base-framework/theme`     | `ThemeProvider`, `useTheme`, `defineThemeSpec`                    |
-| `@omerdlw/base-framework/design`    | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …) |
-| `@omerdlw/base-framework/design/recipes` | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY` |
-| `@omerdlw/base-framework/utils`     | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
-| `@omerdlw/base-framework/hooks`     | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`) |
-| `@omerdlw/base-framework/error`     | Error boundaries and reporter sink                                |
-| `@omerdlw/base-framework/modules/*` | 9 standalone modules (`dock`, `modal`, `notification`, etc.)      |
+| Subpath                                  | Purpose & Key Exports                                                       |
+| :--------------------------------------- | :-------------------------------------------------------------------------- |
+| `@omerdlw/base-framework`                | Root exports of all sub-systems                                             |
+| `@omerdlw/base-framework/kernel`         | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`            |
+| `@omerdlw/base-framework/provider`       | `CoreProvider` composition pipeline & `ModuleHost`                          |
+| `@omerdlw/base-framework/result`         | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                          |
+| `@omerdlw/base-framework/events`         | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                         |
+| `@omerdlw/base-framework/theme`          | `ThemeProvider`, `useTheme`, `defineThemeSpec`                              |
+| `@omerdlw/base-framework/design`         | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)    |
+| `@omerdlw/base-framework/design/recipes` | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                |
+| `@omerdlw/base-framework/utils`          | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
+| `@omerdlw/base-framework/hooks`          | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)           |
+| `@omerdlw/base-framework/error`          | Error boundaries and reporter sink                                          |
+| `@omerdlw/base-framework/modules/*`      | 9 standalone modules (`dock`, `modal`, `notification`, etc.)                |
 
 ---
 

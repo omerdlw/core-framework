@@ -36,7 +36,7 @@ describe("background actions", () => {
     #playResults = [] as any[];
 
     queuePlayResult(result) {
-      this.#playResults.push(result as any);
+      this.#playResults.push(result);
     }
 
     play() {
@@ -500,7 +500,7 @@ describe("background utils", () => {
         muted: false,
         playbackRate: 1.5,
         showSpinner: false,
-      } as any);
+      });
 
       assert.equal(options.shouldAutoPlay, false);
       assert.equal(options.isLoop, true);

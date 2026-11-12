@@ -6,7 +6,7 @@
 
 |                     |                                                                                                    |
 | :------------------ | :------------------------------------------------------------------------------------------------- |
-| **Import**          | `import { useToast } from "@omerdlw/base-framework/modules/notification"`                                                |
+| **Import**          | `import { useToast } from "@omerdlw/base-framework/modules/notification"`                          |
 | **Module id**       | `notification` (`notificationModule`, in `defaultModules`)                                         |
 | **Renders**         | `NotificationLayer` overlay: the toast + an event listener                                         |
 | **Registry type**   | none                                                                                               |
@@ -141,17 +141,17 @@ No classes or inline styles in the module. `notificationTheme` slots: `layer`, `
 
 ## 10. File map
 
-| File           | Responsibility                                                                              |
-| :------------- | :------------------------------------------------------------------------------------------ |
-| `index.ts`     | Public barrel.                                                                              |
-| `types.ts`     | Notification data, options, controller, page and theme-slot contracts.                      |
-| `constants.ts` | `TOAST_DURATIONS`, session-expired message, `DOCK_STACK_ELEMENT_ID`, `notificationTheme`.   |
+| File           | Responsibility                                                                                         |
+| :------------- | :----------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                         |
+| `types.ts`     | Notification data, options, controller, page and theme-slot contracts.                                 |
+| `constants.ts` | `TOAST_DURATIONS`, session-expired message, `DOCK_STACK_ELEMENT_ID`, `notificationTheme`.              |
 | `state.ts`     | Option normalization, duration resolution, text normalization, entry creation, active toast selection. |
-| `context.tsx`  | `NotificationProvider` (store, timers, show/dismiss actions), `NotificationContext`.         |
-| `hooks.ts`     | Public hooks (`useToast`, `useNotification*`), `NotificationListener`, container view model. |
-| `overlay.tsx`  | `Toast`, `NotificationContainer` (dock/floating portal), `NotificationLayer`.               |
-| `motion.ts`    | `useNotificationMotion`, compositor hints. The values come from the app's notification theme.|
-| `module.tsx`   | `notificationModule` and the page API.                                                      |
+| `context.tsx`  | `NotificationProvider` (store, timers, show/dismiss actions), `NotificationContext`.                   |
+| `hooks.ts`     | Public hooks (`useToast`, `useNotification*`), `NotificationListener`, container view model.           |
+| `overlay.tsx`  | `Toast`, `NotificationContainer` (dock/floating portal), `NotificationLayer`.                          |
+| `motion.ts`    | `useNotificationMotion`, compositor hints. The values come from the app's notification theme.          |
+| `module.tsx`   | `notificationModule` and the page API.                                                                 |
 
 `builder.ts` is absent: toasts are imperative ([README](./README.md#42-why-some-optional-slots-are-absent)).
 

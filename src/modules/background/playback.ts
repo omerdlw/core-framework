@@ -35,6 +35,8 @@ export function applyVideoPlaybackState({
   }
 
   const playPromise = videoElement.play();
+  // Older browsers return undefined from play(), which the types do not model.
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   if (!playPromise || typeof playPromise.then !== "function") return;
 
   playPromise

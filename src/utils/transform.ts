@@ -4,7 +4,7 @@ function numberOf(value: unknown, fallback: number): number {
     typeof value === "object" &&
     "get" in value &&
     typeof value.get === "function"
-      ? value.get()
+      ? (value.get as () => unknown)()
       : value;
   const number = Number.parseFloat(String(source));
   return Number.isFinite(number) ? number : fallback;

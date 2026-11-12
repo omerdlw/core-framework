@@ -70,9 +70,9 @@ function getObservedHeight(
   element: HTMLElement | null,
 ): number {
   const rawBorderBoxSize = entry?.borderBoxSize as
-    ReadonlyArray<ResizeObserverSize> | ResizeObserverSize | undefined;
+    readonly ResizeObserverSize[] | ResizeObserverSize | undefined;
   const borderBoxSize = Array.isArray(rawBorderBoxSize)
-    ? rawBorderBoxSize[0]
+    ? (rawBorderBoxSize as readonly ResizeObserverSize[])[0]
     : (rawBorderBoxSize as ResizeObserverSize | undefined);
   if (borderBoxSize?.blockSize != null) {
     return Math.round(borderBoxSize.blockSize);

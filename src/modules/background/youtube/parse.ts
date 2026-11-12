@@ -1,4 +1,4 @@
-import { YouTubeProxyController, YouTubeUrlConfig } from "../types";
+import type { YouTubeProxyController, YouTubeUrlConfig } from "../types";
 
 const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
 
@@ -15,8 +15,8 @@ function parseYouTubeTimeParam(value?: string | number | null): number {
     return Math.max(0, parseFloat(trimmed));
   }
 
-  const hmsMatch = trimmed.match(
-    /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+(?:\.\d+)?)s?)?$/,
+  const hmsMatch = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+(?:\.\d+)?)s?)?$/.exec(
+    trimmed,
   );
   if (hmsMatch && (hmsMatch[1] || hmsMatch[2] || hmsMatch[3])) {
     const hours = parseInt(hmsMatch[1] || "0", 10);
@@ -83,7 +83,7 @@ export function extractYouTubeVideoId(
 
   if (options.allowBareId && YOUTUBE_ID_PATTERN.test(trimmed)) return trimmed;
 
-  const prefixed = trimmed.match(/^(?:youtube|yt):([a-zA-Z0-9_-]{11})$/i);
+  const prefixed = /^(?:youtube|yt):([a-zA-Z0-9_-]{11})$/i.exec(trimmed);
   if (prefixed) return prefixed[1];
 
   const url = toUrl(trimmed, { youtubeOnly: true });

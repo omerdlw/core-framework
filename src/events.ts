@@ -37,9 +37,8 @@ export interface FrameworkEventMap {
 }
 
 export class EventEmitter<TEvents extends object = FrameworkEventMap> {
-  private events: Map<string, Set<EventListener<never>>> = new Map();
-  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> =
-    new Map();
+  private events = new Map<string, Set<EventListener<never>>>();
+  private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   subscribe<K extends keyof TEvents>(
     event: K,
@@ -86,7 +85,7 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
     waitMs?: number,
   ): void;
   emitDebounced<T = unknown>(event: string, payload?: T, waitMs?: number): void;
-  emitDebounced(event: string, payload?: unknown, waitMs: number = 100): void {
+  emitDebounced(event: string, payload?: unknown, waitMs = 100): void {
     const existing = this.debounceTimers.get(event);
     if (existing) clearTimeout(existing);
 

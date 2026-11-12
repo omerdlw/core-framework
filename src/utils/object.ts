@@ -6,7 +6,7 @@ export function isPlainObject(
   value: unknown,
 ): value is Record<string, unknown> {
   if (!isObject(value)) return false;
-  const proto = Object.getPrototypeOf(value);
+  const proto: unknown = Object.getPrototypeOf(value);
   return proto === Object.prototype || proto === null;
 }
 
@@ -21,8 +21,8 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
     return false;
   }
 
-  const keysA = Object.keys(a as object);
-  const keysB = Object.keys(b as object);
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
 
   if (keysA.length !== keysB.length) return false;
 

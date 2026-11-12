@@ -241,7 +241,6 @@ export function resolveActiveItem({
   mediaAction,
   actionStackClass,
   surfaceActions,
-  isPageLoading,
   attention,
   baseActiveItem: resolvedBaseActiveItem,
 }: {

@@ -10,10 +10,8 @@ import {
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
 import { normalizeUpper } from "../helpers";
+import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
-  StatusSetter,
-  StatusUpdate,
-  TimerRef,
   createErrorStatus,
   createGuardStatus,
   createOverlayStatus,

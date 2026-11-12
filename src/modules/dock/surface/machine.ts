@@ -107,8 +107,10 @@ export function getRestorableSurfaceFlowSnapshot(
   if (!IS_BROWSER || !definition?.restoreFromUrl || !definition?.id)
     return undefined;
 
-  const dockSurface: DockSurfaceHistoryState | undefined =
-    window.history.state?.dockSurface;
+  const historyState = window.history.state as {
+    dockSurface?: DockSurfaceHistoryState;
+  } | null;
+  const dockSurface = historyState?.dockSurface;
   const flow = dockSurface?.flow;
   const currentSurfaceValue = new URL(window.location.href).searchParams.get(
     "surface",
@@ -153,7 +155,9 @@ export function syncSurfaceUrl(
       url.searchParams.set("surface", urlState.previousValue);
     else url.searchParams.delete("surface");
 
-    const state = { ...window.history.state };
+    const state = {
+      ...(window.history.state as { dockSurface?: { value?: unknown } } | null),
+    };
     if (state.dockSurface?.value === urlState?.value) delete state.dockSurface;
     window.history.replaceState(state, "", url.toString());
   } catch (error) {
@@ -399,10 +403,12 @@ export function createSurfaceTransitionState(
 ): SurfaceTransitionState {
   const source = input ?? {};
   const surfaceIds: SurfaceId[] = [
-    ...new Set(Array.isArray(source.surfaceIds) ? source.surfaceIds : []),
+    ...new Set<SurfaceId>(
+      Array.isArray(source.surfaceIds) ? source.surfaceIds : [],
+    ),
   ].filter((s) => s != null);
   const closingSurfaceIds = [
-    ...new Set(
+    ...new Set<SurfaceId>(
       Array.isArray(source.closingSurfaceIds) ? source.closingSurfaceIds : [],
     ),
   ].filter((s) => surfaceIds.includes(s));

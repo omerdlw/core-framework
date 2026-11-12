@@ -83,7 +83,7 @@ export function createRegistryTransaction(
     const options =
       typeof sourceOrOptions === "string"
         ? mergeOptions({ ...(optionsArg || {}), source: sourceOrOptions })
-        : mergeOptions(sourceOrOptions as RegistryMetadata | undefined);
+        : mergeOptions(sourceOrOptions);
 
     operations.push({ key, item: value, options, type });
     return { index: operations.length - 1, status: "queued", traceId };
@@ -99,7 +99,7 @@ export function createRegistryTransaction(
     const options = mergeOptions(
       typeof sourceOrOptions === "string"
         ? { source: sourceOrOptions }
-        : (sourceOrOptions as RegistryMetadata | undefined),
+        : sourceOrOptions,
     );
 
     operations.push({ key, options, type, unregister: true });

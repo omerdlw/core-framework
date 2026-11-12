@@ -42,10 +42,8 @@ export function getDockFocusableElements(
   container: HTMLElement | null,
 ): HTMLElement[] {
   if (!container || typeof container.querySelectorAll !== "function") return [];
-  return (
-    Array.from(
-      container.querySelectorAll(DOCK_FOCUSABLE_SELECTOR),
-    ) as HTMLElement[]
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(DOCK_FOCUSABLE_SELECTOR),
   ).filter((element) => {
     if (!element || element.getAttribute("aria-hidden") === "true")
       return false;
@@ -208,7 +206,7 @@ export function useDockKeyboard({
         event.preventDefault();
         const focusedItem = dockItems[focusedIndex];
         if (focusedItem?.path) {
-          navigate(focusedItem.path, { item: focusedItem });
+          void navigate(focusedItem.path, { item: focusedItem });
         }
         return;
       }

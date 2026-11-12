@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                                                                                                               |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { … } from "@omerdlw/base-framework/modules/background"`                                                                                                                                                                                    |
+| **Import**         | `import { … } from "@omerdlw/base-framework/modules/background"`                                                                                                                                                              |
 | **Module id**      | `background` (`backgroundModule`, in `defaultModules`)                                                                                                                                                                        |
 | **Renders**        | `BackgroundOverlay` as a **Backdrop**: a full-viewport layer _behind_ the page (the host renders backdrops before `children`)                                                                                                 |
 | **Registry type**  | `background` — singleton key `page-background`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
@@ -57,23 +57,23 @@ usePage({
 
 ## 4. Capabilities
 
-| Capability                     | How                                                                                                                                                                                                                                           |
-| :----------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Solid color                    | `color: "var(--black)"` (the default color token).                                                                                                                                                                                            |
-| Image                          | `image: "/x.jpg"`, `position: "center \| left \| right \| …"`, `imageStyle` (CSS + `className`, `leftGradient`, `rightGradient`).                                                                                                             |
-| Direct video file              | `video: "/x.mp4"` (`.mp4 .webm .mov .m4v .ogg .ogv .m3u8`, `blob:` URLs, `/api/background/youtube…`).                                                                                                                                         |
-| YouTube video                  | `video: "<youtube url>"` or `"youtube:<id>"` / `"yt:<id>"`. Start/end times from `?t=`, `?start=`, `?end=` (`90`, `1m30s`, `1h2m3s`).                                                                                                         |
-| Autoplay / mute / loop / speed | `videoOptions.autoplay` (default true), `muted` (default true), `loop`, `playbackRate`, `corp` (trim seconds from the end).                                                                                                                   |
-| Quality & codec (YouTube)      | `videoOptions.quality` (`auto 2160p 1440p 1080p 720p 480p 360p`, default `1080p`), `codec` (`auto hevc av1 h264 vp9`).                                                                                                                        |
-| Poster & spinner (YouTube)     | `showPoster` (uses `image` as poster), `showSpinner` (default true).                                                                                                                                                                          |
-| Iframe fallback                | `videoOptions.forceIframe: true` uses the YouTube embed instead of the stream proxy.                                                                                                                                                          |
-| Dimming overlay                | `overlay: true`, `overlayColor` (default `var(--black)`), `overlayOpacity`.                                                                                                                                                                   |
-| Edge fades                     | `fadeEdges` (`number`, `"20"`, `{ left, right }`, `false`), `leftGradient` / `rightGradient` (strength 1–n). A custom `width` implies a 20 % fade unless `fadeEdges: false`.                                                                  |
-| Film grain                     | `noiseStyle: { opacity, mixBlendMode }`.                                                                                                                                                                                                      |
-| Layout                         | `width` (number px or CSS length) places a video frame left/right/center via `position`; `fit` / `videoOptions.fit` (`cover contain fill none scale-down`); `bg-*` class tokens in `className`/`videoClassName` map to object-position slots. |
-| Custom transition              | `animation: { initial, animate, exit, transition, exitDurationFactor }`, field by field over the app's background motion (`motion: BackgroundMotion` in the theme; the starter fades opacity over 0.58 s, exit factor 0.6). It follows the app's tempo.|
-| Programmatic control           | `useBackgroundActions()` / `page.modules.background`.                                                                                                                                                                                         |
-| Dock media controls            | Automatic through the `media` module ([§8](#8-media-integration)).                                                                                                                                                                            |
+| Capability                     | How                                                                                                                                                                                                                                                     |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Solid color                    | `color: "var(--black)"` (the default color token).                                                                                                                                                                                                      |
+| Image                          | `image: "/x.jpg"`, `position: "center \| left \| right \| …"`, `imageStyle` (CSS + `className`, `leftGradient`, `rightGradient`).                                                                                                                       |
+| Direct video file              | `video: "/x.mp4"` (`.mp4 .webm .mov .m4v .ogg .ogv .m3u8`, `blob:` URLs, `/api/background/youtube…`).                                                                                                                                                   |
+| YouTube video                  | `video: "<youtube url>"` or `"youtube:<id>"` / `"yt:<id>"`. Start/end times from `?t=`, `?start=`, `?end=` (`90`, `1m30s`, `1h2m3s`).                                                                                                                   |
+| Autoplay / mute / loop / speed | `videoOptions.autoplay` (default true), `muted` (default true), `loop`, `playbackRate`, `corp` (trim seconds from the end).                                                                                                                             |
+| Quality & codec (YouTube)      | `videoOptions.quality` (`auto 2160p 1440p 1080p 720p 480p 360p`, default `1080p`), `codec` (`auto hevc av1 h264 vp9`).                                                                                                                                  |
+| Poster & spinner (YouTube)     | `showPoster` (uses `image` as poster), `showSpinner` (default true).                                                                                                                                                                                    |
+| Iframe fallback                | `videoOptions.forceIframe: true` uses the YouTube embed instead of the stream proxy.                                                                                                                                                                    |
+| Dimming overlay                | `overlay: true`, `overlayColor` (default `var(--black)`), `overlayOpacity`.                                                                                                                                                                             |
+| Edge fades                     | `fadeEdges` (`number`, `"20"`, `{ left, right }`, `false`), `leftGradient` / `rightGradient` (strength 1–n). A custom `width` implies a 20 % fade unless `fadeEdges: false`.                                                                            |
+| Film grain                     | `noiseStyle: { opacity, mixBlendMode }`.                                                                                                                                                                                                                |
+| Layout                         | `width` (number px or CSS length) places a video frame left/right/center via `position`; `fit` / `videoOptions.fit` (`cover contain fill none scale-down`); `bg-*` class tokens in `className`/`videoClassName` map to object-position slots.           |
+| Custom transition              | `animation: { initial, animate, exit, transition, exitDurationFactor }`, field by field over the app's background motion (`motion: BackgroundMotion` in the theme; the starter fades opacity over 0.58 s, exit factor 0.6). It follows the app's tempo. |
+| Programmatic control           | `useBackgroundActions()` / `page.modules.background`.                                                                                                                                                                                                   |
+| Dock media controls            | Automatic through the `media` module ([§8](#8-media-integration)).                                                                                                                                                                                      |
 
 ## 5. Public API
 
@@ -174,21 +174,21 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 
 ## 11. File map
 
-| File                 | Responsibility                                                                                            |
-| :------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `index.ts`           | Public barrel export.                                                                                     |
-| `types.ts`           | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots. |
-| `constants.ts`       | Registry key, media id, `backgroundTheme` spec, and domain constants.                                     |
-| `state.ts`           | `DEFAULT_BACKGROUND`, normalization, patch merging, scoped override resolution, and computed state.       |
-| `visual.ts`          | Gradient generation, smoothstep edge-fade masks, and video styling/fit options.                           |
-| `playback.ts`        | Direct HTML video DOM controls: play/pause, volume/mute, loop, and playbackRate sync.                     |
-| `overlay.tsx`        | `BackgroundOverlay`, `NativeVideo`, and backdrop overlay layers (solid, noise, gradients).                |
-| `motion.ts`          | `useBackgroundMotion`, how a page's `animation` merges over the app's motion, the exit fallback, and CSS duration/easing helpers.|
-| `context.tsx`        | `BackgroundProvider`: store, actions, `media` module bridge, and `useBackground*` hooks.                  |
-| `module.tsx`         | `backgroundModule` definition, `selectPageBackground`, `defineBackground`, and kernel type augmentation.  |
-| `youtube/parse.ts`   | YouTube URL/ID parsing, time params, stream/thumbnail URLs, and video element proxy.                      |
-| `youtube/iframe.ts`  | Iframe API loader and YouTube iframe player controller (fallback path).                                   |
-| `youtube/player.tsx` | Dedicated dual-stream YouTube player component and companion audio synchronization hook.                  |
+| File                 | Responsibility                                                                                                                    |
+| :------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`           | Public barrel export.                                                                                                             |
+| `types.ts`           | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots.                         |
+| `constants.ts`       | Registry key, media id, `backgroundTheme` spec, and domain constants.                                                             |
+| `state.ts`           | `DEFAULT_BACKGROUND`, normalization, patch merging, scoped override resolution, and computed state.                               |
+| `visual.ts`          | Gradient generation, smoothstep edge-fade masks, and video styling/fit options.                                                   |
+| `playback.ts`        | Direct HTML video DOM controls: play/pause, volume/mute, loop, and playbackRate sync.                                             |
+| `overlay.tsx`        | `BackgroundOverlay`, `NativeVideo`, and backdrop overlay layers (solid, noise, gradients).                                        |
+| `motion.ts`          | `useBackgroundMotion`, how a page's `animation` merges over the app's motion, the exit fallback, and CSS duration/easing helpers. |
+| `context.tsx`        | `BackgroundProvider`: store, actions, `media` module bridge, and `useBackground*` hooks.                                          |
+| `module.tsx`         | `backgroundModule` definition, `selectPageBackground`, `defineBackground`, and kernel type augmentation.                          |
+| `youtube/parse.ts`   | YouTube URL/ID parsing, time params, stream/thumbnail URLs, and video element proxy.                                              |
+| `youtube/iframe.ts`  | Iframe API loader and YouTube iframe player controller (fallback path).                                                           |
+| `youtube/player.tsx` | Dedicated dual-stream YouTube player component and companion audio synchronization hook.                                          |
 
 ## 12. Dependencies
 

@@ -24,7 +24,7 @@ function freezeStoreSnapshot<TState>(state: TState): TState {
     if (seen.has(value) || Object.isFrozen(value)) return;
     seen.add(value);
 
-    const prototype = Object.getPrototypeOf(value);
+    const prototype: unknown = Object.getPrototypeOf(value);
     if (
       Array.isArray(value) ||
       prototype === Object.prototype ||
@@ -33,7 +33,8 @@ function freezeStoreSnapshot<TState>(state: TState): TState {
       for (const key of Reflect.ownKeys(value)) {
         const descriptor = Object.getOwnPropertyDescriptor(value, key);
         if (descriptor && "value" in descriptor && descriptor.value !== null) {
-          if (typeof descriptor.value === "object") freeze(descriptor.value);
+          if (typeof descriptor.value === "object")
+            freeze(descriptor.value as object);
         }
       }
     }
@@ -83,7 +84,7 @@ export function createStore<TState = Record<string, unknown>>(
     updater: Partial<TState> | ((currentState: TState) => TState),
   ): boolean => {
     if (typeof updater === "function") {
-      return publish(updater as (currentState: TState) => TState);
+      return publish(updater);
     }
     if (
       snapshot &&

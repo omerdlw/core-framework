@@ -99,7 +99,7 @@ export function watchHistory(
     }
 
     event.stopImmediatePropagation();
-    const { state } = event;
+    const state = event.state as unknown;
     navigator.depart(to, {
       replay: () => {
         replaying = true;

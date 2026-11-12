@@ -329,36 +329,35 @@ export function createRegistryApplyContext(
     cleanupScope?: RegistryApplyContext["cleanupScope"];
   },
 ): RegistryApplyContext {
-  const stamp = (queue: RegistryQueue): RegistryQueue =>
-    ({
-      register: (
-        type: string,
-        key: string,
-        item: unknown,
-        sourceOrOptions?: RegistrySourceOrOptions,
-        optionsArg?: RegistryMetadata,
-      ) =>
-        queue.register(
-          type,
-          key,
-          item,
-          ...resolveRegisterArgsWithInstance(
-            instanceId,
-            sourceOrOptions,
-            optionsArg,
-          ),
+  const stamp = (queue: RegistryQueue): RegistryQueue => ({
+    register: (
+      type: string,
+      key: string,
+      item: unknown,
+      sourceOrOptions?: RegistrySourceOrOptions,
+      optionsArg?: RegistryMetadata,
+    ) =>
+      queue.register(
+        type,
+        key,
+        item,
+        ...resolveRegisterArgsWithInstance(
+          instanceId,
+          sourceOrOptions,
+          optionsArg,
         ),
-      unregister: (
-        type: string,
-        key: string,
-        sourceOrOptions?: RegistrySourceOrOptions,
-      ) =>
-        queue.unregister(
-          type,
-          key,
-          withInstanceIdForUnregister(instanceId, sourceOrOptions),
-        ),
-    }) as RegistryQueue;
+      ),
+    unregister: (
+      type: string,
+      key: string,
+      sourceOrOptions?: RegistrySourceOrOptions,
+    ) =>
+      queue.unregister(
+        type,
+        key,
+        withInstanceIdForUnregister(instanceId, sourceOrOptions),
+      ),
+  });
 
   return {
     ...stamp(actions),

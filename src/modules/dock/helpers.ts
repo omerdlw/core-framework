@@ -7,7 +7,7 @@ import {
 import { type DockComponent, type DockHudDescriptor } from "./types";
 
 export function toObject(value: unknown): Record<string, unknown> {
-  return isObjectLike(value) ? (value as Record<string, unknown>) : {};
+  return isObjectLike(value) ? value : {};
 }
 
 export function isValidComponentType(type: unknown): type is DockComponent {

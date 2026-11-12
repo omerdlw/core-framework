@@ -315,7 +315,7 @@ export function restorePersistedOverlayStatus(): {
     const rawValue = storage.getItem(OVERLAY_STATUS_STORAGE_KEY);
     if (!rawValue) return null;
 
-    const payload: PersistedOverlayStatus | null = JSON.parse(rawValue);
+    const payload = JSON.parse(rawValue) as PersistedOverlayStatus | null;
     const type = normalizeUpper(payload?.type);
     const expiresAt = Number(payload?.expiresAt || 0);
 

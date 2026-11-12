@@ -234,6 +234,8 @@ describe("toast", () => {
 
       await act(async () => {
         await hook.result.current.toast
+          // UserError is a plain object in this fixture, not an Error subclass.
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           .promise(Promise.reject(new UserError("Name too long")))
           .catch(() => {});
       });

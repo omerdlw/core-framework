@@ -14,10 +14,8 @@ import {
   type ScheduleStatusClearOptions,
 } from "../types";
 import { STATUS_CLEAR_DURATION } from "../constants";
+import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
-  StatusSetter,
-  StatusUpdate,
-  TimerRef,
   createConnectionStatus,
   isEquivalentOverlayStatus,
   isErrorStatus,

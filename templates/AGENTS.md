@@ -30,6 +30,7 @@ Layer 1: @omerdlw/base-framework (Microkernel, first-party modules, unstyled des
 ```
 
 ### Strict Architectural Boundaries:
+
 - `src/features/*` must **never** import from `src/app/*`.
 - `src/infrastructure/*` must **never** import from `src/features/*` or `src/app/*`.
 - Every feature in `src/features/` **must** have an `index.ts` barrel export.
@@ -41,6 +42,7 @@ Layer 1: @omerdlw/base-framework (Microkernel, first-party modules, unstyled des
 ## 3. The 5 Golden Rules of Base Framework
 
 ### Rule 1: Declarative Chrome (`usePage`)
+
 **Never** build custom top navigation bars, ad-hoc sticky headers, or scattered floating buttons.  
 All route-level visual state (title, dock card, loading state, background, modals) **must** be declared using `usePage()` from `@omerdlw/base-framework/kernel`:
 
@@ -64,6 +66,7 @@ export default function MyPage() {
 ```
 
 ### Rule 2: Result Pattern for All Async Operations
+
 Never return raw unchecked errors or throw unhandled exceptions from server actions or infrastructure operations. Always wrap return values with `Result<T, E>` from `@omerdlw/base-framework/result`:
 
 ```tsx
@@ -72,7 +75,9 @@ Never return raw unchecked errors or throw unhandled exceptions from server acti
 import "server-only";
 import { ok, err, type Result } from "@omerdlw/base-framework/result";
 
-export async function updateProfile(username: string): Promise<Result<{ id: string }, string>> {
+export async function updateProfile(
+  username: string,
+): Promise<Result<{ id: string }, string>> {
   if (!username) return err("Username is required");
   // Save to DB...
   return ok({ id: "user_123" });
@@ -80,6 +85,7 @@ export async function updateProfile(username: string): Promise<Result<{ id: stri
 ```
 
 ### Rule 3: Bridge Server Actions to Feedback with `toast.fromResult`
+
 When consuming Server Actions in the UI, do not write manual `try/catch` and `if (res.error)` blocks. Use `toast.fromResult()`:
 
 ```tsx
@@ -103,25 +109,28 @@ export function ProfileForm() {
 ```
 
 ### Rule 4: Subpath Imports Only
+
 Always import from the exact subpaths exposed by `@omerdlw/base-framework`:
 
-| What you need | Where to import it |
-| :--- | :--- |
-| `usePage`, `defineModule` | `@omerdlw/base-framework/kernel` |
-| `CoreProvider` | `@omerdlw/base-framework/provider` |
-| `ok`, `err`, `isResult`, `type Result` | `@omerdlw/base-framework/result` |
-| `globalEvents`, `EVENT_TYPES` | `@omerdlw/base-framework/events` |
-| `useToast` | `@omerdlw/base-framework/modules/notification` |
-| `useDockActions`, `useDockStatus` | `@omerdlw/base-framework/modules/dock` |
-| `useModal`, `useModalContext` | `@omerdlw/base-framework/modules/modal` |
-| `useAmbientTheme` | `@omerdlw/base-framework/modules/ambient` |
-| `report`, `createStore` | `@omerdlw/base-framework/utils` |
-| `cn`, `defineUi` | `@omerdlw/base-framework/design/recipes` |
-| `useClickOutside`, `useGlobalEvent` | `@omerdlw/base-framework/hooks` |
-| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/design` |
+| What you need                          | Where to import it                             |
+| :------------------------------------- | :--------------------------------------------- |
+| `usePage`, `defineModule`              | `@omerdlw/base-framework/kernel`               |
+| `CoreProvider`                         | `@omerdlw/base-framework/provider`             |
+| `ok`, `err`, `isResult`, `type Result` | `@omerdlw/base-framework/result`               |
+| `globalEvents`, `EVENT_TYPES`          | `@omerdlw/base-framework/events`               |
+| `useToast`                             | `@omerdlw/base-framework/modules/notification` |
+| `useDockActions`, `useDockStatus`      | `@omerdlw/base-framework/modules/dock`         |
+| `useModal`, `useModalContext`          | `@omerdlw/base-framework/modules/modal`        |
+| `useAmbientTheme`                      | `@omerdlw/base-framework/modules/ambient`      |
+| `report`, `createStore`                | `@omerdlw/base-framework/utils`                |
+| `cn`, `defineUi`                       | `@omerdlw/base-framework/design/recipes`       |
+| `useClickOutside`, `useGlobalEvent`    | `@omerdlw/base-framework/hooks`                |
+| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/design`               |
 
 ### Rule 5: Modals and Surfaces Must Be Declared or Scoped
+
 Do not create floating unmanaged `fixed z-50` dialog div wrappers.
+
 - For sheets/drawers sliding up from the dock: use `useDockActions().openSurface(...)`.
 - For standard dialogs: register them in `usePage({ modal: { ... } })` or trigger with `useModal().openModal(...)`.
 

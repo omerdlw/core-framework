@@ -8,14 +8,14 @@
 
 |                    |                                                                                                                                                                                                                                     |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { defineModal, useModal, ModalContainer, … } from "@omerdlw/base-framework/modules/modal"`                                                                                                                                                        |
+| **Import**         | `import { defineModal, useModal, ModalContainer, … } from "@omerdlw/base-framework/modules/modal"`                                                                                                                                  |
 | **Module id**      | `modal` (`modalModule`, in `defaultModules`)                                                                                                                                                                                        |
 | **Renders**        | `Modal` overlay, **lazy-loaded** (`next/dynamic`, `ssr: false`), portalled to `document.body`                                                                                                                                       |
 | **Registry type**  | `modal` — key policy `named`, value kind `component`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
 | **Page slice**     | `usePage({ modal: { key: Component } })` → `page.modules.modal` (`open`, `set`, + actions)                                                                                                                                          |
 | **Peers (`uses`)** | none                                                                                                                                                                                                                                |
 | **Theme**          | `modalTheme` slots in `src/config/modal.module.theme.ts`                                                                                                                                                                            |
-| **z-index**        | layer from the theme `styles.layer`; the frame sits at `1` above its backdrop                                                                                                                                                                                  |
+| **z-index**        | layer from the theme `styles.layer`; the frame sits at `1` above its backdrop                                                                                                                                                       |
 | **Tests**          | `tests/modules/modal.test.ts`                                                                                                                                                                                                       |
 
 ## 2. Mental model
@@ -216,7 +216,7 @@ Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming
 | `types.ts`     | Positions, chrome, entries, state, actions, definitions, container props, theme slots.                                                |
 | `constants.ts` | `MODAL_POSITIONS`, `MODAL_CHROME`, mobile breakpoint, scroll-lock event, focusable selector, height-constraint pattern, `modalTheme`. |
 | `state.ts`     | `createModalState` (stack → state) and the initial state.                                                                             |
-| `identity.ts`  | Modal identity derivation (`getModalIdentity`) and humanized modal labels (`getModalLabel`).                                           |
+| `identity.ts`  | Modal identity derivation (`getModalIdentity`) and humanized modal labels (`getModalLabel`).                                          |
 | `layout.ts`    | Position resolution (`getModalPosition`, `getModalLayout`), responsive normalization, viewport checks, height constraints.            |
 | `dom.ts`       | Focus trap helpers (`getFocusableElements`, `trapFocus`) and smooth scroll-lock event dispatch.                                       |
 | `header.ts`    | Header configuration checking (`isHeaderConfig`), slot content validation (`hasSlotContent`), and action resolution.                  |

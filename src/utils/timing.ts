@@ -1,6 +1,6 @@
 export function debounce<T extends (...args: never[]) => void>(
   func: T,
-  wait: number = 300,
+  wait = 300,
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   function debounced(...args: Parameters<T>): void {
@@ -21,7 +21,7 @@ export function debounce<T extends (...args: never[]) => void>(
 
 export function throttle<T extends (...args: never[]) => void>(
   func: T,
-  limit: number = 300,
+  limit = 300,
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let lastRan = 0;
   let timerId: ReturnType<typeof setTimeout> | null = null;

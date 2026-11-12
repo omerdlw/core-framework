@@ -30,9 +30,8 @@ import {
   getDockItemCardProps,
 } from "./styles";
 import { useDockTheme } from "./hooks";
+import type { DockCardBannerProps, DockCardItemProps } from "./types";
 import {
-  DockCardBannerProps,
-  DockCardItemProps,
   type DockActionDescriptor,
   type DockItem,
   type DockBadgeState,
@@ -71,16 +70,6 @@ function preloadBannerImage(url: string) {
 export function useDockCardBannerModel({
   banner,
   bannerUrl,
-  bannerPosition,
-  bannerSize,
-  bannerRepeat,
-  bannerOpacity,
-  isActive = true,
-  isSurfaceActive = false,
-  isHudActive = false,
-  isStatusActive = false,
-  style,
-  className,
 }: DockCardBannerProps) {
   const bannerObj =
     typeof banner === "object" && banner !== null ? banner : null;
@@ -190,7 +179,6 @@ function useDockCommands({
 export function useDockCommandBarModel({
   activeItem,
   contextCommands = [],
-  hasBanner = false,
 }: {
   activeItem?: DockItem | null;
   contextCommands?: DockActionDescriptor[];
@@ -272,17 +260,8 @@ export function shouldShowMediaIcon({
 export function useDockCardHeaderModel({
   item: propItem,
   link,
-  activeItem = null,
-  itemStyle,
-  badge,
   showVideoIcon = false,
-  isPlaying = false,
-  effectiveIconOverlay = null,
-  isIconInteractive = false,
-  handleIconClick,
   description,
-  isTop = false,
-  contextCommands = [],
 }: DockCardHeaderProps) {
   const item = (propItem ?? link)!;
   const bannerObject =
@@ -363,17 +342,7 @@ export function useActionSlot(
 export function useStandardItemContentModel({
   item: propItem,
   link,
-  activeItem = null,
-  isTop = false,
-  itemStyle,
-  badge,
   isActive = false,
-  footerNode,
-  isHudActive = false,
-  hud = null,
-  clearHud = null,
-  contextCommands = [],
-  pathname,
 }: StandardItemContentProps) {
   const item = (propItem ?? link)!;
   const { hasMedia, isPlaying } = useDockMedia();
@@ -413,7 +382,6 @@ export function useStandardItemContentModel({
 }
 
 export function useDockCardItemModel({
-  ref,
   activeItem = null,
   onContentHeightChange,
   isStackHovered,
@@ -432,8 +400,6 @@ export function useDockCardItemModel({
   isHudActive = false,
   isSurfaceActive = false,
   hud = null,
-  clearHud = null,
-  contextCommands = [],
 }: DockCardItemProps) {
   const item = (propItem ?? link)!;
   const [isHovered, setIsHovered] = useState(false);
@@ -681,7 +647,7 @@ function resolveActionNode(
   showMediaAction: boolean,
   stackClass: string,
 ) {
-  const MediaAction = mediaAction as ComponentType;
+  const MediaAction = mediaAction!;
 
   if (React.isValidElement(action)) {
     return (
@@ -730,11 +696,7 @@ export function applyMediaAction(
   };
 }
 
-export function useDockMediaControlsModel({
-  className = "",
-}: {
-  className?: string;
-}) {
+export function useDockMediaControlsModel(_props: { className?: string }) {
   const {
     audibleElement,
     element: videoElement,
@@ -1020,10 +982,7 @@ interface SeekEvent {
   touches?: ArrayLike<{ clientX: number }>;
 }
 
-export function useDockMediaScrubberModel({
-  className = "",
-  showTimeOnHover = true,
-}: {
+export function useDockMediaScrubberModel(_props: {
   className?: string;
   showTimeOnHover?: boolean;
 }) {

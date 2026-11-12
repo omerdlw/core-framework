@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { globalEvents, type FrameworkEventMap } from "@/events";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
-import { UseGlobalEventOptions } from "./types";
+import type { UseGlobalEventOptions } from "./types";
 
 export function useGlobalEvent<K extends keyof FrameworkEventMap>(
   event: K | K[] | null | undefined,

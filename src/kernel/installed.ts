@@ -35,7 +35,7 @@ export function selectModuleSlice(
   coreModule: AnyCoreModule,
   config: PageConfig,
 ): unknown {
-  const slice = coreModule.page?.select
+  const slice: unknown = coreModule.page?.select
     ? coreModule.page.select(config)
     : (config as Record<string, unknown>)[coreModule.id];
   return slice ?? null;
@@ -62,7 +62,7 @@ export function createModulePayload(
       ...metadata,
       ...(isObject(config.registry) ? config.registry : {}),
     },
-  } as PageConfig;
+  };
 }
 
 const MODULE_ID_PATTERN = /^[a-z][a-zA-Z0-9]*$/;

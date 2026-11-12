@@ -135,6 +135,7 @@ export function areHudDefinitionsEqual(
   ) {
     return false;
   }
+  // Both HUD states are compared field by field through one string index.
   const currentFields = current as unknown as Record<string, unknown>;
   const nextFields = next as unknown as Record<string, unknown>;
   return Object.keys(nextFields).every((key) => {

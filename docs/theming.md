@@ -13,6 +13,7 @@ Modules ship with **zero hardcoded visual Tailwind colors or aesthetic choices**
 The same holds for **animation**. Modules that animate (`dock`, `modal`, `notification`, `context-menu`, `background`) ship no durations, curves, springs or travel distances. Their spec also declares a typed **motion contract**, and your theme file supplies it next to `slots` (§5). The module keeps only the mechanics: which phase plays when, what comes from layout, and accessibility.
 
 If a required theme is not provided to `<ThemeProvider>`, `useTheme()` throws an informative error at mount time:
+
 ```
 Theme "dock" is missing. Add its theme configuration to your ThemeProvider.
 ```
@@ -36,15 +37,21 @@ import {
 ```
 
 ### 2.1 `defineThemeSpec<Slots, Motion?>(id)`
+
 Used by module authors to define the contract:
+
 ```ts
-export type DockThemeSlot = "card" | "header" | "title" | "description" | "icon" | "surface";
+export type DockThemeSlot =
+  "card" | "header" | "title" | "description" | "icon" | "surface";
 export const dockTheme = defineThemeSpec<DockThemeSlot, DockMotion>("dock");
 ```
+
 The second type parameter is the module's motion contract. Leave it out for a module that doesn't animate (`ambient`, `controls`, `loading`, `error`).
 
 ### 2.2 `defineTheme(spec, { slots, styles?, motion })`
+
 Used by application developers to implement the styling contract. TypeScript enforces that **every required slot** is provided, and that `motion` is given exactly when the spec declares a motion contract (§5):
+
 ```ts
 export const dockThemeConfig = defineTheme(dockTheme, {
   slots: {
@@ -63,17 +70,22 @@ export const dockThemeConfig = defineTheme(dockTheme, {
 ```
 
 ### 2.3 `ThemeProvider({ themes, motion?, children })`
+
 Wraps your application or `CoreProvider` to supply the theme map and your motion tokens (§5.1):
+
 ```tsx
-<ThemeProvider themes={[dockThemeConfig, modalThemeConfig, notificationThemeConfig]} motion={appMotion}>
-  <CoreProvider modules={modules}>
-    {children}
-  </CoreProvider>
+<ThemeProvider
+  themes={[dockThemeConfig, modalThemeConfig, notificationThemeConfig]}
+  motion={appMotion}
+>
+  <CoreProvider modules={modules}>{children}</CoreProvider>
 </ThemeProvider>
 ```
 
 ### 2.4 `useTheme(spec)`
+
 Consumed internally by module overlays to read the active slots:
+
 ```tsx
 const { slots, styles } = useTheme(dockTheme);
 return <div className={slots.card} style={styles.card} />;
@@ -85,17 +97,17 @@ return <div className={slots.card} style={styles.card} />;
 
 Below is the complete reference of theme specs exported by the 9 first-party modules:
 
-| Module | Spec Export | Import Path | Primary Slots |
-| :--- | :--- | :--- | :--- |
-| **Dock** | `dockTheme` | `@omerdlw/base-framework/modules/dock` | `card`, `header`, `title`, `description`, `icon`, `surface`, `status` |
-| **Modal** | `modalTheme` | `@omerdlw/base-framework/modules/modal` | `backdrop`, `dialog`, `header`, `title`, `body`, `footer`, `close` |
-| **Notification** | `notificationTheme` | `@omerdlw/base-framework/modules/notification` | `viewport`, `toast`, `title`, `description`, `icon`, `action`, `close` |
-| **Ambient** | `ambientTheme` | `@omerdlw/base-framework/modules/ambient` | `container`, `canvas` |
-| **Background** | `backgroundTheme` | `@omerdlw/base-framework/modules/background` | `layer`, `overlay`, `fades` |
-| **Controls** | `controlsTheme` | `@omerdlw/base-framework/modules/controls` | `rail`, `button`, `icon` |
-| **Loading** | `loadingTheme` | `@omerdlw/base-framework/modules/loading` | `overlay`, `spinner`, `message` |
-| **Context Menu** | `contextMenuTheme` | `@omerdlw/base-framework/modules/context-menu` | `menu`, `item`, `separator`, `label`, `shortcut` |
-| **Error Boundary** | `errorTheme` | `@omerdlw/base-framework/error` | `boundary`, `card`, `title`, `message`, `retryButton` |
+| Module             | Spec Export         | Import Path                                    | Primary Slots                                                          |
+| :----------------- | :------------------ | :--------------------------------------------- | :--------------------------------------------------------------------- |
+| **Dock**           | `dockTheme`         | `@omerdlw/base-framework/modules/dock`         | `card`, `header`, `title`, `description`, `icon`, `surface`, `status`  |
+| **Modal**          | `modalTheme`        | `@omerdlw/base-framework/modules/modal`        | `backdrop`, `dialog`, `header`, `title`, `body`, `footer`, `close`     |
+| **Notification**   | `notificationTheme` | `@omerdlw/base-framework/modules/notification` | `viewport`, `toast`, `title`, `description`, `icon`, `action`, `close` |
+| **Ambient**        | `ambientTheme`      | `@omerdlw/base-framework/modules/ambient`      | `container`, `canvas`                                                  |
+| **Background**     | `backgroundTheme`   | `@omerdlw/base-framework/modules/background`   | `layer`, `overlay`, `fades`                                            |
+| **Controls**       | `controlsTheme`     | `@omerdlw/base-framework/modules/controls`     | `rail`, `button`, `icon`                                               |
+| **Loading**        | `loadingTheme`      | `@omerdlw/base-framework/modules/loading`      | `overlay`, `spinner`, `message`                                        |
+| **Context Menu**   | `contextMenuTheme`  | `@omerdlw/base-framework/modules/context-menu` | `menu`, `item`, `separator`, `label`, `shortcut`                       |
+| **Error Boundary** | `errorTheme`        | `@omerdlw/base-framework/error`                | `boundary`, `card`, `title`, `message`, `retryButton`                  |
 
 ---
 
@@ -119,7 +131,8 @@ export const appThemes = [
       title: "text-sm font-semibold tracking-tight",
       description: "text-xs text-white/50",
       icon: "text-white/80",
-      surface: "rounded-3xl bg-neutral-900/95 border border-white/10 p-6 backdrop-blur-3xl",
+      surface:
+        "rounded-3xl bg-neutral-900/95 border border-white/10 p-6 backdrop-blur-3xl",
       status: "rounded-xl bg-white/5 px-3 py-1.5 text-xs text-white/70",
     },
   }),
@@ -127,19 +140,23 @@ export const appThemes = [
   defineTheme(modalTheme, {
     slots: {
       backdrop: "fixed inset-0 bg-black/60 backdrop-blur-sm",
-      dialog: "rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl p-6 text-white max-w-lg w-full",
+      dialog:
+        "rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl p-6 text-white max-w-lg w-full",
       header: "mb-4",
       title: "text-lg font-bold",
       body: "text-sm text-white/80",
       footer: "mt-6 flex justify-end gap-3",
-      close: "size-8 center rounded-full hover:bg-white/10 text-white/60 hover:text-white",
+      close:
+        "size-8 center rounded-full hover:bg-white/10 text-white/60 hover:text-white",
     },
   }),
 
   defineTheme(notificationTheme, {
     slots: {
-      viewport: "fixed bottom-6 right-6 flex flex-col gap-2 z-50 pointer-events-none",
-      toast: "pointer-events-auto flex items-center gap-3 rounded-xl bg-neutral-900 border border-white/10 shadow-xl px-4 py-3 text-sm text-white",
+      viewport:
+        "fixed bottom-6 right-6 flex flex-col gap-2 z-50 pointer-events-none",
+      toast:
+        "pointer-events-auto flex items-center gap-3 rounded-xl bg-neutral-900 border border-white/10 shadow-xl px-4 py-3 text-sm text-white",
       title: "font-medium text-white",
       description: "text-xs text-white/60",
       icon: "shrink-0",
@@ -150,7 +167,8 @@ export const appThemes = [
 
   defineTheme(loadingTheme, {
     slots: {
-      overlay: "center fixed inset-0 h-screen w-screen bg-black/40 backdrop-blur-xs",
+      overlay:
+        "center fixed inset-0 h-screen w-screen bg-black/40 backdrop-blur-xs",
       spinner: "animate-spin text-white/80",
       message: "text-xs font-medium text-white/60 mt-3",
     },
@@ -162,7 +180,8 @@ export const appThemes = [
       card: "rounded-2xl bg-red-950/20 border border-red-500/20 p-6 max-w-md text-center",
       title: "text-base font-semibold text-red-400",
       message: "text-xs text-red-200/70 mt-2",
-      retryButton: "mt-4 inline-flex h-8 items-center px-3 rounded-lg bg-red-500/20 text-red-300 text-xs font-medium hover:bg-red-500/30",
+      retryButton:
+        "mt-4 inline-flex h-8 items-center px-3 rounded-lg bg-red-500/20 text-red-300 text-xs font-medium hover:bg-red-500/30",
     },
   }),
 ];
@@ -208,7 +227,9 @@ export const motion = defineMotion({
   still: { duration: 0.08, ease: "linear" }, // what a transition becomes under reduced motion
   durations: { fast: 0.28, base: 0.36, slow: 0.58 },
   easings: { enter: [0.25, 1, 0.5, 1], exit: [0.5, 0, 1, 1] },
-  springs: { press: { type: "spring", stiffness: 420, damping: 34, mass: 0.35 } },
+  springs: {
+    press: { type: "spring", stiffness: 420, damping: 34, mass: 0.35 },
+  },
 });
 ```
 
@@ -220,13 +241,13 @@ export const motion = defineMotion({
 
 Each animating module exports its contract type. Give it a full value, the same way you give `slots`:
 
-| Module | Spec | Contract type | What it holds |
-| :--- | :--- | :--- | :--- |
-| Dock | `dockTheme` | `DockMotion` | `transitions` (stack, expand, surface exit, layout, cards, text, header swap, press, …), `variants` (fade, text crossfade, header swap/restore, controls, command bar, badge, hud, …), `phases` (what the deck, header and body play in each surface phase, and the deck's compression), `deck` (elevation, `peek(position)`, `exit(card)`, `tapScale`, `stacking`, breadcrumb offset, fullscreen opacity, origin, resize fallback), `opacity` (banner and description rest), `drag` (swipe feel and the dismiss distance and speed), `skeleton`, `timings` (surface phase lengths and card staggers, in seconds) |
-| Modal | `modalTheme` | `ModalMotion` | `backdrop`, `content`, `header`, `footer` variants, and `positions` (`center`, `top`, `right`, `bottom`, `left`: variants plus an optional own `transition`) |
-| Notification | `notificationTheme` | `NotificationMotion` | `toast` variants and the toast's `transition` |
-| Context menu | `contextMenuTheme` | `ContextMenuMotion` | `pop`, `content`, `item` variants (`item.visible` may take the row index), `itemTap`, `itemTransition` |
-| Background | `backgroundTheme` | `BackgroundMotion` | `initial`, `animate`, `exit`, `transition`, `exitDurationFactor`. A page's own `background.animation` still wins field by field and follows your tempo too. |
+| Module       | Spec                | Contract type        | What it holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| :----------- | :------------------ | :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dock         | `dockTheme`         | `DockMotion`         | `transitions` (stack, expand, surface exit, layout, cards, text, header swap, press, …), `variants` (fade, text crossfade, header swap/restore, controls, command bar, badge, hud, …), `phases` (what the deck, header and body play in each surface phase, and the deck's compression), `deck` (elevation, `peek(position)`, `exit(card)`, `tapScale`, `stacking`, breadcrumb offset, fullscreen opacity, origin, resize fallback), `opacity` (banner and description rest), `drag` (swipe feel and the dismiss distance and speed), `skeleton`, `timings` (surface phase lengths and card staggers, in seconds) |
+| Modal        | `modalTheme`        | `ModalMotion`        | `backdrop`, `content`, `header`, `footer` variants, and `positions` (`center`, `top`, `right`, `bottom`, `left`: variants plus an optional own `transition`)                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Notification | `notificationTheme` | `NotificationMotion` | `toast` variants and the toast's `transition`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Context menu | `contextMenuTheme`  | `ContextMenuMotion`  | `pop`, `content`, `item` variants (`item.visible` may take the row index), `itemTap`, `itemTransition`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Background   | `backgroundTheme`   | `BackgroundMotion`   | `initial`, `animate`, `exit`, `transition`, `exitDurationFactor`. A page's own `background.animation` still wins field by field and follows your tempo too.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ```ts
 // src/config/theme/dock.ts
@@ -240,9 +261,11 @@ export const dockThemeConfig = defineTheme(dockTheme, { slots: { … }, motion: 
 Variant functions keep their `custom` signature (e.g. `commandBar.visible(index)`, `controlsContainer.hidden(targetY)`), and `deck.peek` / `deck.exit` receive what the dock knows from layout. Everything else about those values is yours.
 
 If an animating module's theme has no `motion`, mounting it throws:
+
 ```
 Motion for theme "dock" is missing. Add `motion` to its defineTheme(...) next to `slots` (see docs/theming.md).
 ```
+
 `DockProvider` alone (without the dock theme) still runs: its surface phases advance immediately, since nothing is drawn.
 
 ### 5.3 No starter values
@@ -255,4 +278,3 @@ Reduced motion is an accessibility mechanic, so the framework handles it once fo
 
 - When it is in effect (`reducedMotion: "always"`, or `"user"` with the OS setting on), every module transition, including your own, collapses to your `still` transition (instant when you give none). Every `timings` entry is capped at its duration, so choreography doesn't hold the dock still on animations that aren't playing.
 - `CoreProvider` wraps every module backdrop and overlay in `ModuleMotionConfig` (Motion's `MotionConfig` with your policy), so positional values (`width`, `height`, `x`, `scale`, …) jump instead of animating. App content outside the modules is untouched and keeps its own `MotionConfig`.
-

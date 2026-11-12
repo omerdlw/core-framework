@@ -4,17 +4,17 @@
 
 ## 1. At a glance
 
-|                    |                                                                                                           |
-| :----------------- | :-------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { useLoadingActions, useLoading, defineLoading, … } from "@omerdlw/base-framework/modules/loading"`                     |
-| **Module id**      | `loading` (`loadingModule`, in `defaultModules`)                                                          |
-| **Renders**        | `LoadingOverlay`: a fixed full-screen `<div role="status" aria-busy>` with a `Spinner` (or your skeleton) |
-| **Registry type**  | `loading` — singleton key `page-loading`, lifecycle `graceful`, cleanup delay 600 ms                      |
-| **Page slice**     | `usePage({ loading })` → `page.modules.loading` (all actions + `set`)                                     |
-| **Peers (`uses`)** | none (the dock reads _this_ module through `definePeer("loading")`)                                       |
-| **Theme**          | `loadingTheme` slot `overlay` in `src/config/loading.module.theme.ts`                                     |
-| **z-index**        | the app's layer, set in the theme `styles`                                                             |
-| **Tests**          | `tests/modules/loading.test.ts`                                                                           |
+|                    |                                                                                                             |
+| :----------------- | :---------------------------------------------------------------------------------------------------------- |
+| **Import**         | `import { useLoadingActions, useLoading, defineLoading, … } from "@omerdlw/base-framework/modules/loading"` |
+| **Module id**      | `loading` (`loadingModule`, in `defaultModules`)                                                            |
+| **Renders**        | `LoadingOverlay`: a fixed full-screen `<div role="status" aria-busy>` with a `Spinner` (or your skeleton)   |
+| **Registry type**  | `loading` — singleton key `page-loading`, lifecycle `graceful`, cleanup delay 600 ms                        |
+| **Page slice**     | `usePage({ loading })` → `page.modules.loading` (all actions + `set`)                                       |
+| **Peers (`uses`)** | none (the dock reads _this_ module through `definePeer("loading")`)                                         |
+| **Theme**          | `loadingTheme` slot `overlay` in `src/config/loading.module.theme.ts`                                       |
+| **z-index**        | the app's layer, set in the theme `styles`                                                                  |
+| **Tests**          | `tests/modules/loading.test.ts`                                                                             |
 
 ## 2. Mental model
 
@@ -140,16 +140,16 @@ No classes or inline styles in the module. The `loadingTheme` slot `overlay` (st
 
 ## 8. File map
 
-| File           | Responsibility                                                                                                     |
-| :------------- | :----------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Public barrel.                                                                                                     |
-| `types.ts`     | State, options, actions, definition, page-config and theme contracts.                                              |
-| `constants.ts` | `DEFAULT_LOADING_STATE`, registry key, `loadingTheme`.                                                             |
-| `state.ts`     | `normalizeLoadingOptions`, `selectPageLoading`, `resolveLoadingState`, `calculateRemainingMinDuration`.            |
-| `context.tsx`  | `LoadingContext`, `LoadingProvider` (manual state, min-duration timer, registry merge, store).                     |
+| File           | Responsibility                                                                                                      |
+| :------------- | :------------------------------------------------------------------------------------------------------------------ |
+| `index.ts`     | Public barrel.                                                                                                      |
+| `types.ts`     | State, options, actions, definition, page-config and theme contracts.                                               |
+| `constants.ts` | `DEFAULT_LOADING_STATE`, registry key, `loadingTheme`.                                                              |
+| `state.ts`     | `normalizeLoadingOptions`, `selectPageLoading`, `resolveLoadingState`, `calculateRemainingMinDuration`.             |
+| `context.tsx`  | `LoadingContext`, `LoadingProvider` (manual state, min-duration timer, registry merge, store).                      |
 | `hooks.ts`     | Public hooks (`useLoading`, `useLoadingState`, `useLoadingActions`, `useLoadingRegistration`) & overlay model hook. |
-| `overlay.tsx`  | `LoadingOverlay`.                                                                                                  |
-| `module.tsx`   | `loadingModule`, page API, `defineLoading`, kernel type augmentation.                                              |
+| `overlay.tsx`  | `LoadingOverlay`.                                                                                                   |
+| `module.tsx`   | `loadingModule`, page API, `defineLoading`, kernel type augmentation.                                               |
 
 ## 9. Dependencies
 

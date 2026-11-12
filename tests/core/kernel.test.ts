@@ -6,7 +6,7 @@ import {
   composeProviders,
   createProviderEntry,
 } from "../../src/core/kernel/compose.ts";
-import { act, createContext, createElement as h, use } from "react";
+import { act, createContext, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ModuleHost,
@@ -91,7 +91,7 @@ describe("compose", () => {
     return children;
   }
 
-  function MiddleProvider({ mode, children }) {
+  function MiddleProvider({ children }) {
     return children;
   }
 
@@ -440,9 +440,9 @@ describe("module host", () => {
         id: "notes",
         page: {
           select: (config) =>
-            typeof (config as any).notes === "string"
-              ? { a: { text: (config as any).notes } }
-              : (config as any).notes,
+            typeof config.notes === "string"
+              ? { a: { text: config.notes } }
+              : config.notes,
           entries: (slice) =>
             Object.entries(slice).map(([key, value]) => ({ key, value })),
         },
@@ -688,7 +688,7 @@ describe("page runtime", () => {
         PageControllerProvider,
         { runtimeBridge: bridge },
         h((page as any).Component),
-        ...probes.map((p) => h((p as any).Component)),
+        ...probes.map((p) => h(p.Component)),
       ),
     );
     const root = modules
@@ -715,11 +715,11 @@ describe("page runtime", () => {
       const view = await rendered;
 
       await act(async () => {
-        (actions.latest! as any).openModal(Dialog);
+        actions.latest!.openModal(Dialog);
       });
-      assert.equal((state.latest! as any).modalStack.length, 1);
-      await act(async () => (actions.latest! as any).closeModal());
-      assert.equal((state.latest! as any).modalStack.length, 0);
+      assert.equal(state.latest!.modalStack.length, 1);
+      await act(async () => actions.latest!.closeModal());
+      assert.equal(state.latest!.modalStack.length, 0);
 
       assert.equal(page.renders, 1, "the page does not re-render");
       assert.equal(page.identities.size, 1, "the page controller is stable");
@@ -734,15 +734,15 @@ describe("page runtime", () => {
       const view = await render(
         h(ModalProvider, null, h((binding as any).Component)),
       );
-      assert.equal((binding.latest! as any).isOpen, false);
+      assert.equal(binding.latest!.isOpen, false);
 
       await act(async () => {
-        (binding.latest! as any).open({ id: 1 });
+        binding.latest!.open({ id: 1 });
       });
-      assert.equal((binding.latest! as any).isOpen, true);
+      assert.equal(binding.latest!.isOpen, true);
 
-      await act(async () => (binding.latest! as any).close());
-      assert.equal((binding.latest! as any).isOpen, false);
+      await act(async () => binding.latest!.close());
+      assert.equal(binding.latest!.isOpen, false);
       await view.unmount();
     });
 
@@ -759,9 +759,9 @@ describe("page runtime", () => {
       );
       const draft = { text: "hello" };
       await act(async () => {
-        (actions.latest! as any).openModal(Dialog, { data: { draft } });
+        actions.latest!.openModal(Dialog, { data: { draft } });
       });
-      assert.equal((state.latest! as any).modalStack[0].props.draft, draft);
+      assert.equal(state.latest!.modalStack[0].props.draft, draft);
       assert.equal(
         Object.isFrozen(draft),
         false,
@@ -785,11 +785,9 @@ describe("page runtime", () => {
       await act(async () => {
         toast.latest("Saved", { duration: 1_000 });
       });
-      assert.deepEqual(Object.keys((state.latest! as any).notifications), [
-        "Saved",
-      ]);
+      assert.deepEqual(Object.keys(state.latest!.notifications), ["Saved"]);
       await act(async () => mock.timers.tick(1_000));
-      assert.deepEqual((state.latest! as any).notifications, {});
+      assert.deepEqual(state.latest!.notifications, {});
 
       assert.equal(page.renders, 1, "the page does not re-render");
       assert.equal(page.identities.size, 1, "the page controller is stable");
@@ -812,14 +810,12 @@ describe("page runtime", () => {
         ),
       );
       await act(async () => {
-        (page.latest! as any).modules.notification.toast("Saved");
+        page.latest!.modules.notification.toast("Saved");
       });
       await act(async () => mock.timers.tick(1_999));
-      assert.deepEqual(Object.keys((state.latest! as any).notifications), [
-        "Saved",
-      ]);
+      assert.deepEqual(Object.keys(state.latest!.notifications), ["Saved"]);
       await act(async () => mock.timers.tick(1));
-      assert.deepEqual((state.latest! as any).notifications, {});
+      assert.deepEqual(state.latest!.notifications, {});
       await view.unmount();
     });
 
@@ -834,11 +830,10 @@ describe("page runtime", () => {
           h((state as any).Component),
         ),
       );
-      const visible = () =>
-        Object.keys((state.latest! as any).notifications).length > 0;
+      const visible = () => Object.keys(state.latest!.notifications).length > 0;
       assert.equal(visible(), false);
       await act(async () => {
-        (actions.latest! as any).showNotification("Hello", { duration: 500 });
+        actions.latest!.showNotification("Hello", { duration: 500 });
       });
       assert.equal(visible(), true);
       await act(async () => mock.timers.tick(500));
@@ -858,13 +853,13 @@ describe("page runtime", () => {
       const view = await rendered;
 
       await act(async () =>
-        (actions.latest! as any).setBackground({ color: "#123456" }),
+        actions.latest!.setBackground({ color: "#123456" }),
       );
-      await act(async () => (actions.latest! as any).setVideoMuted(false));
-      await act(async () => (actions.latest! as any).toggleLoop());
-      await act(async () => (actions.latest! as any).setVideoPlaying(true));
-      assert.equal((state.latest! as any).color, "#123456");
-      assert.equal((state.latest! as any).isPlaying, true);
+      await act(async () => actions.latest!.setVideoMuted(false));
+      await act(async () => actions.latest!.toggleLoop());
+      await act(async () => actions.latest!.setVideoPlaying(true));
+      assert.equal(state.latest!.color, "#123456");
+      assert.equal(state.latest!.isPlaying, true);
 
       assert.equal(page.renders, 1, "the page does not re-render");
       assert.equal(page.identities.size, 1, "the page controller is stable");
@@ -887,18 +882,18 @@ describe("page runtime", () => {
           h((state as any).Component),
         ),
       );
-      assert.equal((state.latest! as any).isYouTube, true);
-      assert.equal((state.latest! as any).youtubeVideoId, "dQw4w9WgXcQ");
+      assert.equal(state.latest!.isYouTube, true);
+      assert.equal(state.latest!.youtubeVideoId, "dQw4w9WgXcQ");
       assert.equal(
-        (state.latest! as any).posterUrl,
+        state.latest!.posterUrl,
         "/api/background/youtube?id=dQw4w9WgXcQ&stream=thumbnail",
       );
 
       await act(async () =>
-        (page.latest! as any).modules.background.set({ color: "#101010" }),
+        page.latest!.modules.background.set({ color: "#101010" }),
       );
-      assert.equal((state.latest! as any).isYouTube, false);
-      assert.equal((state.latest! as any).color, "#101010");
+      assert.equal(state.latest!.isYouTube, false);
+      assert.equal(state.latest!.color, "#101010");
       await view.unmount();
     });
   });
@@ -922,12 +917,12 @@ describe("page runtime", () => {
     test("useLoadingActions consumers do not re-render when loading starts or stops", async () => {
       const { actions, state, view } = await mountLoading();
       await act(async () =>
-        (actions.latest! as any).startLoading({ message: "Saving" }),
+        actions.latest!.startLoading({ message: "Saving" }),
       );
-      assert.equal((state.latest! as any).isLoading, true);
-      assert.equal((state.latest! as any).message, "Saving");
-      await act(async () => (actions.latest! as any).stopLoading());
-      assert.equal((state.latest! as any).isLoading, false);
+      assert.equal(state.latest!.isLoading, true);
+      assert.equal(state.latest!.message, "Saving");
+      await act(async () => actions.latest!.stopLoading());
+      assert.equal(state.latest!.isLoading, false);
 
       assert.equal(actions.renders, 1);
       assert.equal(actions.identities.size, 1);
@@ -939,14 +934,12 @@ describe("page runtime", () => {
       mock.timers.reset();
       mock.timers.enable({ apis: ["setTimeout", "Date"] });
       const { actions, state, view } = await mountLoading();
-      await act(async () =>
-        (actions.latest! as any).startLoading({ minDuration: 500 }),
-      );
+      await act(async () => actions.latest!.startLoading({ minDuration: 500 }));
       await act(async () => mock.timers.tick(100));
-      await act(async () => (actions.latest! as any).stopLoading());
-      assert.equal((state.latest! as any).isLoading, true);
+      await act(async () => actions.latest!.stopLoading());
+      assert.equal(state.latest!.isLoading, true);
       await act(async () => mock.timers.tick(400));
-      assert.equal((state.latest! as any).isLoading, false);
+      assert.equal(state.latest!.isLoading, false);
       await view.unmount();
     });
 
@@ -956,8 +949,8 @@ describe("page runtime", () => {
         return null;
       }
       const { state, view } = await mountLoading([h(PageLoading) as any]);
-      assert.equal((state.latest! as any).isPageLoading, true);
-      assert.equal((state.latest! as any).message, "Page");
+      assert.equal(state.latest!.isPageLoading, true);
+      assert.equal(state.latest!.message, "Page");
       await view.unmount();
     });
 
@@ -966,16 +959,16 @@ describe("page runtime", () => {
       const { actions, state, view } = await mountLoading([
         h((page as any).Component) as any,
       ]);
-      assert.equal((state.latest! as any).isPageLoading, true);
-      assert.equal((state.latest! as any).message, "Fetching");
+      assert.equal(state.latest!.isPageLoading, true);
+      assert.equal(state.latest!.message, "Fetching");
       assert.equal(
-        (page.latest! as any).modules.loading.startLoading,
-        (actions.latest! as any).startLoading,
+        page.latest!.modules.loading.startLoading,
+        actions.latest!.startLoading,
         "the page API carries the module's actions",
       );
 
-      await act(async () => (page.latest! as any).modules.loading.set(false));
-      assert.equal((state.latest! as any).isPageLoading, false);
+      await act(async () => page.latest!.modules.loading.set(false));
+      assert.equal(state.latest!.isPageLoading, false);
       await view.unmount();
     });
   });
@@ -1013,16 +1006,16 @@ describe("page runtime", () => {
     test("useContextMenuActions consumers do not re-render when the menu opens or closes", async () => {
       const { actions, state, view } = await mountMenu();
       await act(async () =>
-        (actions.latest! as any).openMenu({
+        actions.latest!.openMenu({
           config: { items: [] as any[] },
           items: [{ key: "a", label: "A" }],
           position: { x: 1, y: 2 },
         }),
       );
-      assert.equal((state.latest! as any).isOpen, true);
-      assert.deepEqual((state.latest! as any).position, { x: 1, y: 2 });
-      await act(async () => (actions.latest! as any).closeMenu());
-      assert.equal((state.latest! as any).isOpen, false);
+      assert.equal(state.latest!.isOpen, true);
+      assert.deepEqual(state.latest!.position, { x: 1, y: 2 });
+      await act(async () => actions.latest!.closeMenu());
+      assert.equal(state.latest!.isOpen, false);
 
       assert.equal(actions.renders, 1);
       assert.equal(actions.identities.size, 1);
@@ -1032,7 +1025,7 @@ describe("page runtime", () => {
 
     test("bind opens a menu with resolved items and is stable across menu state", async () => {
       const { api, state, view } = await mountMenu();
-      const bind = (api.latest! as any).bind;
+      const bind = api.latest!.bind;
       const closed: any[] = [];
       const config = {
         items: [{ key: "copy", label: "Copy" }],
@@ -1040,20 +1033,20 @@ describe("page runtime", () => {
       };
 
       await act(async () =>
-        (api.latest! as any)
-          .bind({ id: 7 }, config)
+        api
+          .latest!.bind({ id: 7 }, config)
           .onContextMenu(fakeContextMenuEvent()),
       );
-      assert.equal((state.latest! as any).isOpen, true);
-      assert.deepEqual((state.latest! as any).position, { x: 12, y: 34 });
+      assert.equal(state.latest!.isOpen, true);
+      assert.deepEqual(state.latest!.position, { x: 12, y: 34 });
       assert.deepEqual(
-        (state.latest! as any).items.map((item) => item.label),
+        state.latest!.items.map((item) => item.label),
         ["Copy"],
       );
-      assert.deepEqual((state.latest! as any).context.payload, { id: 7 });
-      assert.equal((api.latest! as any).bind, bind, "bind keeps its identity");
+      assert.deepEqual(state.latest!.context.payload, { id: 7 });
+      assert.equal(api.latest!.bind, bind, "bind keeps its identity");
 
-      await act(async () => (api.latest! as any).closeMenu());
+      await act(async () => api.latest!.closeMenu());
       assert.deepEqual(
         closed,
         [{ id: 7 }],
@@ -1068,12 +1061,12 @@ describe("page runtime", () => {
       window.addEventListener(CONTEXT_MENU_VISIBILITY_EVENT, listener);
       const { actions, view } = await mountMenu();
       await act(async () =>
-        (actions.latest! as any).openMenu({
+        actions.latest!.openMenu({
           config: { items: [] as any[] },
           items: [{ key: "a", label: "A" }],
         }),
       );
-      await act(async () => (actions.latest! as any).closeMenu());
+      await act(async () => actions.latest!.closeMenu());
       window.removeEventListener(CONTEXT_MENU_VISIBILITY_EVENT, listener);
       assert.deepEqual(events, [false, true, false]);
       await view.unmount();
@@ -1096,8 +1089,8 @@ describe("page runtime", () => {
       );
       assert.deepEqual(registered.latest, menu);
       assert.equal(
-        (page.latest! as any).modules.contextMenu.openMenu,
-        (actions.latest! as any).openMenu,
+        page.latest!.modules.contextMenu.openMenu,
+        actions.latest!.openMenu,
       );
       await view.unmount();
     });
@@ -1115,14 +1108,14 @@ describe("page runtime", () => {
       const view = await rendered;
 
       await act(async () =>
-        (ambient.latest! as any).setPalette({
+        ambient.latest!.setPalette({
           shadow: "#010101",
           source: "/abcdef.jpg",
         }),
       );
-      await act(async () => (ambient.latest! as any).setIsExtracting(true));
-      assert.equal((ambient.latest! as any).palette.source, "/abcdef.jpg");
-      assert.equal((ambient.latest! as any).isExtracting, true);
+      await act(async () => ambient.latest!.setIsExtracting(true));
+      assert.equal(ambient.latest!.palette.source, "/abcdef.jpg");
+      assert.equal(ambient.latest!.isExtracting, true);
 
       assert.equal(page.renders, 1, "the page does not re-render");
       assert.equal(page.identities.size, 1, "the page controller is stable");
@@ -1147,10 +1140,7 @@ describe("page runtime", () => {
         ),
       );
       assert.deepEqual(
-        [
-          (ambient.latest! as any).palette.source,
-          (ambient.latest! as any).palette.shadow,
-        ],
+        [ambient.latest!.palette.source, ambient.latest!.palette.shadow],
         [PAGE_PALETTE.source, PAGE_PALETTE.shadow],
       );
       assert.equal(themed.renders, 1, "the theme user renders once");
@@ -1163,17 +1153,15 @@ describe("page runtime", () => {
         h(AmbientProvider, null, h((ambient as any).Component)),
       );
       await act(async () =>
-        (ambient.latest! as any).setPalette((prev) => ({
+        ambient.latest!.setPalette((prev) => ({
           ...prev,
           source: "/fedcba.jpg",
         })),
       );
-      assert.equal((ambient.latest! as any).palette.source, "/fedcba.jpg");
+      assert.equal(ambient.latest!.palette.source, "/fedcba.jpg");
 
       const renders = ambient.renders;
-      await act(async () =>
-        (ambient.latest! as any).setPalette((prev) => prev),
-      );
+      await act(async () => ambient.latest!.setPalette((prev) => prev));
       assert.equal(ambient.renders, renders);
       await view.unmount();
     });

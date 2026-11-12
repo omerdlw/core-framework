@@ -54,7 +54,7 @@ function buildSourceRecord({
 }): SourceRecord {
   return {
     updatedAt: timestamp,
-    sequence: Number.isFinite(sequence) ? (sequence as number) : timestamp,
+    sequence: Number.isFinite(sequence) ? sequence! : timestamp,
     instanceId: typeof instanceId === "string" ? instanceId : null,
     priority,
     value,
@@ -172,7 +172,7 @@ function recordsHaveSameValue(
 ): boolean {
   if (Object.is(prevRecord?.value, nextRecord?.value)) return true;
   if (isObject(prevRecord?.value) && isObject(nextRecord?.value)) {
-    return shallowEqual(prevRecord!.value, nextRecord.value);
+    return shallowEqual(prevRecord.value, nextRecord.value);
   }
   return false;
 }

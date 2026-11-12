@@ -254,7 +254,7 @@ export function prepareMenu(
   if (onOpenResult === false) return null;
 
   const nextContext = isObject(onOpenResult)
-    ? { ...context, ...(onOpenResult as Record<string, unknown>) }
+    ? { ...context, ...onOpenResult }
     : context;
   const items = resolveMenuItems(config, nextContext);
   return items.length ? { context: nextContext, items } : null;

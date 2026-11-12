@@ -129,7 +129,7 @@ test("tryCatch() catches async rejections into Result", async () => {
     async () => {
       throw new Error("unauthorized");
     },
-    (e) => `CUSTOM: ${(e as any).message}`,
+    (e) => `CUSTOM: ${e.message}`,
   );
   assert.ok(isErr(customMapped));
   assert.equal(customMapped.error, "CUSTOM: unauthorized");
@@ -144,14 +144,14 @@ test("createSafeAction() wraps raw returns, Result returns, validation, and thro
   assert.deepEqual(rawRes.data, { greeting: "Hello, Base" });
 
   const schemaAction = createSafeAction(
-    async (data) => ({ saved: (data as any).title }),
+    async (data) => ({ saved: data.title }),
     {
       schema: {
         safeParse: (input) => {
           if (
             !input ||
-            typeof (input as any).title !== "string" ||
-            (input as any).title.trim().length < 3
+            typeof input.title !== "string" ||
+            input.title.trim().length < 3
           ) {
             return {
               success: false,
@@ -162,7 +162,7 @@ test("createSafeAction() wraps raw returns, Result returns, validation, and thro
           }
           return {
             success: true,
-            data: { title: (input as any).title.trim() },
+            data: { title: input.title.trim() },
           };
         },
       },

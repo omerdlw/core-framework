@@ -300,10 +300,10 @@ describe("modal focus management", () => {
 
   test("Tab on the last element wraps to the first", () => {
     const container = dialog();
-    (container.querySelector("#e") as HTMLElement).focus();
+    container.querySelector("#e")!.focus();
     const event = tab();
 
-    trapFocus(event as any, container);
+    trapFocus(event, container);
 
     assert.equal(event.defaultPrevented, true);
     assert.equal(document.activeElement?.id, "a");
@@ -311,10 +311,10 @@ describe("modal focus management", () => {
 
   test("Shift+Tab on the first element wraps to the last", () => {
     const container = dialog();
-    (container.querySelector("#a") as HTMLElement).focus();
+    container.querySelector("#a")!.focus();
     const event = tab(true);
 
-    trapFocus(event as any, container);
+    trapFocus(event, container);
 
     assert.equal(event.defaultPrevented, true);
     assert.equal(document.activeElement?.id, "e");
@@ -322,10 +322,10 @@ describe("modal focus management", () => {
 
   test("Tab in the middle is left to the browser", () => {
     const container = dialog();
-    (container.querySelector("#c") as HTMLElement).focus();
+    container.querySelector("#c")!.focus();
     const event = tab();
 
-    trapFocus(event as any, container);
+    trapFocus(event, container);
 
     assert.equal(event.defaultPrevented, false);
   });
@@ -337,9 +337,9 @@ describe("modal focus management", () => {
       key: "a",
     });
 
-    trapFocus(other as any, container);
-    trapFocus(tab() as any, document.createElement("div"));
-    trapFocus(tab() as any, null);
+    trapFocus(other, container);
+    trapFocus(tab(), document.createElement("div"));
+    trapFocus(tab(), null);
 
     assert.equal(other.defaultPrevented, false);
   });

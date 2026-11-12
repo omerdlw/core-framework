@@ -6,7 +6,7 @@
 
 |                   |                                                                                                                                                                                                                     |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Import**        | `import { useMedia, MediaSource, … } from "@omerdlw/base-framework/modules/media"`                                                                                                                                                        |
+| **Import**        | `import { useMedia, MediaSource, … } from "@omerdlw/base-framework/modules/media"`                                                                                                                                  |
 | **Module id**     | `media` (`mediaModule`, in `defaultModules`)                                                                                                                                                                        |
 | **Renders**       | Nothing. `MediaOverlay` is an overlay that returns `null`; it only plays the page's declared audio.                                                                                                                 |
 | **Registry type** | `media` — singleton key `page-media`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
@@ -177,17 +177,17 @@ Keep `isPlaying` current with another `upsertSource({ id, isPlaying })` call. `c
 
 ## 7. File map
 
-| File           | Responsibility                                                                                                                                                         |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Public barrel.                                                                                                                                                         |
-| `types.ts`     | Entries, sessions, state, actions, option and page-config contracts.                                                                                                   |
-| `constants.ts` | `DEFAULT_MEDIA_STATE`, registry key, drift threshold, page source id.                                                                                                  |
-| `session.ts`   | Pure session resolution: `resolveMediaSession`, `createMediaState`, `mergeMediaSource`, `findDisplacedAudio`, `selectPageMedia`.                                       |
-| `playback.ts`  | DOM media playback and sync: `bindFollowers`, `toggleElement`, `safePlay`, `sameElements`.                                                                              |
-| `context.tsx`  | `MediaProvider`: source registry, session publishing, follower binding, actions; `MediaContext`.                                                                       |
-| `hooks.ts`     | `useMedia` (Audio element lifecycle), `useMediaState`, `useMediaActions`, `useOptionalMediaState`, `useOptionalMediaActions`.                                           |
-| `overlay.tsx`  | `MediaSource` and `MediaOverlay` (components that render nothing).                                                                                                     |
-| `module.tsx`   | `mediaModule`, `usePage({ media })` page API, kernel type augmentation.                                                                                                |
+| File           | Responsibility                                                                                                                   |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                                                   |
+| `types.ts`     | Entries, sessions, state, actions, option and page-config contracts.                                                             |
+| `constants.ts` | `DEFAULT_MEDIA_STATE`, registry key, drift threshold, page source id.                                                            |
+| `session.ts`   | Pure session resolution: `resolveMediaSession`, `createMediaState`, `mergeMediaSource`, `findDisplacedAudio`, `selectPageMedia`. |
+| `playback.ts`  | DOM media playback and sync: `bindFollowers`, `toggleElement`, `safePlay`, `sameElements`.                                       |
+| `context.tsx`  | `MediaProvider`: source registry, session publishing, follower binding, actions; `MediaContext`.                                 |
+| `hooks.ts`     | `useMedia` (Audio element lifecycle), `useMediaState`, `useMediaActions`, `useOptionalMediaState`, `useOptionalMediaActions`.    |
+| `overlay.tsx`  | `MediaSource` and `MediaOverlay` (components that render nothing).                                                               |
+| `module.tsx`   | `mediaModule`, `usePage({ media })` page API, kernel type augmentation.                                                          |
 
 The module has no `view.tsx`, `motion.ts` or `provider.tsx` (the provider is `context.tsx`) because it renders no UI.
 

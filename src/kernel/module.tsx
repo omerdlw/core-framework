@@ -121,7 +121,10 @@ export function useModule<K extends ModuleId>(
   id: K,
 ): ModuleRuntimeOf<CoreModules[K]> | null {
   const coreModule = use(ModuleHostContext)?.byId.get(id);
-  return coreModule?.context ? (use(coreModule.context) ?? null) : null;
+  return coreModule?.context
+    ? ((use(coreModule.context) as
+        ModuleRuntimeOf<CoreModules[K]> | undefined) ?? null)
+    : null;
 }
 
 type ModuleActionsOf<K extends ModuleId> =

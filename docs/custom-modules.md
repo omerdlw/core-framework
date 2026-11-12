@@ -6,9 +6,10 @@
 
 ## 1. Overview: The Microkernel Extensibility Model
 
-The core strength of `@omerdlw/base-framework` is its **inversion-of-control microkernel**. The kernel knows *no module by name*. All 9 built-in modules (`dock`, `modal`, `notification`, etc.) are authored using the exact same public API available to you: `defineModule()`.
+The core strength of `@omerdlw/base-framework` is its **inversion-of-control microkernel**. The kernel knows _no module by name_. All 9 built-in modules (`dock`, `modal`, `notification`, etc.) are authored using the exact same public API available to you: `defineModule()`.
 
 When you register a module in `<CoreProvider modules={[myModule, ...]}>`:
+
 1. The kernel validates uniqueness of the module's `id`.
 2. The kernel topologically sorts dependencies declared in `uses: ["peerModule"]` so that providers are nested in guaranteed dependency order.
 3. The kernel mounts the module's `<Provider>`, renders its `<Backdrop>` behind `{children}`, and renders its `<Overlay>` in an isolated error boundary above `{children}`.
@@ -51,7 +52,7 @@ Create `src/modules/tour/types.ts`:
 
 ```ts
 export interface TourStep {
-  target: string;      // CSS selector or data attribute
+  target: string; // CSS selector or data attribute
   title: string;
   description: string;
 }
@@ -73,7 +74,8 @@ Create `src/modules/tour/constants.ts`:
 ```ts
 import { defineThemeSpec } from "@omerdlw/base-framework/theme";
 
-export type TourThemeSlot = "card" | "title" | "description" | "nextButton" | "skipButton";
+export type TourThemeSlot =
+  "card" | "title" | "description" | "nextButton" | "skipButton";
 export const tourTheme = defineThemeSpec<TourThemeSlot>("tour");
 ```
 
@@ -105,17 +107,23 @@ export function TourProvider({ children }: { children?: React.ReactNode }) {
   const [index, setIndex] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
-  const value = useMemo<TourContextValue>(() => ({
-    currentStepIndex: index,
-    currentStep: isActive ? steps[index] ?? null : null,
-    isActive,
-    start: () => { setIndex(0); setIsActive(true); },
-    next: () => {
-      if (index + 1 < steps.length) setIndex(index + 1);
-      else setIsActive(false);
-    },
-    stop: () => setIsActive(false),
-  }), [index, isActive, steps]);
+  const value = useMemo<TourContextValue>(
+    () => ({
+      currentStepIndex: index,
+      currentStep: isActive ? (steps[index] ?? null) : null,
+      isActive,
+      start: () => {
+        setIndex(0);
+        setIsActive(true);
+      },
+      next: () => {
+        if (index + 1 < steps.length) setIndex(index + 1);
+        else setIsActive(false);
+      },
+      stop: () => setIsActive(false),
+    }),
+    [index, isActive, steps],
+  );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 }
@@ -154,8 +162,12 @@ export function TourOverlay() {
         <h3 className={theme.slots.title}>{currentStep.title}</h3>
         <p className={theme.slots.description}>{currentStep.description}</p>
         <div className="mt-4 flex gap-2">
-          <Button onClick={stop} className={theme.slots.skipButton}>Skip</Button>
-          <Button onClick={next} className={theme.slots.nextButton}>Next</Button>
+          <Button onClick={stop} className={theme.slots.skipButton}>
+            Skip
+          </Button>
+          <Button onClick={next} className={theme.slots.nextButton}>
+            Next
+          </Button>
         </div>
       </div>
     </div>
@@ -177,12 +189,7 @@ import { TourProvider, useTour } from "./context";
 import { TourOverlay } from "./overlay";
 import type { TourConfig, TourPageApi } from "./types";
 
-export const tourModule = defineModule<
-  "tour",
-  null,
-  TourConfig,
-  TourPageApi
->({
+export const tourModule = defineModule<"tour", null, TourConfig, TourPageApi>({
   id: "tour",
   Provider: TourProvider,
   Overlay: TourOverlay,
@@ -227,9 +234,7 @@ import { tourModule } from "@/modules/tour";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <CoreProvider modules={[dockModule, tourModule]}>
-      {children}
-    </CoreProvider>
+    <CoreProvider modules={[dockModule, tourModule]}>{children}</CoreProvider>
   );
 }
 ```
@@ -248,17 +253,23 @@ export default function DashboardPage() {
     title: "Dashboard",
     tour: {
       steps: [
-        { target: "#metrics", title: "Key Metrics", description: "Monitor your KPIs here in real time." },
-        { target: "#export", title: "Export Data", description: "Download CSV reports with one click." },
+        {
+          target: "#metrics",
+          title: "Key Metrics",
+          description: "Monitor your KPIs here in real time.",
+        },
+        {
+          target: "#export",
+          title: "Export Data",
+          description: "Download CSV reports with one click.",
+        },
       ],
     },
   });
 
   return (
     <div>
-      <button onClick={() => page.modules.tour?.start()}>
-        Take a Tour
-      </button>
+      <button onClick={() => page.modules.tour?.start()}>Take a Tour</button>
     </div>
   );
 }

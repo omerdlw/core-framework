@@ -69,7 +69,7 @@ function setup(overrides: Record<string, unknown> = {}) {
   const frames: (() => void)[] = [];
   let location: string | null = "/a";
   const settings = { ...getNavigationSettings(), ...overrides };
-  const router = createRouter(overrides as { fail?: boolean });
+  const router = createRouter(overrides);
   const navigator = createNavigator({
     emit: (type, payload) => events.push({ payload, type }),
     nextFrame: (callback) => frames.push(callback),

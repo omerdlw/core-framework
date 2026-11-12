@@ -127,7 +127,7 @@ export function useDockConfig(
       closeSurface: actions?.closeSurface ?? (() => {}),
       expanded: state.expanded,
       dockHeight: state.dockHeight,
-      navigate: actions?.navigate ?? (async () => false),
+      navigate: actions?.navigate ?? (() => Promise.resolve(false)),
       openSurface: actions?.openSurface ?? (() => undefined),
       pathname: state.pathname,
       setExpanded: actions?.setExpanded ?? (() => {}),

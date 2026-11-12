@@ -57,9 +57,10 @@ export function resolveVideoClassNames(
     .filter(Boolean);
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the Object.assign spread overload is typed any
     objectStyle: Object.assign(
       {},
-      ...tokens.map((token) => BG_TOKEN_TO_OBJECT_STYLE[token]),
+      ...(tokens.map((token) => BG_TOKEN_TO_OBJECT_STYLE[token]) as object[]),
     ),
     other: tokens.filter((token) => !WIDTH_CLASS.test(token)).join(" "),
     width: tokens.filter((token) => WIDTH_CLASS.test(token)).join(" "),
@@ -105,7 +106,7 @@ export function getVisualStyle(currentStyle: BackgroundMediaStyle = {}) {
     ...baseStyle
   } = currentStyle;
   return {
-    baseStyle: baseStyle as CSSProperties,
+    baseStyle: baseStyle,
     leftGradient: Number(leftGradient) || 0,
     rightGradient: Number(rightGradient) || 0,
   };

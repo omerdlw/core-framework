@@ -87,7 +87,7 @@ export function useHotkey(
 
 export function useEscapeKey(
   callback: (event: KeyboardEvent) => void,
-  enabled: boolean = true,
+  enabled = true,
 ): void {
   useHotkey("escape", callback, {
     enabled,

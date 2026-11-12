@@ -15,9 +15,8 @@ import { useModule } from "@/kernel";
 import { shallowEqual } from "@/utils";
 import { globalEvents } from "@/events";
 import { isSafeInternalHref, isSamePath, getDockLocationKey } from "../paths";
+import type { PrefetchingRouter, RoutePrefetchState } from "../types";
 import {
-  PrefetchingRouter,
-  RoutePrefetchState,
   type DockItem,
   type DockRoutePolicy,
   type DockRoutePolicyOverrides,
@@ -49,7 +48,7 @@ function getRoutePolicyOverrides(
   item: DockItem | null | undefined,
 ): DockRoutePolicyOverrides {
   return item?.dockPolicy && typeof item.dockPolicy === "object"
-    ? item.dockPolicy!
+    ? item.dockPolicy
     : {};
 }
 

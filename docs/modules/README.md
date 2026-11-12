@@ -6,9 +6,9 @@ One page per module/core entry. Each page answers, from the big picture down to 
 
 ## 1. Index
 
-| Module         | Import                                      | Doc                                      | What it owns                                                                                       | Page key (`usePage`) | Registry type |
-| :------------- | :------------------------------------------ | :--------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------- | :------------ |
-| Kernel         | `@omerdlw/base-framework/kernel`                             | [kernel.md](./kernel.md)                 | Module host, registry, `usePage`, `defineModule`, peers                                            | `title`, `registry`  | —             |
+| Module         | Import                                                            | Doc                                      | What it owns                                                                                       | Page key (`usePage`) | Registry type |
+| :------------- | :---------------------------------------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------- | :------------ |
+| Kernel         | `@omerdlw/base-framework/kernel`                                  | [kernel.md](./kernel.md)                 | Module host, registry, `usePage`, `defineModule`, peers                                            | `title`, `registry`  | —             |
 | Dock           | `@omerdlw/base-framework/modules/dock`                            | [dock.md](./dock.md)                     | The only chrome: card stack, surfaces/flows, HUD, operations, status overlays, guards, breadcrumbs | `dock`               | `dock`        |
 | Modal          | `@omerdlw/base-framework/modules/modal`                           | [modal.md](./modal.md)                   | Promise-based stacked dialogs                                                                      | `modal`              | `modal`       |
 | Notification   | `@omerdlw/base-framework/modules/notification`                    | [notification.md](./notification.md)     | Single-slot toasts docked to the dock; event-driven feedback                                       | `notification`       | —             |
@@ -19,8 +19,8 @@ One page per module/core entry. Each page answers, from the big picture down to 
 | Ambient        | `@omerdlw/base-framework/modules/ambient`                         | [ambient.md](./ambient.md)               | Image → palette → CSS color variables                                                              | `ambient`            | —             |
 | Controls       | `@omerdlw/base-framework/modules/controls`                        | [controls.md](./controls.md)             | Paired control rails beside the dock                                                               | `controls`           | `controls`    |
 | Context menu   | `@omerdlw/base-framework/modules/context-menu` (id `contextMenu`) | [context-menu.md](./context-menu.md)     | Declarative right-click menus                                                                      | `contextMenu`        | `contextMenu` |
-| Error boundary | `@omerdlw/base-framework/error`                              | [error-boundary.md](./error-boundary.md) | Boundaries, reporter, window error listener                                                        | —                    | —             |
-| Result         | `@omerdlw/base-framework/result`                             | [result.md](./result.md)                 | `Result<T, E>`, `createSafeAction`                                                                 | —                    | —             |
+| Error boundary | `@omerdlw/base-framework/error`                                   | [error-boundary.md](./error-boundary.md) | Boundaries, reporter, window error listener                                                        | —                    | —             |
+| Result         | `@omerdlw/base-framework/result`                                  | [result.md](./result.md)                 | `Result<T, E>`, `createSafeAction`                                                                 | —                    | —             |
 
 General guides: [../getting-started.md](../getting-started.md) (installation & setup), [../architecture-and-rules.md](../architecture-and-rules.md) (rules and boundaries), [../theming.md](../theming.md) (custom themes), [../custom-modules.md](../custom-modules.md) (custom module authoring), [../core-engine.md](../core-engine.md) (provider, theme, events, hooks, utils, tokens), [../testing.md](../testing.md) (testing guide).
 
@@ -40,18 +40,18 @@ Modules never import each other. They connect through three channels only:
  └────────────┘  DOM contracts: #dock-card-stack, data-controls-hidden, data-controls-anchor
 ```
 
-| Reader → source               | How                      | Used for                                                                     |
-| :---------------------------- | :----------------------- | :--------------------------------------------------------------------------- |
-| dock → `loading`              | `definePeer`             | Page-loading flag; `stopLoading()` after navigation.                         |
-| dock → `media`                | `definePeer`             | Play/pause icon, media controls.                                             |
-| dock → `notification`         | `definePeer`             | Is a toast visible (breadcrumbs yield).                                      |
+| Reader → source               | How                      | Used for                                                                                                   |
+| :---------------------------- | :----------------------- | :--------------------------------------------------------------------------------------------------------- |
+| dock → `loading`              | `definePeer`             | Page-loading flag; `stopLoading()` after navigation.                                                       |
+| dock → `media`                | `definePeer`             | Play/pause icon, media controls.                                                                           |
+| dock → `notification`         | `definePeer`             | Is a toast visible (breadcrumbs yield).                                                                    |
 | dock → `navigation`           | `useModule`              | Transactions are its trips; card prefetch uses its warm cache. Without it the dock runs its own navigator. |
-| background → `media`          | `definePeer`             | Registers the background video as source `background`.                       |
-| ambient → `background`        | `useModuleState`         | Poster URL as the default tint image.                                        |
-| context-menu → `dock`         | `useModuleState`         | Active card as the default menu header.                                      |
-| notification, controls → dock | DOM id `dock-card-stack` | Portal target / rail anchor.                                                 |
-| dock ← events                 | `globalEvents`           | `APP_ERROR`, `API_ERROR`, `DOCK_STATUS_SET`, `DOCK_GUARD`, `DOCK_NOT_FOUND`. |
-| notification ← events         | `globalEvents`           | `API_UNAUTHORIZED`, `APP_ERROR`/`STATE_CHANGE` with `notify: true`.          |
+| background → `media`          | `definePeer`             | Registers the background video as source `background`.                                                     |
+| ambient → `background`        | `useModuleState`         | Poster URL as the default tint image.                                                                      |
+| context-menu → `dock`         | `useModuleState`         | Active card as the default menu header.                                                                    |
+| notification, controls → dock | DOM id `dock-card-stack` | Portal target / rail anchor.                                                                               |
+| dock ← events                 | `globalEvents`           | `APP_ERROR`, `API_ERROR`, `DOCK_STATUS_SET`, `DOCK_GUARD`, `DOCK_NOT_FOUND`.                               |
+| notification ← events         | `globalEvents`           | `API_UNAUTHORIZED`, `APP_ERROR`/`STATE_CHANGE` with `notify: true`.                                        |
 
 Every `definePeer`/`useModuleState`/`useModule` call needs the **peer id as a string literal** and the id in the module's `uses` (`npm run check:architecture` verifies it). Each peer ships an inert stand-in, so any module can be left out of `CoreProvider modules` and the rest still works.
 
@@ -66,19 +66,19 @@ Every `definePeer`/`useModuleState`/`useModule` call needs the **peer id as a st
 
 Every folder in `src/modules/` uses the same **slots**. A slot that does not apply is omitted, never created empty. `tests/architecture.test.ts` fails when a required file or the module's doc page is missing, or when an unexpected file appears at the module root.
 
-| File           |      Required       | Responsibility                                                                                                                  |
-| :------------- | :-----------------: | :------------------------------------------------------------------------------------------------------------------------------ |
-| `index.ts`     |         ✅          | Public barrel: named exports only; nothing internal leaks through it.                                                           |
-| `types.ts`     |         ✅          | Public TypeScript contracts, **no runtime code** (a `types/` folder with an `index.ts` is also accepted).                       |
-| `constants.ts` |         ✅          | Frozen configuration, enums, event names, the theme spec (`defineThemeSpec`).                                                   |
-| `utils.ts`     |         ✅          | Pure helpers (no React state).                                                                                                  |
+| File           |      Required       | Responsibility                                                                                                                                   |
+| :------------- | :-----------------: | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     |         ✅          | Public barrel: named exports only; nothing internal leaks through it.                                                                            |
+| `types.ts`     |         ✅          | Public TypeScript contracts, **no runtime code** (a `types/` folder with an `index.ts` is also accepted).                                        |
+| `constants.ts` |         ✅          | Frozen configuration, enums, event names, the theme spec (`defineThemeSpec`).                                                                    |
+| `utils.ts`     |         ✅          | Pure helpers (no React state).                                                                                                                   |
 | `module.tsx`   | installable modules | `defineModule` definition, `defineX` builder, `declare module "@omerdlw/base-framework/kernel"` augmentation (`module.ts` when there is no JSX). |
-| `context.tsx`  |    when stateful    | The context, the provider and the `useX` hooks (**one** context per module).                                                    |
-| `hooks.ts`     |      optional       | Extra hooks, notably the `use<Component>Model` logic behind each overlay component.                                             |
-| `state.ts`     |      optional       | State factory, initial state, pure reducers.                                                                                    |
-| `overlay.tsx`  |      optional       | **All** visual components: JSX only, calling `use*Model` hooks (no state, effects or refs).                                     |
-| `motion.ts`    |      optional       | The module's `use*Motion()` hook and helpers that pick from the app's motion.                                                                                    |
-| `store.ts`     |      optional       | A store file when warranted.                                                                                                    |
+| `context.tsx`  |    when stateful    | The context, the provider and the `useX` hooks (**one** context per module).                                                                     |
+| `hooks.ts`     |      optional       | Extra hooks, notably the `use<Component>Model` logic behind each overlay component.                                                              |
+| `state.ts`     |      optional       | State factory, initial state, pure reducers.                                                                                                     |
+| `overlay.tsx`  |      optional       | **All** visual components: JSX only, calling `use*Model` hooks (no state, effects or refs).                                                      |
+| `motion.ts`    |      optional       | The module's `use*Motion()` hook and helpers that pick from the app's motion.                                                                    |
+| `store.ts`     |      optional       | A store file when warranted.                                                                                                                     |
 
 Rules of thumb:
 
@@ -109,7 +109,7 @@ Rules of thumb:
 | `ambient`      | `overlay`, `motion`     | Renders nothing: it writes CSS custom properties; transitions are CSS classes from the theme.                                          |
 | `controls`     | `context`, `motion`     | Stateless: entries live in the registry and layout is measured from the DOM. No animation.                                             |
 | `loading`      | `motion`, `state`       | The overlay renders `Spinner` (or a skeleton) and mounts/unmounts instantly; state is a small `useState` in the provider.              |
-| `navigation`   | `overlay`, `motion`     | Renders nothing: it binds the router and listens to the document; animation is the app's, in its holds. |
+| `navigation`   | `overlay`, `motion`     | Renders nothing: it binds the router and listens to the document; animation is the app's, in its holds.                                |
 | `media`        | `motion`                | Renders nothing; `overlay.tsx` holds only the components that return `null` (`MediaSource`, `MediaOverlay`).                           |
 | `notification` | builder                 | Toasts are imperative: `useToast` (in `hooks.ts`) plays the builder role.                                                              |
 | core `error`   | provider, builder, view | Boundaries are class components configured through props; `boundary.tsx` is the view, `listener.ts` and `reporter.ts` are topic files. |

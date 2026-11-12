@@ -30,7 +30,6 @@ function DefaultErrorFallback({
   error,
   message,
   resetError,
-  title,
 }: {
   error: Error | null;
   message?: string;
@@ -94,7 +93,7 @@ export class ErrorBoundaryCore extends React.Component<
     return null;
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
     const { message, name, onError, silent, title, variant } = this.props;
@@ -132,7 +131,7 @@ export class ErrorBoundaryCore extends React.Component<
     this.props.onReset?.();
   };
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (!this.state.hasError) return this.props.children;
 
     const { fallback, message, title } = this.props;

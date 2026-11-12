@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                        |
 | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { useControls, defineControls, … } from "@omerdlw/base-framework/modules/controls"`                                                                  |
+| **Import**         | `import { useControls, defineControls, … } from "@omerdlw/base-framework/modules/controls"`                                            |
 | **Module id**      | `controls` (`controlsModule`, in `defaultModules`)                                                                                     |
 | **Renders**        | `Controls` overlay: two rails (`<aside>`) portalled to `document.body`, **only on viewports ≥ 640 px** (theme)                         |
 | **Registry type**  | `controls` — key policy `named` (`<path>::<id>`), lifecycle `immediate`, entries validated                                             |
@@ -141,16 +141,16 @@ No classes or colors in the module apart from the measured position. Slots in `c
 
 ## 8. File map
 
-| File           | Responsibility                                                                                                                                               |
-| :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Public barrel.                                                                                                                                               |
-| `types.ts`     | Entries, slots, layout, definition and page-config contracts, theme slots.                                                                                   |
-| `constants.ts` | Edge inset, dock gap, dock element id, side names, `controlsTheme`.                                                                                          |
-| `layout.ts`    | `getControlsLayout` (geometry calculation), `areLayoutsEqual`, dock element queries, and `useControlsLayout` (reactive layout measurement + DOM observers).     |
-| `entries.ts`   | `resolveControlsPairs` (path filter, pairing, ordering), `validateControlEntry`, `normalizePageControls`, `resolveSlot`, `isControlSide`.                    |
-| `hooks.ts`     | `useControls`, `useControlsRegistration`, and `useControlsLayout` re-export.                                                                                  |
-| `overlay.tsx`  | `Controls`, `ControlsSide` rail renderer, and internal `useControlsModel`.                                                                                    |
-| `module.tsx`   | `controlsModule`, page API (`set`), `defineControls`, kernel type augmentation.                                                                              |
+| File           | Responsibility                                                                                                                                              |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`     | Public barrel.                                                                                                                                              |
+| `types.ts`     | Entries, slots, layout, definition and page-config contracts, theme slots.                                                                                  |
+| `constants.ts` | Edge inset, dock gap, dock element id, side names, `controlsTheme`.                                                                                         |
+| `layout.ts`    | `getControlsLayout` (geometry calculation), `areLayoutsEqual`, dock element queries, and `useControlsLayout` (reactive layout measurement + DOM observers). |
+| `entries.ts`   | `resolveControlsPairs` (path filter, pairing, ordering), `validateControlEntry`, `normalizePageControls`, `resolveSlot`, `isControlSide`.                   |
+| `hooks.ts`     | `useControls`, `useControlsRegistration`, and `useControlsLayout` re-export.                                                                                |
+| `overlay.tsx`  | `Controls`, `ControlsSide` rail renderer, and internal `useControlsModel`.                                                                                  |
+| `module.tsx`   | `controlsModule`, page API (`set`), `defineControls`, kernel type augmentation.                                                                             |
 
 No `provider.tsx` or `motion.ts`: the module is stateless and does not animate ([README](./README.md#42-why-some-optional-slots-are-absent)).
 

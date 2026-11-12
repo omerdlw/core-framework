@@ -4,7 +4,7 @@ export function clamp(value: unknown, min: number, max: number): number {
   return Math.min(Math.max(finite, min), max);
 }
 
-export function toFiniteNumber(value: unknown, fallback: number = 0): number {
+export function toFiniteNumber(value: unknown, fallback = 0): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 }

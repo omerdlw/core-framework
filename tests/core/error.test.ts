@@ -126,7 +126,7 @@ describe("reporter", () => {
   const captured: any[] = [];
   reporter.addHandler({
     name: "capture",
-    handle: (r) => captured.push(r as any),
+    handle: (r) => captured.push(r),
   });
 
   afterEach(() => {
@@ -144,7 +144,7 @@ describe("reporter", () => {
       const extra: any[] = [];
       reporter.addHandler({
         name: "extra",
-        handle: (r) => extra.push(r as any),
+        handle: (r) => extra.push(r),
       });
 
       const sent = reporter.captureError(new Error("first"), { source: "t" });
@@ -152,7 +152,7 @@ describe("reporter", () => {
       assert.equal(captured.length, 1);
       assert.equal(extra.length, 1);
       assert.equal(sent, captured[0]);
-      assert.equal((sent as any).context.source, "t");
+      assert.equal(sent.context.source, "t");
     });
 
     test("the same error inside the dedupe window is sent once", () => {
@@ -211,7 +211,7 @@ describe("reporter", () => {
     test("forwards reports to Sentry with fingerprint and tags", () => {
       const calls = { exceptions: [] as any[], fingerprint: null, tags: {} };
       const handler = createSentryHandler({
-        captureException: (e) => calls.exceptions.push(e as any),
+        captureException: (e) => calls.exceptions.push(e),
         withScope: (cb) =>
           cb({
             setContext: () => {},
@@ -271,16 +271,16 @@ describe("error boundary", () => {
     const reporter = getErrorReporter();
     reporter.addHandler({
       name: "scoped",
-      handle: (r) => reports.push(r as any),
+      handle: (r) => reports.push(r),
     });
     const off = globalEvents.subscribe(EVENT_TYPES.APP_ERROR, (p) =>
-      appErrors.push(p as any),
+      appErrors.push(p),
     );
     detach = [() => reporter.removeHandler("scoped") as any, off as any];
   });
 
   afterEach(() => {
-    detach.forEach((release) => (release as any)());
+    detach.forEach((release) => release());
   });
 
   let shouldThrow;
@@ -354,18 +354,18 @@ describe("error boundary", () => {
       );
 
       assert.equal(reports.length, 1);
-      assert.equal((reports[0] as any).error.message, crashMessage);
-      assert.equal((reports[0] as any).context.name, "Probe");
-      assert.equal((reports[0] as any).context.variant, "module");
-      assert.ok((reports[0] as any).componentStack);
+      assert.equal(reports[0].error.message, crashMessage);
+      assert.equal(reports[0].context.name, "Probe");
+      assert.equal(reports[0].context.variant, "module");
+      assert.ok(reports[0].componentStack);
     });
 
     test("APP_ERROR is emitted with a user-safe message and a reset hook", async () => {
       await mount(h(ErrorBoundaryCore, null, h(Bomb)));
 
       assert.equal(appErrors.length, 1);
-      assert.equal((appErrors[0] as any).message, USER_MESSAGES.generic);
-      assert.equal(typeof (appErrors[0] as any).resetError, "function");
+      assert.equal(appErrors[0].message, USER_MESSAGES.generic);
+      assert.equal(typeof appErrors[0].resetError, "function");
     });
 
     test("silent suppresses APP_ERROR but still reports", async () => {
@@ -431,9 +431,9 @@ describe("error boundary", () => {
       );
 
       assert.equal(calls.length, 1);
-      assert.equal((calls[0][0] as any).message, crashMessage);
-      assert.ok((calls[0][1] as any).componentStack);
-      assert.equal((calls[0][2] as any).name, "X");
+      assert.equal(calls[0][0].message, crashMessage);
+      assert.ok(calls[0][1].componentStack);
+      assert.equal(calls[0][2].name, "X");
     });
 
     test("a throwing onError does not break the fallback", async () => {
@@ -492,16 +492,16 @@ describe("global error listener", () => {
     const reporter = getErrorReporter();
     reporter.addHandler({
       name: "scoped",
-      handle: (r) => reports.push(r as any),
+      handle: (r) => reports.push(r),
     });
     const off = globalEvents.subscribe(EVENT_TYPES.APP_ERROR, (p) =>
-      appErrors.push(p as any),
+      appErrors.push(p),
     );
     detach = [() => reporter.removeHandler("scoped") as any, off as any];
   });
 
   afterEach(() => {
-    detach.forEach((release) => (release as any)());
+    detach.forEach((release) => release());
   });
 
   afterEach(() => {
@@ -524,9 +524,9 @@ describe("global error listener", () => {
       await view.unmount();
 
       assert.equal(reports.length, 1);
-      assert.equal((reports[0] as any).context.globalListener, true);
+      assert.equal(reports[0].context.globalListener, true);
       assert.equal(appErrors.length, 1);
-      assert.equal((appErrors[0] as any).message, USER_MESSAGES.generic);
+      assert.equal(appErrors[0].message, USER_MESSAGES.generic);
     });
 
     test("browser noise is ignored", async () => {
@@ -560,7 +560,7 @@ describe("global error listener", () => {
       await view.unmount();
 
       assert.equal(reports.length, 1);
-      assert.equal((reports[0] as any).context.source, "unhandledrejection");
+      assert.equal(reports[0].context.source, "unhandledrejection");
     });
 
     test("while mounted, report() is routed into the error reporter", async () => {
@@ -570,8 +570,8 @@ describe("global error listener", () => {
       await view.unmount();
 
       assert.equal(reports.length, 1);
-      assert.equal((reports[0] as any).context.scope, "Dock route transition");
-      assert.equal((reports[0] as any).context.level, "error");
+      assert.equal(reports[0].context.scope, "Dock route transition");
+      assert.equal(reports[0].context.level, "error");
     });
 
     test("after unmount, report() no longer reaches the reporter", async () => {

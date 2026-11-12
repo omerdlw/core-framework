@@ -274,11 +274,7 @@ export function defineBreadcrumb(definition: DefineBreadcrumbOptions = {}) {
   });
 }
 
-export function useDockBreadcrumbsCardModel({
-  className = "",
-  maxItems = 4,
-  onNavigate,
-}: {
+export function useDockBreadcrumbsCardModel(_props: {
   className?: string;
   maxItems?: number;
   onNavigate?: (href: string) => unknown;

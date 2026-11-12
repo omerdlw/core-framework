@@ -104,11 +104,9 @@ export interface RegistrationHandle<T = unknown> {
   validation: string;
 }
 
-export interface RegistrySchema {
-  [key: string]: unknown;
-}
+export type RegistrySchema = Record<string, unknown>;
 
-type RegistryTypeKey = keyof RegistrySchema & string;
+type RegistryTypeKey = keyof RegistrySchema;
 
 export interface NormalizedRegistryMetadata {
   cleanupDelayMs: number | null;
@@ -322,9 +320,11 @@ export interface CoreModule<
   readonly page?: ModulePageSpec<TSlice, TController>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for any registered module
 export type AnyCoreModule = CoreModule<string, any, any, any>;
 
 export type ModuleRuntimeOf<M> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for inference
   M extends CoreModule<string, infer TRuntime, any, any> ? TRuntime : never;
 
 export type ModuleStateOf<K extends ModuleId> =
@@ -333,6 +333,7 @@ export type ModuleStateOf<K extends ModuleId> =
     : never;
 
 type ModuleControllerOf<M> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for inference
   M extends CoreModule<string, any, any, infer TController>
     ? TController
     : never;

@@ -241,7 +241,7 @@ export function useYouTubeIframePlayer({
       }
     };
 
-    loadYouTubeIframeApi().then((YT) => {
+    void loadYouTubeIframeApi().then((YT) => {
       const host = hostRef.current;
       if (isDisposed || !YT?.Player || !host) return;
 
@@ -262,6 +262,8 @@ export function useYouTubeIframePlayer({
           player()?.pauseVideo?.();
           setVideoPlaying(false);
         },
+        // The controller contract is async; the YouTube player call is not.
+        // eslint-disable-next-line @typescript-eslint/require-await
         play: async () => {
           state.paused = false;
           player()?.playVideo?.();

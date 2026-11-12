@@ -22,7 +22,6 @@ describe("package architecture boundaries", () => {
     }
   }
 
-
   test("src/design must not import from @/modules", () => {
     scanDir(
       path.resolve("src/design"),

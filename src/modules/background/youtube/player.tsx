@@ -122,6 +122,8 @@ export function useYouTubeBackgroundPlayerModel({
         return;
       }
 
+      // A NaN volume passes through unchanged; the fallback never applies.
+      // eslint-disable-next-line no-constant-binary-expression
       const volume = Math.max(0, Math.min(1, Number(video.volume) ?? 1));
       if (Math.abs(audio.volume - volume) > 0.005) audio.volume = volume;
 

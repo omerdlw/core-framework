@@ -133,7 +133,7 @@ function normalizeSurfaceDefinition(
     content: component ? null : (content ?? (input as ReactNode)),
     props: component
       ? isPlainObject(descriptor?.props)
-        ? descriptor!.props!
+        ? descriptor.props
         : directComponentInput
           ? (config as DockComponentProps)
           : {}
@@ -366,9 +366,7 @@ export function useSurface(
     [closeAllSurfaces, closeSurface, openSurface, surfaceStack],
   );
 
-  return surfaceDefinition
-    ? (specificSurface as SurfaceHandle)
-    : generalSurface;
+  return surfaceDefinition ? specificSurface! : generalSurface;
 }
 
 export function defineSurface(
@@ -526,7 +524,7 @@ export function createSurfaceFlowSession(
       snapshot === undefined
         ? definition.initialSnapshot
         : normalizeSurfaceFlowSnapshot(snapshot),
-    status: DOCK_SURFACE_FLOW_STATUS.OPEN as string,
+    status: DOCK_SURFACE_FLOW_STATUS.OPEN,
   };
 }
 

@@ -139,12 +139,13 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     const payload: Record<string, unknown> = {};
     for (const { key, value } of providers) {
       try {
-        payload[key] = typeof value === "function" ? value() : value;
+        payload[key] =
+          typeof value === "function" ? (value as () => unknown)() : value;
       } catch (error) {
         report(`Navigation payload (${key})`, error);
       }
     }
-    return { ...payload, ...extra } as NavigationPayload;
+    return { ...payload, ...extra };
   }
 
   function begin(
@@ -203,7 +204,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       if (history && !entry.history) continue;
       try {
         const result = entry.hold(trip);
-        if (result && typeof (result as Promise<unknown>).then === "function")
+        if (result && typeof result.then === "function")
           pending.push(
             Promise.resolve(result).catch((error) =>
               report("Navigation hold", error),
@@ -222,7 +223,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       };
       const cap = setTimeout(done, Math.max(0, settings().maxHoldMs));
       trip.signal.addEventListener("abort", done);
-      Promise.all(pending).then(done);
+      void Promise.all(pending).then(done);
     });
   }
 

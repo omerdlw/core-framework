@@ -100,7 +100,7 @@ export function createReport(
       stack: errObj?.stack || null,
       name: errObj?.name || "UnknownError",
     },
-    fingerprint: fingerprint(error, context as Partial<ErrorContextData>),
+    fingerprint: fingerprint(error, context),
     timestamp: new Date().toISOString(),
     environment: getBrowserEnvironment(context.route as string | undefined),
     componentStack: (context.componentStack as string) || null,

@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useUi } from "../provider";
 import { Icon } from "./icon";
 import type { LoaderProps, SpinnerProps } from "../types";
@@ -11,12 +10,10 @@ function Dots({ color, size }: { color?: string; size?: number }) {
     <span
       aria-hidden="true"
       className={parts.loader.dots()}
-      style={
-        {
-          color,
-          ...(size === undefined ? null : { "--loader-size": `${size}px` }),
-        } as CSSProperties
-      }
+      style={{
+        color,
+        ...(size === undefined ? null : { "--loader-size": `${size}px` }),
+      }}
     >
       <span className={parts.loader.dot()} />
       <span className={parts.loader.dot()} />

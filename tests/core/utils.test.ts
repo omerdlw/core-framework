@@ -355,7 +355,7 @@ describe("scheduler", () => {
       const h = createHarness();
       const fired: any[] = [];
 
-      const id = h.scheduler.schedule((t) => fired.push(t as any), 50, {
+      const id = h.scheduler.schedule((t) => fired.push(t), 50, {
         label: "save",
       });
       const [task] = h.scheduler.getSnapshot().tasks;
@@ -410,7 +410,7 @@ describe("scheduler", () => {
     test("frames are tracked as frame tasks", () => {
       const h = createHarness();
       const seen: any[] = [];
-      const id = h.scheduler.scheduleFrame((t) => seen.push(t as any), {
+      const id = h.scheduler.scheduleFrame((t) => seen.push(t), {
         label: "paint",
       });
 

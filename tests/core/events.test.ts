@@ -23,9 +23,7 @@ describe("EventEmitter", () => {
   test("unsubscribe stops delivery and forgets empty events", () => {
     const emitter = new EventEmitter();
     const seen: any[] = [];
-    const off = emitter.subscribe("ping", (payload) =>
-      seen.push(payload as any),
-    );
+    const off = emitter.subscribe("ping", (payload) => seen.push(payload));
 
     emitter.emit("ping", 1);
     off();
@@ -90,7 +88,7 @@ describe("EventEmitter", () => {
   test("emitDebounced collapses a burst into the last payload", () => {
     const emitter = new EventEmitter();
     const seen: any[] = [];
-    emitter.subscribe("ping", (payload) => seen.push(payload as any));
+    emitter.subscribe("ping", (payload) => seen.push(payload));
 
     mock.timers.enable({ apis: ["setTimeout"] });
     emitter.emitDebounced("ping", 1, 15);
@@ -104,7 +102,7 @@ describe("EventEmitter", () => {
   test("cancelDebounced drops pending emissions", () => {
     const emitter = new EventEmitter();
     const seen: any[] = [];
-    emitter.subscribe("ping", (payload) => seen.push(payload as any));
+    emitter.subscribe("ping", (payload) => seen.push(payload));
 
     mock.timers.enable({ apis: ["setTimeout"] });
     emitter.emitDebounced("ping", 1, 15);

@@ -8,7 +8,7 @@ export type Classes =
   | null
   | undefined
   | readonly Classes[]
-  | { readonly [className: string]: unknown };
+  | Readonly<Record<string, unknown>>;
 
 export type VariantMap = Readonly<
   Record<string, Readonly<Record<string, Classes>>>
@@ -41,15 +41,15 @@ export interface RecipeOverride<V extends VariantMap = VariantMap> {
   readonly reset?: boolean;
   readonly base?: Classes;
   readonly variants?: {
-    readonly [K in keyof V]?: { readonly [Value in keyof V[K]]?: Classes } & {
-      readonly [value: string]: Classes;
-    };
-  } & { readonly [variant: string]: { readonly [value: string]: Classes } };
+    readonly [K in keyof V]?: {
+      readonly [Value in keyof V[K]]?: Classes;
+    } & Readonly<Record<string, Classes>>;
+  } & Readonly<Record<string, Readonly<Record<string, Classes>>>>;
   readonly compoundVariants?: readonly ({
     readonly class?: Classes;
     readonly className?: Classes;
-  } & { readonly [variant: string]: unknown })[];
-  readonly defaultVariants?: { readonly [variant: string]: unknown };
+  } & Readonly<Record<string, unknown>>)[];
+  readonly defaultVariants?: Readonly<Record<string, unknown>>;
 }
 
 export type VariantsOf<R> = R extends { readonly variants?: infer V }
@@ -102,7 +102,7 @@ export function resolveRecipe(
   def: RecipeDef,
   props: Record<string, unknown> = {},
 ): ClassValue[] {
-  const out: ClassValue[] = [def.base as ClassValue];
+  const out: ClassValue[] = [def.base];
   const variants = def.variants ?? {};
   const defaults = (def.defaultVariants ?? {}) as Record<string, unknown>;
   const selected: Record<string, string | null> = {};
@@ -111,11 +111,11 @@ export function resolveRecipe(
     const value = props[name] === undefined ? defaults[name] : props[name];
     const chosen = key(value);
     selected[name] = chosen;
-    if (chosen !== null) out.push(variants[name][chosen] as ClassValue);
+    if (chosen !== null) out.push(variants[name][chosen]);
   }
   for (const compound of def.compoundVariants ?? []) {
-    if (matches(selected, compound as Record<string, unknown>)) {
-      out.push(compound.class as ClassValue, compound.className as ClassValue);
+    if (matches(selected, compound)) {
+      out.push(compound.class, compound.className);
     }
   }
   out.push(props.class as ClassValue, props.className as ClassValue);
@@ -173,5 +173,4 @@ export function compileRecipe<V>(
   return recipe;
 }
 
-export const joinClasses = (...inputs: Classes[]): string =>
-  clsx(inputs as ClassValue[]);
+export const joinClasses = (...inputs: Classes[]): string => clsx(inputs);

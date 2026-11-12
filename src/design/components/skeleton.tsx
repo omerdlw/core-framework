@@ -3,7 +3,11 @@
 import { useUi } from "../provider";
 import type { SkeletonBlockProps, SkeletonLinesProps } from "../types";
 
-export function SkeletonBlock({ className, style, ...props }: SkeletonBlockProps) {
+export function SkeletonBlock({
+  className,
+  style,
+  ...props
+}: SkeletonBlockProps) {
   const { parts } = useUi();
   return (
     <div
@@ -14,7 +18,11 @@ export function SkeletonBlock({ className, style, ...props }: SkeletonBlockProps
   );
 }
 
-export function SkeletonLines({ className, height, widths }: SkeletonLinesProps) {
+export function SkeletonLines({
+  className,
+  height,
+  widths,
+}: SkeletonLinesProps) {
   const { parts } = useUi();
   return (
     <div aria-hidden="true" className={parts.skeleton.lines({ className })}>
