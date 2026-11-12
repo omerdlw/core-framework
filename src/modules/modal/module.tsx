@@ -57,6 +57,10 @@ function useModalPage(
   );
 }
 
+/**
+ * The modal module definition: install it on the framework to render a modal stack
+ * and let pages register modals through `page.modal`.
+ */
 export const modalModule = defineModule({
   id: "modal",
   context: ModalContext,
@@ -85,6 +89,9 @@ declare module "@omerdlw/base-framework/kernel" {
   }
 }
 
+/**
+ * Defines a reusable modal. Its `use` hook returns the `[open, controls]` binding.
+ */
 export function defineModal(
   definition: DefineModalOptions = {},
 ): ModalDefinition {

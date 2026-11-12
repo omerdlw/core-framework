@@ -15,8 +15,84 @@ import {
   MODAL_COMPOSITOR_STYLE,
   useModalMotion,
 } from "../motion";
-import { type ModalComponent, type ModalEntry } from "../types";
+import {
+  type ModalComponent,
+  type ModalEntry,
+  type ModalPosition,
+} from "../types";
 import { ModalLayerSwitcher } from "./modal-layer-switcher";
+
+interface ModalLayerProps {
+  closeModal: (result?: unknown, targetModalId?: number | null) => void;
+  entry: ModalEntry;
+  isMobileViewport: boolean;
+  isTopModal: boolean;
+  modalStack: ModalEntry[];
+  registry: { get: (key: string) => ModalComponent | undefined };
+  stackIndex: number;
+  theme: Theme;
+}
+
+type ModalLayerContentProps = Pick<
+  ModalLayerProps,
+  "closeModal" | "entry" | "isTopModal" | "modalStack" | "stackIndex" | "theme"
+> & {
+  activePosition: ModalPosition;
+  ActiveModalComponent: ModalComponent;
+  previousEntry: ModalEntry | null;
+};
+
+function ModalLayerContent({
+  ActiveModalComponent,
+  activePosition,
+  closeModal,
+  entry,
+  isTopModal,
+  modalStack,
+  previousEntry,
+  stackIndex,
+  theme,
+}: ModalLayerContentProps) {
+  return (
+    <>
+      <ModuleBoundary name={entry.modalType}>
+        {createElement(ActiveModalComponent, {
+          close: (result: unknown) => closeModal(result, entry.id),
+          data: entry.props,
+          header: {
+            actions: entry.headerActions,
+            position: activePosition,
+            showClose: entry.showClose,
+            title: entry.title,
+            titleId: `modal-title-${entry.id}`,
+          },
+        })}
+      </ModuleBoundary>
+
+      {!isTopModal && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            const topModal = modalStack[modalStack.length - 1];
+            if (topModal) closeModal(null, topModal.id);
+          }}
+          className={theme.slots.dim}
+          style={theme.styles.dim}
+          aria-label="Close active top modal"
+        />
+      )}
+
+      {isTopModal && stackIndex > 0 && previousEntry && (
+        <ModalLayerSwitcher
+          currentEntry={entry}
+          previousEntry={previousEntry}
+          theme={theme}
+          onSwitchToPrevious={() => closeModal(null, entry.id)}
+        />
+      )}
+    </>
+  );
+}
 
 export function ModalLayer({
   closeModal,
@@ -27,16 +103,7 @@ export function ModalLayer({
   registry,
   stackIndex,
   theme,
-}: {
-  closeModal: (result?: unknown, targetModalId?: number | null) => void;
-  entry: ModalEntry;
-  isMobileViewport: boolean;
-  isTopModal: boolean;
-  modalStack: ModalEntry[];
-  registry: { get: (key: string) => ModalComponent | undefined };
-  stackIndex: number;
-  theme: Theme;
-}) {
+}: ModalLayerProps) {
   const {
     modalRef,
     activePosition,
@@ -93,41 +160,17 @@ export function ModalLayer({
             isPanelChrome ? theme.slots.panelChrome : theme.slots.panelBare,
           )}
         >
-          <ModuleBoundary name={entry.modalType}>
-            {createElement(ActiveModalComponent, {
-              close: (result: unknown) => closeModal(result, entry.id),
-              data: entry.props,
-              header: {
-                actions: entry.headerActions,
-                position: activePosition,
-                showClose: entry.showClose,
-                title: entry.title,
-                titleId: `modal-title-${entry.id}`,
-              },
-            })}
-          </ModuleBoundary>
-
-          {!isTopModal && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                const topModal = modalStack[modalStack.length - 1];
-                if (topModal) closeModal(null, topModal.id);
-              }}
-              className={theme.slots.dim}
-              style={theme.styles.dim}
-              aria-label="Close active top modal"
-            />
-          )}
-
-          {isTopModal && stackIndex > 0 && previousEntry && (
-            <ModalLayerSwitcher
-              currentEntry={entry}
-              previousEntry={previousEntry}
-              theme={theme}
-              onSwitchToPrevious={() => closeModal(null, entry.id)}
-            />
-          )}
+          <ModalLayerContent
+            ActiveModalComponent={ActiveModalComponent}
+            activePosition={activePosition}
+            closeModal={closeModal}
+            entry={entry}
+            isTopModal={isTopModal}
+            modalStack={modalStack}
+            previousEntry={previousEntry}
+            stackIndex={stackIndex}
+            theme={theme}
+          />
         </div>
       </motion.div>
     </div>

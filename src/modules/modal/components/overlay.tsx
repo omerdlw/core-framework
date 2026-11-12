@@ -8,6 +8,10 @@ import { useModalMotion } from "../motion";
 import { type ModalEntry } from "../types";
 import { ModalLayer } from "./modal-layer";
 
+/**
+ * Renders the open modal stack, with backdrop, in a portal on the document body.
+ * Mounted once by the modal module as the app overlay.
+ */
 export function Modal() {
   const {
     closeModal,

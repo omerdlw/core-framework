@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -14,25 +13,16 @@ import {
   useModuleRegistration,
   useRegistryEntries,
 } from "@/core/kernel";
-import { acquireGlobalScrollLock } from "@/foundation/utils";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { useTheme } from "@/react/theme";
 
-import {
-  MODAL_BREAKPOINTS,
-  MODAL_CHROME,
-  MODAL_POSITIONS,
-  modalTheme,
-} from "./constants";
+import { MODAL_CHROME, MODAL_POSITIONS, modalTheme } from "./constants";
 import { ModalContext } from "./context";
-import {
-  dispatchSmoothScrollLock,
-  getFocusableElements,
-  trapFocus,
-} from "./lib/dom";
+import { useMobileViewport } from "./hooks/use-mobile-viewport";
+import { useModalFocusTrap } from "./hooks/use-modal-focus-trap";
+import { useModalScrollLock } from "./hooks/use-modal-scroll-lock";
 import { getModalIdentity } from "./model/identity";
 import {
-  getViewportIsMobile,
   isSidePosition,
   isVerticalEdgePosition,
   resolveActivePosition,
@@ -49,6 +39,9 @@ import {
   type ModalState,
 } from "./types";
 
+/**
+ * Registers the modals a page declares and removes them on unmount.
+ */
 export function useModalRegistration(
   config: ModalPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -56,6 +49,9 @@ export function useModalRegistration(
   useModuleRegistration("modal", config, options);
 }
 
+/**
+ * Looks up a registered modal component by its type.
+ */
 export function useModalRegistryEntries(): {
   get: (type: string) => ModalComponent | undefined;
 } {
@@ -63,11 +59,17 @@ export function useModalRegistryEntries(): {
   return useMemo(() => ({ get: (type: string) => entries[type] }), [entries]);
 }
 
+/**
+ * Returns the stable modal actions. Must be used inside `ModalProvider`.
+ */
 export function useModalActions(): ModalActions {
   return useRequiredContext(ModalContext, "useModalActions", "ModalProvider")
     .actions;
 }
 
+/**
+ * Reads the modal state. Must be used inside `ModalProvider`.
+ */
 export function useModalState(): ModalState {
   const { store } = useRequiredContext(
     ModalContext,
@@ -77,6 +79,10 @@ export function useModalState(): ModalState {
   return useStore(store);
 }
 
+/**
+ * Without arguments, returns the modal state and actions. With a modal, returns an
+ * `[open, controls]` binding for that modal (also usable as an object).
+ */
 export function useModal(): ModalState & ModalActions;
 export function useModal(modalInput: ModalInput): ModalHookBinding;
 export function useModal(
@@ -110,6 +116,10 @@ export function useModal(
 
 const emptySubscribe = () => () => {};
 
+/**
+ * View model of one modal layer: resolved position, component and chrome, plus
+ * focus handling while it is on top.
+ */
 export function useModalLayerModel({
   closeModal,
   entry,
@@ -143,25 +153,7 @@ export function useModalLayerModel({
   const isSide = isSidePosition(activePosition);
   const isVerticalEdge = isVerticalEdgePosition(activePosition);
   const previousEntry = modalStack[stackIndex - 1] || null;
-  useEffect(() => {
-    if (!isTopModal || !modalRef.current) return;
-    const previouslyFocusedElement =
-      document.activeElement as HTMLElement | null;
-    const initialElements = getFocusableElements(modalRef.current);
-    if (initialElements.length > 0) initialElements[0].focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeModal(null, entry.id);
-      else trapFocus(event, modalRef.current);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      if (previouslyFocusedElement?.isConnected)
-        previouslyFocusedElement.focus();
-    };
-  }, [closeModal, entry.id, isTopModal]);
+  useModalFocusTrap({ closeModal, entryId: entry.id, isTopModal, modalRef });
 
   return {
     modalRef,
@@ -175,10 +167,17 @@ export function useModalLayerModel({
   };
 }
 
+/**
+ * View model of `ModalContainer`: its resolved theme.
+ */
 export function useModalContainerModel() {
   return { theme: useTheme(modalTheme) };
 }
 
+/**
+ * View model of the `Modal` overlay: visible stack, viewport kind, exit settling and
+ * page scroll lock.
+ */
 export function useModalModel() {
   const { modalStack = [], isOpen, closeModal } = useModal();
   const registry = useModalRegistryEntries();
@@ -196,10 +195,9 @@ export function useModalModel() {
     () => true,
     () => false,
   );
-  const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
+  const isMobileViewport = useMobileViewport();
   const [isTopExitSettling, setIsTopExitSettling] = useState(false);
   const previousTopModalIdRef = useRef<number | null>(null);
-  const releaseScrollLockRef = useRef<(() => void) | null>(null);
   useLayoutEffect(() => {
     const currentTopModalId = topModalEntry?.id || null;
     const previousTopModalId = previousTopModalIdRef.current;
@@ -216,36 +214,7 @@ export function useModalModel() {
     }
     previousTopModalIdRef.current = currentTopModalId;
   }, [topModalEntry?.id, visibleModalStack]);
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-
-    const mediaQuery = window.matchMedia(
-      `(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`,
-    );
-    const handleViewportChange = (e: MediaQueryListEvent) =>
-      setIsMobileViewport(e.matches);
-
-    mediaQuery.addEventListener("change", handleViewportChange);
-    return () => mediaQuery.removeEventListener("change", handleViewportChange);
-  }, []);
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-
-    if (isModalVisible) {
-      releaseScrollLockRef.current ??= acquireGlobalScrollLock();
-    } else if (releaseScrollLockRef.current) {
-      releaseScrollLockRef.current();
-      releaseScrollLockRef.current = null;
-    }
-    dispatchSmoothScrollLock(isModalVisible);
-  }, [isModalVisible]);
-  useEffect(() => {
-    return () => {
-      releaseScrollLockRef.current?.();
-      releaseScrollLockRef.current = null;
-      dispatchSmoothScrollLock(false);
-    };
-  }, []);
+  useModalScrollLock(isModalVisible);
 
   return {
     modalStack,

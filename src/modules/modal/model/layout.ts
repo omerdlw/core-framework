@@ -11,12 +11,18 @@ import {
   type ResponsiveModalPosition,
 } from "../types";
 
+/**
+ * Whether a class name already sets a height or max-height.
+ */
 export function hasHeightConstraint(className?: string): boolean {
   return (
     typeof className === "string" && HEIGHT_CONSTRAINT_PATTERN.test(className)
   );
 }
 
+/**
+ * Whether a position is the left or right edge.
+ */
 export function isSidePosition(
   position: ModalPosition | null | undefined,
 ): boolean {
@@ -25,6 +31,9 @@ export function isSidePosition(
   );
 }
 
+/**
+ * Whether a position is the top or bottom edge.
+ */
 export function isVerticalEdgePosition(
   position: ModalPosition | null | undefined,
 ): boolean {
@@ -33,6 +42,9 @@ export function isVerticalEdgePosition(
   );
 }
 
+/**
+ * Narrows a position to a supported one, falling back to center.
+ */
 export function getModalPosition(position: ModalPosition): ModalPosition {
   return position === MODAL_POSITIONS.TOP ||
     position === MODAL_POSITIONS.BOTTOM ||
@@ -41,6 +53,9 @@ export function getModalPosition(position: ModalPosition): ModalPosition {
     ? position
     : MODAL_POSITIONS.CENTER;
 }
+/**
+ * Layout of a modal for a position, switching to the mobile variants on small screens.
+ */
 export function getModalLayout(
   position: ModalPosition,
   isMobile: boolean,
@@ -54,6 +69,9 @@ export function getModalLayout(
   return resolved;
 }
 
+/**
+ * Whether the viewport is in the mobile range now. False on the server.
+ */
 export function getViewportIsMobile(): boolean {
   if (
     typeof window === "undefined" ||
@@ -66,6 +84,9 @@ export function getViewportIsMobile(): boolean {
   ).matches;
 }
 
+/**
+ * Picks the position that applies on the current viewport from a responsive map.
+ */
 export function resolveActivePosition(
   position: ModalPosition,
   responsivePosition: ResponsiveModalPosition | null | undefined,
@@ -78,6 +99,9 @@ export function resolveActivePosition(
   return (responsive || position) as ModalPosition;
 }
 
+/**
+ * Splits a position option into the base position and its optional responsive map.
+ */
 export function normalizePosition(
   input: ModalPosition | ResponsiveModalPosition | undefined,
 ): {

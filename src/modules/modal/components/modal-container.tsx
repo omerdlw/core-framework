@@ -11,10 +11,23 @@ import { useModalMotion } from "../motion";
 import {
   type ModalContainerFooterConfig,
   type ModalContainerProps,
+  type ModalPosition,
 } from "../types";
 import { resolveHeader } from "./resolve-header";
 import { SlotRow } from "./slot-row";
 
+function resolveContentHeight(
+  position: ModalPosition | null,
+  className?: string,
+) {
+  if (isSidePosition(position)) return "full";
+  return hasHeightConstraint(className) ? undefined : "capped";
+}
+
+/**
+ * Standard modal body: an optional header and footer row around the content,
+ * laid out for the modal's position.
+ */
 export function ModalContainer({
   bodyClassName,
   children,
@@ -49,13 +62,7 @@ export function ModalContainer({
 
   return (
     <div
-      data-height={
-        isSidePosition(resolvedPosition)
-          ? "full"
-          : hasHeightConstraint(className)
-            ? undefined
-            : "capped"
-      }
+      data-height={resolveContentHeight(resolvedPosition, className)}
       className={cn(theme.slots.content, className)}
     >
       {shouldRenderHeader && (

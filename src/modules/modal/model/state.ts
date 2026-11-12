@@ -1,6 +1,9 @@
 import { MODAL_CHROME, MODAL_POSITIONS } from "../constants";
 import { type ModalEntry, type ModalState } from "../types";
 
+/**
+ * Derives the modal state (top modal fields, open flag) from a stack of entries.
+ */
 export function createModalState(modalStack: ModalEntry[] = []): ModalState {
   const activeModal = modalStack[modalStack.length - 1] || null;
   return {
@@ -18,4 +21,7 @@ export function createModalState(modalStack: ModalEntry[] = []): ModalState {
   };
 }
 
+/**
+ * Modal state with nothing open.
+ */
 export const INITIAL_MODAL_STATE = createModalState([]);

@@ -5,9 +5,8 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore, type ExternalStore, report } from "@/foundation/utils";
 
-import { MODAL_CHROME } from "./constants";
+import { createModalEntry, isSameModal } from "./model/entry";
 import { getModalIdentity } from "./model/identity";
-import { normalizePosition } from "./model/layout";
 import { createModalState, INITIAL_MODAL_STATE } from "./model/state";
 import {
   type ModalActions,
@@ -17,11 +16,17 @@ import {
   type ModalState,
 } from "./types";
 
+/**
+ * Value of `ModalContext`: the modal state store and the actions.
+ */
 export interface ModalContextValue {
   actions: ModalActions;
   store: ExternalStore<ModalState>;
 }
 
+/**
+ * React context carrying the modal store and actions; null outside a provider.
+ */
 export const ModalContext = getOrCreateGlobalContext<ModalContextValue | null>(
   "ModalContext",
   null,
@@ -32,6 +37,10 @@ interface PendingModal {
   resolve: (result?: unknown) => void;
 }
 
+/**
+ * Owns the modal stack and resolves each `openModal` promise when its modal closes.
+ * Optionally mounts a renderer next to its children.
+ */
 export function ModalProvider({
   children,
   modalRenderer: ModalRenderer = null,
@@ -74,41 +83,21 @@ export function ModalProvider({
 
       const stack = modalStackRef.current;
       const { component, type } = getModalIdentity(modalInput);
-      const topEntry = stack[stack.length - 1];
-      if (
-        topEntry &&
-        (topEntry.modalType === type ||
-          (component && topEntry.component === component))
-      ) {
+      if (isSameModal(stack[stack.length - 1], type, component)) {
         return Promise.resolve(null);
       }
 
-      const definition =
-        typeof modalInput === "object" ? modalInput : undefined;
-      const merged: ModalOptions & { defaultData?: Record<string, unknown> } = {
-        ...definition,
-        ...options,
-      };
-      const data = { ...definition?.defaultData, ...options.data };
       const modalId = ++modalIdRef.current;
-
-      const entry: ModalEntry = {
-        chrome: merged.chrome || MODAL_CHROME.PANEL,
+      const { entry, onClose } = createModalEntry({
         component,
-        headerActions: merged.actions || null,
-        id: modalId,
-        modalType: type,
-        props: data,
-        showClose: merged.showClose ?? true,
-        title:
-          typeof merged.title === "function"
-            ? merged.title(data)
-            : (merged.title ?? null),
-        ...normalizePosition(merged.position),
-      };
+        input: modalInput,
+        modalId,
+        options,
+        type,
+      });
 
       return new Promise((resolve) => {
-        pendingRef.current.set(modalId, { onClose: merged.onClose, resolve });
+        pendingRef.current.set(modalId, { onClose, resolve });
         syncModalStack([...stack, entry]);
       });
     },

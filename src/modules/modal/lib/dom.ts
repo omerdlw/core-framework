@@ -1,5 +1,8 @@
 import { FOCUSABLE_SELECTOR, SMOOTH_SCROLL_LOCK_EVENT } from "../constants";
 
+/**
+ * Tells the smooth-scroll integration that a modal locked or unlocked scrolling.
+ */
 export function dispatchSmoothScrollLock(locked: boolean): void {
   if (typeof window === "undefined") return;
   window.dispatchEvent(
@@ -9,6 +12,9 @@ export function dispatchSmoothScrollLock(locked: boolean): void {
   );
 }
 
+/**
+ * Enabled focusable elements inside a container that are not aria-hidden, in DOM order.
+ */
 export function getFocusableElements(
   container: HTMLElement | null,
 ): HTMLElement[] {
@@ -22,6 +28,9 @@ export function getFocusableElements(
   );
 }
 
+/**
+ * Keeps Tab and Shift+Tab cycling inside a container; call it from a keydown handler.
+ */
 export function trapFocus(
   event: KeyboardEvent,
   container: HTMLElement | null,

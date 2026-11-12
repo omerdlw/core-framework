@@ -4,6 +4,9 @@ import {
   type ModalInput,
 } from "../types";
 
+/**
+ * Resolves the type name and component of a modal input (string, component or definition).
+ */
 export function getModalIdentity(input: ModalInput | DefineModalOptions): {
   component: ModalComponent | null;
   type: string;
@@ -22,6 +25,9 @@ export function getModalIdentity(input: ModalInput | DefineModalOptions): {
   };
 }
 
+/**
+ * Human-readable label for a modal type, such as "user-settings" to "User Settings".
+ */
 export function getModalLabel(modalType?: string | null): string {
   if (typeof modalType !== "string" || !modalType.trim()) return "Modal";
   return modalType
