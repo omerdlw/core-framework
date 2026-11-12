@@ -1,7 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useReducer, useRef } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import {
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import { report } from "@/foundation/utils";
 import {
   DOCK_OPERATION_EVENTS,
@@ -25,7 +30,7 @@ export function useDockOperationState() {
   );
   const operationIdRef = useRef(0);
   const operationStateRef = useRef(operationState);
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     operationStateRef.current = operationState;
   }, [operationState]);
 

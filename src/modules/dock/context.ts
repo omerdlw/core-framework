@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, type ComponentType } from "react";
+import { use, type ComponentType } from "react";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore, shallowEqual } from "@/foundation/utils";
@@ -96,7 +96,7 @@ export function useOptionalDockState<T = DockState>(
   selector?: (state: DockState) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const ctx = useContext(DockContext);
+  const ctx = use(DockContext);
   return useStore(
     ctx?.store ?? NOOP_DOCK_STORE,
     selector as (state: DockState) => T,
@@ -105,7 +105,7 @@ export function useOptionalDockState<T = DockState>(
 }
 
 export function useOptionalDockActions(): DockActions | null {
-  const ctx = useContext(DockContext);
+  const ctx = use(DockContext);
   return ctx?.actions ?? null;
 }
 

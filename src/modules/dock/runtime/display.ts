@@ -7,7 +7,7 @@ import {
   normalizePath,
 } from "@/foundation/utils";
 import { usePathname } from "next/navigation";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import { resolveActiveIndex } from "./pipeline";
 import {
   DOCK_ATTENTION_KIND,
@@ -262,7 +262,7 @@ export function useDockDisplay(
   const notFoundAction = dockCtx?.runtimeActions?.notFoundAction ?? null;
   const statusState = useDockStatus({ notFoundAction });
   const hasMedia = useDockHasMedia();
-  const actionStackClass = useModuleTheme(dockTheme).slots.actionStack;
+  const actionStackClass = useTheme(dockTheme).slots.actionStack;
   const { toggle: toggleMedia } = useDockMediaActions();
 
   const attention = useMemo(

@@ -8,8 +8,8 @@ import {
   useId,
   useMemo,
   useSyncExternalStore,
+  useLayoutEffect,
 } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import type { DockComponentProps, DockItem } from "../../types";
 import { DOCK_SURFACE_PHASE } from "../../constants";
 import { SurfaceExtensionsContext, useSurfaceId } from "../context";
@@ -38,7 +38,7 @@ export function useDockSurfaceExtension({
   const generatedId = useId();
   const effectiveId = id || `dock-surface-ext-${generatedId}`;
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     if (!store) return;
     const extension = {
       align,
@@ -56,7 +56,7 @@ export function useDockSurfaceExtension({
     }
   });
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     return () => {
       if (store) {
         store.removeExtension(surfaceId, effectiveId);

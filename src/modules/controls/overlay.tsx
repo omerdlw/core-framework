@@ -9,7 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useRegistryEntries } from "@/core/kernel";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import { controlsTheme } from "./constants";
 import { resolveControlsPairs } from "./entries";
 import { useControlsLayout } from "./hooks";
@@ -31,7 +31,7 @@ export function useControlsModel() {
     [entries, pathname],
   );
 
-  const theme = useModuleTheme(controlsTheme);
+  const theme = useTheme(controlsTheme);
 
   return { portalTarget, layout, left, right, theme };
 }

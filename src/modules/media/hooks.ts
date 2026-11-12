@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-} from "react";
+import { useCallback, use, useEffect, useId, useMemo, useRef } from "react";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { INERT_MEDIA_ACTIONS } from "./constants";
 import { MediaContext, NOOP_MEDIA_STORE } from "./context";
@@ -42,7 +35,7 @@ export function useOptionalMediaState<T = MediaState>(
   selector?: (state: MediaState) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const ctx = useContext(MediaContext);
+  const ctx = use(MediaContext);
   return useStore(
     ctx?.store ?? NOOP_MEDIA_STORE,
     selector as (state: MediaState) => T,
@@ -51,7 +44,7 @@ export function useOptionalMediaState<T = MediaState>(
 }
 
 export function useOptionalMediaActions(): MediaActions {
-  const ctx = useContext(MediaContext);
+  const ctx = use(MediaContext);
   return ctx?.actions ?? INERT_MEDIA_ACTIONS;
 }
 

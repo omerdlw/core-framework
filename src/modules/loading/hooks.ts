@@ -1,13 +1,13 @@
 "use client";
 
-import { useContext, useMemo } from "react";
+import { use, useMemo } from "react";
 import {
   useIsFullscreenStateActive,
   useRequiredContext,
   useStore,
 } from "@/react/hooks";
 import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import { INERT_LOADING_ACTIONS, loadingTheme } from "./constants";
 import { LoadingContext, NOOP_LOADING_STORE } from "./context";
 import {
@@ -62,7 +62,7 @@ export function useOptionalLoadingState<T = LoadingStateWithPage>(
   selector?: (state: LoadingStateWithPage) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const ctx = useContext(LoadingContext);
+  const ctx = use(LoadingContext);
   return useStore(
     ctx?.store ?? NOOP_LOADING_STORE,
     selector as (state: LoadingStateWithPage) => T,
@@ -71,7 +71,7 @@ export function useOptionalLoadingState<T = LoadingStateWithPage>(
 }
 
 export function useOptionalLoadingActions(): LoadingActions {
-  const ctx = useContext(LoadingContext);
+  const ctx = use(LoadingContext);
   return ctx?.actions ?? INERT_LOADING_ACTIONS;
 }
 
@@ -84,7 +84,7 @@ export function useLoadingOverlayModel(): {
   const isFullscreenStateActive = useIsFullscreenStateActive();
   const isVisible = isLoading && showOverlay && !isFullscreenStateActive;
 
-  const theme = useModuleTheme(loadingTheme);
+  const theme = useTheme(loadingTheme);
 
   return { skeleton, isVisible, theme };
 }

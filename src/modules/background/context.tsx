@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useIsomorphicLayoutEffect, useStore } from "@/react/hooks";
+import { useStore } from "@/react/hooks";
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { useOptionalMediaActions } from "@/modules/media";
 import { createStore } from "@/foundation/utils";
@@ -57,7 +57,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   const scopedOverride = useStore(overrideStore);
 
   const inputsRef = useRef({ pathname, registryBackground });
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     inputsRef.current = { pathname, registryBackground };
   }, [pathname, registryBackground]);
 
@@ -74,7 +74,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   const [stateStore] = useState(() =>
     createStore<BackgroundStateComputed>(state, { freezeSnapshots: false }),
   );
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     stateStore.publish(state);
   }, [state, stateStore]);
 

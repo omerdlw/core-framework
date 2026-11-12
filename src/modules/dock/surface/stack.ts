@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import { useCallback, useMemo, useRef, useState, useLayoutEffect } from "react";
 import type {
   DockScheduledTaskId,
   DockScheduler,
@@ -91,7 +90,7 @@ export function useSurfaceStack({
     typeof runSurfaceTransition
   > | null>(null);
   const onSurfaceFlowSettledRef = useRef(onSurfaceFlowSettled);
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     onSurfaceFlowSettledRef.current = onSurfaceFlowSettled;
   }, [onSurfaceFlowSettled]);
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import { useMemo, useRef, useLayoutEffect } from "react";
 import {
   defineModule,
   type PageConfig,
@@ -36,7 +35,7 @@ function useModalPage(
 ): ModalPageApi {
   const actions = useModalActions();
   const sliceRef = useRef(slice);
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     sliceRef.current = slice;
   }, [slice]);
 

@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+  useLayoutEffect,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
 import { watchHistory, watchIntent } from "./listeners";
@@ -47,7 +52,7 @@ export function NavigationProvider({ children }: { children?: ReactNode }) {
   const pathname = usePathname();
   const [navigator] = useState(() => createNavigator({ router }));
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     navigator.setRouter(router);
   }, [navigator, router]);
 

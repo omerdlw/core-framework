@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from "react";
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
 import {
@@ -181,7 +187,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const [store] = useState(() =>
     createStore<LoadingStateWithPage>(state, { freezeSnapshots: false }),
   );
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     store.publish(state);
   }, [state, store]);
 

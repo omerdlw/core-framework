@@ -18,7 +18,7 @@ import {
   useRegistryEntries,
   type RegistryMetadata,
 } from "@/core/kernel";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import {
   type DockItem,
   type DockState,
@@ -193,7 +193,7 @@ export function useContextMenuContentModel({
 }) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const theme = useModuleTheme(contextMenuTheme);
+  const theme = useTheme(contextMenuTheme);
   const classes = useMemo(() => {
     const overrides: ContextMenuClassNames = config.classNames ?? {};
     const merged = { ...theme.slots } as Record<ContextMenuThemeSlot, string>;

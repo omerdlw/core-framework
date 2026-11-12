@@ -3,7 +3,7 @@
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { shallowEqual } from "@/foundation/utils";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import { ambientTheme } from "./constants";
 import { getAmbientSettings } from "./settings";
 import { AmbientContext } from "./context";
@@ -126,7 +126,7 @@ export function useAmbientTheme(
     );
   }, [ambientActions, extractedPalette, hasActiveConfig, isExtracting]);
 
-  const transitionClasses = useModuleTheme(ambientTheme)
+  const transitionClasses = useTheme(ambientTheme)
     .slots.transition.split(/\s+/)
     .filter(Boolean);
   const transitionKey = transitionClasses.join(" ");

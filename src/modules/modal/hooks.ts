@@ -15,7 +15,7 @@ import {
   type RegistryMetadata,
 } from "@/core/kernel";
 import { acquireGlobalScrollLock } from "@/foundation/utils";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,
@@ -174,7 +174,7 @@ export function useModalLayerModel({
 }
 
 export function useModalContainerModel() {
-  return { theme: useModuleTheme(modalTheme) };
+  return { theme: useTheme(modalTheme) };
 }
 
 export function useModalModel() {
@@ -256,6 +256,6 @@ export function useModalModel() {
     isMobileViewport,
     isTopExitSettling,
     setIsTopExitSettling,
-    theme: useModuleTheme(modalTheme),
+    theme: useTheme(modalTheme),
   };
 }

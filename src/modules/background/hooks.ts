@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useMemo } from "react";
+import { use, useMemo } from "react";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
@@ -64,7 +64,7 @@ export function useOptionalBackgroundState<T = BackgroundStateComputed>(
   selector?: (state: BackgroundStateComputed) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const ctx = useContext(BackgroundContext);
+  const ctx = use(BackgroundContext);
   return useStore(
     ctx?.store ?? NOOP_BACKGROUND_STORE,
     selector as (state: BackgroundStateComputed) => T,
@@ -73,6 +73,6 @@ export function useOptionalBackgroundState<T = BackgroundStateComputed>(
 }
 
 export function useOptionalBackgroundActions(): BackgroundActions {
-  const ctx = useContext(BackgroundContext);
+  const ctx = use(BackgroundContext);
   return ctx?.actions ?? INERT_BACKGROUND_ACTIONS;
 }

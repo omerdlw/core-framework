@@ -2,14 +2,14 @@
 
 import {
   useCallback,
-  useContext,
+  use,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { EVENT_TYPES } from "@/foundation/events";
 import { useGlobalEvent, useRequiredContext, useStore } from "@/react/hooks";
-import { useModuleTheme } from "@/react/theme";
+import { useTheme } from "@/react/theme";
 import { toUserMessage } from "@/foundation/utils";
 import {
   INERT_NOTIFICATION_ACTIONS,
@@ -67,7 +67,7 @@ export function useOptionalNotificationState<T = NotificationState>(
   selector?: (state: NotificationState) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const ctx = useContext(NotificationContext);
+  const ctx = use(NotificationContext);
   return useStore(
     ctx?.store ?? NOOP_NOTIFICATION_STORE,
     selector as (state: NotificationState) => T,
@@ -76,7 +76,7 @@ export function useOptionalNotificationState<T = NotificationState>(
 }
 
 export function useOptionalNotificationActions(): NotificationActions {
-  const ctx = useContext(NotificationContext);
+  const ctx = use(NotificationContext);
   return ctx?.actions ?? INERT_NOTIFICATION_ACTIONS;
 }
 
@@ -214,7 +214,7 @@ export function useNotificationContainerModel() {
     [notifications],
   );
 
-  const theme = useModuleTheme(notificationTheme);
+  const theme = useTheme(notificationTheme);
 
   return { dismissNotification, isHydrated, activeEntry, theme };
 }

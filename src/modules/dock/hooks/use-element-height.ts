@@ -1,7 +1,6 @@
 "use client";
 
-import { type RefObject, useRef } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import { type RefObject, useRef, useLayoutEffect } from "react";
 import { getObservedHeight, hasMeaningfulHeightChange } from "../model/layout";
 
 export function useElementHeight(
@@ -14,11 +13,11 @@ export function useElementHeight(
   const rafRef = useRef<number | null>(null);
   const callbackRef = useRef(onHeightChange);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     callbackRef.current = onHeightChange;
   }, [onHeightChange]);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;

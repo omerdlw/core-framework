@@ -1,12 +1,8 @@
 "use client";
 
-import { useContext, useEffect, useRef } from "react";
+import { use, useEffect, useEffectEvent } from "react";
 import { usePathname } from "next/navigation";
-import {
-  useIsomorphicLayoutEffect,
-  useRequiredContext,
-  useStore,
-} from "@/react/hooks";
+import { useRequiredContext, useStore } from "@/react/hooks";
 import {
   INERT_NAVIGATION_ACTIONS,
   NOOP_NAVIGATION_STORE,
@@ -34,7 +30,7 @@ export function useNavigation(): NavigationActions {
 }
 
 export function useOptionalNavigation(): NavigationActions {
-  return useContext(NavigationContext)?.actions ?? INERT_NAVIGATION_ACTIONS;
+  return use(NavigationContext)?.actions ?? INERT_NAVIGATION_ACTIONS;
 }
 
 export function useNavigationState(): NavigationState;
@@ -46,16 +42,8 @@ export function useNavigationState<T = NavigationState>(
   selector?: (state: NavigationState) => T,
   isEqual?: (a: T, b: T) => boolean,
 ): T {
-  const store = useContext(NavigationContext)?.store ?? NOOP_NAVIGATION_STORE;
+  const store = use(NavigationContext)?.store ?? NOOP_NAVIGATION_STORE;
   return useStore(store, selector as (state: NavigationState) => T, isEqual);
-}
-
-function useLatest<T>(value: T) {
-  const ref = useRef(value);
-  useIsomorphicLayoutEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref;
 }
 
 export function useNavigationHold(
@@ -64,18 +52,14 @@ export function useNavigationHold(
 ): void {
   // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { hold: register } = useOptionalNavigation();
-  const latest = useLatest(hold);
+  const runHold = useEffectEvent((trip: NavigationTrip) =>
+    hold ? hold(trip) : undefined,
+  );
   const enabled = Boolean(hold);
   useEffect(() => {
     if (!enabled) return;
-    return register(
-      (trip) => {
-        const run = latest.current;
-        return run ? run(trip) : undefined;
-      },
-      { history },
-    );
-  }, [enabled, history, latest, register]);
+    return register((trip) => runHold(trip), { history });
+  }, [enabled, history, register]);
 }
 
 export function useNavigationPayload<K extends NavigationPayloadKey>(
@@ -84,26 +68,27 @@ export function useNavigationPayload<K extends NavigationPayloadKey>(
 ): void {
   // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { provide } = useOptionalNavigation();
-  const latest = useLatest(value);
+  const readValue = useEffectEvent(() =>
+    typeof value === "function" ? (value as () => unknown)() : value,
+  );
   useEffect(
-    () =>
-      provide(key, (() => {
-        const current = latest.current;
-        return typeof current === "function"
-          ? (current as () => unknown)()
-          : current;
-      }) as NavigationPayloadValue<K>),
-    [key, latest, provide],
+    () => provide(key, readValue as NavigationPayloadValue<K>),
+    [key, provide],
   );
 }
 
 export function useNavigationIntent(listener: NavigationIntentListener): void {
   // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { onIntent } = useOptionalNavigation();
-  const latest = useLatest(listener);
+  const handleIntent = useEffectEvent(
+    (
+      path: Parameters<NavigationIntentListener>[0],
+      href: Parameters<NavigationIntentListener>[1],
+    ) => listener(path, href),
+  );
   useEffect(
-    () => onIntent((path, href) => latest.current(path, href)),
-    [latest, onIntent],
+    () => onIntent((path, href) => handleIntent(path, href)),
+    [onIntent],
   );
 }
 

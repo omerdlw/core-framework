@@ -1,7 +1,12 @@
 "use client";
 
-import { isValidElement, useMemo, useRef, type ReactNode } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import {
+  isValidElement,
+  useMemo,
+  useRef,
+  type ReactNode,
+  useLayoutEffect,
+} from "react";
 import {
   defineModule,
   type ModulePageContext,
@@ -225,7 +230,7 @@ function useDockPage(
   useDockContextActions(slice?.actions ?? NO_ACTIONS);
 
   const surfacesRef = useRef(slice?.surfaces);
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     surfacesRef.current = slice?.surfaces;
   }, [slice?.surfaces]);
 

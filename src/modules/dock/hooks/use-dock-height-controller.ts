@@ -1,7 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from "react";
 import {
   DOCK_CARD_LAYOUT,
   DOCK_HEIGHT_BUFFER,
@@ -32,7 +37,7 @@ export function useDockHeightController({
       DOCK_HEIGHT_BUFFER,
   );
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     isHudRef.current = isHud;
   }, [isHud]);
 
@@ -80,9 +85,9 @@ export function useDockHeightController({
     };
   }, []);
 
-  useIsomorphicLayoutEffect(() => applyHeight(), [applyHeight, contentKey]);
-  useIsomorphicLayoutEffect(() => applyHeight(), [applyHeight, surfacePhase]);
-  useIsomorphicLayoutEffect(() => applyHeight(), [applyHeight, isHud]);
+  useLayoutEffect(() => applyHeight(), [applyHeight, contentKey]);
+  useLayoutEffect(() => applyHeight(), [applyHeight, surfacePhase]);
+  useLayoutEffect(() => applyHeight(), [applyHeight, isHud]);
 
   return { containerHeight, handleContentHeightChange };
 }

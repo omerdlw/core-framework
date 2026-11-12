@@ -3,7 +3,7 @@
 import { useMemo, type CSSProperties } from "react";
 import { cn } from "@/foundation/recipes/cn";
 import { retime } from "@/foundation/utils/tempo";
-import { useModuleTheme, useMotionTokens } from "@/react/theme";
+import { useTheme, useMotionTokens } from "@/react/theme";
 import { backgroundTheme } from "../constants";
 import {
   DEFAULT_COLOR,
@@ -109,7 +109,7 @@ export function useBackgroundOverlayModel() {
         ? `${rawWidth}px`
         : String(rawWidth);
   const rawFit = fit ?? videoOptions?.fit ?? videoOptions?.objectFit;
-  const theme = useModuleTheme(backgroundTheme);
+  const theme = useTheme(backgroundTheme);
   const fitStyle = useMemo<CSSProperties>(
     () =>
       rawFit && OBJECT_FITS.includes(rawFit)
