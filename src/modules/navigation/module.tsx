@@ -5,6 +5,9 @@ import type { NavigationTrip } from "@/core/navigation/types";
 
 import { NavigationContext, NavigationProvider } from "./context";
 
+/**
+ * Module definition that provides navigation tracking, holds and prefetching.
+ */
 export const navigationModule = defineModule({
   id: "navigation",
   context: NavigationContext,

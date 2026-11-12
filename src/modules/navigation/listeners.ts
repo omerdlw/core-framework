@@ -4,7 +4,11 @@ import {
   NAVIGATION_REASON,
   NAVIGATION_SOURCE,
 } from "@/core/navigation/constants";
-import type { NavigationSettings, Navigator } from "@/core/navigation/types";
+import type {
+  NavigationSettings,
+  NavigationState,
+  Navigator,
+} from "@/core/navigation/types";
 import {
   internalLinkOf,
   isSameLocation,
@@ -12,33 +16,46 @@ import {
   readWindowLocation,
 } from "@/core/navigation/utils";
 
+interface RestingLink {
+  href: string;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+/** The href to prefetch for an event target, or null when it is not wanted. */
+function wantedHref(
+  target: EventTarget | null,
+  settings: () => NavigationSettings,
+): string | null {
+  const { intent } = settings();
+  if (!intent) return null;
+  const link = internalLinkOf(target);
+  if (!link || link.getAttribute(NAVIGATION_PREFETCH_ATTRIBUTE) === "false")
+    return null;
+  const href = link.getAttribute("href")!;
+  return intent.match(href) ? href : null;
+}
+
+/**
+ * Prefetches links the user shows intent for: after the pointer rests on one,
+ * or immediately on pointer down and focus. Returns a function that stops
+ * watching.
+ */
 export function watchIntent(
   navigator: Pick<Navigator, "prefetch">,
   settings: () => NavigationSettings,
   doc: Document = document,
 ): () => void {
-  let resting: { href: string; timer: ReturnType<typeof setTimeout> } | null =
-    null;
+  let resting: RestingLink | null = null;
 
   const stop = () => {
     if (resting) clearTimeout(resting.timer);
     resting = null;
   };
 
-  const wanted = (target: EventTarget | null): string | null => {
-    const { intent } = settings();
-    if (!intent) return null;
-    const link = internalLinkOf(target);
-    if (!link || link.getAttribute(NAVIGATION_PREFETCH_ATTRIBUTE) === "false")
-      return null;
-    const href = link.getAttribute("href")!;
-    return intent.match(href) ? href : null;
-  };
-
   const onOver = (event: Event) => {
     const { pointerType } = event as PointerEvent;
     if (pointerType && pointerType !== "mouse") return;
-    const href = wanted(event.target);
+    const href = wantedHref(event.target, settings);
     if (!href) return stop();
     if (resting?.href === href) return;
     stop();
@@ -54,7 +71,7 @@ export function watchIntent(
   };
 
   const onNow = (event: Event) => {
-    const href = wanted(event.target);
+    const href = wantedHref(event.target, settings);
     if (href) navigator.prefetch(href);
   };
 
@@ -69,6 +86,30 @@ export function watchIntent(
   };
 }
 
+type PopAction = "cancel" | "ignore" | "depart";
+
+/**
+ * Decides what a browser back/forward move means: returning to where an
+ * in-flight history trip started cancels it, a move within the current
+ * pathname is ignored, and anything else is a departure.
+ */
+function classifyPop(
+  to: string,
+  { active, location }: NavigationState,
+): PopAction {
+  const isLeavingByHistory =
+    active?.source === NAVIGATION_SOURCE.HISTORY &&
+    active.phase === NAVIGATION_PHASE.LEAVING;
+  if (isLeavingByHistory) {
+    return isSameLocation(to, active.from) ? "cancel" : "depart";
+  }
+  return isSamePathname(to, location) ? "ignore" : "depart";
+}
+
+/**
+ * Routes browser back/forward moves through the navigator so holds can block
+ * or delay them. Returns a function that stops watching.
+ */
 export function watchHistory(
   navigator: Pick<Navigator, "cancel" | "depart" | "holdsHistory" | "store">,
   win: Window = window,
@@ -79,19 +120,13 @@ export function watchHistory(
     if (replaying) return;
     const to = readWindowLocation();
     if (!to) return;
-    const { active, location } = navigator.store.getSnapshot();
 
-    if (
-      active?.source === NAVIGATION_SOURCE.HISTORY &&
-      active.phase === NAVIGATION_PHASE.LEAVING
-    ) {
-      if (isSameLocation(to, active.from)) {
-        navigator.cancel(NAVIGATION_REASON.RETURNED);
-        return;
-      }
-    } else if (isSamePathname(to, location)) {
+    const action = classifyPop(to, navigator.store.getSnapshot());
+    if (action === "cancel") {
+      navigator.cancel(NAVIGATION_REASON.RETURNED);
       return;
     }
+    if (action === "ignore") return;
 
     if (!navigator.holdsHistory()) {
       navigator.depart(to);

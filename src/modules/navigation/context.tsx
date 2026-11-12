@@ -25,12 +25,18 @@ import { createStore } from "@/foundation/utils";
 
 import { watchHistory, watchIntent } from "./listeners";
 
+/**
+ * React context holding the navigator and its store.
+ */
 export const NavigationContext =
   getOrCreateGlobalContext<NavigationRuntime | null>("NavigationContext", null);
 
 const noop = () => {};
 const NOT_HANDLED: NavigationResult = Object.freeze({ ok: false, trip: null });
 
+/**
+ * Navigation actions that do nothing; used outside a NavigationProvider.
+ */
 export const INERT_NAVIGATION_ACTIONS: NavigationActions = Object.freeze({
   arrival: () => null,
   arrive: noop,
@@ -49,7 +55,15 @@ export const NOOP_NAVIGATION_STORE = createStore<NavigationState>(
   createNavigationState(),
 );
 
-export function NavigationProvider({ children }: { children?: ReactNode }) {
+interface NavigationProviderProps {
+  children?: ReactNode;
+}
+
+/**
+ * Creates the navigator, wires it to the router and browser history, and
+ * provides it to its children.
+ */
+export function NavigationProvider({ children }: NavigationProviderProps) {
   const router: NavigationRouter = useRouter();
   const pathname = usePathname();
   const [navigator] = useState(() => createNavigator({ router }));
