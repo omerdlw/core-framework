@@ -1,7 +1,5 @@
 "use client";
 
-import { type ComponentType } from "react";
-
 import { Icon } from "@/react/ui/components/icon";
 
 import {
@@ -17,11 +15,15 @@ import type {
   DockSlotContent,
   DockStatusDescriptor,
   DockStatusTheme,
-  ErrorActionsProps,
-  GuardActionsProps,
   PersistedOverlayStatus,
   StatusState,
 } from "../types";
+import {
+  createRetryHandler,
+  type ErrorStatusOptions,
+  type GuardStatusOptions,
+  reloadPage,
+} from "./action-options";
 
 const CONNECTION_ICON_SIZE = 24;
 const STORAGE_PROBE_KEY = "__bf_storage_probe__";
@@ -114,50 +116,6 @@ export function createOverlayStatus({
     action,
     actions,
     hideScroll: true,
-  };
-}
-
-interface ErrorStatusOptions {
-  type: string;
-  title: string;
-  description: string;
-  icon?: DockIconSource;
-  style?: DockStatusTheme;
-  onRetry?: () => void;
-  clearStatus?: () => void;
-  action?: ComponentType<ErrorActionsProps> | null;
-  errorAction?: ComponentType<ErrorActionsProps> | null;
-  retryLabel?: string;
-  refreshLabel?: string;
-  retryText?: string;
-  refreshText?: string;
-}
-
-interface GuardStatusOptions {
-  action?: ComponentType<GuardActionsProps> | null;
-  guardAction?: ComponentType<GuardActionsProps> | null;
-  title?: string;
-  description?: string;
-  icon?: DockIconSource;
-  style?: DockStatusTheme;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-  cancelLabel?: string;
-  confirmLabel?: string;
-  cancelText?: string;
-  confirmText?: string;
-  clearStatus?: () => void;
-}
-
-function reloadPage() {
-  window.location.reload();
-}
-
-function createRetryHandler(onRetry?: () => void, clearStatus?: () => void) {
-  if (typeof onRetry !== "function") return reloadPage;
-  return () => {
-    clearStatus?.();
-    onRetry();
   };
 }
 

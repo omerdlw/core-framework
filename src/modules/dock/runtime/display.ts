@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type ComponentType, use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 import { useRegistryEntries } from "@/core/kernel";
 import {
@@ -11,11 +11,7 @@ import {
 import { useTheme } from "@/react/theme";
 
 import { applyMediaAction } from "../components/media-action";
-import {
-  DOCK_ATTENTION_KIND,
-  DOCK_PENDING_ROUTE_HOLD_MS,
-  dockTheme,
-} from "../constants";
+import { DOCK_PENDING_ROUTE_HOLD_MS, dockTheme } from "../constants";
 import {
   DockContext,
   useDockActions,
@@ -27,16 +23,13 @@ import {
 import { resolveDockAttention } from "../model/state";
 import { createDockTopology } from "../routing/model/topology";
 import { useDockStatus } from "../status/hooks";
-import { applyStatusOverlay } from "../status/model";
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";
-import type {
-  DockAttention,
-  DockItem,
-  DockStatusDescriptor,
-  SurfaceState,
-  SurfaceViewModelOptions,
-} from "../types";
+import type { DockItem } from "../types";
+import {
+  applyAttentionToItem,
+  type ResolveActiveItemOptions,
+} from "./model/attention";
 import {
   buildDockItems,
   type DockBaseMatch,
@@ -96,58 +89,6 @@ export function usePendingRouteHold(
       isHeld && selected ? { ...selected, isRoutePending: true } : selected,
     [isHeld, selected],
   );
-}
-
-/**
- * Applies the item the dock is currently paying attention to (surface,
- * status, HUD or operation). Returns `undefined` when nothing has attention
- * and the item should be resolved normally.
- */
-function applyAttentionToItem(
-  baseActiveItem: DockItem,
-  attention: DockAttention,
-  surfaceState: SurfaceState,
-  statusState: DockStatusDescriptor | null,
-  surfaceActions: SurfaceViewModelOptions,
-): DockItem | null | undefined {
-  switch (attention?.kind) {
-    case DOCK_ATTENTION_KIND.SURFACE:
-      return applySurfaceToDockItem(
-        baseActiveItem,
-        surfaceState.activeSurfaceEntry,
-        {
-          ...surfaceActions,
-          surfacePhase: surfaceState.surfacePhase,
-          surfaceStack: surfaceState.surfaceStack,
-        },
-      );
-    case DOCK_ATTENTION_KIND.STATUS:
-      return statusState
-        ? applyStatusOverlay(baseActiveItem, statusState)
-        : undefined;
-    case DOCK_ATTENTION_KIND.HUD:
-    case DOCK_ATTENTION_KIND.OPERATION:
-      return baseActiveItem;
-    default:
-      return undefined;
-  }
-}
-
-interface ResolveActiveItemOptions {
-  rawItems: DockItem[];
-  dockItems: DockItem[];
-  pathname: string;
-  isNotFoundPage: boolean;
-  surfaceState: SurfaceState;
-  statusState: DockStatusDescriptor | null;
-  hasMedia: boolean;
-  toggleMedia: () => void;
-  mediaAction: ComponentType | null;
-  actionStackClass: string;
-  surfaceActions: SurfaceViewModelOptions;
-  isPageLoading: boolean;
-  attention: DockAttention;
-  baseActiveItem?: DockItem | null;
 }
 
 /**

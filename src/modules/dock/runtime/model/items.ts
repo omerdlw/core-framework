@@ -4,6 +4,7 @@ import { toSearchableText } from "../../lib/element-helpers";
 import { isPathPrefix, isSamePath } from "../../model/paths";
 import type { DockItem } from "../../types";
 
+const ROOT_PATH = "/";
 const NOT_FOUND_PATH = "not-found";
 const NOT_FOUND_TYPE = "NOT_FOUND";
 
@@ -65,7 +66,6 @@ export interface DockBaseMatch {
   isFallback: boolean;
 }
 
-const ROOT_PATH = "/";
 const NO_PREFIX_LENGTH = -1;
 
 function findItemByPath(items: DockItem[], normalizedPathname: string) {

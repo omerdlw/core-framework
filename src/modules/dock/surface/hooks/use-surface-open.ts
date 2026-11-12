@@ -9,7 +9,6 @@ import type {
   SurfaceInput,
   SurfaceResult,
   SurfaceStackEntry,
-  SurfaceTransitionEvent,
   SurfaceUrlState,
 } from "../../types";
 import {
@@ -20,6 +19,7 @@ import { registerOpenedSurface, resolveSurfaceOpenInput } from "../model/open";
 import type { SurfacePayloadMap, SurfaceRuntimeRefs } from "../model/records";
 import { SURFACE_TRANSITION_EVENTS } from "../model/transition-state";
 import { getSurfaceUrlValue, syncSurfaceUrl } from "../model/url";
+import type { useSurfaceChoreography } from "./use-surface-choreography";
 
 const INVALID_SURFACE_CODE = "DOCK_SURFACE_INVALID_COMPONENT";
 const INVALID_SURFACE_MESSAGE = "Dock surface input is invalid";
@@ -38,10 +38,9 @@ export function useSurfaceOpen({
   finishSurfaceTransition: () => void;
   payloads: SurfacePayloadMap;
   refs: SurfaceRuntimeRefs;
-  runSurfaceChoreography: (
-    event: SurfaceTransitionEvent,
-    options?: { initialSurfaceIds?: number[] | null; result?: SurfaceResult },
-  ) => unknown;
+  runSurfaceChoreography: ReturnType<
+    typeof useSurfaceChoreography
+  >["runSurfaceChoreography"];
   setExpanded: (expanded: boolean) => void;
   setSearchQuery: (query: string) => void;
   stackRef: RefObject<SurfaceStackEntry[]>;
