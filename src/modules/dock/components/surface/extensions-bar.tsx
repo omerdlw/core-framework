@@ -9,6 +9,12 @@ import { isValidComponentType } from "../../lib/element-helpers";
 import { useDockSurfaceExtensionsBarModel } from "../../surface/hooks/use-surface-extensions-bar-model";
 import type { DockItem, NormalizedSurfaceExtension } from "../../types";
 
+function renderExtensionContent(ext: NormalizedSurfaceExtension) {
+  const Component = ext.component;
+  if (!Component) return ext.content;
+  return isValidComponentType(Component) ? <Component {...ext.props} /> : null;
+}
+
 function ExtensionPill({
   ext,
   fill = false,
@@ -17,14 +23,7 @@ function ExtensionPill({
   fill?: boolean;
 }) {
   const theme = useDockTheme();
-  const Component = ext.component;
-  const content = Component ? (
-    isValidComponentType(Component) ? (
-      <Component {...ext.props} />
-    ) : null
-  ) : (
-    ext.content
-  );
+  const content = renderExtensionContent(ext);
   if (ext.unstyled)
     return (
       <div

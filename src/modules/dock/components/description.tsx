@@ -10,6 +10,7 @@ import { getLineClampStyle, splitStyle } from "../lib/styles";
 import { useDockMotion } from "../motion";
 import type { DockDescriptionProps } from "../types";
 
+/** Secondary line of text in a dock card, with an optional enter/exit animation. */
 export const DockDescription = memo(function DockDescription({
   text,
   style,

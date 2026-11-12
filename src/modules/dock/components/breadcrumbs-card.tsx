@@ -17,9 +17,13 @@ import {
 import { useDockBreadcrumbsCardModel } from "../routing/breadcrumbs";
 import type { BreadcrumbItem } from "../types";
 
+const DEFAULT_MAX_BREADCRUMBS = 4;
+const TRAILING_BREADCRUMBS = 2;
+const SEPARATOR_ICON_SIZE = 12;
+
 export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
   className = "",
-  maxItems = 4,
+  maxItems = DEFAULT_MAX_BREADCRUMBS,
   onNavigate,
 }: {
   className?: string;
@@ -39,7 +43,7 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
       ? [
           breadcrumbs[0],
           { id: "ellipsis", title: "...", path: "", isEllipsis: true },
-          ...breadcrumbs.slice(-2),
+          ...breadcrumbs.slice(-TRAILING_BREADCRUMBS),
         ]
       : breadcrumbs;
   return (
@@ -101,7 +105,7 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
               {!isLast && (
                 <Iconify
                   icon="solar:alt-arrow-right-linear"
-                  size={12}
+                  size={SEPARATOR_ICON_SIZE}
                   className={theme.slots.breadcrumbsSeparator}
                 />
               )}

@@ -17,6 +17,18 @@ import { useDockSurfaceShellModel } from "../../surface/hooks/use-surface-shell-
 import type { DockSurfaceShellProps } from "../../types";
 import { DockSurfaceControls } from "./controls";
 
+const VISUALLY_HIDDEN = {
+  border: 0,
+  clip: "rect(0, 0, 0, 0)",
+  height: 1,
+  margin: -1,
+  overflow: "hidden",
+  padding: 0,
+  position: "absolute",
+  whiteSpace: "nowrap",
+  width: 1,
+} as const;
+
 export function DockSurfaceShell({
   ref,
   title = "",
@@ -132,15 +144,3 @@ export function DockSurfaceShell({
     </SurfaceItemContext>
   );
 }
-
-const VISUALLY_HIDDEN = {
-  border: 0,
-  clip: "rect(0, 0, 0, 0)",
-  height: 1,
-  margin: -1,
-  overflow: "hidden",
-  padding: 0,
-  position: "absolute",
-  whiteSpace: "nowrap",
-  width: 1,
-} as const;

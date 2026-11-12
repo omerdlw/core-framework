@@ -77,6 +77,26 @@ export function StandardItemContent({
     pathname,
   });
   const theme = useDockTheme();
+  const footerAnimate = isActionDismissed ? "dismissed" : "visible";
+  const footerTransition = isActionDismissed
+    ? dockMotion.transitions.actionDismiss
+    : dockMotion.transitions.fade;
+  const footer = footerNode ? (
+    <motion.div
+      key="dock-card-footer"
+      variants={actionVariants}
+      initial="hidden"
+      animate={footerAnimate}
+      exit="exit"
+      transition={footerTransition}
+      className={theme.slots.cardFooter}
+      style={theme.styles.cardFooter}
+    >
+      <div className={theme.slots.cardAction} onClick={stopPropagationOnly}>
+        {footerNode}
+      </div>
+    </motion.div>
+  ) : null;
   return (
     <AnimatePresence mode="wait" initial={false}>
       {isTop && isHudActive ? (
@@ -122,29 +142,7 @@ export function StandardItemContent({
             contextCommands={contextCommands}
           />
           <AnimatePresence mode="popLayout" initial={false}>
-            {footerNode ? (
-              <motion.div
-                key="dock-card-footer"
-                variants={actionVariants}
-                initial="hidden"
-                animate={isActionDismissed ? "dismissed" : "visible"}
-                exit="exit"
-                transition={
-                  isActionDismissed
-                    ? dockMotion.transitions.actionDismiss
-                    : dockMotion.transitions.fade
-                }
-                className={theme.slots.cardFooter}
-                style={theme.styles.cardFooter}
-              >
-                <div
-                  className={theme.slots.cardAction}
-                  onClick={stopPropagationOnly}
-                >
-                  {footerNode}
-                </div>
-              </motion.div>
-            ) : null}
+            {footer}
           </AnimatePresence>
         </motion.div>
       )}

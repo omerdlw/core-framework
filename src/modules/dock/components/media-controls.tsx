@@ -9,6 +9,7 @@ import { Icon } from "@/react/ui/components/icon";
 
 import { useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMediaControlsModel } from "../hooks/use-media-controls-model";
+import { getVolumeIcon } from "../lib/media";
 import {
   getDockActionMotionProps,
   getDockMediaVolumeFillTransition,
@@ -16,6 +17,8 @@ import {
   getDockMediaVolumeThumbPositionTransition,
   useDockMotion,
 } from "../motion";
+
+const CONTROL_ICON_SIZE = 16;
 
 export const DockMediaControls = memo(function DockMediaControls({
   className = "",
@@ -45,12 +48,10 @@ export const DockMediaControls = memo(function DockMediaControls({
   } = useDockMediaControlsModel({ className });
   const theme = useDockTheme();
   const effectiveVolume = isMuted ? 0 : volume;
-  const volumeIcon =
-    effectiveVolume === 0
-      ? "solar:volume-cross-bold"
-      : effectiveVolume < 0.5
-        ? "solar:volume-small-bold"
-        : "solar:volume-loud-bold";
+  const volumeIcon = getVolumeIcon(effectiveVolume);
+  const muteTitle = isMuted
+    ? "Unmute"
+    : `Volume: ${Math.round(effectiveVolume * 100)}%`;
   return (
     <div className={cn(theme.slots.media, className)}>
       <div className={theme.slots.mediaGroup}>
@@ -74,7 +75,10 @@ export const DockMediaControls = memo(function DockMediaControls({
           aria-label="Rewind 10 seconds"
           title="Rewind 10 seconds"
         >
-          <Icon icon="solar:rewind-10-seconds-back-bold" size={16} />
+          <Icon
+            icon="solar:rewind-10-seconds-back-bold"
+            size={CONTROL_ICON_SIZE}
+          />
         </motion.button>
 
         <motion.button
@@ -85,7 +89,10 @@ export const DockMediaControls = memo(function DockMediaControls({
           aria-label="Forward 10 seconds"
           title="Forward 10 seconds"
         >
-          <Icon icon="solar:rewind-10-seconds-forward-bold" size={16} />
+          <Icon
+            icon="solar:rewind-10-seconds-forward-bold"
+            size={CONTROL_ICON_SIZE}
+          />
         </motion.button>
       </div>
 
@@ -102,13 +109,9 @@ export const DockMediaControls = memo(function DockMediaControls({
             onClick={handleToggleMute}
             className={theme.slots.mediaMute}
             aria-label={isMuted ? "Unmute" : "Mute"}
-            title={
-              isMuted
-                ? "Unmute"
-                : `Volume: ${Math.round(effectiveVolume * 100)}%`
-            }
+            title={muteTitle}
           >
-            <Icon icon={volumeIcon} size={16} />
+            <Icon icon={volumeIcon} size={CONTROL_ICON_SIZE} />
           </Button>
 
           <div
@@ -172,7 +175,7 @@ export const DockMediaControls = memo(function DockMediaControls({
               isPipActive ? "Exit Picture-in-Picture" : "Picture-in-Picture"
             }
           >
-            <Icon icon="solar:pip-bold" size={16} />
+            <Icon icon="solar:pip-bold" size={CONTROL_ICON_SIZE} />
           </motion.button>
         )}
 
@@ -185,7 +188,7 @@ export const DockMediaControls = memo(function DockMediaControls({
           aria-label={isLoop ? "Disable loop" : "Enable loop"}
           title={isLoop ? "Loop: On" : "Loop: Off"}
         >
-          <Icon icon="solar:repeat-bold" size={16} />
+          <Icon icon="solar:repeat-bold" size={CONTROL_ICON_SIZE} />
         </motion.button>
       </div>
     </div>

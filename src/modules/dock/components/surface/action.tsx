@@ -7,11 +7,13 @@ import { useSurfaceAction } from "../../surface/context";
 import { useDockSurfaceExtension } from "../../surface/hooks/use-surface-extensions";
 import { DockMediaControls } from "../media-controls";
 
+/** Declares the action a surface contributes to its dock card. */
 export function DockSurfaceAction({ children }: { children: ReactNode }) {
   useSurfaceAction(children);
   return null;
 }
 
+/** Marks content as an extension shown in the surface's extensions bar. */
 export function DockSurfaceExtension(props: {
   align?: string;
   children?: ReactNode;

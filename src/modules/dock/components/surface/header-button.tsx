@@ -10,6 +10,8 @@ import { useDockTheme } from "../../hooks/use-dock-theme";
 import { useDockSurfaceHeaderButtonModel } from "../../surface/hooks/use-surface-header-button-model";
 import type { DockIconSource, DockTheme } from "../../types";
 
+const CONTROL_ICON_SIZE = 16;
+
 const ROUNDED_CLASS_PATTERN = /\brounded(?:-[a-zA-Z0-9_-]+)?\b/g;
 
 export function getControlRadiusClass(
@@ -36,6 +38,7 @@ export function applyControlRadius(
   return [stripped, radiusClass].filter(Boolean).join(" ");
 }
 
+/** Button styled for the surface header controls, matching their shared corner radius. */
 export function DockSurfaceHeaderButton({
   children,
   className = "",
@@ -78,7 +81,11 @@ export function DockSurfaceHeaderButton({
       style={theme.styles.controlHeaderButton}
     >
       {icon &&
-        (typeof icon === "string" ? <Icon icon={icon} size={16} /> : icon)}
+        (typeof icon === "string" ? (
+          <Icon icon={icon} size={CONTROL_ICON_SIZE} />
+        ) : (
+          icon
+        ))}
       {children}
     </Button>
   );

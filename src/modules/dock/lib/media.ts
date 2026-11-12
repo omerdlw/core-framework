@@ -37,6 +37,15 @@ export function getSkipForwardTime(current: number, duration: number): number {
     : current + MEDIA_SKIP_SECONDS;
 }
 
+const LOW_VOLUME_THRESHOLD = 0.5;
+
+/** Icon name for the volume button at the given effective volume. */
+export function getVolumeIcon(effectiveVolume: number): string {
+  if (effectiveVolume === 0) return "solar:volume-cross-bold";
+  if (effectiveVolume < LOW_VOLUME_THRESHOLD) return "solar:volume-small-bold";
+  return "solar:volume-loud-bold";
+}
+
 /** Seconds moved by the arrow keys on the scrubber. */
 export const SCRUBBER_KEY_STEP_SECONDS = 5;
 

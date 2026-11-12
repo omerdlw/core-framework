@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
@@ -11,6 +12,33 @@ import { useDockActionClass, useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMotion } from "../motion";
 import type { ErrorActionsProps, GuardActionsProps } from "../types";
 
+function ActionButton({
+  children,
+  onPress,
+}: {
+  children: ReactNode;
+  onPress: () => void;
+}) {
+  const theme = useDockTheme();
+  const actionClass = useDockActionClass();
+  return (
+    <Button
+      type="button"
+      onClick={(e: React.MouseEvent) => {
+        e.stopPropagation();
+        onPress();
+      }}
+      className={actionClass({
+        variant: theme.slots.actionMuted,
+        className: theme.slots.actionFill,
+      })}
+    >
+      <span className={theme.slots.actionLabel}>{children}</span>
+    </Button>
+  );
+}
+
+/** Retry and refresh buttons for an error status card. */
 export function ErrorActions({
   onRetry,
   onRefresh,
@@ -22,7 +50,6 @@ export function ErrorActions({
 }: ErrorActionsProps) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
-  const actionClass = useDockActionClass();
   const effectiveRetry = retryLabel || retryText || "Retry";
   const effectiveRefresh = refreshLabel || refreshText || "Refresh";
   return (
@@ -33,36 +60,25 @@ export function ErrorActions({
       transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+      <ActionButton
+        onPress={() => {
           onRefresh?.();
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>{effectiveRefresh}</span>
-      </Button>
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+        {effectiveRefresh}
+      </ActionButton>
+      <ActionButton
+        onPress={() => {
           onRetry?.();
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>{effectiveRetry}</span>
-      </Button>
+        {effectiveRetry}
+      </ActionButton>
     </motion.div>
   );
 }
 
+/** Cancel and confirm buttons for a navigation-guard status card. */
 export function GuardActions({
   onCancel,
   onConfirm,
@@ -74,7 +90,6 @@ export function GuardActions({
 }: GuardActionsProps) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
-  const actionClass = useDockActionClass();
   const effectiveCancel = cancelLabel || cancelText || "Stay";
   const effectiveConfirm = confirmLabel || confirmText || "Leave";
   return (
@@ -85,40 +100,28 @@ export function GuardActions({
       transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+      <ActionButton
+        onPress={() => {
           onCancel?.();
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>{effectiveCancel}</span>
-      </Button>
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+        {effectiveCancel}
+      </ActionButton>
+      <ActionButton
+        onPress={() => {
           onConfirm?.();
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>{effectiveConfirm}</span>
-      </Button>
+        {effectiveConfirm}
+      </ActionButton>
     </motion.div>
   );
 }
 
+/** Go-back and home buttons for a not-found status card. */
 export function NotFoundActions({ className = "" }: { className?: string }) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
-  const actionClass = useDockActionClass();
   const router = useRouter();
   const { navigate } = useDockActions();
   return (
@@ -129,32 +132,20 @@ export function NotFoundActions({ className = "" }: { className?: string }) {
       transition={dockMotion.transitions.fade}
       className={cn(theme.slots.actionRow, className)}
     >
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+      <ActionButton
+        onPress={() => {
           router.back();
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>Go back</span>
-      </Button>
-      <Button
-        type="button"
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
+        Go back
+      </ActionButton>
+      <ActionButton
+        onPress={() => {
           void navigate("/", { force: true });
         }}
-        className={actionClass({
-          variant: theme.slots.actionMuted,
-          className: theme.slots.actionFill,
-        })}
       >
-        <span className={theme.slots.actionLabel}>Home</span>
-      </Button>
+        Home
+      </ActionButton>
     </motion.div>
   );
 }

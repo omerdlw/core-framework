@@ -22,6 +22,8 @@ import { useDockSurfaceControlsModel } from "../../surface/hooks/use-surface-con
 import type { DockItem } from "../../types";
 import { applyControlRadius, getControlRadiusClass } from "./header-button";
 
+const CONTROL_ICON_SIZE = 16;
+
 export const DockSurfaceControls = memo(function DockSurfaceControls({
   activeItem = null,
   hasExtensions = false,
@@ -157,7 +159,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
                 >
                   <Icon
                     icon="solar:alt-arrow-left-bold"
-                    size={16}
+                    size={CONTROL_ICON_SIZE}
                     className={theme.slots.controlBackIcon}
                   />
                 </Button>
@@ -185,7 +187,7 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
                   title={resolvedCloseLabel}
                   style={theme.styles.controlButton}
                 >
-                  <Icon icon="solar:close-bold" size={16} />
+                  <Icon icon="solar:close-bold" size={CONTROL_ICON_SIZE} />
                 </Button>
               </motion.div>
             )}

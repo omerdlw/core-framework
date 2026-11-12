@@ -17,6 +17,9 @@ import type {
   DockIconSource,
 } from "../types";
 
+const DEFAULT_ICON_SIZE = 24;
+const OVERLAY_ICON_SIZE = 12;
+
 const DockIconOverlay = memo(function DockIconOverlay({
   overlay,
 }: DockIconOverlayProps) {
@@ -26,6 +29,7 @@ const DockIconOverlay = memo(function DockIconOverlay({
   const { icon, onClick, title = "" } = overlay;
 
   const isInteractive = typeof onClick === "function";
+  const overlayKey = typeof icon === "string" ? icon : "icon-node";
   const content =
     typeof icon === "string" && isImageIconSource(icon) ? (
       <span
@@ -34,7 +38,7 @@ const DockIconOverlay = memo(function DockIconOverlay({
       />
     ) : (
       <span className={theme.slots.iconOverlayGlyph}>
-        {renderIconNode(icon, 12)}
+        {renderIconNode(icon, OVERLAY_ICON_SIZE)}
       </span>
     );
 
@@ -42,7 +46,7 @@ const DockIconOverlay = memo(function DockIconOverlay({
     <AnimatePresence mode="popLayout">
       {isInteractive ? (
         <motion.button
-          key={typeof icon === "string" ? icon : "icon-node"}
+          key={overlayKey}
           type="button"
           onClick={(event) => {
             stopAndPrevent(event);
@@ -63,7 +67,7 @@ const DockIconOverlay = memo(function DockIconOverlay({
         </motion.button>
       ) : (
         <motion.div
-          key={typeof icon === "string" ? icon : "icon-node"}
+          key={overlayKey}
           title={title || undefined}
           aria-label={title || undefined}
           variants={dockMotion.variants.badge}
@@ -82,6 +86,7 @@ const DockIconOverlay = memo(function DockIconOverlay({
   );
 });
 
+/** Icon slot for a dock card; accepts an icon name, image URL or node, plus an overlay. */
 export const DockIcon = memo(function DockIcon({
   icon,
   iconOverlay = null,
@@ -93,7 +98,7 @@ export const DockIcon = memo(function DockIcon({
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const { className, inlineStyle } = splitStyle(style);
-  const { size = 24, ...iconStyle } = inlineStyle;
+  const { size = DEFAULT_ICON_SIZE, ...iconStyle } = inlineStyle;
 
   const iconKey = typeof icon === "string" ? icon : "icon-node";
   const iconContent =

@@ -309,11 +309,11 @@ export function getDockItemTransition(
   } = {},
 ): Transition {
   const safePosition = Math.max(0, Number(position) || 0);
-  const baseTransition = expanded
-    ? motion.transitions.cardExpanded
-    : isStackHovered && safePosition > 0
-      ? motion.transitions.cardPeek
-      : motion.transitions.card;
+  let baseTransition = motion.transitions.card;
+  if (expanded) baseTransition = motion.transitions.cardExpanded;
+  else if (isStackHovered && safePosition > 0) {
+    baseTransition = motion.transitions.cardPeek;
+  }
   return {
     ...baseTransition,
     delay: Number(delay) || 0,

@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
 
-import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { isStackSurfaceActive } from "../lib/card-item";
 import {
   getDockBackdropTransition,
   getDockStackAnimateProps,
@@ -17,6 +17,7 @@ import { DockBreadcrumbsCard } from "./breadcrumbs-card";
 import { DockCardItem } from "./card-item";
 import { DockSurfaceControls } from "./surface/controls";
 
+/** Renders the dock: card stack, backdrop, breadcrumbs and surface controls, in a portal. */
 export function Dock(): ReactPortal | null {
   const dockMotion = useDockMotion();
   const {
@@ -38,6 +39,26 @@ export function Dock(): ReactPortal | null {
     dockStackTransition,
   } = useDockModel();
   const theme = useDockTheme();
+  const stackSurfacePhase = activeItem?.isSurface
+    ? activeItem?.surfacePhase
+    : null;
+  const stackAnimate = getDockStackAnimateProps(dockMotion, {
+    width: stackWidth,
+    height: containerHeight,
+    isBreadcrumbsVisible: isSubCardVisible,
+    isExtensionsVisible,
+    isFullscreen: isFullscreenStateActive,
+    isSurfaceActive: isStackSurfaceActive(activeItem),
+    surfacePhase: stackSurfacePhase,
+  });
+  const stackTransition = {
+    default: dockStackTransition,
+    transform: getDockStackTransformTransition(
+      dockMotion,
+      stackSurfacePhase,
+      dockStackTransition,
+    ),
+  };
   const dockContent = (
     <>
       <AnimatePresence>
@@ -69,27 +90,8 @@ export function Dock(): ReactPortal | null {
           transformOrigin: dockMotion.deck.origin,
         }}
         initial={false}
-        animate={getDockStackAnimateProps(dockMotion, {
-          width: stackWidth,
-          height: containerHeight,
-          isBreadcrumbsVisible: isSubCardVisible,
-          isExtensionsVisible,
-          isFullscreen: isFullscreenStateActive,
-          isSurfaceActive: Boolean(
-            activeItem?.isSurface &&
-            activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
-            activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
-          ),
-          surfacePhase: activeItem?.isSurface ? activeItem?.surfacePhase : null,
-        })}
-        transition={{
-          default: dockStackTransition,
-          transform: getDockStackTransformTransition(
-            dockMotion,
-            activeItem?.isSurface ? activeItem?.surfacePhase : null,
-            dockStackTransition,
-          ),
-        }}
+        animate={stackAnimate}
+        transition={stackTransition}
       >
         <DockSurfaceControls
           activeItem={activeItem}

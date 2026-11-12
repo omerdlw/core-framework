@@ -21,6 +21,19 @@ const HEADER_IDENTITY_STYLE = {
   position: "relative",
 } as const;
 
+function resolvePlaybackIcon(isPlaying: boolean): string {
+  return isPlaying ? "mdi:pause" : "mdi:play";
+}
+
+function resolveIconAriaLabel(
+  showVideoIcon: boolean,
+  isPlaying: boolean,
+): string {
+  if (!showVideoIcon) return "Open";
+  return isPlaying ? "Pause" : "Play";
+}
+
+/** Header row of a dock card: icon, title, description and the command bar. */
 export const DockCardHeader = memo(function DockCardHeader({
   item: propItem,
   link,
@@ -53,6 +66,11 @@ export const DockCardHeader = memo(function DockCardHeader({
     contextCommands,
   });
   const theme = useDockTheme();
+  const headerIcon = showVideoIcon ? resolvePlaybackIcon(isPlaying) : item.icon;
+  const iconClickHandler = isIconInteractive ? handleIconClick : null;
+  const iconAriaLabel = isIconInteractive
+    ? resolveIconAriaLabel(showVideoIcon, isPlaying)
+    : undefined;
   return (
     <div className={theme.slots.header}>
       <div className={theme.slots.headerRow}>
@@ -72,25 +90,11 @@ export const DockCardHeader = memo(function DockCardHeader({
                 {item.icon ? (
                   <DockIcon
                     animated={false}
-                    icon={
-                      showVideoIcon
-                        ? isPlaying
-                          ? "mdi:pause"
-                          : "mdi:play"
-                        : item.icon
-                    }
+                    icon={headerIcon}
                     iconOverlay={effectiveIconOverlay}
                     style={itemStyle.icon}
-                    onClick={isIconInteractive ? handleIconClick : null}
-                    ariaLabel={
-                      isIconInteractive
-                        ? showVideoIcon
-                          ? isPlaying
-                            ? "Pause"
-                            : "Play"
-                          : "Open"
-                        : undefined
-                    }
+                    onClick={iconClickHandler}
+                    ariaLabel={iconAriaLabel}
                   />
                 ) : (
                   <div className={theme.slots.headerIconEmpty} />

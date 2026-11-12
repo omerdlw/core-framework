@@ -10,6 +10,7 @@ import { splitStyle } from "../lib/styles";
 import { useDockMotion } from "../motion";
 import type { DockTitleProps } from "../types";
 
+/** Primary title text in a dock card, with an optional enter/exit animation. */
 export const DockTitle = memo(function DockTitle({
   text,
   style,

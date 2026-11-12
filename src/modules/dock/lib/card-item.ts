@@ -80,3 +80,14 @@ export function resolveVisibleCardCount({
   if (hasExtensions && !expanded) return stacking.visible.extensions;
   return stacking.visible.stack;
 }
+
+/** True when the dock stack should lay out for an open (non-collapsing) surface. */
+export function isStackSurfaceActive(
+  activeItem: DockItem | null | undefined,
+): boolean {
+  return Boolean(
+    activeItem?.isSurface &&
+    activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.COLLAPSING_BODY &&
+    activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
+  );
+}

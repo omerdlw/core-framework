@@ -10,6 +10,7 @@ import { useDockTheme } from "../hooks/use-dock-theme";
 import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
 import type { DockCardBannerProps } from "../types";
 
+/** Background banner image layer for a dock card. */
 export const DockCardBanner = memo(function DockCardBanner({
   banner,
   bannerUrl,

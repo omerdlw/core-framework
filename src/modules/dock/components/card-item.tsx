@@ -105,6 +105,95 @@ export const DockCardItem = memo(function DockCardItem({
   const theme = useDockTheme();
   const renderedActionNode = renderActionSlot(renderedActionSlot);
   const layerExit = isCollapsedBackgroundCard ? DOCK_UNSEEN_EXIT : "exit";
+  const isNonInteractiveCard = Boolean(
+    item.isOverlay || item.isStatus || isCollapsedBackgroundCard,
+  );
+  const cardAnimate = getDockItemAnimateValues(dockMotion, {
+    motionValues,
+    expanded,
+    isStackHovered,
+    isSurfaceActive,
+    position,
+  });
+  const cardTransition = getDockItemTransition(dockMotion, {
+    expanded,
+    isStackHovered,
+    position,
+    delay: cardDelay,
+  });
+  const cardExit = getDockItemExitValues(dockMotion, {
+    motionValues,
+    position,
+  });
+  const standardContent = (
+    <StandardItemContent
+      item={item}
+      activeItem={activeItem}
+      isTop={isTop}
+      itemStyle={itemStyle}
+      badge={badge}
+      isActive={isActive}
+      isHudActive={isTopHudActive}
+      hud={hud}
+      clearHud={clearHud}
+      contextCommands={contextCommands}
+      pathname={pathname}
+      footerNode={
+        renderedActionNode ? <Suspense>{renderedActionNode}</Suspense> : null
+      }
+      isActionDismissed={isActionDismissed}
+    />
+  );
+  const renderContentLayer = () => {
+    if (showsSurfaceLayer) {
+      return (
+        <motion.div
+          key="surface-content-layer"
+          variants={dockMotion.variants.headerSwap}
+          initial="hidden"
+          animate="visible"
+          exit={layerExit}
+          transition={dockMotion.transitions.headerSwap}
+          style={DOCK_COMPOSITOR_STYLE}
+          className={theme.slots.cardSurface}
+        >
+          <SurfaceItemContent item={item} />
+        </motion.div>
+      );
+    }
+    if (isExtensionShelf) {
+      return (
+        <motion.div
+          key="extension-shelf-layer"
+          variants={dockMotion.variants.extensionShelf}
+          initial="hidden"
+          animate="visible"
+          exit={layerExit}
+          transition={dockMotion.transitions.headerSwap}
+          style={DOCK_COMPOSITOR_STYLE}
+          className={theme.slots.cardShelf}
+        >
+          <DockSurfaceExtensionsBar activeItem={activeItem} />
+        </motion.div>
+      );
+    }
+    const isActionBeingDismissed =
+      item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION;
+    return (
+      <motion.div
+        key="standard-content-layer"
+        variants={headerRestoreVariants}
+        initial="hidden"
+        animate={isActionBeingDismissed ? "hidden" : "visible"}
+        exit={layerExit}
+        transition={getDockPhaseMotion(dockMotion, item.surfacePhase).header}
+        style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+        className={theme.slots.cardStandard}
+      >
+        {item.isLoading ? <LoadingItemContent /> : standardContent}
+      </motion.div>
+    );
+  };
   if (isCollapsedGhostCard) {
     return (
       <motion.div
@@ -116,20 +205,9 @@ export const DockCardItem = memo(function DockCardItem({
         className={cardClassName}
         style={cardStyle}
         initial={false}
-        animate={getDockItemAnimateValues(dockMotion, {
-          motionValues,
-          expanded,
-          isStackHovered,
-          isSurfaceActive,
-          position,
-        })}
-        transition={getDockItemTransition(dockMotion, {
-          expanded,
-          isStackHovered,
-          position,
-          delay: cardDelay,
-        })}
-        exit={getDockItemExitValues(dockMotion, { motionValues, position })}
+        animate={cardAnimate}
+        transition={cardTransition}
+        exit={cardExit}
       />
     );
   }
@@ -141,33 +219,20 @@ export const DockCardItem = memo(function DockCardItem({
       data-controls-anchor={isTop ? "true" : undefined}
       style={cardStyle}
       initial={false}
-      animate={getDockItemAnimateValues(dockMotion, {
-        motionValues,
-        expanded,
-        isStackHovered,
-        isSurfaceActive,
-        position,
-      })}
-      transition={getDockItemTransition(dockMotion, {
-        expanded,
-        isStackHovered,
-        position,
-        delay: cardDelay,
-      })}
+      animate={cardAnimate}
+      transition={cardTransition}
       whileTap={
-        !item.isOverlay && !item.isStatus && !isCollapsedBackgroundCard
-          ? {
+        isNonInteractiveCard
+          ? undefined
+          : {
               scale: (motionValues?.scale || 1) * dockMotion.deck.tapScale,
               transition: dockMotion.transitions.press,
             }
-          : undefined
       }
-      exit={getDockItemExitValues(dockMotion, { motionValues, position })}
+      exit={cardExit}
       role={hasNestedInteractiveContent ? "group" : "button"}
       aria-hidden={isCollapsedBackgroundCard ? "true" : undefined}
-      tabIndex={
-        item.isOverlay || item.isStatus || isCollapsedBackgroundCard ? -1 : 0
-      }
+      tabIndex={isNonInteractiveCard ? -1 : 0}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
@@ -204,79 +269,11 @@ export const DockCardItem = memo(function DockCardItem({
         style={{
           ...DOCK_COMPOSITOR_STYLE,
           willChange: "transform",
-          pointerEvents:
-            !expanded && position > 0 && !isExtensionShelf ? "none" : "auto",
+          pointerEvents: isCollapsedBackgroundCard ? "none" : "auto",
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
-          {showsSurfaceLayer ? (
-            <motion.div
-              key="surface-content-layer"
-              variants={dockMotion.variants.headerSwap}
-              initial="hidden"
-              animate="visible"
-              exit={layerExit}
-              transition={dockMotion.transitions.headerSwap}
-              style={DOCK_COMPOSITOR_STYLE}
-              className={theme.slots.cardSurface}
-            >
-              <SurfaceItemContent item={item} />
-            </motion.div>
-          ) : isExtensionShelf ? (
-            <motion.div
-              key="extension-shelf-layer"
-              variants={dockMotion.variants.extensionShelf}
-              initial="hidden"
-              animate="visible"
-              exit={layerExit}
-              transition={dockMotion.transitions.headerSwap}
-              style={DOCK_COMPOSITOR_STYLE}
-              className={theme.slots.cardShelf}
-            >
-              <DockSurfaceExtensionsBar activeItem={activeItem} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="standard-content-layer"
-              variants={headerRestoreVariants}
-              initial="hidden"
-              animate={
-                item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION
-                  ? "hidden"
-                  : "visible"
-              }
-              exit={layerExit}
-              transition={
-                getDockPhaseMotion(dockMotion, item.surfacePhase).header
-              }
-              style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
-              className={theme.slots.cardStandard}
-            >
-              {item.isLoading ? (
-                <LoadingItemContent />
-              ) : (
-                <StandardItemContent
-                  item={item}
-                  activeItem={activeItem}
-                  isTop={isTop}
-                  itemStyle={itemStyle}
-                  badge={badge}
-                  isActive={isActive}
-                  isHudActive={isTopHudActive}
-                  hud={hud}
-                  clearHud={clearHud}
-                  contextCommands={contextCommands}
-                  pathname={pathname}
-                  footerNode={
-                    renderedActionNode ? (
-                      <Suspense>{renderedActionNode}</Suspense>
-                    ) : null
-                  }
-                  isActionDismissed={isActionDismissed}
-                />
-              )}
-            </motion.div>
-          )}
+          {renderContentLayer()}
         </AnimatePresence>
       </motion.div>
     </motion.div>
