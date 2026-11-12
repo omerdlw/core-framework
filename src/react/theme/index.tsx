@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createElement,
-  useContext,
-  useMemo,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { use, useMemo, type CSSProperties, type ReactNode } from "react";
 import { MotionConfig, useReducedMotion } from "motion/react";
 import { getOrCreateGlobalContext } from "@/react/context";
 import {
@@ -94,7 +88,7 @@ function MotionProvider({
       }),
     [reduced, tokens],
   );
-  return createElement(MotionContext.Provider, { value: state }, children);
+  return <MotionContext value={state}>{children}</MotionContext>;
 }
 
 export function ThemeProvider({
@@ -107,18 +101,16 @@ export function ThemeProvider({
   themes: readonly ThemeEntry[];
 }) {
   const configs = new Map(themes.map((entry) => [entry.id, entry.config]));
-  const inherited = useContext(MotionContext) !== NO_MOTION_PROVIDER;
-  return createElement(
-    ThemeContext.Provider,
-    { value: configs },
-    motion || !inherited
-      ? createElement(
-          MotionProvider,
-          { tokens: motion ?? DEFAULT_MOTION },
-          children,
-        )
-      : children,
-  );
+  const inherited = use(MotionContext) !== NO_MOTION_PROVIDER;
+  const content =
+    motion || !inherited ? (
+      <MotionProvider tokens={motion ?? DEFAULT_MOTION}>
+        {children}
+      </MotionProvider>
+    ) : (
+      children
+    );
+  return <ThemeContext value={configs}>{content}</ThemeContext>;
 }
 
 function missingTheme(id: string): Error {
@@ -130,7 +122,7 @@ function missingTheme(id: string): Error {
 export function useTheme<S extends string>(
   spec: ThemeSpec<S, unknown>,
 ): ResolvedTheme<S> {
-  const config = useContext(ThemeContext).get(spec.id);
+  const config = use(ThemeContext).get(spec.id);
   if (!config) throw missingTheme(spec.id);
   return {
     slots: config.slots,
@@ -138,12 +130,10 @@ export function useTheme<S extends string>(
   };
 }
 
-export { useTheme as useModuleTheme };
-
 export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
   readonly reduced: boolean;
 } {
-  const state = useContext(MotionContext);
+  const state = use(MotionContext);
   return useMemo(
     () => ({ ...(state.tokens as T), reduced: state.reduced }),
     [state],
@@ -153,8 +143,8 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();
 
 export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
-  const config = useContext(ThemeContext).get(spec.id);
-  const state = useContext(MotionContext);
+  const config = use(ThemeContext).get(spec.id);
+  const state = use(MotionContext);
   if (!config) throw missingTheme(spec.id);
   if (!config.motion || typeof config.motion !== "object") {
     throw new Error(
@@ -167,8 +157,8 @@ export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
 export function useOptionalModuleMotion<M>(
   spec: ThemeSpec<string, M>,
 ): M | null {
-  const motion = useContext(ThemeContext).get(spec.id)?.motion;
-  const state = useContext(MotionContext);
+  const motion = use(ThemeContext).get(spec.id)?.motion;
+  const state = use(MotionContext);
   if (!motion || typeof motion !== "object") return null;
   return resolveModuleMotion(state, motion) as M;
 }
@@ -186,10 +176,8 @@ function resolveModuleMotion(state: MotionState, motion: object): unknown {
 }
 
 export function ModuleMotionConfig({ children }: { children?: ReactNode }) {
-  const { tokens } = useContext(MotionContext);
-  return createElement(
-    MotionConfig,
-    { reducedMotion: tokens.reducedMotion },
-    children,
+  const { tokens } = use(MotionContext);
+  return (
+    <MotionConfig reducedMotion={tokens.reducedMotion}>{children}</MotionConfig>
   );
 }

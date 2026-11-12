@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { globalEvents, type FrameworkEventMap } from "@/foundation/events";
-import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 import type { UseGlobalEventOptions } from "./types";
 
 export function useGlobalEvent<K extends keyof FrameworkEventMap>(
@@ -22,14 +21,10 @@ export function useGlobalEvent(
   callback: (payload: never) => void,
   options?: UseGlobalEventOptions,
 ): void {
-  const callbackRef = useRef(callback);
+  const onEvent = useEffectEvent((payload: never) => callback?.(payload));
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastThrottleTimeRef = useRef<number>(0);
   const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useIsomorphicLayoutEffect(() => {
-    callbackRef.current = callback;
-  });
 
   const debounceMs = options?.debounceMs;
   const throttleMs = options?.throttleMs;
@@ -46,7 +41,7 @@ export function useGlobalEvent(
         }
         debounceTimerRef.current = setTimeout(() => {
           debounceTimerRef.current = null;
-          callbackRef.current?.(payload);
+          onEvent(payload);
         }, debounceMs);
         return;
       }
@@ -60,18 +55,18 @@ export function useGlobalEvent(
             throttleTimerRef.current = null;
           }
           lastThrottleTimeRef.current = now;
-          callbackRef.current?.(payload);
+          onEvent(payload);
         } else if (throttleTimerRef.current === null) {
           throttleTimerRef.current = setTimeout(() => {
             lastThrottleTimeRef.current = Date.now();
             throttleTimerRef.current = null;
-            callbackRef.current?.(payload);
+            onEvent(payload);
           }, remaining);
         }
         return;
       }
 
-      callbackRef.current?.(payload);
+      onEvent(payload);
     };
 
     const unsubs = events.map((ev) => globalEvents.subscribe(ev, handler));

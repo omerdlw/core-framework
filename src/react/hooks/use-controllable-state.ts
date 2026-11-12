@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
+import { useCallback, useRef, useState, useLayoutEffect } from "react";
 import { type UseControllableStateOptions } from "./types";
 
 export function useControllableState<T>({
@@ -15,7 +14,7 @@ export function useControllableState<T>({
   const valueRef = useRef<T>(currentValue);
   const onChangeRef = useRef(onChange);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     valueRef.current = currentValue;
     onChangeRef.current = onChange;
   });

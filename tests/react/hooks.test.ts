@@ -1,7 +1,8 @@
 import "../support/dom.ts";
 import { afterEach, describe, mock, test } from "node:test";
 import assert from "node:assert/strict";
-import { act, createElement as h } from "react";
+import { act, createElement as h, useLayoutEffect } from "react";
+import { renderToString } from "react-dom/server";
 import { createContext } from "react";
 import { renderHook } from "../support/render.ts";
 import { globalEvents } from "../../src/foundation/events/index.ts";
@@ -9,7 +10,6 @@ import {
   useClickOutside,
   useGlobalEvent,
   useIsFullscreenStateActive,
-  useIsomorphicLayoutEffect,
   useRequiredContext,
   useStore,
 } from "../../src/react/hooks/index.ts";
@@ -197,9 +197,19 @@ describe("package hooks", () => {
     });
   });
 
-  describe("useIsomorphicLayoutEffect", () => {
-    test("is a function defined for the environment", () => {
-      assert.equal(typeof useIsomorphicLayoutEffect, "function");
+  describe("useLayoutEffect on the server", () => {
+    test("useLayoutEffect renders on the server without a warning", () => {
+      const errors = mock.method(console, "error", () => {});
+      try {
+        function C() {
+          useLayoutEffect(() => {}, []);
+          return h("div", null, "ok");
+        }
+        assert.equal(renderToString(h(C)), "<div>ok</div>");
+        assert.equal(errors.mock.callCount(), 0);
+      } finally {
+        errors.mock.restore();
+      }
     });
   });
 

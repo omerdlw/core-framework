@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 import { isBrowser } from "@/foundation/utils";
-import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 import { type UseHotkeyOptions } from "./types";
 
 function isEditableElement(target: EventTarget | null): boolean {
@@ -56,10 +55,7 @@ export function useHotkey(
   callback: (event: KeyboardEvent) => void,
   options?: UseHotkeyOptions,
 ): void {
-  const callbackRef = useRef(callback);
-  useIsomorphicLayoutEffect(() => {
-    callbackRef.current = callback;
-  });
+  const onHotkey = useEffectEvent((event: KeyboardEvent) => callback?.(event));
 
   const enabled = options?.enabled ?? true;
   const enableOnFormTags = options?.enableOnFormTags ?? false;
@@ -77,7 +73,7 @@ export function useHotkey(
       if (!matched) return;
       if (preventDefault) event.preventDefault();
       if (stopPropagation) event.stopPropagation();
-      callbackRef.current?.(event);
+      onHotkey(event);
     };
 
     window.addEventListener("keydown", handleKeyDown);

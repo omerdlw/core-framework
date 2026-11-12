@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useContext, useMemo, type ReactNode } from "react";
+import { use, useMemo, type ReactNode } from "react";
 import { getOrCreateGlobalContext } from "@/react/context";
 import { useMotionTokens } from "@/react/theme";
 import { retimeModuleMotion } from "@/foundation/utils/tempo";
@@ -24,11 +24,11 @@ export function UiProvider({
 }) {
   // RegisteredUi is the augmented Ui; the context stores the base Ui type.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- RegisteredUi collapses to Ui here but differs once consumers augment it
-  return createElement(UiContext.Provider, { value: ui as Ui }, children);
+  return <UiContext value={ui as Ui}>{children}</UiContext>;
 }
 
 export function useUi(): Ui {
-  return useContext(UiContext);
+  return use(UiContext);
 }
 
 const retimed = new WeakMap<UiMotion, Map<string, UiMotion>>();
