@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { defineModule, type PageModuleApi } from "@/core/kernel";
 
-import { MEDIA_REGISTRY_KEY } from "./constants";
+import { MEDIA_REGISTRY_KEY, REGISTRY_CLEANUP_DELAY_MS } from "./constants";
 import { MediaContext, MediaProvider } from "./context";
 import { useMediaActions } from "./hooks";
 import { MediaOverlay } from "./overlay";
@@ -29,13 +29,17 @@ function useMediaPage(
   );
 }
 
+/**
+ * Module definition that plays page and component audio and exposes shared
+ * media controls.
+ */
 export const mediaModule = defineModule({
   id: "media",
   context: MediaContext,
   Provider: MediaProvider,
   Overlay: MediaOverlay,
   registry: {
-    cleanupDelayMs: 600,
+    cleanupDelayMs: REGISTRY_CLEANUP_DELAY_MS,
     keyPolicy: "singleton",
     lifecycle: "immediate",
     singletonKey: MEDIA_REGISTRY_KEY,

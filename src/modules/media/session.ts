@@ -14,6 +14,9 @@ function newest(sources: readonly MediaEntry[]): MediaEntry {
   return sources.reduce((a, b) => (b.order > a.order ? b : a));
 }
 
+/**
+ * Chooses the transport source and its followers from the registered sources.
+ */
 export function resolveMediaSession(
   sources: readonly MediaEntry[],
 ): MediaSession | null {
@@ -43,6 +46,9 @@ export function resolveMediaSession(
   };
 }
 
+/**
+ * Builds the public media state from a session.
+ */
 export function createMediaState(session: MediaSession | null): MediaState {
   if (!session) return DEFAULT_MEDIA_STATE;
   const { audible, transport } = session;
@@ -57,10 +63,16 @@ export function createMediaState(session: MediaSession | null): MediaState {
   };
 }
 
+/**
+ * Whether two media states are equal.
+ */
 export function mediaStatesEqual(a: MediaState, b: MediaState): boolean {
   return shallowEqual(a, b);
 }
 
+/**
+ * Merges an input into an existing entry, keeping its original order.
+ */
 export function mergeMediaSource(
   current: MediaEntry | undefined,
   input: MediaEntryInput,
@@ -79,6 +91,10 @@ export function mergeMediaSource(
   };
 }
 
+/**
+ * Converts a page `media` setting into media options, or null when it has no
+ * source.
+ */
 export function selectPageMedia(
   media: MediaPageConfig | null | undefined,
 ): MediaPageOptions | null {
@@ -86,6 +102,11 @@ export function selectPageMedia(
   if (typeof media === "string") return { src: media };
   return media.src ? media : null;
 }
+
+/**
+ * Audio sources that are still playing and should stop because a new transport
+ * took over.
+ */
 export function findDisplacedAudio(
   entries: readonly MediaEntry[],
   session: MediaSession | null,

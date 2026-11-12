@@ -23,11 +23,17 @@ import {
   type MediaState,
 } from "./types";
 
+/**
+ * React context holding the media store and actions.
+ */
 export const MediaContext = getOrCreateGlobalContext<MediaContextValue | null>(
   "MediaContext",
   null,
 );
 
+/**
+ * Store with the default state; used outside a MediaProvider.
+ */
 export const NOOP_MEDIA_STORE = createStore<MediaState>(DEFAULT_MEDIA_STATE);
 
 interface Binding {
@@ -36,6 +42,63 @@ interface Binding {
   transport: HTMLMediaElement;
 }
 
+/**
+ * Moves the follower binding to match the session: keeps it when the transport
+ * and followers are unchanged, otherwise replaces it.
+ */
+function rebindFollowers(
+  current: Binding | null,
+  session: MediaSession | null,
+): Binding | null {
+  const transport = session?.transport.element ?? null;
+  const followers = (session?.followers ?? []).map((source) => source.element);
+  if (
+    current &&
+    current.transport === transport &&
+    sameElements(current.followers, followers)
+  ) {
+    return current;
+  }
+  current?.cleanup();
+  const live = followers.filter(
+    (element): element is HTMLMediaElement => element !== null,
+  );
+  if (!transport || live.length === 0) return null;
+  return {
+    cleanup: bindFollowers(transport, live),
+    followers,
+    transport,
+  };
+}
+
+/** Mutes an entry through its own controls, or directly on its element. */
+function setEntryMuted(entry: MediaEntry, muted: boolean): void {
+  if (entry.controls?.setMuted) entry.controls.setMuted(muted);
+  else if (entry.element) entry.element.muted = muted;
+}
+
+function toggleEntry(entry: MediaEntry): void {
+  if (entry.controls?.toggle) entry.controls.toggle();
+  else toggleElement(entry.element);
+}
+
+function toggleEntryLoop(
+  entry: MediaEntry,
+  patch: (id: string, changes: Partial<MediaEntry>) => void,
+): void {
+  if (entry.controls?.toggleLoop) {
+    entry.controls.toggleLoop();
+    return;
+  }
+  const loop = !entry.loop;
+  if (entry.element) entry.element.loop = loop;
+  patch(entry.id, { loop });
+}
+
+/**
+ * Provides media state and actions to its children and keeps follower
+ * sources in sync with their transport.
+ */
 export function MediaProvider({ children }: MediaProviderProps) {
   const [store] = useState(() =>
     createStore<MediaState>(DEFAULT_MEDIA_STATE, { freezeSnapshots: false }),
@@ -46,40 +109,10 @@ export function MediaProvider({ children }: MediaProviderProps) {
   const bindingRef = useRef<Binding | null>(null);
 
   const actions = useMemo<MediaActions>(() => {
-    const unbind = () => {
-      bindingRef.current?.cleanup();
-      bindingRef.current = null;
-    };
-
-    const rebind = (session: MediaSession | null) => {
-      const transport = session?.transport.element ?? null;
-      const followers = (session?.followers ?? []).map(
-        (source) => source.element,
-      );
-      const current = bindingRef.current;
-      if (
-        current &&
-        current.transport === transport &&
-        sameElements(current.followers, followers)
-      ) {
-        return;
-      }
-      unbind();
-      const live = followers.filter(
-        (element): element is HTMLMediaElement => element !== null,
-      );
-      if (!transport || live.length === 0) return;
-      bindingRef.current = {
-        cleanup: bindFollowers(transport, live),
-        followers,
-        transport,
-      };
-    };
-
     const commit = () => {
       const session = resolveMediaSession([...sourcesRef.current.values()]);
       sessionRef.current = session;
-      rebind(session);
+      bindingRef.current = rebindFollowers(bindingRef.current, session);
       const next = createMediaState(session);
       store.publish((prev) => (mediaStatesEqual(prev, next) ? prev : next));
     };
@@ -97,26 +130,15 @@ export function MediaProvider({ children }: MediaProviderProps) {
       },
       setMuted: (muted) => {
         const audible = sessionRef.current?.audible;
-        if (!audible) return;
-        if (audible.controls?.setMuted) audible.controls.setMuted(muted);
-        else if (audible.element) audible.element.muted = muted;
+        if (audible) setEntryMuted(audible, muted);
       },
       toggle: () => {
         const transport = sessionRef.current?.transport;
-        if (!transport) return;
-        if (transport.controls?.toggle) transport.controls.toggle();
-        else toggleElement(transport.element);
+        if (transport) toggleEntry(transport);
       },
       toggleLoop: () => {
         const transport = sessionRef.current?.transport;
-        if (!transport) return;
-        if (transport.controls?.toggleLoop) {
-          transport.controls.toggleLoop();
-          return;
-        }
-        const loop = !transport.loop;
-        if (transport.element) transport.element.loop = loop;
-        patch(transport.id, { loop });
+        if (transport) toggleEntryLoop(transport, patch);
       },
       upsertSource: (input) => {
         const current = sourcesRef.current.get(input.id);

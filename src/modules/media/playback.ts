@@ -2,6 +2,9 @@ import { MEDIA_SYNC_DRIFT_SECONDS } from "./constants";
 
 const noop = () => {};
 
+/**
+ * Plays a paused or ended media element, or pauses a playing one.
+ */
 export function toggleElement(element: HTMLMediaElement | null): void {
   if (!element) return;
   if (element.paused || element.ended) {
@@ -11,12 +14,18 @@ export function toggleElement(element: HTMLMediaElement | null): void {
   }
 }
 
+/**
+ * Plays a media element and ignores errors.
+ */
 export function safePlay(element: HTMLMediaElement): void {
   try {
     void Promise.resolve(element.play()).catch(noop);
   } catch {}
 }
 
+/**
+ * Whether two lists hold the same elements in the same order.
+ */
 export function sameElements(
   a: readonly (HTMLMediaElement | null)[],
   b: readonly (HTMLMediaElement | null)[],
@@ -26,6 +35,10 @@ export function sameElements(
   );
 }
 
+/**
+ * Keeps follower elements in sync with a transport element. Returns a function
+ * that unbinds them.
+ */
 export function bindFollowers(
   transport: HTMLMediaElement,
   followers: readonly HTMLMediaElement[],
