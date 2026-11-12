@@ -35,6 +35,9 @@ function useControlsPage(
   );
 }
 
+/**
+ * Creates a reusable controls definition whose `use` hook registers it.
+ */
 export function defineControls(
   definition: DefineControlsOptions = {},
 ): DefinedControls {
@@ -56,6 +59,9 @@ export function defineControls(
   });
 }
 
+/**
+ * Module definition that renders controls beside the dock.
+ */
 export const controlsModule = defineModule({
   id: "controls",
   Overlay: Controls,

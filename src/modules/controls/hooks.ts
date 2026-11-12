@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
 
+import { CONTROLS_ANCHOR_ATTRIBUTES } from "./constants";
 import { normalizePageControls, resolveSlot } from "./entries";
 import { areLayoutsEqual, getDockElement, measureLayout } from "./layout";
 import {
@@ -15,55 +16,69 @@ import {
   type DefineControlsOptions,
 } from "./types";
 
+/**
+ * Calls `update` whenever the dock element resizes, changes its anchor
+ * attributes or is replaced. Returns a function that stops watching.
+ */
+function watchDockLayout(update: () => void): () => void {
+  let observed: Element | null | undefined;
+  let resizeObserver: ResizeObserver | undefined;
+
+  const observe = () => {
+    const dockElement = getDockElement();
+    if (dockElement !== observed) {
+      observed = dockElement;
+      resizeObserver?.disconnect();
+      mutationObserver.disconnect();
+      if (dockElement) {
+        if (typeof ResizeObserver !== "undefined") {
+          resizeObserver = new ResizeObserver(update);
+          resizeObserver.observe(dockElement);
+        }
+        mutationObserver.observe(dockElement, {
+          attributes: true,
+          attributeFilter: [...CONTROLS_ANCHOR_ATTRIBUTES],
+        });
+        if (dockElement.parentElement) {
+          mutationObserver.observe(dockElement.parentElement, {
+            childList: true,
+          });
+        }
+      } else {
+        mutationObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+      }
+    }
+    update();
+  };
+
+  const mutationObserver = new MutationObserver(observe);
+  observe();
+  return () => {
+    mutationObserver.disconnect();
+    resizeObserver?.disconnect();
+  };
+}
+
+/**
+ * Tracks the position and size of the dock so controls can sit beside it.
+ * Returns null until the dock is in the page.
+ */
 export function useControlsLayout(): ControlsLayout | null {
   const [layout, setLayout] = useState<ControlsLayout | null>(null);
 
   useEffect(() => {
-    let observed: Element | null | undefined;
-    let resizeObserver: ResizeObserver | undefined;
-
     const update = () => {
       const next = measureLayout();
       setLayout((prev) => (areLayoutsEqual(prev, next) ? prev : next));
     };
 
-    const observe = () => {
-      const dockElement = getDockElement();
-      if (dockElement !== observed) {
-        observed = dockElement;
-        resizeObserver?.disconnect();
-        mutationObserver.disconnect();
-        if (dockElement) {
-          if (typeof ResizeObserver !== "undefined") {
-            resizeObserver = new ResizeObserver(update);
-            resizeObserver.observe(dockElement);
-          }
-          mutationObserver.observe(dockElement, {
-            attributes: true,
-            attributeFilter: ["data-controls-anchor", "data-controls-hidden"],
-          });
-          if (dockElement.parentElement) {
-            mutationObserver.observe(dockElement.parentElement, {
-              childList: true,
-            });
-          }
-        } else {
-          mutationObserver.observe(document.body, {
-            childList: true,
-            subtree: true,
-          });
-        }
-      }
-      update();
-    };
-
-    const mutationObserver = new MutationObserver(observe);
-
-    observe();
+    const stopWatching = watchDockLayout(update);
     window.addEventListener("resize", update);
     return () => {
-      mutationObserver.disconnect();
-      resizeObserver?.disconnect();
+      stopWatching();
       window.removeEventListener("resize", update);
     };
   }, []);
@@ -71,6 +86,9 @@ export function useControlsLayout(): ControlsLayout | null {
   return layout;
 }
 
+/**
+ * Registers controls config for the current page.
+ */
 export function useControlsRegistration(
   config: ControlsPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -78,6 +96,9 @@ export function useControlsRegistration(
   useModuleRegistration("controls", config, options);
 }
 
+/**
+ * Registers controls from a definition or entries and returns the rail layout.
+ */
 export function useControls(
   config?: DefineControlsOptions | ControlEntry | ControlEntry[] | null,
   options?: ControlsUseOptions,

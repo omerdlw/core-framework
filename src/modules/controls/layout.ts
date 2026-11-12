@@ -1,12 +1,17 @@
 import { clamp } from "@/foundation/utils";
 
 import {
+  CONTROLS_ANCHOR_SELECTOR,
   CONTROLS_DOCK_ELEMENT_ID,
   CONTROLS_DOCK_GAP,
   CONTROLS_EDGE_INSET,
 } from "./constants";
 import { type ControlsLayout, type ViewportDimensions } from "./types";
 
+/**
+ * Computes the left and right rail geometry from the dock rectangle and
+ * viewport. Returns null when it cannot be measured.
+ */
 export function getControlsLayout(
   dockRect: Pick<DOMRect, "bottom" | "height" | "left" | "right"> | null,
   viewport: ViewportDimensions,
@@ -34,6 +39,9 @@ export function getControlsLayout(
   };
 }
 
+/**
+ * Whether two layouts have the same geometry.
+ */
 export function areLayoutsEqual(
   a: ControlsLayout | null,
   b: ControlsLayout | null,
@@ -51,17 +59,26 @@ export function areLayoutsEqual(
   );
 }
 
+/**
+ * The dock card stack element, if mounted.
+ */
 export function getDockStackElement(): HTMLElement | null {
   return document.getElementById(CONTROLS_DOCK_ELEMENT_ID);
 }
 
+/**
+ * The element controls anchor to: an explicit anchor, or the dock card stack.
+ */
 export function getDockElement(): Element | null {
   return (
-    document.querySelector('[data-controls-anchor="true"]') ??
-    getDockStackElement()
+    document.querySelector(CONTROLS_ANCHOR_SELECTOR) ?? getDockStackElement()
   );
 }
 
+/**
+ * Measures the current layout from the DOM, or returns null when there is no
+ * dock.
+ */
 export function measureLayout(): ControlsLayout | null {
   const dockElement = getDockElement();
   if (!dockElement) return null;

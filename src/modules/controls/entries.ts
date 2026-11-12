@@ -14,10 +14,16 @@ import {
   type ResolvedControlsPairs,
 } from "./types";
 
+/**
+ * Whether a value is a valid control side.
+ */
 export function isControlSide(value: unknown): value is ControlSide {
   return CONTROL_SIDE_NAMES.includes(value as ControlSide);
 }
 
+/**
+ * Whether content is something other than undefined, null or false.
+ */
 export function hasContent(content: unknown): boolean {
   return content !== undefined && content !== null && content !== false;
 }
@@ -34,6 +40,10 @@ function isRenderable(value: unknown): boolean {
   return Array.isArray(value) && value.every(isRenderable);
 }
 
+/**
+ * Checks that a registered control has an id, side, order and renderable
+ * content.
+ */
 export function validateControlEntry(entry: unknown): ValidationResult {
   if (!isPlainObject(entry)) {
     return { issues: ["control must be a plain object"], valid: false };
@@ -54,6 +64,10 @@ export function validateControlEntry(entry: unknown): ValidationResult {
   return { issues, valid: issues.length === 0 };
 }
 
+/**
+ * Turns a slot into a node, rendering component and function slots with the
+ * given props.
+ */
 export function resolveSlot(
   slot: ControlSlot | undefined,
   props: Record<string, unknown>,
@@ -64,6 +78,10 @@ export function resolveSlot(
   return slot;
 }
 
+/**
+ * Converts a page `controls` setting into a list of entries, or null when it is
+ * empty.
+ */
 export function normalizePageControls(
   controls: ControlsPageConfig | null | undefined,
 ): PageControlEntry[] | null {
@@ -88,14 +106,17 @@ export function normalizePageControls(
   });
 }
 
-export function resolveControlsPairs(
+interface PairRow {
+  left?: ControlsPairItem;
+  right?: ControlsPairItem;
+}
+
+/** Groups a path's controls into rows by order; the lowest id wins a side. */
+function groupControlRows(
   entries: Record<string, ControlEntry> | ControlEntry[] | null | undefined,
   pathname: string,
-): ResolvedControlsPairs {
-  const rows = new Map<
-    number,
-    { left?: ControlsPairItem; right?: ControlsPairItem }
-  >();
+): Map<number, PairRow> {
+  const rows = new Map<number, PairRow>();
 
   for (const entry of Array.isArray(entries)
     ? entries
@@ -115,13 +136,21 @@ export function resolveControlsPairs(
       row[entry.side] = { content: entry.content, id: entry.id };
     }
   }
+  return rows;
+}
 
-  const pairs = [...rows]
+/**
+ * Pairs a path's left and right controls by order. Rows missing either side
+ * are dropped.
+ */
+export function resolveControlsPairs(
+  entries: Record<string, ControlEntry> | ControlEntry[] | null | undefined,
+  pathname: string,
+): ResolvedControlsPairs {
+  const pairs = [...groupControlRows(entries, pathname)]
     .sort(([a], [b]) => a - b)
     .map(([, row]) => row)
-    .filter((row): row is Required<typeof row> =>
-      Boolean(row.left && row.right),
-    );
+    .filter((row): row is Required<PairRow> => Boolean(row.left && row.right));
 
   return {
     left: pairs.map((row) => row.left),

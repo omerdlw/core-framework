@@ -19,6 +19,9 @@ import { type ControlEntry, type ControlsSideProps } from "./types";
 
 const emptySubscribe = () => () => {};
 
+/**
+ * Portal target, layout, resolved controls and theme for Controls.
+ */
 export function useControlsModel() {
   const portalTarget = useSyncExternalStore(
     emptySubscribe,
@@ -38,6 +41,9 @@ export function useControlsModel() {
   return { portalTarget, layout, left, right, theme };
 }
 
+/**
+ * One rail of controls beside the dock.
+ */
 export function ControlsSide({
   controls,
   geometry,
@@ -59,9 +65,10 @@ export function ControlsSide({
           left: geometry.left,
           maxWidth: geometry.maxWidth,
         };
+  const sideLabel = side === "left" ? "Left" : "Right";
   return (
     <aside
-      aria-label={`${side === "left" ? "Left" : "Right"} page controls`}
+      aria-label={`${sideLabel} page controls`}
       className={theme.slots.rail}
       style={{ ...theme.styles.rail, ...positionStyle }}
     >
@@ -83,6 +90,10 @@ export function ControlsSide({
   );
 }
 
+/**
+ * Overlay that renders the page's controls in a portal on both sides of the
+ * dock.
+ */
 export function Controls() {
   const { portalTarget, layout, left, right, theme } = useControlsModel();
   if (!portalTarget || !layout || layout.isHidden || left.length === 0) {
