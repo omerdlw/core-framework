@@ -3,8 +3,9 @@
 import { animate } from "motion/react";
 import {
   Children,
+  type Dispatch,
   type ReactNode,
-  useCallback,
+  type SetStateAction,
   useEffect,
   useRef,
   useState,
@@ -36,6 +37,24 @@ const NEAR_END_VIEWPORTS = 2;
 const SIDES = ["left", "right"] as const;
 
 type Side = (typeof SIDES)[number];
+
+function syncScroll(
+  el: HTMLDivElement | null,
+  onNearEnd: (() => void) | undefined,
+  setScroll: Dispatch<SetStateAction<ScrollState>>,
+): void {
+  if (!el) return;
+  const isNearEnd =
+    el.clientWidth > 0 &&
+    el.scrollLeft + el.clientWidth * NEAR_END_VIEWPORTS >= el.scrollWidth;
+  if (isNearEnd) onNearEnd?.();
+  const next = readScroll(el);
+  setScroll((previous) =>
+    previous.left === next.left && previous.right === next.right
+      ? previous
+      : next,
+  );
+}
 
 interface CarouselArrowProps {
   arrowClassName?: string;
@@ -111,24 +130,10 @@ export function Carousel({
     nearEnd.current = onNearEnd;
   });
 
-  const sync = useCallback(() => {
-    const el = track.current;
-    if (!el) return;
-    const isNearEnd =
-      el.clientWidth > 0 &&
-      el.scrollLeft + el.clientWidth * NEAR_END_VIEWPORTS >= el.scrollWidth;
-    if (isNearEnd) nearEnd.current?.();
-    const next = readScroll(el);
-    setScroll((previous) =>
-      previous.left === next.left && previous.right === next.right
-        ? previous
-        : next,
-    );
-  }, []);
-
   useEffect(() => {
     const el = track.current;
     if (!el) return;
+    const sync = () => syncScroll(el, nearEnd.current, setScroll);
     const clip = () => {
       el.style.clipPath = rackClip(el, frameSelector) ?? "";
     };
@@ -141,7 +146,7 @@ export function Carousel({
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [sync, children, frameSelector]);
+  }, [children, frameSelector]);
 
   const stop = () => {
     stopGlide.current?.();
@@ -192,7 +197,7 @@ export function Carousel({
         })}
         onDragStart={(event) => event.preventDefault()}
         onPointerDown={stop}
-        onScroll={sync}
+        onScroll={() => syncScroll(track.current, nearEnd.current, setScroll)}
         onTouchStart={stop}
         onWheel={stop}
         ref={track}

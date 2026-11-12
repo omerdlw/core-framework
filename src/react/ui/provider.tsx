@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, use, useMemo } from "react";
+import { type ReactNode, use } from "react";
 
 import {
   defaultUi,
@@ -37,7 +37,11 @@ export function useUi(): Ui {
   return use(UiContext);
 }
 
-const retimed = new WeakMap<UiMotion, Map<string, UiMotion>>();
+// Cached per motion and clock, so the hook returns a stable object without memo.
+const retimed = new WeakMap<
+  UiMotion,
+  Map<string, UiMotion & { readonly reduced: boolean }>
+>();
 
 /**
  * Returns the UI definition's motion retimed to the current tempo, plus whether motion is reduced.
@@ -45,18 +49,19 @@ const retimed = new WeakMap<UiMotion, Map<string, UiMotion>>();
 export function useUiMotion(): UiMotion & { readonly reduced: boolean } {
   const { motion } = useUi();
   const { reduced, still, tempo } = useMotionTokens();
-  return useMemo(() => {
-    let byClock = retimed.get(motion);
-    if (!byClock) {
-      byClock = new Map();
-      retimed.set(motion, byClock);
-    }
-    const id = `${tempo}:${reduced}`;
-    let value = byClock.get(id);
-    if (!value) {
-      value = retimeModuleMotion(motion, { reduced, still, tempo });
-      byClock.set(id, value);
-    }
-    return { ...value, reduced };
-  }, [motion, reduced, still, tempo]);
+  let byClock = retimed.get(motion);
+  if (!byClock) {
+    byClock = new Map();
+    retimed.set(motion, byClock);
+  }
+  const id = `${tempo}:${reduced}`;
+  let value = byClock.get(id);
+  if (!value) {
+    value = {
+      ...retimeModuleMotion(motion, { reduced, still, tempo }),
+      reduced,
+    };
+    byClock.set(id, value);
+  }
+  return value;
 }

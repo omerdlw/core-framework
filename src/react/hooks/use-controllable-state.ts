@@ -24,6 +24,7 @@ export function useControllableState<T>({
     onChangeRef.current = onChange;
   });
 
+  // stable identity: part of the public hook contract
   const setValue = useCallback(
     (next: T | ((prev: T) => T)) => {
       const resolvedNext =

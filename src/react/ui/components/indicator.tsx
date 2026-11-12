@@ -7,7 +7,6 @@ import {
   type ReactNode,
   use,
   useId,
-  useMemo,
   useState,
 } from "react";
 
@@ -83,15 +82,12 @@ export function HighlightGroup({ children, className }: HighlightGroupProps) {
   const id = useId();
   const [hovered, setHovered] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
-  const tracker = useMemo<Tracker>(
-    () => ({
-      active: hovered ?? focused,
-      focus: setFocused,
-      hover: setHovered,
-      id,
-    }),
-    [focused, hovered, id],
-  );
+  const tracker: Tracker = {
+    active: hovered ?? focused,
+    focus: setFocused,
+    hover: setHovered,
+    id,
+  };
 
   return (
     <HighlightContext value={tracker}>

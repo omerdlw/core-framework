@@ -6,6 +6,7 @@ import {
   defineTheme,
   defineThemeSpec,
   ThemeProvider,
+  useMotionTokens,
   useTheme,
 } from "../../src/react/theme/index.tsx";
 import { render, renderHook } from "../support/render.ts";
@@ -65,34 +66,51 @@ describe("theme", () => {
 });
 
 describe("theme provider identity", () => {
-  // ThemeProvider builds its Map without a memo, so this fails uncompiled
-  // (renders === 4) and only passes once the React Compiler is applied to
-  // the source under test. Reported in task-9a-report.md.
-  test(
-    "theme provider keeps its context value stable across parent renders",
-    { todo: "needs the React Compiler or a hand-written memo" },
-    async () => {
-      let renders = 0;
-      let bump: () => void = () => {};
-      const themes = [entry];
+  test("theme provider keeps its context value stable across parent renders", async () => {
+    let renders = 0;
+    let bump: () => void = () => {};
+    const themes = [entry];
 
-      function Consumer() {
-        useTheme(spec);
-        renders += 1;
-        return null;
-      }
-      const child = h(Consumer);
+    function Consumer() {
+      useTheme(spec);
+      renders += 1;
+      return null;
+    }
+    const child = h(Consumer);
 
-      function Parent() {
-        const [, setTick] = useState(0);
-        bump = () => setTick((tick) => tick + 1);
-        return h(ThemeProvider, { themes }, child);
-      }
+    function Parent() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      return h(ThemeProvider, { themes }, child);
+    }
 
-      await render(h(Parent));
-      for (let i = 0; i < 3; i += 1) await act(async () => bump());
+    await render(h(Parent));
+    for (let i = 0; i < 3; i += 1) await act(async () => bump());
 
-      assert.equal(renders, 1);
-    },
-  );
+    assert.equal(renders, 1);
+  });
+
+  test("motion provider keeps its context value stable across parent renders", async () => {
+    let renders = 0;
+    let bump: () => void = () => {};
+    const themes = [entry];
+
+    function Consumer() {
+      useMotionTokens();
+      renders += 1;
+      return null;
+    }
+    const child = h(Consumer);
+
+    function Parent() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      return h(ThemeProvider, { themes }, child);
+    }
+
+    await render(h(Parent));
+    for (let i = 0; i < 3; i += 1) await act(async () => bump());
+
+    assert.equal(renders, 1);
+  });
 });

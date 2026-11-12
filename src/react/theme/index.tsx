@@ -97,6 +97,7 @@ function MotionProvider({ children, tokens }: MotionProviderProps) {
   const reduced =
     tokens.reducedMotion === "always" ||
     (tokens.reducedMotion === "user" && prefersReduced);
+  // stable identity: consumers subscribe by reference
   const state = useMemo<MotionState>(
     () =>
       Object.freeze({
@@ -124,7 +125,11 @@ export function ThemeProvider({
   motion,
   themes,
 }: ThemeProviderProps) {
-  const configs = new Map(themes.map((entry) => [entry.id, entry.config]));
+  // stable identity: consumers subscribe by reference
+  const configs = useMemo(
+    () => new Map(themes.map((entry) => [entry.id, entry.config])),
+    [themes],
+  );
   const inheritsMotion = use(MotionContext) !== NO_MOTION_PROVIDER;
   const providesMotion = Boolean(motion) || !inheritsMotion;
   const content = providesMotion ? (
@@ -157,6 +162,12 @@ export function useTheme<S extends string>(
   };
 }
 
+// Cached per motion state, so `useMotionTokens` returns a stable object without memo.
+const motionTokens = new WeakMap<
+  MotionState,
+  MotionTokens & { readonly reduced: boolean }
+>();
+
 /**
  * Returns the current motion tokens plus whether motion is reduced.
  */
@@ -164,10 +175,12 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
   readonly reduced: boolean;
 } {
   const state = use(MotionContext);
-  return useMemo(
-    () => ({ ...(state.tokens as T), reduced: state.reduced }),
-    [state],
-  );
+  let tokens = motionTokens.get(state);
+  if (!tokens) {
+    tokens = { ...state.tokens, reduced: state.reduced };
+    motionTokens.set(state, tokens);
+  }
+  return tokens as T & { readonly reduced: boolean };
 }
 
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();

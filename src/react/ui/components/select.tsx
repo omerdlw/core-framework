@@ -8,10 +8,9 @@ import {
 } from "motion/react";
 import {
   type KeyboardEvent,
-  useCallback,
   useEffect,
+  useEffectEvent,
   useId,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -93,7 +92,7 @@ export function Select<T extends string = string>({
   const anchored = useSyncExternalStore(noSubscribe, canAnchor, cannotAnchor);
   const anchorName = `--select-${generatedId.replace(NON_IDENTIFIER_CHARS, "")}`;
 
-  const place = useCallback(() => {
+  const place = () => {
     const box = triggerRef.current?.getBoundingClientRect();
     if (!box) return;
     const wanted = options.length * box.height;
@@ -107,21 +106,19 @@ export function Select<T extends string = string>({
       up,
       width: box.width,
     });
-  }, [collisionPadding, offset, options.length]);
+  };
+  const onViewportChange = useEffectEvent(place);
 
-  const selectedOption = useMemo(
-    () => options.find((option) => option.value === selectedValue) ?? null,
-    [options, selectedValue],
+  const selectedOption =
+    options.find((option) => option.value === selectedValue) ?? null;
+
+  const enabledIndices = options.flatMap((option, index) =>
+    option.disabled ? [] : [index],
   );
 
-  const enabledIndices = useMemo(
-    () => options.flatMap((option, index) => (option.disabled ? [] : [index])),
-    [options],
-  );
+  const close = () => setIsOpen(false);
 
-  const close = useCallback(() => setIsOpen(false), []);
-
-  const open = useCallback(() => {
+  const open = () => {
     place();
     setIsOpen(true);
     const selected = options.findIndex(
@@ -130,7 +127,7 @@ export function Select<T extends string = string>({
     setHighlightedIndex(
       selected >= 0 ? selected : (enabledIndices[0] ?? NO_HIGHLIGHT),
     );
-  }, [enabledIndices, options, place, selectedValue]);
+  };
 
   useEscapeKey(() => {
     if (!isOpen) return;
@@ -146,23 +143,29 @@ export function Select<T extends string = string>({
         !rootRef.current?.contains(target) &&
         !menuRef.current?.contains(target)
       ) {
-        close();
+        setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handlePointerDownOutside);
     return () =>
       document.removeEventListener("mousedown", handlePointerDownOutside);
-  }, [close, isOpen]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || placement !== "popover" || anchored) return;
-    window.addEventListener("scroll", place, { capture: true, passive: true });
-    window.addEventListener("resize", place);
+    const handleViewportChange = () => onViewportChange();
+    window.addEventListener("scroll", handleViewportChange, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("resize", handleViewportChange);
     return () => {
-      window.removeEventListener("scroll", place, { capture: true });
-      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", handleViewportChange, {
+        capture: true,
+      });
+      window.removeEventListener("resize", handleViewportChange);
     };
-  }, [anchored, isOpen, place, placement]);
+  }, [anchored, isOpen, placement]);
 
   useScrollLock(isOpen);
 
