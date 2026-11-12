@@ -30,6 +30,7 @@ function useBackgroundPage(
   page: PageModuleApi,
 ): BackgroundPageApi {
   const actions = useBackgroundActions();
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

@@ -1,8 +1,8 @@
-import { type CSSProperties, memo } from "react";
+import { type CSSProperties } from "react";
 
 import { type Theme } from "../lib/theme";
 
-export const SolidOverlay = memo(function SolidOverlay({
+export function SolidOverlay({
   opacity = 0,
   color,
   transitionStyle,
@@ -26,4 +26,4 @@ export const SolidOverlay = memo(function SolidOverlay({
       }}
     />
   );
-});
+}

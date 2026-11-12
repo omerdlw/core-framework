@@ -1,9 +1,7 @@
-import { memo } from "react";
-
 import { type Theme } from "../lib/theme";
 import { DEFAULT_COLOR, generateBaseGradient } from "../model/visual";
 
-export const BackgroundGradients = memo(function BackgroundGradients({
+export function BackgroundGradients({
   count = 0,
   direction,
   color = DEFAULT_COLOR,
@@ -27,4 +25,4 @@ export const BackgroundGradients = memo(function BackgroundGradients({
       }}
     />
   );
-});
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useMemo } from "react";
+import { type CSSProperties } from "react";
 
 import { retime } from "@/foundation/utils/tempo";
 import { useMotionTokens } from "@/react/theme";
@@ -21,29 +21,22 @@ export function useBackgroundMotionModel(
 ) {
   const backgroundMotion = useBackgroundMotion();
   const { reduced, still, tempo } = useMotionTokens();
-  const motionConfig = useMemo(
-    () =>
-      getBackgroundMotionConfig(
-        backgroundMotion,
-        retime(animation, { reduced, still, tempo }),
-      ),
-    [animation, backgroundMotion, reduced, still, tempo],
+  const motionConfig = getBackgroundMotionConfig(
+    backgroundMotion,
+    retime(animation, { reduced, still, tempo }),
   );
-  const overlayTransitionStyle = useMemo<CSSProperties>(
-    () => ({
-      transitionDelay: toCssDelay(motionConfig.transition.delay),
-      transitionDuration: toCssDuration(
-        motionConfig.transition.duration,
-        backgroundMotion.transition.duration,
-      ),
-      transitionProperty: "opacity",
-      transitionTimingFunction: toCssEasing(motionConfig.transition.ease),
-    }),
-    [backgroundMotion.transition.duration, motionConfig.transition],
-  );
-  const exitTransition = useMemo(
-    () => getBackgroundExitTransition(backgroundMotion, motionConfig),
-    [backgroundMotion, motionConfig],
+  const overlayTransitionStyle: CSSProperties = {
+    transitionDelay: toCssDelay(motionConfig.transition.delay),
+    transitionDuration: toCssDuration(
+      motionConfig.transition.duration,
+      backgroundMotion.transition.duration,
+    ),
+    transitionProperty: "opacity",
+    transitionTimingFunction: toCssEasing(motionConfig.transition.ease),
+  };
+  const exitTransition = getBackgroundExitTransition(
+    backgroundMotion,
+    motionConfig,
   );
 
   return { exitTransition, motionConfig, overlayTransitionStyle };

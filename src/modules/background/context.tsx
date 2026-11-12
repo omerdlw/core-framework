@@ -1,15 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
-import { createStore } from "@/foundation/utils";
+import { createStore, type ExternalStore } from "@/foundation/utils";
 import { useStore } from "@/react/hooks";
 
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import { useBackgroundMediaSource } from "./hooks/use-background-media-source";
-import { applyOverrideUpdate } from "./model/override";
+import { applyOverrideUpdate, type BackgroundInputs } from "./model/override";
 import {
   isElementPlaying,
   syncVideoLoopDirect,
@@ -47,6 +47,145 @@ function useSafePathname(): string | null {
   }
 }
 
+interface BackgroundRuntime {
+  /** Resolves the computed state, reusing the last result for identical inputs. */
+  resolveState: (
+    registryBackground: Partial<BackgroundState> | null,
+    scopedOverride: ScopedOverride,
+    pathname: string | null,
+  ) => BackgroundStateComputed;
+  overrideStore: ExternalStore<ScopedOverride>;
+  setInputs: (next: BackgroundInputs) => void;
+  value: BackgroundContextValue;
+}
+
+/** Builds the override and state stores and the background actions. */
+function createBackground(initial: BackgroundInputs): BackgroundRuntime {
+  let inputs = initial;
+  let videoElement: HTMLVideoElement | null = null;
+  let last: {
+    pathname: string | null;
+    registryBackground: Partial<BackgroundState> | null;
+    scopedOverride: ScopedOverride;
+    state: BackgroundStateComputed;
+  } | null = null;
+
+  const overrideStore = createStore<ScopedOverride>(
+    { patch: null, pathname: initial.pathname },
+    { freezeSnapshots: false },
+  );
+
+  const resolveState: BackgroundRuntime["resolveState"] = (
+    registryBackground,
+    scopedOverride,
+    pathname,
+  ) => {
+    if (
+      last &&
+      last.pathname === pathname &&
+      last.registryBackground === registryBackground &&
+      last.scopedOverride === scopedOverride
+    ) {
+      return last.state;
+    }
+    const state = computeBackgroundState(
+      resolveBackgroundState(registryBackground, scopedOverride, pathname),
+    );
+    last = { pathname, registryBackground, scopedOverride, state };
+    return state;
+  };
+
+  const stateStore = createStore<BackgroundStateComputed>(
+    resolveState(
+      initial.registryBackground,
+      overrideStore.getSnapshot(),
+      initial.pathname,
+    ),
+    { freezeSnapshots: false },
+  );
+
+  const readCurrent = (): BackgroundState =>
+    resolveBackgroundState(
+      inputs.registryBackground,
+      overrideStore.getSnapshot(),
+      inputs.pathname,
+    );
+
+  const updatePatch = (
+    updater: (current: BackgroundState) => Partial<BackgroundState>,
+  ) => {
+    overrideStore.publish((prev) => applyOverrideUpdate(prev, inputs, updater));
+  };
+
+  const currentVideoElement = (current: BackgroundState) =>
+    videoElement || current.videoElement;
+
+  const actions: BackgroundActions = {
+    resetBackground: () => {
+      overrideStore.publish({ patch: null, pathname: inputs.pathname });
+    },
+    setBackground: (nextBackground: Partial<BackgroundState> | string) => {
+      updatePatch(() => normalizeBackgroundInput(nextBackground));
+    },
+    setVideoElement: (element: HTMLVideoElement | null) => {
+      videoElement = element;
+      updatePatch((cur) =>
+        cur.videoElement === element ? {} : { videoElement: element },
+      );
+    },
+    setVideoMuted: (muted: boolean) => {
+      const nextMuted = Boolean(muted);
+      syncVideoMutedDirect(currentVideoElement(readCurrent()), nextMuted);
+      updatePatch((cur) => {
+        if (cur.videoOptions?.muted === nextMuted) return {};
+        return {
+          videoOptions: { ...cur.videoOptions, muted: nextMuted },
+        };
+      });
+    },
+    setVideoPlaying: (isPlaying: boolean) => {
+      updatePatch((cur) => (cur.isPlaying === isPlaying ? {} : { isPlaying }));
+    },
+    toggleLoop: () => {
+      const current = readCurrent();
+      const nextLoop = !current.videoOptions?.loop;
+      syncVideoLoopDirect(currentVideoElement(current), nextLoop);
+      updatePatch((cur) => ({
+        videoOptions: { ...cur.videoOptions, loop: nextLoop },
+      }));
+    },
+    toggleMute: () => {
+      const current = readCurrent();
+      const nextMuted = !current.videoOptions?.muted;
+      syncVideoMutedDirect(currentVideoElement(current), nextMuted);
+      updatePatch((cur) => ({
+        isPlaying: nextMuted ? cur.isPlaying : true,
+        videoOptions: { ...cur.videoOptions, muted: nextMuted },
+      }));
+    },
+    toggleVideo: () => {
+      const current = readCurrent();
+      const videoEl = currentVideoElement(current);
+      const domIsActuallyPlaying = isElementPlaying(videoEl, current.isPlaying);
+      const nextPlaying = !domIsActuallyPlaying;
+      const configuredMuted = Boolean(current.videoOptions?.muted);
+
+      triggerVideoPlaybackDirect(videoEl, nextPlaying, configuredMuted);
+
+      updatePatch(() => ({ isPlaying: nextPlaying }));
+    },
+  };
+
+  return {
+    overrideStore,
+    resolveState,
+    setInputs: (next) => {
+      inputs = next;
+    },
+    value: { actions, store: stateStore },
+  };
+}
+
 /**
  * Owns the page background: resolves it from the registry, applies runtime overrides
  * and exposes the state store and actions.
@@ -59,129 +198,22 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       BACKGROUND_REGISTRY_KEY,
     ) ?? null;
 
-  const [overrideStore] = useState(() =>
-    createStore<ScopedOverride>(
-      { patch: null, pathname },
-      { freezeSnapshots: false },
-    ),
+  const [{ overrideStore, resolveState, setInputs, value }] = useState(() =>
+    createBackground({ pathname, registryBackground }),
   );
   const scopedOverride = useStore(overrideStore);
 
-  const inputsRef = useRef({ pathname, registryBackground });
   useLayoutEffect(() => {
-    inputsRef.current = { pathname, registryBackground };
-  }, [pathname, registryBackground]);
+    setInputs({ pathname, registryBackground });
+  }, [pathname, registryBackground, setInputs]);
 
-  const videoElementRef = useRef<HTMLVideoElement | null>(null);
-
-  const state = useMemo(
-    () =>
-      computeBackgroundState(
-        resolveBackgroundState(registryBackground, scopedOverride, pathname),
-      ),
-    [pathname, registryBackground, scopedOverride],
-  );
-
-  const [stateStore] = useState(() =>
-    createStore<BackgroundStateComputed>(state, { freezeSnapshots: false }),
-  );
+  const state = resolveState(registryBackground, scopedOverride, pathname);
+  const { actions, store } = value;
   useLayoutEffect(() => {
-    stateStore.publish(state);
-  }, [state, stateStore]);
-
-  const actions = useMemo<BackgroundActions>(() => {
-    const readCurrent = (): BackgroundState => {
-      const { pathname: currentPath, registryBackground: registry } =
-        inputsRef.current;
-      return resolveBackgroundState(
-        registry,
-        overrideStore.getSnapshot(),
-        currentPath,
-      );
-    };
-
-    const updatePatch = (
-      updater: (current: BackgroundState) => Partial<BackgroundState>,
-    ) => {
-      overrideStore.publish((prev) =>
-        applyOverrideUpdate(prev, inputsRef.current, updater),
-      );
-    };
-
-    const currentVideoElement = (current: BackgroundState) =>
-      videoElementRef.current || current.videoElement;
-
-    return {
-      resetBackground: () => {
-        overrideStore.publish({
-          patch: null,
-          pathname: inputsRef.current.pathname,
-        });
-      },
-      setBackground: (nextBackground: Partial<BackgroundState> | string) => {
-        updatePatch(() => normalizeBackgroundInput(nextBackground));
-      },
-      setVideoElement: (videoElement: HTMLVideoElement | null) => {
-        videoElementRef.current = videoElement;
-        updatePatch((cur) =>
-          cur.videoElement === videoElement ? {} : { videoElement },
-        );
-      },
-      setVideoMuted: (muted: boolean) => {
-        const nextMuted = Boolean(muted);
-        syncVideoMutedDirect(currentVideoElement(readCurrent()), nextMuted);
-        updatePatch((cur) => {
-          if (cur.videoOptions?.muted === nextMuted) return {};
-          return {
-            videoOptions: { ...cur.videoOptions, muted: nextMuted },
-          };
-        });
-      },
-      setVideoPlaying: (isPlaying: boolean) => {
-        updatePatch((cur) =>
-          cur.isPlaying === isPlaying ? {} : { isPlaying },
-        );
-      },
-      toggleLoop: () => {
-        const current = readCurrent();
-        const nextLoop = !current.videoOptions?.loop;
-        syncVideoLoopDirect(currentVideoElement(current), nextLoop);
-        updatePatch((cur) => ({
-          videoOptions: { ...cur.videoOptions, loop: nextLoop },
-        }));
-      },
-      toggleMute: () => {
-        const current = readCurrent();
-        const nextMuted = !current.videoOptions?.muted;
-        syncVideoMutedDirect(currentVideoElement(current), nextMuted);
-        updatePatch((cur) => ({
-          isPlaying: nextMuted ? cur.isPlaying : true,
-          videoOptions: { ...cur.videoOptions, muted: nextMuted },
-        }));
-      },
-      toggleVideo: () => {
-        const current = readCurrent();
-        const videoEl = currentVideoElement(current);
-        const domIsActuallyPlaying = isElementPlaying(
-          videoEl,
-          current.isPlaying,
-        );
-        const nextPlaying = !domIsActuallyPlaying;
-        const configuredMuted = Boolean(current.videoOptions?.muted);
-
-        triggerVideoPlaybackDirect(videoEl, nextPlaying, configuredMuted);
-
-        updatePatch(() => ({ isPlaying: nextPlaying }));
-      },
-    };
-  }, [overrideStore]);
+    store.publish(state);
+  }, [state, store]);
 
   useBackgroundMediaSource(state, actions);
-
-  const value = useMemo<BackgroundContextValue>(
-    () => ({ actions, store: stateStore }),
-    [actions, stateStore],
-  );
 
   return <BackgroundContext value={value}>{children}</BackgroundContext>;
 }

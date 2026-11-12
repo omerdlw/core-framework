@@ -1,9 +1,7 @@
-import { memo } from "react";
-
 import { type Theme } from "../lib/theme";
 import { DEFAULT_COLOR, generateEdgeGradient } from "../model/visual";
 
-export const EdgeGradient = memo(function EdgeGradient({
+export function EdgeGradient({
   direction,
   percent = 0,
   opacity = 0,
@@ -28,4 +26,4 @@ export const EdgeGradient = memo(function EdgeGradient({
       }}
     />
   );
-});
+}

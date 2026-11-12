@@ -1,8 +1,8 @@
-import { type CSSProperties, memo } from "react";
+import { type CSSProperties } from "react";
 
 import { type Theme } from "../lib/theme";
 
-export const NoiseOverlay = memo(function NoiseOverlay({
+export function NoiseOverlay({
   opacity,
   blendMode,
   inlineStyle,
@@ -32,4 +32,4 @@ export const NoiseOverlay = memo(function NoiseOverlay({
       }}
     />
   );
-});
+}

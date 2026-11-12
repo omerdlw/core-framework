@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { useTheme } from "@/react/theme";
 
 import { backgroundTheme } from "../constants";
 import { useBackgroundActions, useBackgroundState } from "../hooks";
+import { resolveVideoFrame } from "../model/video-frame";
 import { getVisualStyle, resolveVideoOptions } from "../model/visual";
 import { parseYouTubeUrlConfig } from "../youtube/lib/parse";
 import { useBackgroundMotionModel } from "./use-background-motion-model";
-import { useVideoFrameModel } from "./use-video-frame-model";
 
 /** Identity of the current backdrop, so a change cross-fades instead of morphing. */
 function resolveBackgroundKey({
@@ -55,10 +53,7 @@ export function useBackgroundOverlayModel() {
   const { setVideoElement, setVideoPlaying } = useBackgroundActions();
   const options = resolveVideoOptions(videoOptions);
   const { corp, isMuted, playbackRate } = options;
-  const youtubeConfig = useMemo(
-    () => (isYouTube ? parseYouTubeUrlConfig(video) : null),
-    [isYouTube, video],
-  );
+  const youtubeConfig = isYouTube ? parseYouTubeUrlConfig(video) : null;
   const startTime = videoOptions?.startTime ?? youtubeConfig?.startTime ?? 0;
   const endTime = videoOptions?.endTime ?? youtubeConfig?.endTime ?? 0;
   const backgroundKey = resolveBackgroundKey({
@@ -73,10 +68,7 @@ export function useBackgroundOverlayModel() {
     baseStyle,
     leftGradient: styleLeft,
     rightGradient: styleRight,
-  } = useMemo(
-    () => getVisualStyle((isVideo ? videoStyle : imageStyle) || {}),
-    [imageStyle, isVideo, videoStyle],
-  );
+  } = getVisualStyle((isVideo ? videoStyle : imageStyle) || {});
   const leftGradient = configuredLeftGradient ?? styleLeft;
   const rightGradient = configuredRightGradient ?? styleRight;
   const {
@@ -93,7 +85,7 @@ export function useBackgroundOverlayModel() {
     resolvedWidth,
     sharedVideoStyle,
     videoClasses,
-  } = useVideoFrameModel({
+  } = resolveVideoFrame({
     baseStyle,
     className,
     fadeEdges,

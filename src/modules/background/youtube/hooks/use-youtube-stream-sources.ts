@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { type YouTubeBackgroundPlayerProps } from "../../types";
 import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "../lib/parse";
 
@@ -16,14 +14,12 @@ export function useYouTubeStreamSources({
   YouTubeBackgroundPlayerProps,
   "codec" | "posterUrl" | "quality" | "showPoster" | "videoId"
 >) {
-  const videoStreamUrl = useMemo(
-    () => getYouTubeStreamUrl(videoId, { codec, quality, stream: "video" }),
-    [codec, quality, videoId],
-  );
-  const audioStreamUrl = useMemo(
-    () => getYouTubeStreamUrl(videoId, { stream: "audio" }),
-    [videoId],
-  );
+  const videoStreamUrl = getYouTubeStreamUrl(videoId, {
+    codec,
+    quality,
+    stream: "video",
+  });
+  const audioStreamUrl = getYouTubeStreamUrl(videoId, { stream: "audio" });
   const resolvedPoster = showPoster
     ? posterUrl || getYouTubeThumbnailUrl(videoId, true)
     : null;

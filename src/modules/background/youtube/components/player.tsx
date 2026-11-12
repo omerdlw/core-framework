@@ -1,7 +1,5 @@
 "use client";
 
-import { memo } from "react";
-
 import { cn } from "@/foundation/recipes/cn";
 import { Spinner } from "@/react/ui/components/loader";
 
@@ -12,7 +10,7 @@ import { useYouTubeBackgroundPlayerModel } from "../hooks/use-youtube-background
  * Plays a YouTube video as a background: a proxied native stream first, with the
  * iframe player as fallback.
  */
-export const YouTubeBackgroundPlayer = memo(function YouTubeBackgroundPlayer({
+export function YouTubeBackgroundPlayer({
   codec = "auto",
   corp = 0,
   endTime = 0,
@@ -155,4 +153,4 @@ export const YouTubeBackgroundPlayer = memo(function YouTubeBackgroundPlayer({
       )}
     </div>
   );
-});
+}

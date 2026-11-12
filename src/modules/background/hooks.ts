@@ -66,6 +66,7 @@ export function useBackground(
   const actions = useBackgroundActions();
   const state = useBackgroundState();
 
+  // stable identity: part of the public hook contract
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
 
