@@ -18,8 +18,8 @@ import {
 import { createIframeEngine } from "../lib/iframe-engine";
 import {
   buildPlayerVars,
+  createIframePlaybackState,
   createIframeProxyController,
-  type IframePlaybackState,
 } from "../lib/iframe-proxy";
 import { createYouTubeVideoElementProxy } from "../lib/parse";
 
@@ -64,15 +64,13 @@ export function useYouTubeIframePlayer({
     let progressInterval: number | null = null;
     let proxyElement: HTMLVideoElement | null = null;
 
-    const state: IframePlaybackState = {
-      currentTime: startTime || 0,
-      duration: 0,
-      loop: Boolean(isLoop),
-      muted: Boolean(isMuted),
-      paused: !shouldAutoPlay,
-      playbackRate: Number(playbackRate) || 1,
-      volume: isMuted ? 0 : 0.8,
-    };
+    const state = createIframePlaybackState({
+      isLoop,
+      isMuted,
+      playbackRate,
+      shouldAutoPlay,
+      startTime,
+    });
     const player = () => playerRef.current;
     const emit = (type: string) => proxyElement?.dispatchEvent(new Event(type));
     const { handleReady, handleStateChange } = createIframeEngine({

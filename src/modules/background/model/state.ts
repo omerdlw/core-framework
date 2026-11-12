@@ -101,8 +101,27 @@ export function normalizeBackgroundInput(
   return nextPatch;
 }
 
+function resolveIsPlaying(
+  baseState: BackgroundState,
+  patch: Partial<BackgroundState>,
+  shouldAutoPlay: boolean,
+) {
+  if (patch.isPlaying !== undefined) return patch.isPlaying;
+  if (patch.video !== undefined && Boolean(patch.video)) return shouldAutoPlay;
+  return baseState.isPlaying;
+}
+
+function mergeAnimation(
+  base: BackgroundState["animation"],
+  patch: BackgroundState["animation"],
+) {
+  if (patch === undefined) return base;
+  if (!patch) return patch;
+  return { ...(base || {}), ...patch };
+}
+
 /**
- * Merges a patch (or an image URL) over a base state; `videoOptions` are merged key by key.
+ * Merges a patch or a URL string over a base state; `videoOptions` are merged key by key.
  */
 export function mergeBackgroundState(
   baseState: BackgroundState,
@@ -115,29 +134,18 @@ export function mergeBackgroundState(
     ...(resolvedPatch.videoOptions || {}),
   };
 
-  const nextVideo =
-    resolvedPatch.video !== undefined ? resolvedPatch.video : baseState.video;
   const shouldAutoPlay = nextVideoOptions.autoplay !== false;
-  const resolvedIsPlaying =
-    resolvedPatch.isPlaying !== undefined
-      ? resolvedPatch.isPlaying
-      : resolvedPatch.video !== undefined && Boolean(nextVideo)
-        ? shouldAutoPlay
-        : baseState.isPlaying;
+  const resolvedIsPlaying = resolveIsPlaying(
+    baseState,
+    resolvedPatch,
+    shouldAutoPlay,
+  );
 
   return {
     ...baseState,
     ...resolvedPatch,
     isPlaying: resolvedIsPlaying,
-    animation:
-      resolvedPatch.animation !== undefined
-        ? resolvedPatch.animation
-          ? {
-              ...(baseState.animation || {}),
-              ...resolvedPatch.animation,
-            }
-          : resolvedPatch.animation
-        : baseState.animation,
+    animation: mergeAnimation(baseState.animation, resolvedPatch.animation),
     imageStyle: {
       ...baseState.imageStyle,
       ...(resolvedPatch.imageStyle || {}),

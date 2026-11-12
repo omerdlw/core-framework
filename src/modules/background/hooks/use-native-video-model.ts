@@ -6,6 +6,7 @@ import { report } from "@/foundation/utils";
 
 import { applyVideoPlaybackState } from "../model/playback";
 import { type BackgroundActions } from "../types";
+import { isWithinCorp } from "../youtube/lib/timing";
 
 export interface NativeVideoProps {
   className: string;
@@ -49,11 +50,7 @@ export function useNativeVideoModel({
   }, [setVideoPlaying]);
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;
-    if (
-      video?.duration &&
-      corp > 0 &&
-      video.currentTime >= video.duration - corp
-    ) {
+    if (video && isWithinCorp(video.currentTime, video.duration, corp)) {
       handleEnded();
     }
   }, [corp, handleEnded]);

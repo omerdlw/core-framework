@@ -186,6 +186,16 @@ export function resolveGradientSettings({
   };
 }
 
+function formatSmoothstepStop(
+  strength: number,
+  position: string,
+  color: string,
+) {
+  if (strength === 0) return `transparent ${position}`;
+  if (strength === 1) return `${color} ${position}`;
+  return `color-mix(in srgb, ${color} ${Math.round(strength * 100)}%, transparent) ${position}`;
+}
+
 export function generateSmoothstepStops(
   percent: number,
   direction: "in" | "out" = "in",
@@ -202,21 +212,16 @@ export function generateSmoothstepStops(
   ];
   if (direction === "in") {
     return steps.map(({ s, t }) =>
-      s === 0
-        ? `transparent ${(t * percent).toFixed(1)}%`
-        : s === 1
-          ? `${color} ${(t * percent).toFixed(1)}%`
-          : `color-mix(in srgb, ${color} ${Math.round(s * 100)}%, transparent) ${(t * percent).toFixed(1)}%`,
+      formatSmoothstepStop(s, `${(t * percent).toFixed(1)}%`, color),
     );
   }
-  return steps.map(({ s, t }) => {
-    const alpha = 1 - s;
-    return alpha === 0
-      ? `transparent ${(100 - percent + t * percent).toFixed(1)}%`
-      : alpha === 1
-        ? `${color} ${(100 - percent + t * percent).toFixed(1)}%`
-        : `color-mix(in srgb, ${color} ${Math.round(alpha * 100)}%, transparent) ${(100 - percent + t * percent).toFixed(1)}%`;
-  });
+  return steps.map(({ s, t }) =>
+    formatSmoothstepStop(
+      1 - s,
+      `${(100 - percent + t * percent).toFixed(1)}%`,
+      color,
+    ),
+  );
 }
 
 /**

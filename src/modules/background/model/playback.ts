@@ -1,3 +1,5 @@
+import { DEFAULT_AUDIBLE_VOLUME } from "../constants";
+
 /**
  * Applies the configured play state and playback rate to a video element,
  * handling blocked autoplay.
@@ -73,7 +75,7 @@ export function triggerVideoPlaybackDirect(
   if (nextPlaying) {
     videoElement.muted = configuredMuted;
     if (!configuredMuted && videoElement.volume === 0) {
-      videoElement.volume = 0.8;
+      videoElement.volume = DEFAULT_AUDIBLE_VOLUME;
     }
     videoElement.play().catch((err: { name?: string } | undefined) => {
       if (err?.name === "NotAllowedError") {
@@ -96,7 +98,7 @@ export function syncVideoMutedDirect(
   if (!videoElement) return;
   videoElement.muted = nextMuted;
   if (!nextMuted && videoElement.volume === 0) {
-    videoElement.volume = 0.8;
+    videoElement.volume = DEFAULT_AUDIBLE_VOLUME;
   }
 }
 
@@ -109,4 +111,12 @@ export function syncVideoLoopDirect(
 ): void {
   if (!videoElement) return;
   videoElement.loop = nextLoop;
+}
+
+/** Whether an element is really playing; without one, falls back to the state flag. */
+export function isElementPlaying(
+  element: HTMLVideoElement | null | undefined,
+  fallback: boolean | undefined,
+): boolean {
+  return element ? !element.paused && !element.ended : Boolean(fallback);
 }

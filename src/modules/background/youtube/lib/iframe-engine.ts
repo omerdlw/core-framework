@@ -1,12 +1,15 @@
+import { DEFAULT_AUDIBLE_VOLUME } from "../../constants";
 import { type BackgroundActions } from "../../types";
 import {
   PLAYER_STATE,
   setHighQuality,
+  toPlayerVolume,
   type YouTubeLiveState,
   type YouTubePlayer,
   type YouTubePlayerEvent,
 } from "./iframe";
 import { type IframePlaybackState } from "./iframe-proxy";
+import { resolveIframeSafetyEnd } from "./timing";
 
 /** Everything the iframe player's event handlers read or update. */
 export interface IframeEngineOptions {
@@ -62,8 +65,7 @@ export function createIframeEngine({
     }
 
     const { corp, endTime, isLoop: loops } = live.current;
-    const safetyEnd =
-      endTime > 0 ? endTime : duration > 0 ? duration - Math.max(corp, 0.4) : 0;
+    const safetyEnd = resolveIframeSafetyEnd(endTime, corp, duration);
 
     if (safetyEnd > 0 && time >= safetyEnd) {
       if (state.loop || loops) {
@@ -89,7 +91,7 @@ export function createIframeEngine({
       target?.mute?.();
     } else {
       target?.unMute?.();
-      target?.setVolume?.(80);
+      target?.setVolume?.(toPlayerVolume(DEFAULT_AUDIBLE_VOLUME));
     }
 
     if (live.current.shouldAutoPlay && isPlaying) {

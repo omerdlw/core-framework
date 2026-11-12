@@ -76,6 +76,11 @@ export function loadYouTubeIframeApi(): Promise<Window["YT"] | null> {
   return apiPromise;
 }
 
+/** Converts a 0-1 volume to the YouTube player's 0-100 scale. */
+export function toPlayerVolume(volume: number) {
+  return Math.round(volume * 100);
+}
+
 export function setHighQuality(player?: YouTubePlayer) {
   player?.setPlaybackQualityRange?.("hd1080", "hd1080");
   player?.setPlaybackQuality?.("hd1080");

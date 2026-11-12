@@ -8,7 +8,7 @@ import {
 import { type BackgroundActions } from "../../types";
 import { setElementMuted, unlockAudioOnGesture } from "./audio";
 import { type YouTubeLiveState } from "./iframe";
-import { resolveEffectiveEnd } from "./timing";
+import { hasPassedEnd } from "./timing";
 
 const HAVE_CURRENT_DATA = 2;
 const ERROR_RESUME_RETRY_DELAY_MS = 150;
@@ -161,9 +161,10 @@ export function onTimeUpdate(ctx: VideoEventContext) {
 
   const duration = Number(video.duration) || 0;
   const { corp, endTime } = ctx.live.current;
-  const effectiveEnd = resolveEffectiveEnd(endTime, corp, duration);
 
-  if (effectiveEnd > 0 && video.currentTime >= effectiveEnd) ctx.handleEnded();
+  if (hasPassedEnd(video.currentTime, endTime, corp, duration)) {
+    ctx.handleEnded();
+  }
 }
 
 export function onPlay(ctx: VideoEventContext) {
@@ -203,7 +204,7 @@ export function onSeeked(ctx: VideoEventContext) {
     ctx.setIsBuffering(false);
   }
   ctx.syncCompanionAudio(true);
-  if (ctx.live.current.isPlaying && video.paused) {
+  if (isPlaying && video.paused) {
     video
       .play()
       .then(() => {

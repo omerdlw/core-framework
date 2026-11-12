@@ -1,3 +1,5 @@
+import { DEFAULT_AUDIBLE_VOLUME } from "../../constants";
+
 /** Minimum gap between two forced companion-audio seeks, in milliseconds. */
 const AUDIO_SEEK_COOLDOWN_MS = 1500;
 const AUDIO_DRIFT_LIMIT = 0.35;
@@ -16,7 +18,7 @@ export const AUDIO_SYNC_EVENTS = [
 
 export function setElementMuted(video: HTMLVideoElement, muted: boolean) {
   video.muted = muted;
-  if (!muted && video.volume === 0) video.volume = 0.8;
+  if (!muted && video.volume === 0) video.volume = DEFAULT_AUDIBLE_VOLUME;
 }
 
 export function unlockAudioOnGesture(unlock: () => void) {

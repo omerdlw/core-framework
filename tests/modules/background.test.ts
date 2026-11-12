@@ -18,7 +18,10 @@ import {
   resolveVideoOptions,
   selectPageBackground,
 } from "../../src/modules/background/index.ts";
-import { resolveCompanionVolume } from "../../src/modules/background/youtube/lib/audio.ts";
+import {
+  resolveCompanionVolume,
+  syncCompanionAudioElements,
+} from "../../src/modules/background/youtube/lib/audio.ts";
 import {
   extractYouTubeVideoId,
   isDirectVideoUrl,
@@ -690,5 +693,36 @@ describe("youtube companion audio volume", () => {
     assert.equal(resolveCompanionVolume(0.4), 0.4);
     assert.equal(resolveCompanionVolume(3), 1);
     assert.equal(resolveCompanionVolume(-2), 0);
+  });
+});
+
+describe("youtube companion audio sync", () => {
+  test("a video with an unset volume lifts the audio volume to 1", () => {
+    const video = {
+      currentTime: 0,
+      ended: false,
+      muted: false,
+      paused: true,
+      playbackRate: 1,
+      seeking: false,
+      volume: Number.NaN,
+    };
+    const audio = {
+      currentTime: 0,
+      duration: 10,
+      muted: false,
+      pause() {},
+      paused: true,
+      playbackRate: 1,
+      readyState: 4,
+      volume: 0.2,
+    };
+    syncCompanionAudioElements({
+      audio: audio as unknown as HTMLAudioElement,
+      forceSeek: false,
+      seekClock: { current: 0 },
+      video: video as unknown as HTMLVideoElement,
+    });
+    assert.equal(audio.volume, 1);
   });
 });

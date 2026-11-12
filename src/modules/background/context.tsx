@@ -9,8 +9,9 @@ import { useStore } from "@/react/hooks";
 
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import { useBackgroundMediaSource } from "./hooks/use-background-media-source";
-import { mergeOverridePatch } from "./model/override";
+import { applyOverrideUpdate } from "./model/override";
 import {
+  isElementPlaying,
   syncVideoLoopDirect,
   syncVideoMutedDirect,
   triggerVideoPlaybackDirect,
@@ -102,23 +103,9 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     const updatePatch = (
       updater: (current: BackgroundState) => Partial<BackgroundState>,
     ) => {
-      overrideStore.publish((prev) => {
-        const { pathname: currentPath, registryBackground: registry } =
-          inputsRef.current;
-        const currentPatch = prev.pathname === currentPath ? prev.patch : null;
-        const rawNext = updater(
-          resolveBackgroundState(registry, prev, currentPath),
-        );
-        if (!rawNext || Object.keys(rawNext).length === 0) {
-          return prev;
-        }
-        const normalizedNext = normalizeBackgroundInput(rawNext);
-        const mergedPatch = mergeOverridePatch(currentPatch, normalizedNext);
-        return {
-          patch: mergedPatch,
-          pathname: currentPath,
-        };
-      });
+      overrideStore.publish((prev) =>
+        applyOverrideUpdate(prev, inputsRef.current, updater),
+      );
     };
 
     const currentVideoElement = (current: BackgroundState) =>
@@ -175,9 +162,10 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       toggleVideo: () => {
         const current = readCurrent();
         const videoEl = currentVideoElement(current);
-        const domIsActuallyPlaying = videoEl
-          ? !videoEl.paused && !videoEl.ended
-          : Boolean(current.isPlaying);
+        const domIsActuallyPlaying = isElementPlaying(
+          videoEl,
+          current.isPlaying,
+        );
         const nextPlaying = !domIsActuallyPlaying;
         const configuredMuted = Boolean(current.videoOptions?.muted);
 
