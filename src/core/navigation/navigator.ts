@@ -7,8 +7,9 @@ import {
   NAVIGATION_SOURCE,
   NAVIGATION_STATUS,
 } from "./constants";
-import { afterPaint, emitGlobal, type Timer } from "./navigator-defaults";
+import { afterPaint, emitGlobal } from "./navigator-defaults";
 import { createNavigationHolds } from "./navigator-holds";
+import { createPatienceTimer } from "./navigator-patience";
 import { createPayloadProviders } from "./navigator-payload";
 import { createPrefetcher } from "./navigator-prefetch";
 import { getNavigationSettings } from "./settings";
@@ -71,7 +72,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
 
   let nextTripId = 0;
   let controller: AbortController | null = null;
-  let patience: Timer | null = null;
   let replay: (() => void) | null = null;
   let visit = 0;
   let landedVisit = -1;
@@ -101,23 +101,13 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       type: event,
     });
 
-  const clearPatience = () => {
-    if (patience === null) return;
-    clearTimeout(patience);
-    patience = null;
-  };
-
-  const waitFor = (id: number) => {
-    clearPatience();
-    const ms = Number(settings().timeoutMs);
-    if (!Number.isFinite(ms) || ms <= 0) return;
-    patience = setTimeout(() => {
-      patience = null;
+  const patience = createPatienceTimer({
+    onTimeout: (id) =>
       settle(id, NAVIGATION_STATUS.TIMED_OUT, {
         reason: NAVIGATION_REASON.TIME_OUT,
-      });
-    }, ms);
-  };
+      }),
+    settings,
+  });
 
   function settle(
     id: number,
@@ -126,7 +116,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   ): boolean {
     const trip = active();
     if (!trip || trip.id !== id) return false;
-    clearPatience();
+    patience.clear();
     replay = null;
     const settled = settleTrip(trip, status, { ...details, endedAt: now() });
     const abort = status === NAVIGATION_STATUS.COMPLETED ? null : controller;
@@ -159,7 +149,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       startedAt: now(),
     });
     store.publish((state) => ({ ...state, active: trip }));
-    waitFor(trip.id);
+    patience.start(trip.id);
     announce(NAVIGATION_EVENTS.START, trip);
     return trip;
   }
@@ -169,7 +159,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     if (!trip || trip.id !== id) return false;
     const routing = { ...trip, phase: NAVIGATION_PHASE.ROUTING };
     store.publish((state) => ({ ...state, active: routing }));
-    waitFor(id);
+    patience.start(id);
     announce(NAVIGATION_EVENTS.COMMIT, routing);
     try {
       go();
@@ -310,7 +300,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   }
 
   function dispose(): void {
-    clearPatience();
+    patience.clear();
     const go = replay;
     replay = null;
     go?.();

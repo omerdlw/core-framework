@@ -38,7 +38,10 @@ function checkNonEmptyStrings(
   }
 }
 
-function checkNumbers(metadata: Record<string, unknown>, issues: string[]) {
+function checkNumbers(
+  metadata: Record<string, unknown>,
+  issues: string[],
+): void {
   if (
     metadata.priority !== undefined &&
     parseFiniteNumber(metadata.priority) === null
@@ -52,7 +55,7 @@ function checkNumbers(metadata: Record<string, unknown>, issues: string[]) {
   }
 }
 
-function checkEnums(metadata: Record<string, unknown>, issues: string[]) {
+function checkEnums(metadata: Record<string, unknown>, issues: string[]): void {
   const lifecycle = metadata.lifecycle ?? metadata.cleanup;
   if (
     lifecycle !== undefined &&
