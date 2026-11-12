@@ -1,5 +1,6 @@
 import { normalizePath } from "@/foundation/utils";
 
+/** True when two paths are equal after normalization. */
 export function isSamePath(left: unknown, right: unknown): boolean {
   const normalizedLeft = normalizePath(left);
   const normalizedRight = normalizePath(right);
@@ -8,6 +9,7 @@ export function isSamePath(left: unknown, right: unknown): boolean {
   );
 }
 
+/** True when the candidate path equals or is a parent of the pathname. */
 export function isPathPrefix(
   candidatePath: unknown,
   pathname: unknown,
@@ -20,6 +22,7 @@ export function isPathPrefix(
   return normalizedPathname.startsWith(`${normalizedCandidate}/`);
 }
 
+/** True when an inline action path applies to the current pathname. */
 export function isInlineActionPathMatch(
   path: unknown,
   pathname: unknown,
@@ -29,11 +32,18 @@ export function isInlineActionPathMatch(
   );
 }
 
+/** True for same-origin hrefs that start with a single slash. */
 export function isSafeInternalHref(value: unknown): boolean {
   const href = typeof value === "string" ? value.trim() : "";
   return href.startsWith("/") && !href.startsWith("//");
 }
 
+function withPrefix(value: string, prefix: string): string {
+  if (!value) return "";
+  return value.startsWith(prefix) ? value : `${prefix}${value}`;
+}
+
+/** Builds a stable pathname+search+hash key for a location. */
 export function getDockLocationKey({
   hash = "",
   pathname = "/",
@@ -46,15 +56,7 @@ export function getDockLocationKey({
   const normalizedPathname = String(pathname || "/").trim() || "/";
   const normalizedSearch = String(search || "").trim();
   const normalizedHash = String(hash || "").trim();
-  const query = normalizedSearch
-    ? normalizedSearch.startsWith("?")
-      ? normalizedSearch
-      : `?${normalizedSearch}`
-    : "";
-  const fragment = normalizedHash
-    ? normalizedHash.startsWith("#")
-      ? normalizedHash
-      : `#${normalizedHash}`
-    : "";
+  const query = withPrefix(normalizedSearch, "?");
+  const fragment = withPrefix(normalizedHash, "#");
   return `${normalizedPathname}${query}${fragment}`;
 }

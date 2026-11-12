@@ -12,9 +12,51 @@ import {
   resolveComponentType,
   resolveRenderableContent,
 } from "../lib/element-helpers";
-import type { DockHudDescriptor, DockOperation } from "../types";
+import type { DockComponent, DockHudDescriptor, DockOperation } from "../types";
 import { normalizeAutoDismiss, normalizePriority } from "./hud";
 
+const DEFAULT_HUD_ID = "hud";
+const DEFAULT_COMPONENT_HUD_ID = "component-hud";
+
+type DismissHandler = DockHudDescriptor["onDismiss"];
+
+function resolveDirectContent(input: unknown, content: ReactNode): ReactNode {
+  if (content != null) return content;
+  const isRenderableInput =
+    isValidElement(input) ||
+    typeof input === "string" ||
+    typeof input === "number";
+  return isRenderableInput ? (input as ReactNode) : null;
+}
+
+function resolveHudId(
+  descriptor: DockHudDescriptor | null,
+  config: Partial<DockHudDescriptor>,
+  component: DockComponent | null,
+): string {
+  const componentId = component
+    ? component.displayName || component.name || DEFAULT_COMPONENT_HUD_ID
+    : DEFAULT_HUD_ID;
+  return String(descriptor?.id ?? config?.id ?? componentId);
+}
+
+function resolveDismissHandler(
+  descriptor: DockHudDescriptor | null,
+  config: Partial<DockHudDescriptor>,
+): DismissHandler {
+  const candidates = [
+    descriptor?.onDismiss,
+    descriptor?.onCancel,
+    config?.onDismiss,
+    config?.onCancel,
+  ];
+  const handler = candidates.find(
+    (candidate) => typeof candidate === "function",
+  );
+  return handler ?? null;
+}
+
+/** Normalizes a component, node or descriptor into a HUD definition; null when empty. */
 export function createHudDefinition(
   input: unknown,
   config: Partial<DockHudDescriptor> = {},
@@ -27,20 +69,8 @@ export function createHudDefinition(
     descriptor?.node,
     descriptor?.element,
   );
-  const directContent =
-    content ??
-    (isValidElement(input) ||
-    typeof input === "string" ||
-    typeof input === "number"
-      ? (input as ReactNode)
-      : null);
+  const directContent = resolveDirectContent(input, content);
   if (!component && directContent == null) return null;
-  const id =
-    descriptor?.id ??
-    config?.id ??
-    (component
-      ? component.displayName || component.name || "component-hud"
-      : "hud");
   return {
     autoDismissMs: normalizeAutoDismiss(
       descriptor?.autoDismissMs ?? config?.autoDismissMs,
@@ -51,18 +81,9 @@ export function createHudDefinition(
       descriptor?.dismissOnEscape ?? config?.dismissOnEscape ?? true,
     dismissOnNavigate:
       descriptor?.dismissOnNavigate ?? config?.dismissOnNavigate ?? true,
-    id: String(id),
+    id: resolveHudId(descriptor, config, component),
     isActive: Boolean(descriptor?.isActive ?? config?.isActive ?? true),
-    onDismiss:
-      typeof descriptor?.onDismiss === "function"
-        ? descriptor.onDismiss
-        : typeof descriptor?.onCancel === "function"
-          ? descriptor.onCancel
-          : typeof config?.onDismiss === "function"
-            ? config.onDismiss
-            : typeof config?.onCancel === "function"
-              ? config.onCancel
-              : null,
+    onDismiss: resolveDismissHandler(descriptor, config),
     priority: normalizePriority(descriptor?.priority ?? config?.priority),
     props: component && isObject(descriptor?.props) ? descriptor.props : {},
     renderMode: component
@@ -71,6 +92,7 @@ export function createHudDefinition(
   };
 }
 
+/** Builds the HUD definition for selection mode, or null when it is off. */
 export function createSelectionModeState(
   config: (Partial<DockHudDescriptor> & { id?: string }) | null | undefined,
 ): DockHudDescriptor | null {
@@ -82,6 +104,33 @@ export function createSelectionModeState(
     : null;
 }
 
+function buildOperationHudInput(
+  operation: DockOperation,
+  pendingCount: number,
+): Record<string, unknown> {
+  if (isHudDescriptor(operation.hud)) {
+    return {
+      ...operation.hud,
+      props: {
+        ...(isObject(operation.hud.props) ? operation.hud.props : {}),
+        operation,
+        pendingCount,
+      },
+    };
+  }
+  if (typeof operation.hud === "function") {
+    return {
+      component: operation.hud,
+      props: {
+        operation,
+        pendingCount,
+      },
+    };
+  }
+  return { content: operation.hud };
+}
+
+/** Builds the progress HUD for a pending operation; null once it has settled. */
 export function createDockOperationHud(
   operation: DockOperation | null | undefined,
   {
@@ -96,26 +145,7 @@ export function createDockOperationHud(
   ) {
     return null;
   }
-  const hudInput = isHudDescriptor(operation.hud)
-    ? {
-        ...operation.hud,
-        props: {
-          ...(isObject(operation.hud.props) ? operation.hud.props : {}),
-          operation,
-          pendingCount,
-        },
-      }
-    : typeof operation.hud === "function"
-      ? {
-          component: operation.hud,
-          props: {
-            operation,
-            pendingCount,
-          },
-        }
-      : {
-          content: operation.hud,
-        };
+  const hudInput = buildOperationHudInput(operation, pendingCount);
   return createHudDefinition({
     ...hudInput,
     dismissOnEscape: false,

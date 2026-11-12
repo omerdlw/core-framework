@@ -4,6 +4,7 @@ import {
   isObject as isObjectLike,
 } from "@/foundation/utils";
 
+/** Returns the value when it is a plain object, otherwise an empty object. */
 export function toObject(value: unknown): Record<string, unknown> {
   return isObjectLike(value) ? value : {};
 }

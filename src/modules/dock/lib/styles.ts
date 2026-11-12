@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
-import { isObject as isObjectLike, trimToNull } from "@/foundation/utils";
+import { trimToNull } from "@/foundation/utils";
 
 import { DOCK_STYLE_SECTIONS } from "../constants";
 import type {
@@ -13,11 +13,15 @@ import type {
   DockVisualStyleSection,
   DockVisualStyleSections,
 } from "../types";
+import { toObject } from "./helpers";
 
 export type DockStyleInput = DockVisualStyleSection;
 
 const CARD_STACK_BASE = 10;
+const CARD_PERSPECTIVE_PX = 1000;
+const OPACITY_PRECISION = 2;
 
+/** True for banner URLs that are http(s), root-relative or image data URIs. */
 export function isValidBannerUrl(banner: unknown): boolean {
   const value = trimToNull(banner);
   if (!value) return false;
@@ -109,6 +113,55 @@ export function resolveDockActionClass(
   return resolve(stateClass, resolvedBase, elementClass);
 }
 
+function resolvePlacement(
+  isTop: boolean,
+  isAnchoredToBottom: boolean | undefined,
+): "top" | "bottom" | "float" {
+  if (isTop) return "top";
+  return isAnchoredToBottom ? "bottom" : "float";
+}
+
+function resolveCardMotionValues({
+  cardScale,
+  expanded,
+  isShelf,
+  position,
+  stacking,
+  visibleCount,
+}: {
+  cardScale: DockItemCardPropsOptions["cardScale"];
+  expanded: DockItemCardPropsOptions["expanded"];
+  isShelf: boolean;
+  position: number;
+  stacking: DockItemCardPropsOptions["stacking"];
+  visibleCount: number;
+}) {
+  const { offsetY: collapsedOffsetY, scale: collapsedScale } =
+    stacking.collapsed;
+  const { offsetY: expandedOffsetY } = stacking.expanded;
+
+  let y = position * collapsedOffsetY;
+  let scale = collapsedScale ** position;
+  if (expanded) {
+    y = position * expandedOffsetY;
+    scale = cardScale || 1;
+  } else if (isShelf) {
+    y = stacking.shelf.offsetY;
+    scale = stacking.shelf.scale;
+  }
+
+  const collapsedOpacity = Math.max(
+    stacking.collapsed.opacityMin,
+    +(1 - position * stacking.collapsed.opacityStep).toFixed(OPACITY_PRECISION),
+  );
+  let opacity = 0;
+  if (expanded || isShelf) opacity = 1;
+  else if (position < visibleCount) opacity = collapsedOpacity;
+
+  return { y, scale, opacity };
+}
+
+/** Computes class, data attributes, inline style and motion values for a stacked dock card. */
 export function getDockItemCardProps({
   cardScale,
   cardStyle,
@@ -120,10 +173,6 @@ export function getDockItemCardProps({
   theme,
   visibleCount = stacking.visible.stack,
 }: DockItemCardPropsOptions) {
-  const { offsetY: collapsedOffsetY, scale: collapsedScale } =
-    stacking.collapsed;
-  const { offsetY: expandedOffsetY } = stacking.expanded;
-
   const safeCardStyle = { ...cardStyle };
   delete safeCardStyle.scale;
   delete safeCardStyle.className;
@@ -131,32 +180,21 @@ export function getDockItemCardProps({
   const isTop = position === 0;
   const isShelf = !expanded && position === 1 && hasExtensions;
   const isHeavyBlur = position < visibleCount || expanded || isShelf;
-  const collapsedScaleValue = collapsedScale ** position;
-
-  const y = expanded
-    ? position * expandedOffsetY
-    : isShelf
-      ? stacking.shelf.offsetY
-      : position * collapsedOffsetY;
-  const scale = expanded
-    ? cardScale || 1
-    : isShelf
-      ? stacking.shelf.scale
-      : collapsedScaleValue;
-
-  const collapsedOpacity = Math.max(
-    stacking.collapsed.opacityMin,
-    +(1 - position * stacking.collapsed.opacityStep).toFixed(2),
-  );
-  const opacity =
-    expanded || isShelf ? 1 : position < visibleCount ? collapsedOpacity : 0;
+  const motionValues = resolveCardMotionValues({
+    cardScale,
+    expanded,
+    isShelf,
+    position,
+    stacking,
+    visibleCount,
+  });
 
   return {
     className: cn(theme.slots.card, cardStyle?.className),
     data: {
       "data-anchored": isAnchoredToBottom,
       "data-blur": isHeavyBlur ? "heavy" : "light",
-      "data-placement": isTop ? "top" : isAnchoredToBottom ? "bottom" : "float",
+      "data-placement": resolvePlacement(isTop, isAnchoredToBottom),
       "data-shelf": isShelf,
     },
     style: {
@@ -165,8 +203,8 @@ export function getDockItemCardProps({
       willChange: "transform, opacity",
       transformOrigin: isAnchoredToBottom ? "bottom center" : "top center",
       zIndex: CARD_STACK_BASE - position,
-      WebkitPerspective: 1000,
-      perspective: 1000,
+      WebkitPerspective: CARD_PERSPECTIVE_PX,
+      perspective: CARD_PERSPECTIVE_PX,
       WebkitBackfaceVisibility: "hidden" as const,
       backfaceVisibility: "hidden" as const,
       WebkitFontSmoothing: "antialiased",
@@ -176,12 +214,8 @@ export function getDockItemCardProps({
         ? undefined
         : "none") as CSSProperties["pointerEvents"],
     },
-    motionValues: { y, scale, opacity },
+    motionValues,
   };
-}
-
-function toObject(value: unknown): Record<string, unknown> {
-  return isObjectLike(value) ? value : {};
 }
 
 function pickCardSurfaceStyle(
