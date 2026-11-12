@@ -1,7 +1,3 @@
-import type { ComponentType, Context, ReactNode } from "react";
-
-import type { ExternalStore } from "@/foundation/utils";
-
 /**
  * Any function, with arguments and result erased.
  */
@@ -163,8 +159,6 @@ export interface RegistrySchema {
   [key: string]: unknown;
 }
 
-type RegistryTypeKey = keyof RegistrySchema & string;
-
 /**
  * Registry metadata after defaults and validation have been applied.
  */
@@ -182,6 +176,7 @@ export interface NormalizedRegistryMetadata {
  * All source records stored under one registry key.
  */
 export type RegistryEntryRecords = Record<string, unknown>;
+
 /**
  * The full registry state: records per key, per type.
  */
@@ -195,301 +190,33 @@ export type RegistryState = Record<
  */
 export type RegistrySourceOrOptions = string | RegistryMetadata;
 
-type RegistryRegisterFn = <
-  K extends RegistryTypeKey = RegistryTypeKey,
-  T = RegistrySchema[K],
->(
-  type: K,
-  key: string,
-  item: T,
-  sourceOrOptions?: RegistrySourceOrOptions,
-  optionsArg?: RegistryMetadata,
-) => RegistrationHandle<T>;
-
-type RegistryUnregisterFn = <K extends RegistryTypeKey = RegistryTypeKey>(
-  type: K,
-  key: string,
-  sourceOrOptions?: RegistrySourceOrOptions,
-) => void;
-
-/**
- * The register and unregister functions available inside a batch.
- */
-export interface RegistryQueue {
-  register: RegistryRegisterFn;
-  unregister: RegistryUnregisterFn;
-}
-
-/**
- * A pending delayed cleanup that can be cancelled.
- */
-export interface RegistryCleanupTimer {
-  cancelled: boolean;
-  timerId: ReturnType<typeof setTimeout> | null;
-}
-
-/**
- * Everything needed to apply a page config to the registry for one component
- * instance.
- */
-export interface RegistryApplyContext extends RegistryQueue {
-  batch: (executor: (queue: RegistryQueue) => void) => number;
-  cleanupScope: Map<string, RegistryCleanupTimer>;
-  instanceId: string;
-  modules?: readonly AnyCoreModule[];
-  pathname: string;
-}
-
-/**
- * Outcome of a transaction: its status and how many operations were queued and
- * applied.
- */
-export interface RegistryTransactionResult {
-  applied?: number;
-  queued?: number;
-  status: "open" | "committed" | "rolled-back";
-  traceId: string;
-}
-
-/**
- * Reference to one operation queued in a transaction.
- */
-export interface RegistryTransactionRef {
-  index: number;
-  status: "open" | "committed" | "rolled-back" | "queued";
-  traceId: string;
-}
-
-/**
- * The register and unregister functions available inside a transaction.
- */
-export interface RegistryTransactionQueue {
-  register: (
-    type: string,
-    key: string,
-    value: unknown,
-    sourceOrOptions?: RegistrySourceOrOptions,
-    optionsArg?: RegistryMetadata,
-  ) => RegistryTransactionRef;
-  unregister: (
-    type: string,
-    key: string,
-    sourceOrOptions?: RegistrySourceOrOptions,
-  ) => RegistryTransactionRef;
-}
-
-/**
- * The registry store: register, unregister, batch, transaction and snapshot
- * reads.
- */
-export interface RegistryStore {
-  batch: (executor: (queue: RegistryQueue) => void) => number;
-  dispose: (operation: RegisterOperation, reason?: string) => boolean;
-  getEntriesSnapshot: <
-    K extends RegistryTypeKey = RegistryTypeKey,
-    T = RegistrySchema[K],
-  >(
-    type: K,
-    scope?: string | null,
-  ) => Record<string, T>;
-  getSnapshot: <
-    K extends RegistryTypeKey = RegistryTypeKey,
-    T = RegistrySchema[K],
-  >(
-    type: K,
-    key: string,
-    scope?: string | null,
-  ) => T | undefined;
-  isCurrent: (operation: RegisterOperation) => boolean;
-  register: RegistryRegisterFn;
-  subscribe: <K extends RegistryTypeKey = RegistryTypeKey>(
-    type: K,
-    key: string | null | undefined,
-    listener: () => void,
-  ) => () => void;
-  transaction: (
-    executor: (tx: RegistryTransactionQueue) => void,
-    metadata?: RegistryMetadata,
-  ) => RegistryTransactionResult;
-  unregister: RegistryUnregisterFn;
-}
-
-/**
- * Options for usePage(): registry metadata applied to the whole page.
- */
-export interface PageOptions {
-  instanceId?: string;
-  lifecycle?: RegistryLifecycle;
-  priority?: number;
-  scope?: string;
-  source?: string;
-  [key: string]: unknown;
-}
-
-/**
- * Per-page configuration: one slice per module, plus registry metadata and a
- * title.
- */
-export interface PageConfig {
-  registry?: RegistryMetadata;
-  title?: string;
-}
-
-/**
- * A page's controller: its config, module controllers, setters and a scoped
- * provider.
- */
-export interface PageController {
-  Provider: ({ children }: { children?: ReactNode }) => ReactNode;
-  config: PageConfig;
-  modules: PageModules;
-  reset: () => void;
-  set: (partial: Partial<PageConfig>) => void;
-}
-
-/**
- * A single prepared registration, ready to be applied to the registry.
- */
-export interface RegistrationEntry {
-  cleanupDelayMs: number | null;
-  key: string;
-  lifecycle: RegistryLifecycle | null;
-  registerOptions: RegistryMetadata;
-  scope: string | undefined;
-  source: string;
-  value: unknown;
-}
-
-/**
- * A function and the stable wrapper that always calls its latest version.
- */
-export interface StableFunctionEntry {
-  current: AnyFunction;
-  stable: AnyFunction;
-}
-
-/**
- * Tracks the stack of mounted pages and exposes the topmost controller.
- */
-export interface PageControllerStore {
-  getSnapshot: () => PageController | null;
-  notify: () => void;
-  register: (
-    id: string,
-    controllerRef: { current: PageController | null },
-  ) => void;
-  subscribe: (listener: () => void) => () => void;
-  unregister: (id: string) => void;
-}
-
-/**
- * Maps module ids to their module types. Augment it to register your own
- * modules.
- */
-export interface CoreModules {}
-
-/**
- * The id of a registered module.
- */
-export type ModuleId = keyof CoreModules & string;
-
-/**
- * A module's runtime: its actions and its observable store.
- */
-export interface ModuleRuntime<TState = unknown, TActions = unknown> {
-  readonly actions: TActions;
-  readonly store: ExternalStore<TState>;
-}
-
-/**
- * A key and value a module registers for a page.
- */
-export interface PageRegistration {
-  key: string;
-  value: unknown;
-}
-
-/**
- * Context passed to a module when it turns a page slice into registrations.
- */
-export interface ModulePageContext {
-  pathname: string;
-}
-
-/**
- * The page API given to a module's page controller hook.
- */
-export interface PageModuleApi {
-  set: (partial: Partial<PageConfig>) => void;
-}
-
-type ModuleSliceItem<TSlice> = TSlice extends readonly (infer TItem)[]
-  ? TItem
-  : TSlice;
-
-interface ModulePageSpec<TSlice, TController> {
-  select?(config: PageConfig): TSlice | null | undefined;
-  entries?(
-    item: ModuleSliceItem<TSlice>,
-    context: ModulePageContext,
-  ): readonly PageRegistration[] | null | undefined;
-  use?(slice: TSlice | null, page: PageModuleApi): TController;
-}
-
-/**
- * Definition of a module: its id, provider, overlays, registry type and page
- * integration.
- */
-export interface CoreModule<
-  TId extends string = string,
-  TRuntime = unknown,
-  TSlice = unknown,
-  TController = unknown,
-> {
-  readonly id: TId;
-  readonly context?: Context<TRuntime | null>;
-  readonly Provider?: ComponentType<{ children?: ReactNode }>;
-  readonly Backdrop?: ComponentType;
-  readonly Overlay?: ComponentType;
-  readonly uses?: readonly string[];
-  readonly registry?: RegistryDefinition;
-  readonly page?: ModulePageSpec<TSlice, TController>;
-}
-
-/**
- * A CoreModule with its type parameters erased.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for any registered module
-export type AnyCoreModule = CoreModule<string, any, any, any>;
-
-/**
- * The runtime type of a module.
- */
-export type ModuleRuntimeOf<M> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for inference
-  M extends CoreModule<string, infer TRuntime, any, any> ? TRuntime : never;
-
-/**
- * The state type of a registered module.
- */
-export type ModuleStateOf<K extends ModuleId> =
-  ModuleRuntimeOf<CoreModules[K]> extends ModuleRuntime<infer TState, unknown>
-    ? TState
-    : never;
-
-type ModuleControllerOf<M> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- module type parameters are erased for inference
-  M extends CoreModule<string, any, any, infer TController>
-    ? TController
-    : never;
-
-/**
- * Controllers contributed by modules, keyed by module id.
- */
-export type PageModules = {
-  [
-    K in ModuleId as [ModuleControllerOf<CoreModules[K]>] extends [never]
-      ? never
-      : K
-  ]?: ModuleControllerOf<CoreModules[K]>;
-};
+export type {
+  RegistryQueue,
+  RegistryCleanupTimer,
+  RegistryApplyContext,
+  RegistryTransactionResult,
+  RegistryTransactionRef,
+  RegistryTransactionQueue,
+  RegistryStore,
+} from "./types-store";
+export type {
+  PageOptions,
+  PageConfig,
+  PageController,
+  RegistrationEntry,
+  StableFunctionEntry,
+  PageControllerStore,
+} from "./types-page";
+export type {
+  CoreModules,
+  ModuleId,
+  ModuleRuntime,
+  PageRegistration,
+  ModulePageContext,
+  PageModuleApi,
+  CoreModule,
+  AnyCoreModule,
+  ModuleRuntimeOf,
+  ModuleStateOf,
+  PageModules,
+} from "./types-modules";
