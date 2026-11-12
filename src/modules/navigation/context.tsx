@@ -1,13 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  type ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useState } from "react";
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createNavigator } from "@/core/navigation/navigator";
@@ -66,7 +60,14 @@ interface NavigationProviderProps {
 export function NavigationProvider({ children }: NavigationProviderProps) {
   const router: NavigationRouter = useRouter();
   const pathname = usePathname();
-  const [navigator] = useState(() => createNavigator({ router }));
+  const [{ navigator, runtime }] = useState(() => {
+    const created = createNavigator({ router });
+    const value: NavigationRuntime = {
+      actions: created,
+      store: created.store,
+    };
+    return { navigator: created, runtime: value };
+  });
 
   useLayoutEffect(() => {
     navigator.setRouter(router);
@@ -79,11 +80,6 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   useEffect(() => watchHistory(navigator), [navigator]);
   useEffect(() => watchIntent(navigator, getNavigationSettings), [navigator]);
   useEffect(() => () => navigator.dispose(), [navigator]);
-
-  const runtime = useMemo<NavigationRuntime>(
-    () => ({ actions: navigator, store: navigator.store }),
-    [navigator],
-  );
 
   return <NavigationContext value={runtime}>{children}</NavigationContext>;
 }
