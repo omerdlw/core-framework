@@ -27,12 +27,18 @@ import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
   clearPersistedOverlayStatus,
   createConnectionStatus,
-  isEquivalentOverlayStatus,
-  isErrorStatus,
   isPersistableOverlayStatus,
-  resolveStatusPriority,
   restorePersistedOverlayStatus,
 } from "./model";
+import {
+  isClearedByRouteChange,
+  resolveExpiredStatus,
+  resolveUpdatedStatus,
+} from "./state";
+
+const OFFLINE_WINDOW_EVENT = "offline";
+const OFFLINE_STATUS_TYPE = "OFFLINE";
+const ONLINE_STATUS_TYPE = "ONLINE";
 
 function usePersistedOverlayStatusRestoration({
   scheduleStatusClear,
@@ -87,11 +93,7 @@ function useRouteErrorStatusCleanup({
     previousPathRef.current = pathname;
 
     setStatus((currentStatus) => {
-      if (
-        currentStatus &&
-        isErrorStatus(currentStatus.type) &&
-        currentStatus.type !== "ACCOUNT_DELETE"
-      ) {
+      if (isClearedByRouteChange(currentStatus)) {
         if (typeof navigator !== "undefined" && !navigator.onLine)
           dispatchOfflineEvent();
         return null;
@@ -148,20 +150,9 @@ export function useDockStatus(
   }, []);
 
   const updateStatus = useCallback((nextStatusOrFn: StatusUpdate) => {
-    setStatus((currentStatus) => {
-      const nextStatus =
-        typeof nextStatusOrFn === "function"
-          ? nextStatusOrFn(currentStatus)
-          : nextStatusOrFn;
-      if (!nextStatus) return null;
-      if (isEquivalentOverlayStatus(currentStatus, nextStatus))
-        return currentStatus;
-      if (!currentStatus) return nextStatus;
-      return resolveStatusPriority(nextStatus) >=
-        resolveStatusPriority(currentStatus)
-        ? nextStatus
-        : currentStatus;
-    });
+    setStatus((currentStatus) =>
+      resolveUpdatedStatus(currentStatus, nextStatusOrFn),
+    );
   }, []);
 
   const scheduleStatusClear = useCallback(
@@ -177,15 +168,9 @@ export function useDockStatus(
       statusClearTimerRef.current = setTimeout(() => {
         statusClearTimerRef.current = null;
         setStatus((currentStatus) => {
-          if (!currentStatus) return currentStatus;
-          if (
-            clearTypes.length === 0 ||
-            clearTypes.includes(currentStatus.type)
-          ) {
-            clearPersistedOverlayStatus();
-            return null;
-          }
-          return currentStatus;
+          const nextStatus = resolveExpiredStatus(currentStatus, clearTypes);
+          if (nextStatus !== currentStatus) clearPersistedOverlayStatus();
+          return nextStatus;
         });
       }, duration);
     },
@@ -196,25 +181,25 @@ export function useDockStatus(
     clearTimer(offlineDispatchTimerRef);
     offlineDispatchTimerRef.current = setTimeout(() => {
       offlineDispatchTimerRef.current = null;
-      window.dispatchEvent(new Event("offline"));
+      window.dispatchEvent(new Event(OFFLINE_WINDOW_EVENT));
     }, 0);
   }, [clearTimer]);
 
   const handleOffline = useCallback(() => {
-    updateStatus(createConnectionStatus("OFFLINE"));
+    updateStatus(createConnectionStatus(OFFLINE_STATUS_TYPE));
   }, [updateStatus]);
 
   const handleOnline = useCallback(() => {
     setStatus((currentStatus) => {
-      if (currentStatus?.type !== "OFFLINE") return null;
+      if (currentStatus?.type !== OFFLINE_STATUS_TYPE) return null;
       clearTimer(onlineResetTimerRef);
       onlineResetTimerRef.current = setTimeout(() => {
         onlineResetTimerRef.current = null;
         setStatus((nextStatus) =>
-          nextStatus?.type === "ONLINE" ? null : nextStatus,
+          nextStatus?.type === ONLINE_STATUS_TYPE ? null : nextStatus,
         );
       }, STATUS_CLEAR_DURATION);
-      return createConnectionStatus("ONLINE");
+      return createConnectionStatus(ONLINE_STATUS_TYPE);
     });
   }, [clearTimer]);
 

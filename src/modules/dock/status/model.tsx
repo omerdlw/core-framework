@@ -23,6 +23,14 @@ import type {
   StatusState,
 } from "../types";
 
+const CONNECTION_ICON_SIZE = 24;
+const STORAGE_PROBE_KEY = "__bf_storage_probe__";
+const STATUS_TYPES_WITH_ACTIONS: ReadonlySet<string> = new Set([
+  "APP_ERROR",
+  "API_ERROR",
+  "GUARD",
+]);
+
 export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
 
 export type StatusUpdate =
@@ -109,6 +117,54 @@ export function createOverlayStatus({
   };
 }
 
+interface ErrorStatusOptions {
+  type: string;
+  title: string;
+  description: string;
+  icon?: DockIconSource;
+  style?: DockStatusTheme;
+  onRetry?: () => void;
+  clearStatus?: () => void;
+  action?: ComponentType<ErrorActionsProps> | null;
+  errorAction?: ComponentType<ErrorActionsProps> | null;
+  retryLabel?: string;
+  refreshLabel?: string;
+  retryText?: string;
+  refreshText?: string;
+}
+
+interface GuardStatusOptions {
+  action?: ComponentType<GuardActionsProps> | null;
+  guardAction?: ComponentType<GuardActionsProps> | null;
+  title?: string;
+  description?: string;
+  icon?: DockIconSource;
+  style?: DockStatusTheme;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  cancelLabel?: string;
+  confirmLabel?: string;
+  cancelText?: string;
+  confirmText?: string;
+  clearStatus?: () => void;
+}
+
+function reloadPage() {
+  window.location.reload();
+}
+
+function createRetryHandler(onRetry?: () => void, clearStatus?: () => void) {
+  if (typeof onRetry !== "function") return reloadPage;
+  return () => {
+    clearStatus?.();
+    onRetry();
+  };
+}
+
+/**
+ * Builds an error overlay status whose actions retry (or reload the page)
+ * and refresh. Pass `action` to replace the default action component.
+ */
 export function createErrorStatus({
   type,
   title,
@@ -123,30 +179,8 @@ export function createErrorStatus({
   refreshLabel,
   retryText,
   refreshText,
-}: {
-  type: string;
-  title: string;
-  description: string;
-  icon?: DockIconSource;
-  style?: DockStatusTheme;
-  onRetry?: () => void;
-  clearStatus?: () => void;
-  action?: ComponentType<ErrorActionsProps> | null;
-  errorAction?: ComponentType<ErrorActionsProps> | null;
-  retryLabel?: string;
-  refreshLabel?: string;
-  retryText?: string;
-  refreshText?: string;
-}) {
-  const retryHandler =
-    typeof onRetry === "function"
-      ? () => {
-          clearStatus?.();
-          onRetry();
-        }
-      : () => {
-          window.location.reload();
-        };
+}: ErrorStatusOptions) {
+  const retryHandler = createRetryHandler(onRetry, clearStatus);
   return createOverlayStatus({
     type,
     title,
@@ -160,7 +194,7 @@ export function createErrorStatus({
       return ActionComponent ? (
         <ActionComponent
           onRetry={retryHandler}
-          onRefresh={() => window.location.reload()}
+          onRefresh={reloadPage}
           retryLabel={retryLabel}
           refreshLabel={refreshLabel}
           retryText={retryText}
@@ -171,6 +205,10 @@ export function createErrorStatus({
   });
 }
 
+/**
+ * Builds a navigation-guard overlay status with confirm and cancel actions.
+ * Both handlers clear the status first, then call the given callbacks.
+ */
 export function createGuardStatus({
   action,
   guardAction,
@@ -185,21 +223,7 @@ export function createGuardStatus({
   cancelText = "Stay",
   confirmText = "Leave",
   clearStatus,
-}: {
-  action?: ComponentType<GuardActionsProps> | null;
-  guardAction?: ComponentType<GuardActionsProps> | null;
-  title?: string;
-  description?: string;
-  icon?: DockIconSource;
-  style?: DockStatusTheme;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-  cancelLabel?: string;
-  confirmLabel?: string;
-  cancelText?: string;
-  confirmText?: string;
-  clearStatus?: () => void;
-}) {
+}: GuardStatusOptions) {
   const cancelHandler = () => {
     clearStatus?.();
     onCancel?.();
@@ -241,7 +265,7 @@ export function createConnectionStatus(type: string) {
       type,
       title: "Connection Lost",
       description: "You are currently offline",
-      icon: <Icon icon="lucide:wifi-off" size={24} />,
+      icon: <Icon icon="lucide:wifi-off" size={CONNECTION_ICON_SIZE} />,
       style: getStatusTheme(type),
     });
   }
@@ -249,7 +273,7 @@ export function createConnectionStatus(type: string) {
     type: "ONLINE",
     title: "Connection Restored",
     description: "You are back online",
-    icon: <Icon icon="lucide:wifi" size={24} />,
+    icon: <Icon icon="lucide:wifi" size={CONNECTION_ICON_SIZE} />,
     style: getStatusTheme("ONLINE"),
     isOverlay: false,
   });
@@ -268,7 +292,7 @@ function readSessionStorage(): Storage | null {
       return null;
     }
 
-    const probeKey = "__bf_storage_probe__";
+    const probeKey = STORAGE_PROBE_KEY;
     storage.setItem(probeKey, "1");
     storage.removeItem(probeKey);
     cachedSessionStorage = storage;
@@ -360,9 +384,7 @@ export function applyStatusOverlay(
 ): DockItem | null {
   if (!item || !statusState) return item;
   const showStatusActions =
-    statusState.type === "APP_ERROR" ||
-    statusState.type === "API_ERROR" ||
-    statusState.type === "GUARD" ||
+    STATUS_TYPES_WITH_ACTIONS.has(statusState.type) ||
     Boolean(statusState.action);
   return {
     ...item,

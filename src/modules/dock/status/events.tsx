@@ -2,7 +2,11 @@
 
 import { type ComponentType } from "react";
 
-import { EVENT_TYPES, globalEvents } from "@/foundation/events";
+import {
+  EVENT_TYPES,
+  type FrameworkEventMap,
+  globalEvents,
+} from "@/foundation/events";
 import { toUserMessage } from "@/foundation/utils";
 
 import {
@@ -11,7 +15,11 @@ import {
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
 import { normalizeUpper } from "../lib/helpers";
-import type { QueuedApiError, ScheduleStatusClearOptions } from "../types";
+import type {
+  QueuedApiError,
+  ScheduleStatusClearOptions,
+  StatusState,
+} from "../types";
 import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
   clearPersistedOverlayStatus,
@@ -21,6 +29,9 @@ import {
   getStatusTheme,
   persistOverlayStatus,
 } from "./model";
+
+const DEFAULT_STATUS_TYPE = "STATUS";
+const DANGER_ICON = "solar:danger-triangle-bold";
 
 function stripTitleEcho(text: string): string {
   return text.replace(/^Something went wrong\.?\s*/i, "") || text;
@@ -62,7 +73,7 @@ export function subscribeToApiErrorStatusEvents({
           type: "API_ERROR",
           title,
           description,
-          icon: "solar:danger-triangle-bold",
+          icon: DANGER_ICON,
           onRetry: () => errors.forEach((e) => e.retry?.()),
           style: getStatusTheme("API_ERROR"),
           clearStatus,
@@ -88,7 +99,7 @@ export function subscribeToApplicationErrorStatusEvents({
         type: "APP_ERROR",
         title: "Something went wrong",
         description: stripTitleEcho(message || toUserMessage(error)),
-        icon: "solar:danger-triangle-bold",
+        icon: DANGER_ICON,
         onRetry: resetError
           ? () => {
               resetError();
@@ -101,6 +112,47 @@ export function subscribeToApplicationErrorStatusEvents({
       }),
     );
   });
+}
+
+type StatusSetPayload = FrameworkEventMap[typeof DOCK_EVENTS.STATUS_SET];
+type StatusClearPayload = FrameworkEventMap[typeof DOCK_EVENTS.STATUS_CLEAR];
+type GuardPayload = FrameworkEventMap[typeof DOCK_EVENTS.GUARD];
+
+function resolveStatusDuration(duration: unknown): number {
+  if (Number(duration) > 0) return Number(duration);
+  if (duration === null || duration === 0) return 0;
+  return OVERLAY_STATUS_CLEAR_DURATION;
+}
+
+function createStatusFromSetEvent(eventData: StatusSetPayload) {
+  const type = normalizeUpper(eventData.type || DEFAULT_STATUS_TYPE);
+  const priority = Number.isFinite(Number(eventData.priority))
+    ? Number(eventData.priority)
+    : null;
+
+  return createOverlayStatus({
+    type,
+    flow: eventData.flow || null,
+    priority,
+    title: eventData.title || "",
+    description: eventData.description || "",
+    icon: eventData.icon ?? null,
+    style: eventData.style || getStatusTheme(eventData.themeType || type),
+    isOverlay: eventData.isOverlay !== false,
+    action: eventData.action || null,
+    actions: eventData.actions || null,
+  });
+}
+
+function isClearedBy(
+  currentStatus: StatusState,
+  eventData: StatusClearPayload,
+): boolean {
+  if (!currentStatus) return true;
+  if (eventData.flow && currentStatus.flow === eventData.flow) return true;
+  return Boolean(
+    eventData.type && currentStatus.type === normalizeUpper(eventData.type),
+  );
 }
 
 export function subscribeToGenericStatusEvents({
@@ -120,43 +172,17 @@ export function subscribeToGenericStatusEvents({
     DOCK_EVENTS.STATUS_SET,
     (eventData) => {
       if (!eventData) return;
-      const type = normalizeUpper(eventData.type || "STATUS");
-      const priority = Number.isFinite(Number(eventData.priority))
-        ? Number(eventData.priority)
-        : null;
-
-      const nextStatus = createOverlayStatus({
-        type,
-        flow: eventData.flow || null,
-        priority,
-        title: eventData.title || "",
-        description: eventData.description || "",
-        icon: eventData.icon ?? null,
-        style: eventData.style || getStatusTheme(eventData.themeType || type),
-        isOverlay: eventData.isOverlay !== false,
-        action: eventData.action || null,
-        actions: eventData.actions || null,
-      });
-
+      const nextStatus = createStatusFromSetEvent(eventData);
       updateStatus(nextStatus);
 
-      const duration =
-        Number(eventData.duration) > 0
-          ? Number(eventData.duration)
-          : eventData.duration === null || eventData.duration === 0
-            ? 0
-            : OVERLAY_STATUS_CLEAR_DURATION;
-
-      if (duration > 0) {
-        scheduleStatusClear({
-          duration,
-          clearWhen: [type],
-        });
-        if (eventData.persist !== false) {
-          persistOverlayStatus(nextStatus, duration);
-        }
-      } else {
+      const duration = resolveStatusDuration(eventData.duration);
+      if (!(duration > 0)) {
         clearTimer(statusClearTimerRef);
+        return;
+      }
+      scheduleStatusClear({ duration, clearWhen: [nextStatus.type] });
+      if (eventData.persist !== false) {
+        persistOverlayStatus(nextStatus, duration);
       }
     },
   );
@@ -170,17 +196,9 @@ export function subscribeToGenericStatusEvents({
         setStatus(null);
         return;
       }
-      setStatus((currentStatus) => {
-        if (!currentStatus) return null;
-        if (eventData.flow && currentStatus.flow === eventData.flow)
-          return null;
-        if (
-          eventData.type &&
-          currentStatus.type === normalizeUpper(eventData.type)
-        )
-          return null;
-        return currentStatus;
-      });
+      setStatus((currentStatus) =>
+        isClearedBy(currentStatus, eventData) ? null : currentStatus,
+      );
     },
   );
 
@@ -227,6 +245,12 @@ export function subscribeToNotFoundStatusEvents({
   });
 }
 
+function resolveGuardDescription(eventData?: GuardPayload | null) {
+  if (typeof eventData?.description === "string") return eventData.description;
+  if (typeof eventData?.message === "string") return eventData.message;
+  return undefined;
+}
+
 export function subscribeToGuardStatusEvents({
   clearStatus,
   setStatus,
@@ -246,12 +270,7 @@ export function subscribeToGuardStatusEvents({
     updateStatus(
       createGuardStatus({
         ...eventData,
-        description:
-          typeof eventData?.description === "string"
-            ? eventData.description
-            : typeof eventData?.message === "string"
-              ? eventData.message
-              : undefined,
+        description: resolveGuardDescription(eventData),
         clearStatus,
       }),
     );
