@@ -4,7 +4,7 @@ import { type KeyboardEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { type CSSProperties } from "react";
-import { cn } from "@/utils";
+import { cn } from "@/design/cn";
 import { DOCK_STACK_ELEMENT_ID } from "./constants";
 import { type NotificationEntry } from "./types";
 import { NOTIFICATION_COMPOSITOR_STYLE, useNotificationMotion } from "./motion";

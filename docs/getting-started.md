@@ -33,27 +33,14 @@ npm install @omerdlw/base-framework motion @iconify-icon/react @radix-ui/react-t
 
 ---
 
-## 3. Tailwind CSS v4 Configuration
+## 3. Styling
 
-To ensure Tailwind scans the components, overlays, and atoms bundled inside `@omerdlw/base-framework`, add the package source to your main CSS file (e.g. `src/app/globals.css`):
+The framework ships no CSS and no class names: Tailwind has nothing to scan in the package. Every class lives in your app, in your module themes ([theming.md](./theming.md)) and your `defineUi` ([design.md](./design.md)), so Tailwind finds it in your own sources. Your stylesheet is entirely yours:
 
 ```css
+/* src/app/globals.css */
 @import "tailwindcss";
-
-/* 1. Instruct Tailwind to scan the Base Framework package files */
-@source "../node_modules/@omerdlw/base-framework";
-
-/* 2. Custom helper utility classes used by Base Framework */
-@utility center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@utility skeleton-block {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background-color: rgb(255 255 255 / 0.08);
-}
+@import "./design/tokens.css"; /* your colours, type scale, utilities */
 ```
 
 ---
@@ -102,7 +89,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Wrap `CoreProvider` in `<ThemeProvider themes={…} motion={…}>`. Your themes style every module, and the modules that animate (dock, modal, notification, context menu, background) also take their **motion** from those themes. Copy the framework's `templates/motion/` into your app to start from its original motion, and see [`theming.md` §4–5](./theming.md#5-motion-your-app-owns-every-animation).
+Wrap `CoreProvider` in `<ThemeProvider themes={…} motion={…}>`. Your themes style every module, and the modules that animate (dock, modal, notification, context menu, background) also take their **motion** from those themes. Write that motion in your app (the framework ships no values), and see [`theming.md` §4–5](./theming.md#5-motion-your-app-owns-every-animation).
 
 Then wrap your Root Layout in `src/app/layout.tsx`:
 
@@ -138,7 +125,7 @@ Create `src/app/page.tsx`:
 "use client";
 
 import { usePage } from "@omerdlw/base-framework/kernel";
-import { Button, Icon } from "@omerdlw/base-framework/atoms";
+import { Button, Icon } from "@omerdlw/base-framework/design";
 
 export default function HomePage() {
   const page = usePage({
@@ -188,11 +175,10 @@ export default function HomePage() {
 | `@omerdlw/base-framework/result` | Functional error handling | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()` |
 | `@omerdlw/base-framework/events` | Cross-cutting event bus | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap` |
 | `@omerdlw/base-framework/theme` | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()` |
-| `@omerdlw/base-framework/atoms` | Unstyled accessible UI atoms | `Button`, `Icon`, `Spinner`, `Tooltip` |
+| `@omerdlw/base-framework/design` | Unstyled components your `defineUi` styles | `Button`, `Icon`, `Select`, `Carousel`, `UiProvider`, … |
 | `@omerdlw/base-framework/hooks` | Universal React hooks | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()` |
-| `@omerdlw/base-framework/utils` | Pure runtime utilities | `cn()`, `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()` |
+| `@omerdlw/base-framework/utils` | Pure runtime utilities | `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()`, `defineMotion()`, `gpuTransform()` |
 | `@omerdlw/base-framework/error` | Isolated error boundaries | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()` |
-| `@omerdlw/base-framework/tokens` | Design & motion tokens | `defineMotion`, `Z_INDEX`, `gpuTransform`, motion builders |
 
 ---
 

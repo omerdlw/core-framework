@@ -1424,6 +1424,7 @@ export type DockThemeSlot =
   | "bannerRoot"
   | "bannerSharpImage"
   | "bannerScrim"
+  | "surfaceLoader"
   | "header"
   | "headerRow"
   | "headerIcon"
@@ -1628,5 +1629,6 @@ export interface DockMotion {
     expandStaggerCap: number;
     peekStagger: number;
     peekStaggerCap: number;
+    staggerExponent?: number;
   };
 }

@@ -2,9 +2,9 @@
 
 import { createElement, type ReactNode } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import { Button, Icon } from "@/atoms";
-import { Z_INDEX } from "@/tokens";
-import { cn } from "@/utils";
+import { Button } from "@/design/components/button";
+import { Icon } from "@/design/components/icon";
+import { cn } from "@/design/cn";
 import { createPortal } from "react-dom";
 import { ModuleBoundary } from "@/kernel";
 import { MODAL_POSITIONS } from "./constants";
@@ -272,7 +272,6 @@ function ModalLayer({
     ActiveModalComponent,
     isPanelChrome,
     previousEntry,
-    baseZIndex,
   } = useModalLayerModel({
     closeModal,
     entry,
@@ -294,7 +293,6 @@ function ModalLayer({
       role="dialog"
       aria-modal={isTopModal}
       aria-labelledby={entry.title ? `modal-title-${entry.id}` : undefined}
-      style={{ zIndex: baseZIndex }}
       data-position={getModalPosition(activePosition)}
       data-inset={
         activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport
@@ -302,6 +300,7 @@ function ModalLayer({
           : undefined
       }
       className={theme.slots.layer}
+      style={theme.styles.layer}
     >
       <motion.div
         ref={modalRef}
@@ -313,7 +312,7 @@ function ModalLayer({
         data-active={isTopModal}
         data-layout={layout}
         className={theme.slots.frame}
-        style={{ zIndex: Z_INDEX.MODAL_FRAME, ...MODAL_COMPOSITOR_STYLE }}
+        style={{ zIndex: 1, ...MODAL_COMPOSITOR_STYLE }}
         onClick={(e) => e.stopPropagation()}
       >
         <div

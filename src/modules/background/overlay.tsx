@@ -8,9 +8,10 @@ import {
   useRef,
   type CSSProperties,
 } from "react";
-import { cn, report } from "@/utils";
+import { cn } from "@/design/cn";
+import { report } from "@/utils";
 import { AnimatePresence, motion } from "motion/react";
-import { retime } from "@/tokens";
+import { retime } from "@/utils/tempo";
 import { useModuleTheme, useMotionTokens, type ResolvedTheme } from "@/theme";
 import { backgroundTheme } from "./constants";
 import {
@@ -332,14 +333,14 @@ export function useBackgroundOverlayModel() {
       : video
     : image;
   const backgroundMotion = useBackgroundMotion();
-  const { reduced, tempo } = useMotionTokens();
+  const { reduced, still, tempo } = useMotionTokens();
   const motionConfig = useMemo(
     () =>
       getBackgroundMotionConfig(
         backgroundMotion,
-        retime(animation, { reduced, tempo }),
+        retime(animation, { reduced, still, tempo }),
       ),
-    [animation, backgroundMotion, reduced, tempo],
+    [animation, backgroundMotion, reduced, still, tempo],
   );
   const {
     baseStyle,

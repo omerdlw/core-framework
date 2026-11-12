@@ -29,7 +29,7 @@ Tests mirror the package's architecture, **one TypeScript test file per unit**:
 ```
 tests/
   architecture.test.ts     Layer boundaries, module contracts, barrel exports, cyclical imports
-  core/                    Microkernel, error handling, hooks, atoms, tokens, utils, events, result, theme
+  core/                    Microkernel, error handling, hooks, motion, utils, events, result, theme
   modules/                 ambient, background, context-menu, controls, dock, loading, media, modal, notification
   support/                 Test harness: happy-dom, render, themed wrapper, stubs (§3)
   tsconfig.json            TypeScript compilation rules for tests

@@ -47,7 +47,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 - 🎯 **Single Route Declaration (`usePage`):** Cleanly declare titles, navigation cards, modals, loading states, and background media in a single atomic hook call.
 - 🔒 **Type-Safe Result Pattern (`Result<T, E>`):** Functional, bulletproof error handling with `ok()`, `err()`, and direct feedback bridging via `toast.fromResult()`.
 - 🛡️ **Cross-Bundle Context Deduplication:** Guarantees stable React Context singletons across Next.js split chunks and monorepo boundaries.
-- 🎨 **Tailwind CSS v4 & OKLCH Ready:** GPU-accelerated motion presets (`translate3d`, `scale`) and semantic color tokens.
+- 🎨 **No design inside:** no CSS, tokens or motion values. Modules and components take every class, timing and icon from your app's theme and `defineUi`.
 
 ---
 
@@ -169,9 +169,9 @@ export default function DashboardPage() {
 | `@omerdlw/base-framework/result`    | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                |
 | `@omerdlw/base-framework/events`    | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)               |
 | `@omerdlw/base-framework/theme`     | `ThemeProvider`, `useTheme`, `defineThemeSpec`                    |
-| `@omerdlw/base-framework/tokens`    | Motion easing, timing presets, z-index hierarchy                  |
-| `@omerdlw/base-framework/atoms`     | Primitive components (`Button`, `Icon`, `Spinner`, `Tooltip`)     |
-| `@omerdlw/base-framework/utils`     | Pure utilities (`cn`, `report`, `createStore`, `createScheduler`) |
+| `@omerdlw/base-framework/design`    | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …) |
+| `@omerdlw/base-framework/design/recipes` | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY` |
+| `@omerdlw/base-framework/utils`     | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
 | `@omerdlw/base-framework/hooks`     | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`) |
 | `@omerdlw/base-framework/error`     | Error boundaries and reporter sink                                |
 | `@omerdlw/base-framework/modules/*` | 9 standalone modules (`dock`, `modal`, `notification`, etc.)      |

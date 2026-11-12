@@ -13,7 +13,7 @@
 | **Page slice**     | `usePage({ loading })` → `page.modules.loading` (all actions + `set`)                                     |
 | **Peers (`uses`)** | none (the dock reads _this_ module through `definePeer("loading")`)                                       |
 | **Theme**          | `loadingTheme` slot `overlay` in `src/config/loading.module.theme.ts`                                     |
-| **z-index**        | `Z_INDEX.LOADING` (set in the theme `styles`)                                                             |
+| **z-index**        | the app's layer, set in the theme `styles`                                                             |
 | **Tests**          | `tests/modules/loading.test.ts`                                                                           |
 
 ## 2. Mental model
@@ -122,7 +122,7 @@ The same value also feeds the dock's `isLoading` card flag (`usePage({ dock })` 
 
 ## 6. Theming
 
-No classes or inline styles in the module. The `loadingTheme` slot `overlay` (starter: `center fixed inset-0 h-screen w-screen`) and its `styles` (`zIndex: Z_INDEX.LOADING`) come from `src/config/loading.module.theme.ts`. The default content is `<Spinner size={30} />`; pass a `skeleton` to replace it. The overlay has no animation (it mounts and unmounts instantly; [README](./README.md#42-why-some-optional-slots-are-absent)).
+No classes or inline styles in the module. The `loadingTheme` slot `overlay` (starter: `center fixed inset-0 h-screen w-screen`) and its `styles` (`zIndex`) come from `src/config/loading.module.theme.ts`. The default content is `<Spinner size={30} />`; pass a `skeleton` to replace it. The overlay has no animation (it mounts and unmounts instantly; [README](./README.md#42-why-some-optional-slots-are-absent)).
 
 ## 7. Recipes and gotchas
 
@@ -153,5 +153,5 @@ No classes or inline styles in the module. The `loadingTheme` slot `overlay` (st
 
 ## 9. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/atoms` (`Spinner`), `@omerdlw/base-framework/hooks` (`useIsFullscreenStateActive`), `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/design` (`Spinner`), `@omerdlw/base-framework/hooks` (`useIsFullscreenStateActive`), `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
 - **Used by:** `src/core/provider.tsx` (installs it); the **dock**, which reads `isLoading` and calls `stopLoading` through `definePeer("loading")` (inert when not installed); pages and features through `useLoading*` / `page.modules.loading`.

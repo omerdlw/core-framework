@@ -155,7 +155,7 @@ return <MediaSource src="/audio/city.mp3" follow={BACKGROUND_MEDIA_ID} />;
 
 ## 9. Theming
 
-All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`): layer slots (`root`, `image`, `solid`, `gradient`, `edge`, `noise`), direct video slots (`video`, `videoFrame`) and YouTube player slots (`youtube*`). Variants are `data-*` modifiers on the slot (`data-side`, `data-position`, `data-width`, `data-visible`). `fit` and `bg-*` tokens are translated to inline `object-fit` / `object-position` by the module, not by theme slots. Motion is the app's: `motion: BackgroundMotion` in the theme ([theming §5](../theming.md#5-motion-your-app-owns-every-animation), starter in `templates/motion/background.ts`) gives the default `initial`, `animate`, `exit` and `transition`, plus `exitDurationFactor` for a page exit without its own transition. Stays in code: compositor hints (`will-change`) and mask/gradient math (`generateBaseGradient`, `generateEdgeGradient`, `getEdgeFadeMask`). The module deliberately has **no presets** (a test bans `BACKGROUND_PRESETS`): pass a URL or a state object, or build your own with `defineBackground`.
+All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`): layer slots (`root`, `image`, `solid`, `gradient`, `edge`, `noise`), direct video slots (`video`, `videoFrame`) and YouTube player slots (`youtube*`). Variants are `data-*` modifiers on the slot (`data-side`, `data-position`, `data-width`, `data-visible`). `fit` and `bg-*` tokens are translated to inline `object-fit` / `object-position` by the module, not by theme slots. Motion is the app's: `motion: BackgroundMotion` in the theme ([theming §5](../theming.md#5-motion-your-app-owns-every-animation)) gives the default `initial`, `animate`, `exit` and `transition`, plus `exitDurationFactor` for a page exit without its own transition. Stays in code: compositor hints (`will-change`) and mask/gradient math (`generateBaseGradient`, `generateEdgeGradient`, `getEdgeFadeMask`). The module deliberately has **no presets** (a test bans `BACKGROUND_PRESETS`): pass a URL or a state object, or build your own with `defineBackground`.
 
 ## 10. Recipes and gotchas
 
@@ -192,6 +192,6 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 
 ## 12. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/tokens`, `@omerdlw/base-framework/atoms` (`Spinner`), `@omerdlw/base-framework/theme`, `motion/react`, `next/navigation`; the route `src/app/api/background/youtube`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/design` (`Spinner`), `@omerdlw/base-framework/theme`, `motion/react`, `next/navigation`; the route `src/app/api/background/youtube`.
 - **Peer:** `media` (read through `definePeer`, listed in `uses`).
 - **Used by:** `src/core/provider.tsx` (installs it) and every page that calls `usePage({ background })`; the dock and audio sources interact with it only through `media`.

@@ -1,4 +1,3 @@
-export { cn } from "./cn";
 export {
   isBrowser,
   acquireGlobalScrollLock,
@@ -27,3 +26,17 @@ export type {
   SchedulerSnapshot,
   CoreSchedulerOptions,
 } from "./scheduler";
+export { cssEasing, cssTransition, gpuTransform } from "./transform";
+export {
+  defineMotion,
+  retime,
+  retimeModuleMotion,
+} from "./tempo";
+export type {
+  MotionClock,
+  MotionEase,
+  MotionSpring,
+  MotionTokens,
+  MotionTokensInput,
+  ReducedMotionPolicy,
+} from "./tempo";

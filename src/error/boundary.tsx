@@ -3,7 +3,8 @@
 import React, { type ErrorInfo, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { EVENT_TYPES, globalEvents } from "@/events";
-import { Button, Icon } from "@/atoms";
+import { Button } from "@/design/components/button";
+import { Icon } from "@/design/components/icon";
 import { useTheme } from "@/theme";
 import { ERROR_MESSAGES } from "./constants";
 import { errorTheme } from "./theme";

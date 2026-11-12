@@ -168,7 +168,7 @@ export const appThemes = [
 ];
 ```
 
-Modules that animate also need their `motion` (§5): start from the framework's `templates/motion/` and add `motion: dockMotion` and so on next to each `slots`.
+Modules that animate also need their `motion` (§5): write it in your app (e.g. `src/config/theme/motion/`) and add `motion: dockMotion` and so on next to each `slots`.
 
 Then in `src/app/providers.tsx`:
 
@@ -196,15 +196,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 Animation is part of your design, so it lives in your theme files like your slots do. The framework applies two things to whatever you write: your **tempo** and your **reduced-motion policy**.
 
-### 5.1 `defineMotion({ tempo?, reducedMotion?, durations?, easings?, springs? })`
+### 5.1 `defineMotion({ tempo?, reducedMotion?, still?, durations?, easings?, springs? })`
 
 ```ts
 // src/config/theme/motion/tokens.ts
-import { defineMotion } from "@omerdlw/base-framework/tokens";
+import { defineMotion } from "@omerdlw/base-framework/utils";
 
 export const motion = defineMotion({
   tempo: 1, // stretches everything a module animates
   reducedMotion: "user", // "user" (OS setting) | "always" | "never"
+  still: { duration: 0.08, ease: "linear" }, // what a transition becomes under reduced motion
   durations: { fast: 0.28, base: 0.36, slow: 0.58 },
   easings: { enter: [0.25, 1, 0.5, 1], exit: [0.5, 0, 1, 1] },
   springs: { press: { type: "spring", stiffness: 420, damping: 34, mass: 0.35 } },
@@ -240,18 +241,18 @@ Variant functions keep their `custom` signature (e.g. `commandBar.visible(index)
 
 If an animating module's theme has no `motion`, mounting it throws:
 ```
-Motion for theme "dock" is missing. Add `motion` to its defineTheme(...) next to `slots` (start from the framework's templates/motion/).
+Motion for theme "dock" is missing. Add `motion` to its defineTheme(...) next to `slots` (see docs/theming.md).
 ```
 `DockProvider` alone (without the dock theme) still runs: its surface phases advance immediately, since nothing is drawn.
 
-### 5.3 The starter: `templates/motion/`
+### 5.3 No starter values
 
-The package ships `templates/motion/` with `tokens.ts`, `dock.ts`, `modal.ts`, `notification.ts`, `context-menu.ts` and `background.ts`. It is a complete starting point (the motion the modules carried before motion moved into apps), type-checked against the module contracts. Copy the folder into your app (e.g. `src/config/theme/motion/`) and make it yours; the framework never reads it.
+The framework ships no motion values: not as defaults, not as templates. The contract types (`DockMotion`, `ModalMotion`, …) tell you every field a module plays; the values are your design. `defineMotion`, `retime` and `retimeModuleMotion` are server-safe and live in `@omerdlw/base-framework/utils`.
 
 ### 5.4 Reduced motion
 
 Reduced motion is an accessibility mechanic, so the framework handles it once for every module:
 
-- When it is in effect (`reducedMotion: "always"`, or `"user"` with the OS setting on), every module transition, including your own, collapses to `REDUCED_MOTION_TRANSITION` (0.08 s, linear, no delay). Every `timings` entry is capped at 0.08 s, so choreography doesn't hold the dock still on animations that aren't playing.
+- When it is in effect (`reducedMotion: "always"`, or `"user"` with the OS setting on), every module transition, including your own, collapses to your `still` transition (instant when you give none). Every `timings` entry is capped at its duration, so choreography doesn't hold the dock still on animations that aren't playing.
 - `CoreProvider` wraps every module backdrop and overlay in `ModuleMotionConfig` (Motion's `MotionConfig` with your policy), so positional values (`width`, `height`, `x`, `scale`, …) jump instead of animating. App content outside the modules is untouched and keeps its own `MotionConfig`.
 

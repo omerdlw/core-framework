@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import { Button, Select, Switch, defineUi } from "@omerdlw/base-framework/ui";
+import { Button, Select, Switch, defineUi } from "@omerdlw/base-framework/design";
 
 const ui = defineUi({
   parts: {
@@ -15,14 +15,15 @@ const ui = defineUi({
   },
 });
 
-declare module "@omerdlw/base-framework/ui/recipes" {
+declare module "@omerdlw/base-framework/design/recipes" {
   interface UiRegister {
     ui: typeof ui;
   }
 }
 
 h(Button, { intent: "brand", elevated: true });
-h(Button, { intent: "primary", size: "lg" });
+// @ts-expect-error: the framework ships no intents of its own
+h(Button, { intent: "primary" });
 h(Switch, { size: "lg" });
 ui.parts.button.root({ intent: "brand", elevated: false });
 

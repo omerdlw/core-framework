@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import {
   acquireGlobalScrollLock,
   clamp,
-  cn,
   createScheduler,
   debounce,
+  gpuTransform,
   isImageIconSource,
   isObject,
   isPlainObject,
@@ -142,14 +142,6 @@ describe("helpers", () => {
       mock.timers.tick(50);
 
       assert.deepEqual(calls, [1]);
-    });
-  });
-
-  describe("cn", () => {
-    test("joins classes, drops falsy values and lets later Tailwind classes win", () => {
-      assert.equal(cn("a", false, null, "b"), "a b");
-      assert.equal(cn("px-2 py-1", "px-4"), "py-1 px-4");
-      assert.equal(cn({ on: true, off: false }), "on");
     });
   });
 
@@ -551,5 +543,15 @@ describe("user messages: authentication", () => {
 
   test("other UserError statuses keep their own text", () => {
     assert.equal(toUserMessage(new UserError("Not yours", 403)), "Not yours");
+  });
+});
+
+describe("gpuTransform", () => {
+  test("rounds into a translate3d + scale string", () => {
+    assert.equal(
+      gpuTransform(4.6, 0.98765),
+      "translate3d(0px, 5px, 0) scale(0.988)",
+    );
+    assert.equal(gpuTransform(), "translate3d(0px, 0px, 0) scale(1)");
   });
 });

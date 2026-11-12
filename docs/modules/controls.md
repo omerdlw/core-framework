@@ -123,7 +123,7 @@ Within one `(order, side)` cell, if several entries compete the one with the **l
 
 ## 6. Theming
 
-No classes or colors in the module apart from the measured position. Slots in `controlsTheme`: `rail` (fixed container) and `stack` (the column; reads `data-side="left|right"`), plus optional per-slot `styles` (the starter theme puts `Z_INDEX.DOCK` on `rail`). The module has no `motion.ts`; animate your own buttons with the shared motion tokens ([Rule 4](../architecture-and-rules.md)).
+No classes or colors in the module apart from the measured position. Slots in `controlsTheme`: `rail` (fixed container) and `stack` (the column; reads `data-side="left|right"`), plus optional per-slot `styles` (e.g. the rail's `zIndex`). The module has no `motion.ts`; animate your own buttons with your app's motion ([Rule 4](../architecture-and-rules.md)).
 
 ## 7. Recipes and gotchas
 

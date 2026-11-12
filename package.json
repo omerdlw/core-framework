@@ -1,6 +1,6 @@
 {
   "name": "@omerdlw/base-framework",
-  "version": "3.1.0",
+  "version": "5.0.0",
   "description": "Microkernel engine and first-party declarative UI modules for app-like Next.js products.",
   "type": "module",
   "sideEffects": [
@@ -34,11 +34,6 @@
       "import": "./dist/theme.js",
       "default": "./dist/theme.js"
     },
-    "./tokens": {
-      "types": "./dist/tokens/index.d.ts",
-      "import": "./dist/tokens/index.js",
-      "default": "./dist/tokens/index.js"
-    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
@@ -59,23 +54,16 @@
       "import": "./dist/provider.js",
       "default": "./dist/provider.js"
     },
-    "./atoms": {
-      "types": "./dist/atoms/index.d.ts",
-      "import": "./dist/atoms/index.js",
-      "default": "./dist/atoms/index.js"
+    "./design": {
+      "types": "./dist/design/index.d.ts",
+      "import": "./dist/design/index.js",
+      "default": "./dist/design/index.js"
     },
-    "./ui": {
-      "types": "./dist/ui/index.d.ts",
-      "import": "./dist/ui/index.js",
-      "default": "./dist/ui/index.js"
+    "./design/recipes": {
+      "types": "./dist/design/recipes.d.ts",
+      "import": "./dist/design/recipes.js",
+      "default": "./dist/design/recipes.js"
     },
-    "./ui/recipes": {
-      "types": "./dist/ui/recipes.d.ts",
-      "import": "./dist/ui/recipes.js",
-      "default": "./dist/ui/recipes.js"
-    },
-    "./styles.css": "./styles/index.css",
-    "./styles/*": "./styles/*",
     "./dock": {
       "types": "./dist/modules/dock/index.d.ts",
       "import": "./dist/modules/dock/index.js",
@@ -149,7 +137,6 @@
   },
   "files": [
     "dist",
-    "styles",
     "docs",
     "templates",
     "README.md",

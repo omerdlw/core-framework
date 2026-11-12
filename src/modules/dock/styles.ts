@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
-import { cn, isObject as isObjectLike, trimToNull } from "@/utils";
-import { Z_INDEX } from "@/tokens";
+import { cn } from "@/design/cn";
+import { isObject as isObjectLike, trimToNull } from "@/utils";
 import { DOCK_STYLE_SECTIONS } from "./constants";
 import {
   type DockItemCardPropsOptions,
@@ -12,6 +12,8 @@ import {
   type DockVisualStyleSections,
 } from "./types";
 export type DockStyleInput = DockVisualStyleSection;
+
+const CARD_STACK_BASE = 10;
 
 export function isValidBannerUrl(banner: unknown): boolean {
   const value = trimToNull(banner);
@@ -159,7 +161,7 @@ export function getDockItemCardProps({
       ...safeCardStyle,
       willChange: "transform, opacity",
       transformOrigin: isAnchoredToBottom ? "bottom center" : "top center",
-      zIndex: Z_INDEX.DOCK_CARD_STACK_BASE - position,
+      zIndex: CARD_STACK_BASE - position,
       WebkitPerspective: 1000,
       perspective: 1000,
       WebkitBackfaceVisibility: "hidden" as const,

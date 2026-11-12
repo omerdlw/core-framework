@@ -22,26 +22,10 @@ describe("package architecture boundaries", () => {
     }
   }
 
-  test("src/tokens must have zero internal imports from other modules or kernel", () => {
-    scanDir(
-      path.resolve("src/tokens"),
-      (file) => /\.(ts|tsx)$/.test(file),
-      (fullPath, content) => {
-        assert.ok(
-          !content.includes("@/kernel"),
-          `${fullPath} imports from @/kernel`,
-        );
-        assert.ok(
-          !content.includes("@/modules"),
-          `${fullPath} imports from @/modules`,
-        );
-      },
-    );
-  });
 
-  test("src/ui must not import from @/modules", () => {
+  test("src/design must not import from @/modules", () => {
     scanDir(
-      path.resolve("src/ui"),
+      path.resolve("src/design"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
         assert.ok(
@@ -60,7 +44,7 @@ describe("package architecture boundaries", () => {
       const content = fs.readFileSync(file, "utf8");
       assert.ok(
         !/from "react"|from "motion\/react"|"use client"/.test(content),
-        `${file} pulls React into ui/recipes`,
+        `${file} pulls React into design/recipes`,
       );
       for (const match of content.matchAll(
         /^\s*(?:import|export)\s+(?!type\b)[^;]*?from\s+"(\.[^"]+)"/gm,
@@ -74,7 +58,7 @@ describe("package architecture boundaries", () => {
         if (next) visit(next);
       }
     };
-    visit(path.resolve("src/ui/recipes.ts"));
+    visit(path.resolve("src/design/recipes.ts"));
     assert.ok(seen.size > 3);
   });
 

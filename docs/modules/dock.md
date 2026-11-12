@@ -681,11 +681,11 @@ The theme also carries the dock's **motion** (`motion: DockMotion`, [theming §5
 | `drag` | The swipe-to-dismiss feel (`elastic`, `range`, `opacity`, `scale`) and `dismiss: { offset, velocity }`, the distance (px) or speed (px/s) past which a swipe closes the surface. |
 | `skeleton` | The class of the loading skeletons. |
 
-Start from `templates/motion/dock.ts`, the dock's original motion. Geometry and opacities are not times, so tempo and reduced motion leave them alone; only transitions and `timings` are stretched or collapsed.
+The framework ships no dock motion: write `DockMotion` in your app. Geometry and opacities are not times, so tempo and reduced motion leave them alone; only transitions and `timings` are stretched or collapsed.
 
 **The phases and their order belong to the dock.** A surface always opens `dismissAction → expandBody → open` and closes `anticipation → collapseBody → restoreHeader`; the render code relies on that sequence. You decide how each phase looks and how long it holds, not which phases exist.
 
-Stays in code: what the layout measures (card, HUD and chrome heights, viewport margin), per-position z-index (`Z_INDEX.DOCK_CARD_STACK_BASE − position`), compositor hints, the swipe's direction and its non-draggable targets, and the focus trap. The theme and its motion are **required**: a missing theme throws `Theme "dock" is missing…` and a theme without motion throws `Motion for theme "dock" is missing…`. `DockProvider` on its own (no dock theme) still runs; its surface phases advance immediately.
+Stays in code: what the layout measures (card, HUD and chrome heights, viewport margin), per-position z-index inside the stack (`10 − position`), compositor hints, the swipe's direction and its non-draggable targets, and the focus trap. The theme and its motion are **required**: a missing theme throws `Theme "dock" is missing…` and a theme without motion throws `Motion for theme "dock" is missing…`. `DockProvider` on its own (no dock theme) still runs; its surface phases advance immediately.
 
 Per-card overrides use `style` on the card (see [§6.1](#61-dockpageconfig-the-dock-key-of-usepage)). Custom buttons inside surfaces should use `useDockActionClass()` so they match.
 
@@ -709,7 +709,7 @@ Gotchas:
 - A flow `snapshot` must be a plain object; anything else becomes `null`.
 - Status events are global: remember to emit `DOCK_STATUS_CLEAR` for sticky (`duration: 0`) statuses.
 - Guards registered by an unmounted page disappear with it; `clearDockGuards()` drops every guard, including other pages'.
-- No arbitrary durations or `z-*` classes in surface content: use your app's motion (`useDockMotion()`, or your own tokens) and `Z_INDEX` ([Rules 4 and 5](../architecture-and-rules.md)).
+- No arbitrary durations or `z-*` classes in surface content: use your app's motion (`useDockMotion()`, or your own tokens) and your app's layers ([Rules 4 and 5](../architecture-and-rules.md)).
 
 ## 19. File map
 
@@ -755,7 +755,7 @@ Gotchas:
 
 ## 20. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useRegistryEntries`, `useModuleRegistration`), `@omerdlw/base-framework/events`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/tokens`, `@omerdlw/base-framework/atoms`, `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useRegistryEntries`, `useModuleRegistration`), `@omerdlw/base-framework/events`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/design`, `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
 - **Peers:** `loading` (page-loading flag, `stopLoading` after navigation), `media` (session state and controls), `notification` (is a toast visible). Each is read through `definePeer` with an inert stand-in, and listed in `uses`.
 - **Used by:** `src/features/**` (surfaces, statuses, context actions, motion presets), `src/app/**` (`usePage({ dock })`, `registry.tsx`), `controls` and `notification` (they locate the dock by DOM id `dock-card-stack`), and the `context-menu` (reads the active card through `useModuleState("dock", …)`).
 - **Never imports** another module's source (enforced by `npm run check:architecture`).

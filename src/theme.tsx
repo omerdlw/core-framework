@@ -14,7 +14,7 @@ import {
   retimeModuleMotion,
   type MotionClock,
   type MotionTokens,
-} from "@/tokens";
+} from "@/utils/tempo";
 
 export interface ThemeSpec<S extends string = string, M = never> {
   readonly id: string;
@@ -85,7 +85,8 @@ function MotionProvider({
     tokens.reducedMotion === "always" ||
     (tokens.reducedMotion === "user" && prefersReduced);
   const state = useMemo<MotionState>(
-    () => Object.freeze({ reduced, tempo: tokens.tempo, tokens }),
+    () =>
+      Object.freeze({ reduced, still: tokens.still, tempo: tokens.tempo, tokens }),
     [reduced, tokens],
   );
   return createElement(MotionContext.Provider, { value: state }, children);
@@ -152,7 +153,7 @@ export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
   if (!config) throw missingTheme(spec.id);
   if (!config.motion || typeof config.motion !== "object") {
     throw new Error(
-      `Motion for theme "${spec.id}" is missing. Add \`motion\` to its defineTheme(...) next to \`slots\` (start from the framework's templates/motion/).`,
+      `Motion for theme "${spec.id}" is missing. Add \`motion\` to its defineTheme(...) next to \`slots\` (see docs/theming.md).`,
     );
   }
   return resolveModuleMotion(state, config.motion) as M;
@@ -187,3 +188,4 @@ export function ModuleMotionConfig({ children }: { children?: ReactNode }) {
     children,
   );
 }
+

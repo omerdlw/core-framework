@@ -13,15 +13,15 @@
    ↓ imports
 @omerdlw/base-framework/{kernel, provider, theme, error} (2. Orchestration Engine: ModuleHost, RegistryStore, PageController, Error Boundaries)
    ↓ imports
-@omerdlw/base-framework/{atoms, hooks} (1. React Layer: Accessible atoms & universal React hooks)
+@omerdlw/base-framework/{design, hooks} (1. React Layer: Design components & universal React hooks)
    ↓ imports
-@omerdlw/base-framework/{utils, tokens, result, events} (0. Pure Foundation: Zero React dependencies, server & edge safe)
+@omerdlw/base-framework/{utils, design/recipes, result, events} (0. Pure Foundation: Zero React dependencies, server & edge safe)
 ```
 
 ### 1.1 Layer Invariants
 
 1. **Downwards Only:** Higher layers may import from lower layers; a lower layer **never** imports from a higher layer.
-2. **Server-Safe Foundation:** `@omerdlw/base-framework/utils`, `tokens`, `result`, and `events` have **zero dependencies on React or Next.js DOM**. They can be imported safely in Server Components, Route Handlers, Server Actions, and Edge functions.
+2. **Server-Safe Foundation:** `@omerdlw/base-framework/utils`, `design/recipes`, `result`, and `events` have **zero dependencies on React or Next.js DOM**. They can be imported safely in Server Components, Route Handlers, Server Actions, and Edge functions.
 3. **Module Isolation:** Modules are strict siblings. A module (`dock`, `modal`, etc.) **must never import from another module**. Cross-module communication occurs strictly via declared peers (`uses: ["peerId"]`), `useModuleState()`, or `globalEvents`.
 4. **No Deep Imports:** Public consumers import only from official subpath exports (`@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/modules/dock`). Direct file-path imports (e.g., `@omerdlw/base-framework/dist/kernel/page.js`) are forbidden.
 5. **Zero Cycles:** All package internal code maintains 0 cyclical dependencies, verified statically by `npm run check:architecture`.
@@ -60,7 +60,7 @@ All code imported by consumer applications must resolve through defined subpaths
 - ✅ `import { usePage, defineModule } from "@omerdlw/base-framework/kernel"`
 
 ### Rule 3: Server-Safe Foundation Purity
-The foundation entries (`@omerdlw/base-framework/utils`, `tokens`, `result`, `events`) must never import React, hooks, or browser-specific window globals at module scope.
+The foundation entries (`@omerdlw/base-framework/utils`, `design/recipes`, `result`, `events`) must never import React, hooks, or browser-specific window globals at module scope.
 - ❌ `import { useState } from "react"` inside `src/utils/`
 - ✅ Keep utility functions pure, deterministic, and testable without a DOM.
 
@@ -70,10 +70,10 @@ Never hardcode inline animation durations (`duration: 0.3`) or custom bezier cur
 - ✅ `<motion.div transition={{ duration: motion.durations.fast, ease: motion.easings.enter }} />` in app code
 - ✅ `<motion.div variants={dockMotion.variants.fade} />` in a module (`const dockMotion = useDockMotion()`)
 
-### Rule 5: Z-Index Token Contract
-Never use arbitrary stacking classes like `z-50`, `z-[99]`, or `z-[9999]`.
-- ❌ `<div className="fixed inset-0 z-50 bg-black/80">`
-- ✅ `<div className="fixed inset-0 bg-black/80" style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}>`
+### Rule 5: Stacking Belongs to the App
+The framework holds no z-index ladder. A module takes its layer from the theme's `styles`; a component from its recipe. Keep the app's layers in one constant and refer to it.
+- ❌ `style={{ zIndex: 140 }}` inside framework code
+- ✅ `defineTheme(modalTheme, { slots, styles: { layer: { zIndex: LAYERS.MODAL } } })` in the app
 
 ### Rule 6: Result Pattern for Operations
 Asynchronous workflows, Server Actions, and data mutations must never throw unhandled errors across execution boundaries. Always return `Result<T, E>` using `ok(data)` and `err(message)` from `@omerdlw/base-framework/result`.
@@ -120,10 +120,10 @@ All checks must exit with code `0`.
 
 ```
 What are you adding?
-├─ Reusable unstyled UI atom (Button, Icon, Spinner, Tooltip) -> src/atoms/
+├─ Reusable design component (Button, Icon, Select, Carousel) -> src/design/components/<name>.tsx
 ├─ First-party UI module (Dock, Modal, Ambient, Toast)   -> src/modules/<module>/
 ├─ Universal React hook (useStore, useClickOutside)       -> src/hooks/
-├─ Design token (motion preset, z-index layer)           -> src/tokens/
+├─ Motion mechanics (retime, tempo, CSS transition)      -> src/utils/
 ├─ Orchestration logic (registry, provider nesting)      -> src/kernel/
 ├─ Pure utility or data store (scheduler, store, clamp)   -> src/utils/
 └─ Error handling & reporting (reporter, boundary)       -> src/error/

@@ -1,7 +1,7 @@
 "use client";
 
 import { type ComponentType } from "react";
-import { Icon } from "@/atoms";
+import { Icon } from "@/design/components/icon";
 import {
   type StatusState,
   type DockIconSource,

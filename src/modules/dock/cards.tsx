@@ -14,7 +14,8 @@ import React, {
   type UIEvent,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { isObject, toArray, clamp, cn } from "@/utils";
+import { cn } from "@/design/cn";
+import { isObject, toArray, clamp } from "@/utils";
 import { useGlobalEvent } from "@/hooks";
 import { useModule } from "@/kernel";
 import {

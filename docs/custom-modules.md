@@ -138,7 +138,7 @@ Create `src/modules/tour/overlay.tsx`:
 
 import React from "react";
 import { useTheme } from "@omerdlw/base-framework/theme";
-import { Button } from "@omerdlw/base-framework/atoms";
+import { Button } from "@omerdlw/base-framework/design";
 import { useTour } from "./context";
 import { tourTheme } from "./constants";
 

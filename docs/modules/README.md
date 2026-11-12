@@ -77,7 +77,7 @@ Every folder in `src/modules/` uses the same **slots**. A slot that does not app
 | `hooks.ts`     |      optional       | Extra hooks, notably the `use<Component>Model` logic behind each overlay component.                                             |
 | `state.ts`     |      optional       | State factory, initial state, pure reducers.                                                                                    |
 | `overlay.tsx`  |      optional       | **All** visual components: JSX only, calling `use*Model` hooks (no state, effects or refs).                                     |
-| `motion.ts`    |      optional       | Motion presets derived from `@omerdlw/base-framework/tokens`.                                                                                    |
+| `motion.ts`    |      optional       | The module's `use*Motion()` hook and helpers that pick from the app's motion.                                                                                    |
 | `store.ts`     |      optional       | A store file when warranted.                                                                                                    |
 
 Rules of thumb:
@@ -85,7 +85,7 @@ Rules of thumb:
 - A module may add a **topic file or folder** for a cohesive concern, declared in the file-pattern test (`background/youtube/`, `context-menu/resolver.ts`, the dock's `routing/ runtime/ status/ surface/ cards.tsx hud.ts provider.tsx`). Files past ~500 lines go into a sub-folder.
 - Relative imports may reach into the **same** module only. Cross-module needs go through peers or `globalEvents`.
 - Barrels use explicit named exports (`export { a, b } from "./x"`), never `export *` from implementation files; `export type * from "./types"` is fine.
-- **No design in code:** colors, sizes, radii and typography are theme slots (`src/config/<name>.module.theme.ts`); animation comes from `@omerdlw/base-framework/tokens` presets.
+- **No design in code:** colors, sizes, radii and typography are theme slots (`src/config/<name>.module.theme.ts`); animation comes from the theme's `motion`.
 
 ### 4.1 File matrix (current)
 
@@ -172,9 +172,9 @@ Every page follows this skeleton (omit sections that do not apply). Keep it **ve
 
 ```
 src/app ─┐
-src/features ─┼─▶ @omerdlw/base-framework/modules/* ──▶ @omerdlw/base-framework/kernel ──▶ @omerdlw/base-framework/{utils,hooks,tokens,events,result}
+src/features ─┼─▶ @omerdlw/base-framework/modules/* ──▶ @omerdlw/base-framework/kernel ──▶ @omerdlw/base-framework/{utils,hooks,events,result}
 src/core/provider.tsx ┘         │
-                               └──▶ @omerdlw/base-framework/atoms, @omerdlw/base-framework/theme
+                               └──▶ @omerdlw/base-framework/design, @omerdlw/base-framework/theme
 ```
 
 Modules are installed by `CoreProvider` from the list the app passes; orchestration drives modules through their `defineModule` definitions and never imports them.

@@ -7,7 +7,7 @@ import {
   ambientThemeConfig,
   primitivesThemeConfig,
 } from "../support/themes.ts";
-import { defineMotion, retimeModuleMotion } from "../../src/tokens/index.ts";
+import { defineMotion, retimeModuleMotion } from "../../src/utils/tempo.ts";
 import { defineTheme, ThemeProvider } from "../../src/theme.tsx";
 import {
   dockTheme,
@@ -25,7 +25,7 @@ import {
 import { getDockItemCardProps } from "../../src/modules/dock/styles.ts";
 import { DockCardBanner } from "../../src/modules/dock/overlay.tsx";
 import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/hooks.tsx";
-import { dockMotion } from "../../templates/motion/dock.ts";
+import { dockMotion } from "../support/motion/dock.ts";
 import type { DockMotion } from "../../src/modules/dock/types.ts";
 
 const PHASE = DOCK_SURFACE_PHASE;
@@ -325,7 +325,7 @@ describe("dock rendering from the theme", () => {
   const banner = (props: object = {}) =>
     h(DockCardBanner, { bannerUrl: "/banner.png", ...props } as never);
   const imageOpacity = (container: HTMLElement) =>
-    (container.querySelector(".dock-banner-sharp-mask") as HTMLElement).style
+    (container.querySelector('[style*="background-image"]') as HTMLElement).style
       .opacity;
 
   test("the banner rests at the theme's opacity", async () => {

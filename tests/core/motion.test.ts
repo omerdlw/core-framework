@@ -4,13 +4,10 @@ import { act, createElement as h, useContext, type ReactNode } from "react";
 import { MotionConfigContext } from "motion/react";
 import { render, renderHook } from "../support/render.ts";
 import { withThemes } from "../support/themes.ts";
-import {
-  REDUCED_MOTION_TRANSITION,
-  cssTransition,
-  defineMotion,
-  retime,
-  retimeModuleMotion,
-} from "../../src/tokens/index.ts";
+import { defineMotion, retime, retimeModuleMotion } from "../../src/utils/tempo.ts";
+import { cssTransition } from "../../src/utils/transform.ts";
+
+const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 import {
   ModuleMotionConfig,
   ThemeProvider,
@@ -26,12 +23,12 @@ import { notificationTheme } from "../../src/modules/notification/constants.ts";
 import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import { useToast } from "../../src/modules/notification/hooks.ts";
 import { NotificationLayer } from "../../src/modules/notification/overlay.tsx";
-import { motion as starterTokens } from "../../templates/motion/tokens.ts";
-import { dockMotion } from "../../templates/motion/dock.ts";
-import { modalMotion } from "../../templates/motion/modal.ts";
-import { notificationMotion } from "../../templates/motion/notification.ts";
-import { contextMenuMotion } from "../../templates/motion/context-menu.ts";
-import { backgroundMotion } from "../../templates/motion/background.ts";
+import { motion as starterTokens } from "../support/motion/tokens.ts";
+import { dockMotion } from "../support/motion/dock.ts";
+import { modalMotion } from "../support/motion/modal.ts";
+import { notificationMotion } from "../support/motion/notification.ts";
+import { contextMenuMotion } from "../support/motion/context-menu.ts";
+import { backgroundMotion } from "../support/motion/background.ts";
 
 const CUSTOM_SAMPLES = [undefined, 0, 1, 2, 3, 5, 9, -2, "14", 0.5];
 
@@ -210,6 +207,21 @@ describe("retime", () => {
     });
   });
 
+  test("reduced motion uses the app's still transition when it gives one", () => {
+    const still = { duration: 0.08, ease: "linear" };
+    assert.deepEqual(
+      retime(
+        { enter: { duration: 1 }, timings: 1 },
+        { reduced: true, still, tempo: 1 },
+      ),
+      { enter: still, timings: 1 },
+    );
+    assert.deepEqual(
+      retimeModuleMotion({ timings: { hold: 0.5 } }, { reduced: true, still, tempo: 1 }),
+      { timings: { hold: 0.08 } },
+    );
+  });
+
   test("a module's timings are seconds: stretched by tempo, capped when reduced", () => {
     const motion = {
       timings: { hold: 0.5, lead: 0.05 },
@@ -221,7 +233,7 @@ describe("retime", () => {
     });
     assert.deepEqual(retimeModuleMotion(motion, { reduced: true, tempo: 2 }), {
       other: { range: [0, 180] },
-      timings: { hold: REDUCED_MOTION_TRANSITION.duration, lead: 0.05 },
+      timings: { hold: 0, lead: 0 },
     });
   });
 
@@ -393,7 +405,7 @@ describe("module motion from the theme", () => {
     try {
       await assert.rejects(
         render(h(wrap([bare]), null, h(Probe))),
-        /Motion for theme "sample-motion" is missing[\s\S]*defineTheme[\s\S]*templates\/motion/,
+        /Motion for theme "sample-motion" is missing[\s\S]*defineTheme[\s\S]*docs\/theming/,
       );
     } finally {
       console.error = originalError;

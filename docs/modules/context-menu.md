@@ -14,7 +14,7 @@
 | **Peers (`uses`)** | `dock` (the active dock card supplies the default menu header)                                                                                                                                                                                          |
 | **Theme**          | `contextMenuTheme` slots in `src/config/context-menu.module.theme.ts`                                                                                                                                                                                   |
 | **Window event**   | `context-menu:visibility` (`detail: { isOpen }`)                                                                                                                                                                                                        |
-| **z-index**        | `Z_INDEX.CONTEXT_MENU_BACKDROP` / `Z_INDEX.CONTEXT_MENU` (set in the theme `styles`)                                                                                                                                                                    |
+| **z-index**        | the app's layers, set in the theme `styles`                                                                                                                                                                    |
 | **Tests**          | `tests/modules/context-menu.test.ts`                                                                                                                                                                                                                    |
 
 ## 2. Mental model
@@ -208,7 +208,7 @@ Important: the global capture listener runs **before** React's element handler. 
 
 ## 6. Theming
 
-No classes or colors in the module, except the pointer-following `left/top/position: fixed`. Slots in `contextMenuTheme`: `backdrop`, `menu`, `header`, `headerIcon`, `headerText`, `headerEyebrow`, `headerTitle`, `headerDescription`, `separator`, `item`, `itemIcon`, `itemLabel`, `itemShortcut`, plus optional per-slot `styles` (the starter theme sets the backdrop/menu z-index there). A config's `classNames` (and an item's `className`) are appended on top of the theme. Active items get `data-active="true"`, handy for theme selectors. Motion comes from the theme too (`motion: ContextMenuMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): `pop` (the surface), `content` (the header), `item` (rows; `visible` may take the row index for a stagger), `itemTap` and `itemTransition`. Start from `templates/motion/context-menu.ts`.
+No classes or colors in the module, except the pointer-following `left/top/position: fixed`. Slots in `contextMenuTheme`: `backdrop`, `menu`, `header`, `headerIcon`, `headerText`, `headerEyebrow`, `headerTitle`, `headerDescription`, `separator`, `item`, `itemIcon`, `itemLabel`, `itemShortcut`, plus optional per-slot `styles` (e.g. the backdrop and menu `zIndex`). A config's `classNames` (and an item's `className`) are appended on top of the theme. Active items get `data-active="true"`, handy for theme selectors. Motion comes from the theme too (`motion: ContextMenuMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): `pop` (the surface), `content` (the header), `item` (rows; `visible` may take the row index for a stagger), `itemTap` and `itemTransition`.
 
 ## 7. Recipes and gotchas
 
@@ -243,6 +243,6 @@ No classes or colors in the module, except the pointer-following `left/top/posit
 
 ## 9. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `useModuleState`), `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/atoms` (`Icon`), `@omerdlw/base-framework/tokens`, `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `useModuleState`), `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/design` (`Icon`), `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
 - **Peer:** `dock` — read with `useModuleState("dock", selectDockPageCard, null)`; works (without a default header) when the dock is not installed.
 - **Used by:** `src/core/provider.tsx` (installs it), `page.modules.contextMenu`, and features that register menus.

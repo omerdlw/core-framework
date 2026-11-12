@@ -39,7 +39,7 @@ export const OBJECT_FITS = Object.freeze([
   "scale-down",
 ]);
 
-export const DEFAULT_COLOR = "var(--black, #000)";
+export const DEFAULT_COLOR = "currentColor";
 
 const WIDTH_CLASS = /^(w-|max-w-|min-w-)/;
 
@@ -164,7 +164,7 @@ export function resolveGradientSettings({
 export function generateSmoothstepStops(
   percent: number,
   direction: "in" | "out" = "in",
-  color = "var(--black, #000)",
+  color = DEFAULT_COLOR,
 ): string[] {
   const steps = [
     { s: 0, t: 0 },
@@ -195,7 +195,7 @@ export function generateSmoothstepStops(
 }
 
 export function getEdgeFadeMask({
-  color = "var(--black, #000)",
+  color = DEFAULT_COLOR,
   leftPercent = 0,
   rightPercent = 0,
 }: {

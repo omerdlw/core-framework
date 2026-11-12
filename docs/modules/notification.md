@@ -116,7 +116,7 @@ String messages are trimmed and **trailing periods/whitespace are removed** (`"S
 
 ## 7. Theming
 
-No classes or inline styles in the module. `notificationTheme` slots: `layer`, `toast`, `toastDocked`, `toastMessage` (Tailwind classes, all required) plus optional inline `styles` per slot. A missing theme throws a descriptive error. The toast's motion comes from the theme as well (`motion: NotificationMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): `toast` variants (`hidden` → `visible` → `exit`) and its `transition`. Start from `templates/motion/notification.ts`.
+No classes or inline styles in the module. `notificationTheme` slots: `layer`, `toast`, `toastDocked`, `toastMessage` (Tailwind classes, all required) plus optional inline `styles` per slot. A missing theme throws a descriptive error. The toast's motion comes from the theme as well (`motion: NotificationMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): `toast` variants (`hidden` → `visible` → `exit`) and its `transition`.
 
 ## 8. Writing toast copy
 

@@ -1,6 +1,6 @@
 # Core Engine — `src/core`
 
-> **Read this first if you need to:** know what lives in `src/core`, wire `CoreProvider`, restyle things through themes, use the event bus, motion tokens or z-index layers, or find a utility/hook before writing your own.
+> **Read this first if you need to:** know what lives in `src/core`, wire `CoreProvider`, restyle things through themes, use the event bus or motion retiming, or find a utility/hook before writing your own.
 >
 > **Location:** `src/core/` · **Key principle:** frozen upstream, zero imports from higher layers, zero coupling between sibling modules, pure composability. Module and feature specifics live in [modules/](./modules/README.md).
 
@@ -8,18 +8,17 @@
 
 | Entry               | Path           | Server-safe? | What it is                                                                                                                                 |
 | :------------------ | :------------- | :----------: | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `@omerdlw/base-framework/utils`      | `utils/`       |      ✅      | `cn`, scheduling, stores, string/number/object helpers, `report`, `toUserMessage`. Bottom of the stack: imports nothing from other layers. |
-| `@omerdlw/base-framework/tokens`     | `tokens/`      |      ✅      | Motion tokens, `Z_INDEX`, shared surface class constants.                                                                                  |
+| `@omerdlw/base-framework/utils`      | `utils/`       |      ✅      | Scheduling, stores, string/number/object helpers, motion retiming (`defineMotion`, `retime`), `report`, `toUserMessage`. Bottom of the stack: imports nothing from other layers. |
 | `@omerdlw/base-framework/result`     | `result.ts`    |      ✅      | `Result<T, E>`, `createSafeAction`. → [result.md](./modules/result.md)                                                                     |
 | `@omerdlw/base-framework/events`     | `events.ts`    |      ✅      | `globalEvents` bus, `EVENT_TYPES`, `FrameworkEventMap`.                                                                                    |
 | `@omerdlw/base-framework/hooks`      | `hooks/`       |    client    | Universal React hooks.                                                                                                                     |
 | `@omerdlw/base-framework/theme`      | `theme.tsx`    |    client    | Theme specs and provider (shared by core and modules).                                                                                     |
-| `@omerdlw/base-framework/atoms`      | `atoms/`       |    client    | Accessible UI atoms (`Button`, `Icon`, `Spinner`, `Tooltip`).                                                               |
+| `@omerdlw/base-framework/design`      | `design/`      |    client    | Styled components (`Button`, `Icon`, `Loader`, `Tooltip`, …) the modules render with too. → [design.md](./design.md)        |
 | `@omerdlw/base-framework/kernel`     | `kernel/`      |    client    | Module host, registry, `usePage`. → [kernel.md](./modules/kernel.md)                                                                       |
 | `@omerdlw/base-framework/error`      | `error/`       |    client    | Boundaries, reporter. → [error-boundary.md](./modules/error-boundary.md)                                                                   |
 | `@omerdlw/base-framework/provider`   | `provider.tsx` |    client    | `CoreProvider`: the one component that assembles everything.                                                                               |
 
-Server-safe entries (`utils`, `tokens`, `result`, `events`) must not import React or `next/*`, so route handlers, server actions and the Edge can use them.
+Server-safe entries (`utils`, `design/recipes`, `result`, `events`) must not import React or `next/*`, so route handlers, server actions and the Edge can use them.
 
 ## 2. `CoreProvider`
 
@@ -64,7 +63,7 @@ export const dockTheme = defineThemeSpec<DockThemeSlot>("dock");
 // 2. The project supplies the design (src/config/dock.module.theme.ts)
 export const dockThemeConfig = defineTheme(dockTheme, {
   slots:  { card: "rounded-[30px] bg-black/60 …", header: "…" },   // Tailwind classes — all slots required
-  styles: { card: { zIndex: Z_INDEX.DOCK } },                       // optional inline CSS per slot
+  styles: { card: { zIndex: 110 } },                       // optional inline CSS per slot
 });
 
 // 3. src/config/index.ts lists it in `themes`; src/app/providers.tsx passes it to <ThemeProvider themes={themes}>
@@ -144,31 +143,16 @@ Who listens to what: the dock turns `APP_ERROR` / critical `API_ERROR` into stat
 | Scheduling    | `createScheduler(options?)` → `{ schedule(cb, delayMs, { label }), scheduleFrame(cb, { label }), cancel(id), cancelAll(), getSnapshot(), subscribe, now }`. Timers and frames are tracked (`pendingCount`, labels), and **inject-able** (`now`, `requestFrame`, `scheduleTimer`, …) so tests run deterministically. The dock uses it instead of ad-hoc `setTimeout`/intervals.                                                 |
 | Types         | `ExternalStore`, `CreateStoreOptions`, `CoreSchedulerOptions`, `ScheduleHandle`, `ScheduledTaskSnapshot`, `SchedulerSnapshot`, `ReportLevel`, `ReportSink`, `UserMessageOptions`.                                                                                                                                                                                                                                              |
 
-## 7. Motion & design tokens (`@omerdlw/base-framework/tokens`)
+## 7. Motion mechanics (`@omerdlw/base-framework/utils`)
 
-Rule 4 in practice: **never** write a literal duration/ease in a component. The framework ships no motion values of its own: first-party modules play what the app's theme gives them ([theming §5](./theming.md#5-motion-your-app-owns-every-animation)), and the builders below take every duration, easing and spring as an argument.
+The framework ships **no design**: no motion values, no z-index ladder, no CSS. First-party modules play what the app's theme gives them ([theming §5](./theming.md#5-motion-your-app-owns-every-animation)) and take their stacking from the theme's `styles` (e.g. `styles: { layer: { zIndex: 140 } }`). What stays is mechanics:
 
-- **App motion (`defineMotion`).** `defineMotion({ tempo, reducedMotion, durations, easings, springs })` returns the app's frozen motion tokens for `<ThemeProvider motion>`. `retime(tree, { tempo, reduced })` stretches every transition in a motion tree by `tempo` (springs keep their damping ratio) or collapses it to `REDUCED_MOTION_TRANSITION`. `retimeModuleMotion` does the same and also treats a top-level `timings` table as seconds. `cssTransition(property, tween)` writes a CSS `transition` value; `cssEasing(ease)` writes the easing alone.
-- **GPU compositor only.** Animate `transform` (`translate3d`, `scale`) and `opacity`. Animating layout properties (`height`, `top`, `left`) is forbidden. `gpuTransform(y, scale, x)` builds the canonical `translate3d(...) scale(...)` string.
-- **Reduced motion:** `REDUCED_MOTION_TRANSITION` (0.08 s, linear). When the app's policy is in effect, every module transition collapses to it, and `CoreProvider` wraps each module backdrop and overlay in `ModuleMotionConfig` (`MotionConfig` with the app's policy). CSS-driven motion uses `motion-safe:` / `motion-reduce:` variants.
-- **Variant builders** (return frozen Framer Motion variants; timing always passed in): `contentSwap`, `contentSwapTransitions`, `overlaySurface`, `chip`, `press({ tapScale, spring })`, `staggerDelay(index, { base, cap })`, `surfaceResizeTransition(distancePx, { base, min, max, ease })` / `durationForDistance` (longer moves take a bit longer, clamped to the bounds you give).
-- **Module motion files** (`modules/*/motion.ts`) hold mechanics only: the module's `use*Motion()` hook (the app's motion, retimed) and helpers that pick from it by state. The values live in the app's theme files; the framework's originals are in `templates/motion/`.
+- **App motion (`defineMotion`).** `defineMotion({ tempo, reducedMotion, still, durations, easings, springs })` returns the app's frozen motion for `<ThemeProvider motion>`. `retime(tree, { tempo, reduced, still })` stretches every transition in a motion tree by `tempo` (springs keep their damping ratio) or replaces it with `still` (instant when none is given). `retimeModuleMotion` does the same and also treats a top-level `timings` table as seconds.
+- **CSS helpers.** `cssTransition(property, tween)` writes a CSS `transition` value; `cssEasing(ease)` writes the easing alone; `gpuTransform(y, scale, x)` builds the canonical `translate3d(...) scale(...)` string. Animate `transform` and `opacity`, never layout properties.
+- **Reduced motion.** When the app's policy is in effect, every module transition becomes `still`, and `CoreProvider` wraps each module backdrop and overlay in `ModuleMotionConfig` (`MotionConfig` with the app's policy).
+- **Module motion files** (`modules/*/motion.ts`) hold mechanics only: the module's `use*Motion()` hook (the app's motion, retimed) and helpers that pick from it by state.
 
-### Z-index layers (`Z_INDEX`)
-
-Global layers, bottom to top: `BACKGROUND` 0 · `DOCK_BACKDROP` 100 · `DOCK` 110 · `NOTIFICATION` 120 · `MODAL_BACKDROP` 130 · `MODAL` 140 · `SELECT` 150 · `LOADING` 160 · `ERROR_OVERLAY` 170 · `CONTEXT_MENU_BACKDROP` 180 · `CONTEXT_MENU` 190 · `TOOLTIP` 200.
-
-Local layers (inside their own stacking context, ≤ 30): `UI_ELEMENT` 10, `DOCK_CARD_BACKGROUND` 0, `DOCK_CARD_CONTENT` 10, `DOCK_CARD_STACK_BASE` 10 (card `i` uses `BASE − i`), `DOCK_CARD_BADGE` 20, `DOCK_CARD_MEDIA` 30, `DOCK_BREADCRUMBS` 10, `DOCK_SURFACE_CONTROL` 10, `DOCK_SURFACE_POPOVER` 30, `DOCK_SURFACE_CENTER` 0, `MODAL_FRAME` 1, `MODAL_STICKY_HEADER` 10.
-
-Only the **order** of global layers matters, but each must stay above the local range (and above Tailwind's allowed `z-0/10/20`), otherwise page content covers it. Stacked modals share `Z_INDEX.MODAL` and stack by DOM order. A test asserts `SELECT` and `CONTEXT_MENU` exist and `DROPDOWN` / `DEBUG_OVERLAY` do not.
-
-### Shared class constants
-
-`SURFACE_CLASSES` (`surface`, `title`, `description`, `icon`) and `ACTION_TONE_CLASS` give feature surfaces the same glass look as the dock without importing it.
-
-### Global CSS (`src/app/globals.css`)
-
-Defines the color variables (`--white`, `--black`, `--primary`) that [ambient](./modules/ambient.md) rewrites, Tailwind v4 `@theme` color bindings (`bg-black`, `text-primary`), the motion token classes (`duration-*`, `ease-*`), and utilities `center` (flex-center) and `skeleton-block` (pulse).
+The only numbers left in module code are relative stacking inside a module's own context (a modal's frame above its backdrop, dock card `i` below card `i − 1`).
 
 ## 8. Module overview
 
@@ -186,7 +170,7 @@ Defines the color variables (`--white`, `--black`, `--primary`) that [ambient](.
 
 ## 9. Gotchas
 
-- Importing `@omerdlw/base-framework/hooks` or `@omerdlw/base-framework/atoms` from a server-safe entry breaks the lint boundary and the Edge bundle.
+- Importing `@omerdlw/base-framework/hooks` or `@omerdlw/base-framework/design` from a server-safe entry breaks the lint boundary and the Edge bundle.
 - `createStore` snapshots are frozen in development: mutate through `publish`/`setState`, never in place.
 - `useStore` without a selector re-renders on every change; select a slice.
 - A theme file that is not listed in `src/config/index.ts` crashes the first component that uses it (by design, with a clear message).

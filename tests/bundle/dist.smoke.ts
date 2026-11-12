@@ -7,7 +7,7 @@ const PKG = "@omerdlw/base-framework";
 const SERVER_SAFE_ENTRIES = [
   "result.js",
   "events.js",
-  "tokens/index.js",
+  "design/recipes.js",
   "utils/index.js",
   "modules/ambient/server/index.js",
   "modules/ambient/worker/index.js",

@@ -14,7 +14,6 @@ import {
   useRegistryEntries,
   type RegistryMetadata,
 } from "@/kernel";
-import { Z_INDEX } from "@/tokens";
 import { acquireGlobalScrollLock } from "@/utils";
 import { useModuleTheme } from "@/theme";
 import {
@@ -142,7 +141,6 @@ export function useModalLayerModel({
   const isSide = isSidePosition(activePosition);
   const isVerticalEdge = isVerticalEdgePosition(activePosition);
   const previousEntry = modalStack[stackIndex - 1] || null;
-  const baseZIndex = Z_INDEX.MODAL;
   useEffect(() => {
     if (!isTopModal || !modalRef.current) return;
     const previouslyFocusedElement =
@@ -172,7 +170,6 @@ export function useModalLayerModel({
     isSide,
     isVerticalEdge,
     previousEntry,
-    baseZIndex,
   };
 }
 

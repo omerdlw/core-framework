@@ -21,7 +21,7 @@ export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   isPlaying: false,
   noiseStyle: {},
   overlay: false,
-  overlayColor: "var(--black)",
+  overlayColor: "currentColor",
   overlayOpacity: 0,
   position: "center",
   video: null,

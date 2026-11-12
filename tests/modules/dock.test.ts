@@ -48,7 +48,7 @@ import {
   runSurfaceTransition,
   transitionSurface,
 } from "../../src/modules/dock/surface/machine.ts";
-import { dockMotion } from "../../templates/motion/dock.ts";
+import { dockMotion } from "../support/motion/dock.ts";
 import {
   subscribeToApiErrorStatusEvents,
   subscribeToApplicationErrorStatusEvents,

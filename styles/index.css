@@ -1,8 +1,0 @@
-@source "../dist";
-
-@import "./tokens.css";
-@import "./palette.css";
-@import "./time.css";
-@import "./utilities.css";
-@import "./interaction.css";
-@import "./effects.css";

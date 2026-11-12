@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { Icon } from "@/atoms";
+import { Icon } from "@/design/components/icon";
 import { isImageIconSource } from "@/utils";
 import {
   useContextMenu,

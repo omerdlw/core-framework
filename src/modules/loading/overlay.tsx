@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@/atoms";
+import { Spinner } from "@/design/components/loader";
 import { useLoadingOverlayModel } from "./hooks";
 
 export function LoadingOverlay() {

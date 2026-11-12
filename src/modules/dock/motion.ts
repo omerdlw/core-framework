@@ -1,5 +1,5 @@
 import { type Transition } from "motion/react";
-import { cssTransition, gpuTransform, staggerDelay } from "@/tokens";
+import { cssTransition, gpuTransform } from "@/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/theme";
 import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
 import {
@@ -8,6 +8,13 @@ import {
   type DockSurfacePhaseMotion,
   type DockSurfaceTimings,
 } from "./types";
+
+function staggerDelay(
+  index: number,
+  { base, cap, exponent = 1 }: { base: number; cap: number; exponent?: number },
+): number {
+  return Math.min(cap, base * Math.pow(Math.max(0, index), exponent));
+}
 
 export function useDockMotion(): DockMotion {
   return useModuleMotion(dockTheme);
@@ -236,12 +243,14 @@ export function getDockCardDelay(
     return staggerDelay(safePosition, {
       base: timings.expandStagger,
       cap: timings.expandStaggerCap,
+      exponent: timings.staggerExponent,
     });
   }
   if (isStackHovered && safePosition > 0) {
     return staggerDelay(safePosition - 1, {
       base: timings.peekStagger,
       cap: timings.peekStaggerCap,
+      exponent: timings.staggerExponent,
     });
   }
   return 0;

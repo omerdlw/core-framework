@@ -9,7 +9,7 @@
 
 - **Engine:** Next.js 16 (App Router), React 19
 - **Core Framework:** `@omerdlw/base-framework` (Microkernel & Declarative UI Modules)
-- **Styling:** Tailwind CSS v4 (`@theme`, OKLCH semantic color tokens, `.center`, `.skeleton-block`)
+- **Styling:** Tailwind CSS v4 (the app owns every token and utility; the framework ships no CSS)
 - **Motion:** Motion (v13) with hardware GPU acceleration (`translate3d`, `scale`). Framework modules ship no animation of their own: the dock, modal, toast, context-menu and background motion lives in this app's theme files (`motion` next to `slots`), with tempo and vocabulary from `defineMotion`. Change module animation there, never in the framework.
 - **Icons:** `@iconify-icon/react` via `<Icon icon="solar:..." />`
 
@@ -26,7 +26,7 @@ Layer 3: src/features (Domain capabilities: auth, account, social, checkout)
    ↓ imports
 Layer 2: src/infrastructure (Adapters: database, HTTP client, proxy, rate limiting)
    ↓ imports
-Layer 1: @omerdlw/base-framework (Microkernel, first-party modules, atoms, tokens, result)
+Layer 1: @omerdlw/base-framework (Microkernel, first-party modules, unstyled design components, result)
 ```
 
 ### Strict Architectural Boundaries:
@@ -115,9 +115,10 @@ Always import from the exact subpaths exposed by `@omerdlw/base-framework`:
 | `useDockActions`, `useDockStatus` | `@omerdlw/base-framework/modules/dock` |
 | `useModal`, `useModalContext` | `@omerdlw/base-framework/modules/modal` |
 | `useAmbientTheme` | `@omerdlw/base-framework/modules/ambient` |
-| `cn`, `report`, `createStore` | `@omerdlw/base-framework/utils` |
+| `report`, `createStore` | `@omerdlw/base-framework/utils` |
+| `cn`, `defineUi` | `@omerdlw/base-framework/design/recipes` |
 | `useClickOutside`, `useGlobalEvent` | `@omerdlw/base-framework/hooks` |
-| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/atoms` |
+| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/design` |
 
 ### Rule 5: Modals and Surfaces Must Be Declared or Scoped
 Do not create floating unmanaged `fixed z-50` dialog div wrappers.

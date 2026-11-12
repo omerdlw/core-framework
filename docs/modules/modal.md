@@ -15,7 +15,7 @@
 | **Page slice**     | `usePage({ modal: { key: Component } })` → `page.modules.modal` (`open`, `set`, + actions)                                                                                                                                          |
 | **Peers (`uses`)** | none                                                                                                                                                                                                                                |
 | **Theme**          | `modalTheme` slots in `src/config/modal.module.theme.ts`                                                                                                                                                                            |
-| **z-index**        | layer `Z_INDEX.MODAL`, frame `Z_INDEX.MODAL_FRAME`                                                                                                                                                                                  |
+| **z-index**        | layer from the theme `styles.layer`; the frame sits at `1` above its backdrop                                                                                                                                                                                  |
 | **Tests**          | `tests/modules/modal.test.ts`                                                                                                                                                                                                       |
 
 ## 2. Mental model
@@ -191,7 +191,7 @@ No classes or colors in the module except the two z-indexes. Slots in `modalThem
 
 `data-layout` is one of `center`, `top`, `bottom`, `left`, `right`, `top-mobile`, `bottom-mobile`, `side-mobile` (`getModalLayout`), so each position/viewport combination is a single selector.
 
-Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): the `backdrop`, and the `content`, `header` and `footer` rows of a `ModalContainer`, plus `positions`, the dialog's variants per position (`center`, `top`, `right`, `bottom`, `left`) with an optional own `transition` (the starter gives `center` a spring). A theme without motion throws `Motion for theme "modal" is missing…`. Start from `templates/motion/modal.ts`. Use `Z_INDEX` for anything layered above or below a modal ([Rule 5](../architecture-and-rules.md)).
+Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming.md#5-motion-your-app-owns-every-animation)): the `backdrop`, and the `content`, `header` and `footer` rows of a `ModalContainer`, plus `positions`, the dialog's variants per position (`center`, `top`, `right`, `bottom`, `left`) with an optional own `transition`. A theme without motion throws `Motion for theme "modal" is missing…`. Keep anything layered above or below a modal in your app's layer constant ([Rule 5](../architecture-and-rules.md)).
 
 ## 8. Recipes and gotchas
 
@@ -228,5 +228,5 @@ Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming
 
 ## 10. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/tokens` (`Z_INDEX`, motion), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/atoms` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `next/dynamic`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/design` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `next/dynamic`, `motion/react`.
 - **Used by:** `src/core/provider.tsx` (installs it), pages and features through `useModal` / `page.modules.modal`.

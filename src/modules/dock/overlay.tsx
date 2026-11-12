@@ -13,8 +13,12 @@ import {
   type ReactPortal,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn, isImageIconSource } from "@/utils";
-import { Tooltip, Button, Icon, Icon as Iconify, Spinner } from "@/atoms";
+import { cn } from "@/design/cn";
+import { isImageIconSource } from "@/utils";
+import { Button } from "@/design/components/button";
+import { Icon, Icon as Iconify } from "@/design/components/icon";
+import { Spinner } from "@/design/components/loader";
+import { Tooltip } from "@/design/components/tooltip";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -148,34 +152,10 @@ export const DockCardBanner = memo(function DockCardBanner({
       }}
       transition={dockMotion.transitions.fade}
       style={{ ...DOCK_COMPOSITOR_STYLE, ...theme.styles.bannerRoot }}
-      className={cn("dock-banner", theme.slots.bannerRoot)}
+      className={theme.slots.bannerRoot}
     >
-      <style>{`
-        .dock-banner .dock-banner-sharp-mask {
-          -webkit-mask-image: var(--dock-banner-mask-ltr);
-          mask-image: var(--dock-banner-mask-ltr);
-        }
-        .dock-banner .dock-banner-sharp-mask {
-          -webkit-mask-composite: source-in;
-          mask-composite: intersect;
-        }
-        .dock-banner .dock-banner-scrim {
-          background: var(--dock-banner-scrim-ltr);
-        }
-        :dir(rtl) .dock-banner .dock-banner-sharp-mask {
-          -webkit-mask-image: var(--dock-banner-mask-rtl);
-          mask-image: var(--dock-banner-mask-rtl);
-        }
-        :dir(rtl) .dock-banner .dock-banner-scrim {
-          background: var(--dock-banner-scrim-rtl);
-        }
-      `}</style>
       <div
-        className={cn(
-          "dock-banner-sharp-mask",
-          theme.slots.bannerSharpImage,
-          className,
-        )}
+        className={cn(theme.slots.bannerSharpImage, className)}
         style={{
           backgroundImage: `url("${rawUrl}")`,
           backgroundPosition: resolvedPosition,
@@ -187,7 +167,7 @@ export const DockCardBanner = memo(function DockCardBanner({
         }}
       />
       <div
-        className={cn("dock-banner-scrim", theme.slots.bannerScrim)}
+        className={theme.slots.bannerScrim}
         aria-hidden="true"
         style={theme.styles.bannerScrim}
       />
@@ -207,6 +187,7 @@ const DockCommand = memo(function DockCommand({
   return (
     <Tooltip
       className={theme.slots.commandTooltip}
+      sideOffset={6}
       text={action.tooltip ?? undefined}
     >
       <motion.button
@@ -1224,7 +1205,7 @@ export function DockSurfaceShell({
         onAnimationComplete={onAnimationComplete ?? undefined}
       >
         {title && (
-          <h2 id={titleId} className="sr-only">
+          <h2 id={titleId} style={VISUALLY_HIDDEN}>
             {title}
           </h2>
         )}
@@ -1273,10 +1254,23 @@ export const LoadingItemContent = memo(function LoadingItemContent() {
   );
 });
 
+const VISUALLY_HIDDEN = {
+  border: 0,
+  clip: "rect(0, 0, 0, 0)",
+  height: 1,
+  margin: -1,
+  overflow: "hidden",
+  padding: 0,
+  position: "absolute",
+  whiteSpace: "nowrap",
+  width: 1,
+} as const;
+
 function DockSurfaceLoader() {
+  const theme = useDockTheme();
   return (
-    <div className="flex min-h-[160px] w-full items-center justify-center p-8">
-      <Spinner size={28} />
+    <div className={theme.slots.surfaceLoader}>
+      <Spinner />
     </div>
   );
 }
