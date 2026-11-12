@@ -20,6 +20,10 @@ function selectDockConfigState(state: DockState) {
   };
 }
 
+/**
+ * Registers a dock config (or just a title) for the page and returns the
+ * dock state and actions, with safe no-ops outside a provider.
+ */
 export function useDockConfig(
   configOrTitle?: string | Record<string, unknown> | null,
   options?: Record<string, unknown>,

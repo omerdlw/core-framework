@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from "react";
+import { isValidElement, type SyntheticEvent } from "react";
 
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { isInlineActionPathMatch } from "../model/paths";
@@ -47,4 +47,11 @@ export function ownsPathname(
   pathname: string,
 ) {
   return !path || isInlineActionPathMatch(path, pathname);
+}
+
+/** True when an action slot holds something React can render (element or component). */
+export function isRenderableAction(
+  action: DockSlotContent | undefined,
+): boolean {
+  return isValidElement(action) || typeof action === "function";
 }

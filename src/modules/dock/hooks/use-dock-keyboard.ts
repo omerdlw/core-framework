@@ -5,6 +5,8 @@ import { useCallback, useEffect } from "react";
 import { isEditableDockTarget, isInteractiveTarget } from "../lib/dom";
 import type { DockActions, DockItem } from "../types";
 
+const NO_FOCUSED_INDEX = -1;
+
 export function useDockKeyboard({
   expanded,
   focusedIndex,
@@ -38,7 +40,7 @@ export function useDockKeyboard({
         setExpanded(false);
         return;
       }
-      if (key === "Enter" && focusedIndex !== -1) {
+      if (key === "Enter" && focusedIndex !== NO_FOCUSED_INDEX) {
         event.preventDefault();
         const focusedItem = dockItems[focusedIndex];
         if (focusedItem?.path) {

@@ -5,8 +5,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { clamp } from "@/foundation/utils";
 
-import { PLAYBACK_RATES } from "../constants";
 import { useDockMedia, useDockMediaActions } from "../context";
+import {
+  getNextPlaybackRate,
+  getSkipForwardTime,
+  MEDIA_SKIP_SECONDS,
+  normalizePlaybackRate,
+  RESTORED_VOLUME,
+  roundVolume,
+  toPercentString,
+  VOLUME_KEY_STEP,
+} from "../lib/media";
 
 export function useDockMediaControlsModel(_props: { className?: string }) {
   const {
@@ -56,8 +65,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     }
 
     const syncPlaybackRate = () => {
-      const nextRate = Number(videoElement.playbackRate);
-      setPlaybackRate(Number.isFinite(nextRate) && nextRate > 0 ? nextRate : 1);
+      setPlaybackRate(normalizePlaybackRate(videoElement.playbackRate));
     };
     const handleEnterPip = () => setIsPipActive(true);
     const handleLeavePip = () => setIsPipActive(false);
@@ -91,7 +99,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       setIsMuted(currentMute);
 
       const effective = currentMute ? 0 : currentVol;
-      const effectivePercent = `${effective * 100}%`;
+      const effectivePercent = toPercentString(effective);
 
       if (volumeFillRef.current)
         volumeFillRef.current.style.width = effectivePercent;
@@ -109,10 +117,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
   }, [audibleElement]);
   const handleCycleSpeed = useCallback(() => {
     if (!videoElement) return;
-    const currentIndex = (PLAYBACK_RATES as readonly number[]).indexOf(
-      playbackRate,
-    );
-    const nextRate = PLAYBACK_RATES[(currentIndex + 1) % PLAYBACK_RATES.length];
+    const nextRate = getNextPlaybackRate(playbackRate);
     videoElement.playbackRate = nextRate;
     setPlaybackRate(nextRate);
   }, [playbackRate, videoElement]);
@@ -125,8 +130,8 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
 
       const offsetX = clamp(clientX - rect.left, 0, rect.width);
       const fraction = offsetX / rect.width;
-      const nextVolume = Math.round(fraction * 100) / 100;
-      const fractionPercent = `${fraction * 100}%`;
+      const nextVolume = roundVolume(fraction);
+      const fractionPercent = toPercentString(fraction);
 
       if (volumeFillRef.current)
         volumeFillRef.current.style.width = fractionPercent;
@@ -199,7 +204,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       if (!audibleElement) return;
 
       if (isMuted || volume === 0) {
-        const restoredVolume = volume === 0 ? 0.7 : volume;
+        const restoredVolume = volume === 0 ? RESTORED_VOLUME : volume;
         audibleElement.volume = restoredVolume;
         audibleElement.muted = false;
 
@@ -207,7 +212,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
         setVolume(restoredVolume);
         setIsMuted(false);
 
-        const restoredPercent = `${restoredVolume * 100}%`;
+        const restoredPercent = toPercentString(restoredVolume);
         if (volumeFillRef.current)
           volumeFillRef.current.style.width = restoredPercent;
         if (volumeThumbRef.current)
@@ -236,28 +241,27 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
   const handleSkipBackward = useCallback(() => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
-    videoElement.currentTime = Math.max(0, current - 10);
+    videoElement.currentTime = Math.max(0, current - MEDIA_SKIP_SECONDS);
   }, [videoElement]);
   const handleSkipForward = useCallback(() => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
     const duration = Number(videoElement.duration) || 0;
-    videoElement.currentTime =
-      duration > 0 ? Math.min(duration, current + 10) : current + 10;
+    videoElement.currentTime = getSkipForwardTime(current, duration);
   }, [videoElement]);
 
   const handleVolumeKeyDown = (event: React.KeyboardEvent) => {
     if (!audibleElement) return;
     if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
       event.preventDefault();
-      const next = Math.max(0, volume - 0.05);
+      const next = Math.max(0, volume - VOLUME_KEY_STEP);
       audibleElement.volume = next;
       const nextMuted = next === 0;
       audibleElement.muted = nextMuted;
       setVideoMuted?.(nextMuted);
     } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
       event.preventDefault();
-      const next = Math.min(1, volume + 0.05);
+      const next = Math.min(1, volume + VOLUME_KEY_STEP);
       audibleElement.volume = next;
       audibleElement.muted = false;
       setVideoMuted?.(false);

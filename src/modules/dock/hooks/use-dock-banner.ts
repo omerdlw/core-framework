@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 
+import { buildBannerRegistration } from "../lib/banner";
 import type { DockBannerInput } from "../types";
 import { useDockRegistration } from "./use-dock-registration";
 
+/** Registers a banner image for the current page's dock card. */
 export function useDockBanner(
   banner: DockBannerInput | null | undefined,
   options?: {
@@ -22,30 +24,17 @@ export function useDockBanner(
   const repeat = options?.repeat;
   const targetPath = options?.path;
 
-  const config = useMemo(() => {
-    if (!banner) return null;
-    if (typeof banner === "string") {
-      return {
-        bannerUrl: banner,
-        ...(position ? { bannerPosition: position } : {}),
-        ...(size ? { bannerSize: size } : {}),
-        ...(opacity !== undefined ? { bannerOpacity: opacity } : {}),
-        ...(repeat ? { bannerRepeat: repeat } : {}),
-        ...(targetPath ? { path: targetPath } : {}),
-      };
-    }
-    if (typeof banner === "object") {
-      return {
-        bannerUrl: banner.url || banner.bannerUrl,
-        bannerPosition: banner.position || banner.bannerPosition || position,
-        bannerSize: banner.size || banner.bannerSize || size,
-        bannerOpacity: banner.opacity ?? banner.bannerOpacity ?? opacity,
-        bannerRepeat: banner.repeat || banner.bannerRepeat || repeat,
-        ...(targetPath ? { path: targetPath } : {}),
-      };
-    }
-    return null;
-  }, [banner, position, size, opacity, repeat, targetPath]);
+  const config = useMemo(
+    () =>
+      buildBannerRegistration(banner, {
+        opacity,
+        path: targetPath,
+        position,
+        repeat,
+        size,
+      }),
+    [banner, position, size, opacity, repeat, targetPath],
+  );
 
   useDockRegistration(config, options);
 }

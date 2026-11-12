@@ -7,10 +7,12 @@ import { useTheme } from "@/react/theme";
 import { dockTheme } from "../constants";
 import { resolveDockActionClass } from "../lib/styles";
 
+/** Returns the active dock theme (slots, styles and motion). */
 export function useDockTheme() {
   return useTheme(dockTheme);
 }
 
+/** Returns a function that resolves class names for dock action buttons. */
 export function useDockActionClass() {
   const { slots } = useDockTheme();
   return useCallback(

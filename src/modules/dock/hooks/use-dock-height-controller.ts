@@ -12,6 +12,7 @@ import {
   DOCK_CARD_LAYOUT,
   DOCK_HEIGHT_BUFFER,
   DOCK_SURFACE_PHASE,
+  HEIGHT_EPSILON,
 } from "../constants";
 import { getContainerHeight, publishDockHeightCssVar } from "../model/layout";
 import type { UseDockHeightControllerOptions } from "../types";
@@ -56,12 +57,15 @@ export function useDockHeightController({
 
     const totalSpacerHeight = height + DOCK_HEIGHT_BUFFER;
 
-    if (Math.abs(height - lastAppliedContainerHeightRef.current) > 0.5) {
+    if (
+      Math.abs(height - lastAppliedContainerHeightRef.current) > HEIGHT_EPSILON
+    ) {
       lastAppliedContainerHeightRef.current = height;
       setContainerHeight(height);
     }
     if (
-      Math.abs(totalSpacerHeight - lastAppliedSpacerHeightRef.current) > 0.5
+      Math.abs(totalSpacerHeight - lastAppliedSpacerHeightRef.current) >
+      HEIGHT_EPSILON
     ) {
       lastAppliedSpacerHeightRef.current = totalSpacerHeight;
       publishDockHeightCssVar(totalSpacerHeight);

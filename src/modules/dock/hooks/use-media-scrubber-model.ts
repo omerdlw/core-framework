@@ -7,6 +7,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { clamp } from "@/foundation/utils";
 
 import { useDockMedia } from "../context";
+import {
+  getProgressRatio,
+  getTrackPosition,
+  SCRUBBER_KEY_STEP_SECONDS,
+} from "../lib/media";
 import { useDockMotion } from "../motion";
 
 interface SeekEvent {
@@ -41,7 +46,7 @@ export function useDockMediaScrubberModel(_props: {
     const publishProgress = () => {
       const current = Math.max(0, Number(videoElement.currentTime) || 0);
       const total = Math.max(0, Number(videoElement.duration) || 0);
-      const ratio = total > 0 ? clamp(current / total, 0, 1) : 0;
+      const ratio = getProgressRatio(current, total);
 
       if (progressBarRef.current) {
         progressBarRef.current.style.transform = `scaleX(${ratio})`;
@@ -95,18 +100,17 @@ export function useDockMediaScrubberModel(_props: {
       if (!videoElement || !scrubberRef.current || !duration) return;
       const rect = scrubberRef.current.getBoundingClientRect();
       const clientX = event.clientX ?? event.touches?.[0]?.clientX ?? 0;
-      const offsetX = clamp(clientX - rect.left, 0, rect.width);
-      const percentage = rect.width > 0 ? offsetX / rect.width : 0;
+      const { fraction } = getTrackPosition(clientX, rect);
 
-      seekToTime(percentage * duration);
+      seekToTime(fraction * duration);
     },
     [duration, seekToTime, videoElement],
   );
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       const keyTargets: Record<string, number> = {
-        ArrowLeft: currentTime - 5,
-        ArrowRight: currentTime + 5,
+        ArrowLeft: currentTime - SCRUBBER_KEY_STEP_SECONDS,
+        ArrowRight: currentTime + SCRUBBER_KEY_STEP_SECONDS,
         Home: 0,
         End: duration,
       };
@@ -123,11 +127,10 @@ export function useDockMediaScrubberModel(_props: {
       if (!scrubberRef.current || !duration) return;
       const rect = scrubberRef.current.getBoundingClientRect();
       const clientX = event.clientX ?? 0;
-      const offsetX = clamp(clientX - rect.left, 0, rect.width);
-      const percentage = rect.width > 0 ? offsetX / rect.width : 0;
+      const { fraction, offsetX } = getTrackPosition(clientX, rect);
 
       hoverX.set(offsetX);
-      setHoverTime(percentage * duration);
+      setHoverTime(fraction * duration);
     },
     [duration, hoverX],
   );

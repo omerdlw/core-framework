@@ -7,6 +7,7 @@ import { useDockActions, useDockSelector } from "../context";
 import { isSamePath } from "../model/paths";
 import type { DockReturnHandoff } from "../types";
 
+/** Reads and consumes surface return hand-offs recorded for the current page. */
 export function useSurfaceReturn() {
   const pathname = usePathname();
   const { continuity } = useDockActions();

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import { resolveBannerUrl } from "../lib/banner";
 import { isValidBannerUrl } from "../lib/styles";
 import { resolveDockHeaderKey } from "../runtime/pipeline";
 import type { DockCardHeaderProps } from "../types";
@@ -13,14 +14,7 @@ export function useDockCardHeaderModel({
   description,
 }: DockCardHeaderProps) {
   const item = (propItem ?? link)!;
-  const bannerObject =
-    typeof item.banner === "object" && item.banner !== null
-      ? item.banner
-      : null;
-  const bannerUrl =
-    bannerObject?.url ||
-    bannerObject?.bannerUrl ||
-    (typeof item.banner === "string" ? item.banner : item.bannerUrl);
+  const bannerUrl = resolveBannerUrl(item.banner, item.bannerUrl);
   const hasBanner = isValidBannerUrl(bannerUrl);
   const headerKey = useMemo(
     () => resolveDockHeaderKey({ link: item, description, showVideoIcon }),

@@ -12,11 +12,16 @@ import {
 } from "react";
 
 import { useModule } from "@/core/kernel";
-import { cn } from "@/foundation/recipes/cn";
 
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockHasMedia } from "../context";
 import { isSurfaceLayerShown, ownsPathname } from "../lib/card";
+import {
+  applyStatusSlots,
+  isActiveSurfaceInProgress,
+  mergeStatusStyle,
+  resolveVisibleCardCount,
+} from "../lib/card-item";
 import { getDockItemCardProps, resolveDockVisualStyle } from "../lib/styles";
 import { getItemMeasurementKey, getRouteMeasurementKey } from "../model/layout";
 import { getDockCardDelay, getDockPhaseMotion, useDockMotion } from "../motion";
@@ -73,10 +78,7 @@ export function useDockCardItemModel({
   const isCurrentSurface = Boolean(
     isSurfaceActive ||
     Boolean(item.isSurface) ||
-    Boolean(
-      activeItem?.isSurface &&
-      activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
-    ),
+    isActiveSurfaceInProgress(activeItem),
   );
   const isHeaderRestoring =
     item.surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER;
@@ -92,16 +94,7 @@ export function useDockCardItemModel({
   const cardContentRef = useRef<HTMLDivElement>(null);
   const showBorder = expanded ? isHovered : isHovered || isStackHovered;
   const effectiveStyle = useMemo(() => {
-    if (!statusStyle) return item.style;
-    if (!item.style) return statusStyle;
-    return {
-      ...statusStyle,
-      ...item.style,
-      card: { ...statusStyle.card, ...item.style.card },
-      icon: { ...statusStyle.icon, ...item.style.icon },
-      title: { ...statusStyle.title, ...item.style.title },
-      description: { ...statusStyle.description, ...item.style.description },
-    };
+    return mergeStatusStyle(item.style, statusStyle);
   }, [item.style, statusStyle]);
   const theme = useDockTheme();
   const isStatusCard = Boolean(item.isStatus || item.isNotFound || statusStyle);
@@ -111,26 +104,7 @@ export function useDockCardItemModel({
       isHovered: showBorder,
     });
     if (!isStatusCard) return resolved;
-    const { slots } = theme;
-    return {
-      ...resolved,
-      card: {
-        ...resolved.card,
-        className: cn(slots.statusCard, resolved.card.className),
-      },
-      icon: {
-        ...resolved.icon,
-        className: cn(slots.statusIcon, resolved.icon.className),
-      },
-      title: {
-        ...resolved.title,
-        className: cn(slots.statusTitle, resolved.title.className),
-      },
-      description: {
-        ...resolved.description,
-        className: cn(slots.statusDescription, resolved.description.className),
-      },
-    };
+    return applyStatusSlots(resolved, theme.slots);
   }, [effectiveStyle, isActive, isStatusCard, showBorder, theme]);
   const showsSurfaceLayer = isSurfaceLayerShown(item);
   const renderedActionSlot =
@@ -241,12 +215,13 @@ export function useDockCardItemModel({
     theme,
     isAnchoredToBottom: item.isSurface,
     stacking: dockMotion.deck.stacking,
-    visibleCount:
-      item.isStatus && !isStackHovered
-        ? dockMotion.deck.stacking.visible.status
-        : hasExtensions && !expanded
-          ? dockMotion.deck.stacking.visible.extensions
-          : dockMotion.deck.stacking.visible.stack,
+    visibleCount: resolveVisibleCardCount({
+      expanded,
+      hasExtensions,
+      isStackHovered,
+      item,
+      stacking: dockMotion.deck.stacking,
+    }),
     hasExtensions,
   });
   const cardDelay = useMemo(
