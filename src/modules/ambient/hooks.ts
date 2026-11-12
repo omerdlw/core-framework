@@ -102,9 +102,12 @@ function useScopedVariables(
     .slots.transition.split(/\s+/)
     .filter(Boolean);
   const transitionKey = transitionClasses.join(" ");
+  // A primitive dep: the effect re-runs only when the variables change.
+  const varKey = JSON.stringify(varMap);
 
   useEffect(() => {
-    if (Object.keys(varMap).length === 0) return;
+    const vars = JSON.parse(varKey) as Record<string, string>;
+    if (Object.keys(vars).length === 0) return;
 
     const targetEl = resolveTargetElement(scope);
     if (!targetEl) return;
@@ -113,7 +116,7 @@ function useScopedVariables(
       targetEl.classList.add(...transitionKey.split(" ").filter(Boolean));
     }
 
-    const restoreVariables = applyScopedCssVariables(targetEl, varMap, {
+    const restoreVariables = applyScopedCssVariables(targetEl, vars, {
       linger: linger ?? (scope ? 0 : getAmbientSettings().linger),
     });
 
@@ -123,7 +126,7 @@ function useScopedVariables(
         targetEl.classList.remove(...transitionKey.split(" ").filter(Boolean));
       }
     };
-  }, [linger, scope, transition, transitionKey, varMap]);
+  }, [linger, scope, transition, transitionKey, varKey]);
 }
 
 /**
@@ -153,13 +156,11 @@ export function useAmbientTheme(
   const stableColors = useStableObject(colors);
   const stableCssVars = useStableObject(cssVars);
 
-  const resolvedOptions = useMemo<AmbientExtractOptions>(
-    () => ({
-      ...(stableOptions || {}),
-      ...(stableInitialPalette ? { initialPalette: stableInitialPalette } : {}),
-    }),
-    [stableInitialPalette, stableOptions],
-  );
+  // useAmbientColor compares options shallowly, so a fresh object is fine.
+  const resolvedOptions: AmbientExtractOptions = {
+    ...(stableOptions || {}),
+    ...(stableInitialPalette ? { initialPalette: stableInitialPalette } : {}),
+  };
 
   const { palette: extractedPalette, isExtracting } = useAmbientColor(
     image,
@@ -176,16 +177,12 @@ export function useAmbientTheme(
     );
   }, [ambientActions, extractedPalette, hasActiveConfig, isExtracting]);
 
-  const resolvedVarMap = useMemo(
-    () =>
-      resolveAmbientVarMap({
-        colors: stableColors,
-        cssVars: stableCssVars,
-        image,
-        palette: extractedPalette,
-      }),
-    [extractedPalette, image, stableColors, stableCssVars],
-  );
+  const resolvedVarMap = resolveAmbientVarMap({
+    colors: stableColors,
+    cssVars: stableCssVars,
+    image,
+    palette: extractedPalette,
+  });
 
   useScopedVariables(resolvedVarMap, { linger, scope, transition });
 
@@ -205,18 +202,14 @@ export function useAmbient(
     "AmbientProvider",
   );
   const shared = useStore(store);
-  const ctx = useMemo<AmbientContextValue>(
-    () => ({ ...shared, ...actions }),
-    [actions, shared],
-  );
   const { isExtracting, palette } = useAmbientTheme(configOrImage ?? null);
-  const themeState = useMemo(
-    () => ({ isExtracting, palette }),
-    [isExtracting, palette],
-  );
 
-  return useMemo(
-    () => (configOrImage ? { ...ctx, ...themeState } : ctx),
-    [configOrImage, ctx, themeState],
+  // stable identity: part of the public hook contract
+  return useMemo<AmbientContextValue>(
+    () =>
+      configOrImage
+        ? { ...shared, ...actions, isExtracting, palette }
+        : { ...shared, ...actions },
+    [actions, configOrImage, isExtracting, palette, shared],
   );
 }

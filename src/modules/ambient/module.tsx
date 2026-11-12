@@ -63,11 +63,8 @@ export function useAmbientPage(
   const posterUrl = useOptionalBackgroundState(
     (background) => background.posterUrl,
   );
-  const theme = useMemo(
-    () => resolvePageAmbientTheme(slice, posterUrl),
-    [posterUrl, slice],
-  );
-  useAmbientTheme(theme);
+  useAmbientTheme(resolvePageAmbientTheme(slice, posterUrl));
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({ set: (ambient: AmbientPageConfig) => page.set({ ambient }) }),
     [page],
