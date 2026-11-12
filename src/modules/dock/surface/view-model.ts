@@ -1,10 +1,10 @@
 import { isPlainObject } from "@/foundation/utils";
+
 import { DOCK_SURFACE_PHASE } from "../constants";
 import {
   resolveComponentType,
   resolveRenderableContent,
 } from "../lib/element-helpers";
-import { normalizeExtensions } from "./model/normalize";
 import type {
   ActiveSurfaceStep,
   DockItem,
@@ -14,6 +14,7 @@ import type {
   SurfaceStep,
   SurfaceViewModelOptions,
 } from "../types";
+import { normalizeExtensions } from "./model/normalize";
 
 function resolveSurfaceAction(
   item: Pick<DockItem, "action"> | null,

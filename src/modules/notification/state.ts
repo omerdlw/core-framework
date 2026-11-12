@@ -1,6 +1,8 @@
 import { type ReactNode } from "react";
-import { isObject, toUserMessage } from "@/foundation/utils";
+
 import { isResult } from "@/foundation/result";
+import { isObject, toUserMessage } from "@/foundation/utils";
+
 import { TOAST_DURATIONS } from "./constants";
 import {
   type NotificationData,

@@ -1,14 +1,17 @@
 "use client";
 
-import React, { type ErrorInfo, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import React, { type ErrorInfo, type ReactNode } from "react";
+
 import { EVENT_TYPES, globalEvents } from "@/foundation/events";
+import { report, toUserMessage } from "@/foundation/utils";
+import { useTheme } from "@/react/theme";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
-import { useTheme } from "@/react/theme";
+
 import { ERROR_MESSAGES } from "./constants";
-import { errorTheme } from "./theme";
 import { getErrorReporter } from "./reporter";
+import { errorTheme } from "./theme";
 import type {
   ComponentErrorProps,
   ErrorBoundaryCoreProps,
@@ -17,7 +20,6 @@ import type {
   ModuleErrorProps,
 } from "./types";
 import { createErrorContext } from "./utils";
-import { report, toUserMessage } from "@/foundation/utils";
 
 const ActionButton = Button as React.ComponentType<{
   children?: ReactNode;

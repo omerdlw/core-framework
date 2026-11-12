@@ -1,6 +1,7 @@
 "use client";
 
 import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
+
 import type { DockPageConfig } from "../types";
 
 export function useDockRegistration(

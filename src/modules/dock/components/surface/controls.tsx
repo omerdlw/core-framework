@@ -1,23 +1,25 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import {
-  type ComponentType,
-  type ReactElement,
-  type ReactNode,
   cloneElement,
+  type ComponentType,
   createElement,
   isValidElement,
   memo,
+  type ReactElement,
+  type ReactNode,
 } from "react";
-import { AnimatePresence, motion } from "motion/react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
+
+import { useDockTheme } from "../../hooks/use-dock-theme";
+import { getDockLayoutTransition, useDockMotion } from "../../motion";
 import { DockSurfaceHeaderRadiusContext } from "../../surface/context";
 import { useDockSurfaceControlsModel } from "../../surface/hooks/use-surface-controls-model";
-import { getDockLayoutTransition, useDockMotion } from "../../motion";
 import type { DockItem } from "../../types";
-import { useDockTheme } from "../../hooks/use-dock-theme";
 import { applyControlRadius, getControlRadiusClass } from "./header-button";
 
 export const DockSurfaceControls = memo(function DockSurfaceControls({

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useRef, useState } from "react";
+
 import type {
   DockActions,
   DockRouteSnapshot,

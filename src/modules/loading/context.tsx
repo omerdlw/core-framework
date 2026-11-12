@@ -3,13 +3,15 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useLayoutEffect,
 } from "react";
+
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+
 import {
   DEFAULT_LOADING_STATE,
   DEFAULT_LOADING_STATE_WITH_PAGE,

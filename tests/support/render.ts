@@ -1,9 +1,10 @@
 import "./dom.ts";
+
 import { afterEach } from "node:test";
 import {
   act,
-  createElement as h,
   type ComponentType,
+  createElement as h,
   type ReactElement,
   type ReactNode,
 } from "react";

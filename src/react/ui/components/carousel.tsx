@@ -1,5 +1,6 @@
 "use client";
 
+import { animate } from "motion/react";
 import {
   Children,
   type ReactNode,
@@ -8,15 +9,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { animate } from "motion/react";
-import { useUi, useUiMotion } from "../provider";
-import { Button } from "./button";
-import { Icon } from "./icon";
+
 import type {
   CarouselProps,
   CarouselSlideProps,
   ScrollState,
 } from "@/react/ui/types";
+
+import { useUi, useUiMotion } from "../provider";
 import {
   FRAME_SELECTOR,
   glideTarget,
@@ -24,6 +24,8 @@ import {
   readScroll,
   useDragScroll,
 } from "../utils";
+import { Button } from "./button";
+import { Icon } from "./icon";
 
 const defaultSlide = ({ children, className }: CarouselSlideProps) => (
   <div className={className}>{children}</div>

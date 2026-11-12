@@ -1,11 +1,13 @@
 "use client";
 
-import { isValidElement, useCallback, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import { isValidElement, useCallback, useMemo, useState } from "react";
+
 import { isObject, toArray } from "@/foundation/utils";
-import type { DockActionDescriptor, DockItem } from "../types";
+
 import { DOCK_SURFACE_PHASE } from "../constants";
 import type { DockCommandEntry } from "../runtime/commands";
+import type { DockActionDescriptor, DockItem } from "../types";
 
 function normalizeToolbarActions(actions: unknown): DockCommandEntry[] {
   const arrayActions = toArray(actions);

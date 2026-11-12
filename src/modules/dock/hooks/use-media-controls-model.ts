@@ -2,7 +2,9 @@
 
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { clamp } from "@/foundation/utils";
+
 import { PLAYBACK_RATES } from "../constants";
 import { useDockMedia, useDockMediaActions } from "../context";
 

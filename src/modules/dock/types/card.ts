@@ -1,6 +1,18 @@
-import type { ExternalStore, createScheduler } from "@/foundation/utils";
 import type { ComponentType, ReactNode, SyntheticEvent } from "react";
+
 import type { RegistryMetadata } from "@/core/kernel";
+import type { createScheduler, ExternalStore } from "@/foundation/utils";
+
+import type {
+  DockHudDescriptor,
+  DockOperation,
+  DockOperationActions,
+} from "./hud";
+import type {
+  DockBannerSource,
+  DockIconOverlayConfig,
+  DockIconSource,
+} from "./media";
 import type {
   BreadcrumbConfig,
   BreadcrumbOverride,
@@ -13,16 +25,6 @@ import type {
   DockRouteActions,
   DockRouteSnapshot,
 } from "./routing";
-import type {
-  DockBannerSource,
-  DockIconOverlayConfig,
-  DockIconSource,
-} from "./media";
-import type {
-  DockHudDescriptor,
-  DockOperation,
-  DockOperationActions,
-} from "./hud";
 import type {
   DockItemSurfaceFields,
   DockSurfaceActions,

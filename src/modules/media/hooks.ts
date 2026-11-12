@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, use, useEffect, useId, useMemo, useRef } from "react";
+import { use, useCallback, useEffect, useId, useMemo, useRef } from "react";
+
 import { useRequiredContext, useStore } from "@/react/hooks";
+
 import { INERT_MEDIA_ACTIONS } from "./constants";
 import { MediaContext, NOOP_MEDIA_STORE } from "./context";
 import { toggleElement } from "./playback";

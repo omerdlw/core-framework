@@ -1,21 +1,29 @@
 import "../support/dom.ts";
-import { afterEach, beforeEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, mock, test } from "node:test";
 import { act, createElement as h } from "react";
-import { navigationTestState } from "../support/next-navigation.mjs";
-import { render } from "../support/render.ts";
+
 import { ModuleHost } from "../../src/core/kernel/index.ts";
-import { navigationModule } from "../../src/modules/navigation/module.tsx";
-import { createNavigator } from "../../src/core/navigation/navigator.ts";
 import {
-  watchHistory,
-  watchIntent,
-} from "../../src/modules/navigation/listeners.ts";
+  NAVIGATION_EVENTS,
+  NAVIGATION_REASON,
+} from "../../src/core/navigation/constants.ts";
+import { createNavigator } from "../../src/core/navigation/navigator.ts";
 import {
   configureNavigation,
   getNavigationSettings,
   mergeNavigationSettings,
 } from "../../src/core/navigation/settings.ts";
+import {
+  isSameLocation,
+  locationKeyOf,
+  pathOf,
+} from "../../src/core/navigation/utils.ts";
+import { createDockScheduler } from "../../src/modules/dock/lib/helpers.ts";
+import { DockProvider } from "../../src/modules/dock/provider.tsx";
+import { useDockNavigation } from "../../src/modules/dock/routing/navigation.ts";
+import { INERT_NAVIGATION_ACTIONS } from "../../src/modules/navigation/context.tsx";
 import {
   useArrival,
   useDeparture,
@@ -25,19 +33,13 @@ import {
   useNavigationState,
   useOptionalNavigation,
 } from "../../src/modules/navigation/hooks.ts";
-import { INERT_NAVIGATION_ACTIONS } from "../../src/modules/navigation/context.tsx";
 import {
-  NAVIGATION_EVENTS,
-  NAVIGATION_REASON,
-} from "../../src/core/navigation/constants.ts";
-import {
-  isSameLocation,
-  locationKeyOf,
-  pathOf,
-} from "../../src/core/navigation/utils.ts";
-import { DockProvider } from "../../src/modules/dock/provider.tsx";
-import { useDockNavigation } from "../../src/modules/dock/routing/navigation.ts";
-import { createDockScheduler } from "../../src/modules/dock/lib/helpers.ts";
+  watchHistory,
+  watchIntent,
+} from "../../src/modules/navigation/listeners.ts";
+import { navigationModule } from "../../src/modules/navigation/module.tsx";
+import { navigationTestState } from "../support/next-navigation.mjs";
+import { render } from "../support/render.ts";
 
 declare module "../../src/core/navigation/types.ts" {
   interface NavigationPayload {

@@ -1,16 +1,17 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
 import {
   type PanInfo,
   useDragControls,
   useMotionValue,
   useTransform,
 } from "motion/react";
-import type { DockSurfaceShellProps } from "../../types";
+import { useCallback, useMemo, useRef } from "react";
+
 import { DOCK_SURFACE_PHASE } from "../../constants";
 import { useDockFocusTrap } from "../../hooks/use-dock-focus-trap";
 import { getDockPhaseMotion, useDockMotion } from "../../motion";
+import type { DockSurfaceShellProps } from "../../types";
 
 export function useDockSurfaceShellModel({
   ref,

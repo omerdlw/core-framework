@@ -1,13 +1,8 @@
 "use client";
 
-import { use, useEffect, useEffectEvent } from "react";
 import { usePathname } from "next/navigation";
-import { useRequiredContext, useStore } from "@/react/hooks";
-import {
-  INERT_NAVIGATION_ACTIONS,
-  NOOP_NAVIGATION_STORE,
-  NavigationContext,
-} from "./context";
+import { use, useEffect, useEffectEvent } from "react";
+
 import { tripDestination } from "@/core/navigation/state";
 import type {
   NavigationActions,
@@ -20,6 +15,13 @@ import type {
   NavigationTrip,
 } from "@/core/navigation/types";
 import { isSamePathname } from "@/core/navigation/utils";
+import { useRequiredContext, useStore } from "@/react/hooks";
+
+import {
+  INERT_NAVIGATION_ACTIONS,
+  NavigationContext,
+  NOOP_NAVIGATION_STORE,
+} from "./context";
 
 export function useNavigation(): NavigationActions {
   return useRequiredContext(

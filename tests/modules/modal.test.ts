@@ -1,15 +1,27 @@
 import "../support/dom.ts";
-import { describe, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { act, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
+
 import {
   ModuleHost,
   usePage,
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
-import { defineModal, modalModule } from "../../src/modules/modal/module.tsx";
+import { SMOOTH_SCROLL_LOCK_EVENT } from "../../src/modules/modal/constants.ts";
 import { useModalState } from "../../src/modules/modal/hooks.ts";
+import {
+  dispatchSmoothScrollLock,
+  getFocusableElements,
+  trapFocus,
+} from "../../src/modules/modal/lib/dom.ts";
+import {
+  hasSlotContent,
+  isHeaderConfig,
+  resolveHeaderActions,
+} from "../../src/modules/modal/model/header.ts";
 import {
   getModalIdentity,
   getModalLabel,
@@ -24,17 +36,7 @@ import {
   normalizePosition,
   resolveActivePosition,
 } from "../../src/modules/modal/model/layout.ts";
-import {
-  dispatchSmoothScrollLock,
-  getFocusableElements,
-  trapFocus,
-} from "../../src/modules/modal/lib/dom.ts";
-import {
-  hasSlotContent,
-  isHeaderConfig,
-  resolveHeaderActions,
-} from "../../src/modules/modal/model/header.ts";
-import { SMOOTH_SCROLL_LOCK_EVENT } from "../../src/modules/modal/constants.ts";
+import { defineModal, modalModule } from "../../src/modules/modal/module.tsx";
 
 describe("modal page", () => {
   const { Overlay, ...headlessModal } = modalModule;

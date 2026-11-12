@@ -1,8 +1,9 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { execSync } from "node:child_process";
+import { describe, test } from "node:test";
+
 import { makeTempDir, node, removeDir, write } from "./support/fixture.ts";
 
 const SCRIPT = path.resolve("scripts/check-architecture.mjs");

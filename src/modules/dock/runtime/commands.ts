@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { toArray } from "@/foundation/utils";
-import type {
-  DockActionDescriptor,
-  DockActionDefinition,
-  DockActionOverrides,
-  DefineDockActionOptions,
-} from "../types";
+
 import { useDockActions } from "../context";
+import type {
+  DefineDockActionOptions,
+  DockActionDefinition,
+  DockActionDescriptor,
+  DockActionOverrides,
+} from "../types";
 
 export type DockCommandEntry = DockActionDescriptor & { key: string };
 type DockCommandEntries = Record<string, DockCommandEntry>;

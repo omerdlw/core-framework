@@ -1,6 +1,6 @@
 import {
-  DOCK_FOCUSABLE_SELECTOR,
   DOCK_FOCUS_RESTORE_BLOCKED_REASONS,
+  DOCK_FOCUSABLE_SELECTOR,
 } from "../constants";
 
 export function blurActiveElement(): void {

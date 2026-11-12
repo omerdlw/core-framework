@@ -1,4 +1,5 @@
 import { normalizePath } from "@/foundation/utils";
+
 import {
   isInlineActionPathMatch,
   isPathPrefix,

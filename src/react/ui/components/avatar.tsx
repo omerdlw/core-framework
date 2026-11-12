@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useUi } from "../provider";
-import { Image } from "./image";
+
 import type { AvatarProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 import { initialsOf } from "../utils";
+import { Image } from "./image";
 
 export function Avatar({
   alt,

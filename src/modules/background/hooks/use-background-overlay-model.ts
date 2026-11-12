@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo, type CSSProperties } from "react";
+import { type CSSProperties, useMemo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { retime } from "@/foundation/utils/tempo";
-import { useTheme, useMotionTokens } from "@/react/theme";
+import { useMotionTokens, useTheme } from "@/react/theme";
+
 import { backgroundTheme } from "../constants";
+import { useBackgroundActions, useBackgroundState } from "../hooks";
 import {
   DEFAULT_COLOR,
-  OBJECT_FITS,
   getEdgeFadeMask,
   getVisualStyle,
+  OBJECT_FITS,
   resolveGradientSettings,
   resolveVideoClassNames,
   resolveVideoOptions,
@@ -22,7 +25,6 @@ import {
   toCssEasing,
   useBackgroundMotion,
 } from "../motion";
-import { useBackgroundActions, useBackgroundState } from "../hooks";
 import { parseYouTubeUrlConfig } from "../youtube/lib/parse";
 
 export function useBackgroundOverlayModel() {

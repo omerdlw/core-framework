@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { DockHudDescriptor } from "../types";
+
 import {
-  type DockHudEntries,
   areSelectionModeStatesEqual,
+  type DockHudEntries,
   getActiveDockHud,
   removeHudEntries,
   upsertHudEntry,
@@ -13,6 +13,7 @@ import {
   createHudDefinition,
   createSelectionModeState,
 } from "../model/hud-definition";
+import type { DockHudDescriptor } from "../types";
 
 export function useDockHudRegistry() {
   const [selectionModeState, setSelectionModeState] =

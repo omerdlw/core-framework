@@ -1,18 +1,19 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
+
 import {
-  ok,
+  createSafeAction,
   err,
-  isResult,
-  isOk,
   isErr,
-  unwrap,
-  unwrapOr,
+  isOk,
+  isResult,
   map,
   mapErr,
   match,
+  ok,
   tryCatch,
-  createSafeAction,
+  unwrap,
+  unwrapOr,
 } from "../../src/foundation/result/index.ts";
 import {
   USER_MESSAGES,

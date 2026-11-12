@@ -1,22 +1,24 @@
 "use client";
 
 import { type ComponentType } from "react";
+
 import { EVENT_TYPES, globalEvents } from "@/foundation/events";
 import { toUserMessage } from "@/foundation/utils";
-import type { QueuedApiError, ScheduleStatusClearOptions } from "../types";
+
 import {
   API_ERROR_BATCH_DELAY,
   DOCK_EVENTS,
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
 import { normalizeUpper } from "../lib/helpers";
+import type { QueuedApiError, ScheduleStatusClearOptions } from "../types";
 import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
+  clearPersistedOverlayStatus,
   createErrorStatus,
   createGuardStatus,
   createOverlayStatus,
   getStatusTheme,
-  clearPersistedOverlayStatus,
   persistOverlayStatus,
 } from "./model";
 

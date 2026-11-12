@@ -1,5 +1,6 @@
 import { Children, cloneElement, isValidElement } from "react";
-import type { StableFunctionEntry, AnyFunction } from "./types";
+
+import type { AnyFunction, StableFunctionEntry } from "./types";
 
 const MAX_STABILIZATION_DEPTH = 64;
 

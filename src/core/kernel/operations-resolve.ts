@@ -1,8 +1,9 @@
 import { isObject } from "@/foundation/utils";
+
 import {
   compareRecords,
-  toSourceRecord,
   type MaybeEntry,
+  toSourceRecord,
 } from "./operations-records";
 import type { RegistryDefinitions, SourceRecord } from "./types";
 

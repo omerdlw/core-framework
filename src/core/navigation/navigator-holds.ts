@@ -1,6 +1,7 @@
 import { report } from "@/foundation/utils";
-import type { NavigationHold, NavigationTrip } from "./types";
+
 import type { getNavigationSettings } from "./settings";
+import type { NavigationHold, NavigationTrip } from "./types";
 
 export function createNavigationHolds(settings: typeof getNavigationSettings) {
   let nextHoldId = 0;

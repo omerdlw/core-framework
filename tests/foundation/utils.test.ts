@@ -1,6 +1,8 @@
 import "../support/dom.ts";
-import { afterEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, describe, mock, test } from "node:test";
+
 import {
   acquireGlobalScrollLock,
   clamp,
@@ -22,9 +24,9 @@ import {
 } from "../../src/foundation/utils/index.ts";
 import { createStore } from "../../src/foundation/utils/store.ts";
 import {
+  toUserMessage,
   USER_MESSAGES,
   UserError,
-  toUserMessage,
 } from "../../src/foundation/utils/user-message.ts";
 
 afterEach(() => mock.timers.reset());

@@ -1,18 +1,20 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+
 import { cn } from "@/foundation/recipes/cn";
-import { SurfaceItemContext } from "../../surface/context";
-import { useDockSurfaceShellModel } from "../../surface/hooks/use-surface-shell-model";
+
+import { DOCK_SURFACE_PHASE } from "../../constants";
+import { useDockTheme } from "../../hooks/use-dock-theme";
 import {
   DOCK_COMPOSITOR_STYLE,
   DOCK_SURFACE_DRAG_CONSTRAINTS,
   dockSurfaceDragTransformTemplate,
   useDockMotion,
 } from "../../motion";
+import { SurfaceItemContext } from "../../surface/context";
+import { useDockSurfaceShellModel } from "../../surface/hooks/use-surface-shell-model";
 import type { DockSurfaceShellProps } from "../../types";
-import { useDockTheme } from "../../hooks/use-dock-theme";
-import { DOCK_SURFACE_PHASE } from "../../constants";
 import { DockSurfaceControls } from "./controls";
 
 export function DockSurfaceShell({

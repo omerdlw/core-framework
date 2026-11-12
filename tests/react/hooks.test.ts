@@ -1,11 +1,13 @@
 import "../support/dom.ts";
-import { afterEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, describe, mock, test } from "node:test";
 import { act, createElement as h, useLayoutEffect } from "react";
-import { renderToString } from "react-dom/server";
 import { createContext } from "react";
-import { renderHook } from "../support/render.ts";
+import { renderToString } from "react-dom/server";
+
 import { globalEvents } from "../../src/foundation/events/index.ts";
+import { createStore } from "../../src/foundation/utils/index.ts";
 import {
   useClickOutside,
   useGlobalEvent,
@@ -13,7 +15,7 @@ import {
   useRequiredContext,
   useStore,
 } from "../../src/react/hooks/index.ts";
-import { createStore } from "../../src/foundation/utils/index.ts";
+import { renderHook } from "../support/render.ts";
 
 afterEach(() => mock.timers.reset());
 

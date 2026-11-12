@@ -1,8 +1,10 @@
 import "../support/dom.ts";
-import { describe, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { act, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
+
 import { RegistryProvider } from "../../src/core/kernel/index.ts";
 import { BackgroundProvider } from "../../src/modules/background/context.tsx";
 import {
@@ -10,19 +12,18 @@ import {
   useBackgroundState,
 } from "../../src/modules/background/hooks.ts";
 import {
-  extractYouTubeVideoId,
-  isDirectVideoUrl,
-  isYouTubeUrl,
-  parseYouTubeUrlConfig,
-} from "../../src/modules/background/youtube/lib/parse.ts";
-
-import {
   mergeBackgroundState,
   normalizeBackgroundInput,
   resolveVideoClassNames,
   resolveVideoOptions,
   selectPageBackground,
 } from "../../src/modules/background/index.ts";
+import {
+  extractYouTubeVideoId,
+  isDirectVideoUrl,
+  isYouTubeUrl,
+  parseYouTubeUrlConfig,
+} from "../../src/modules/background/youtube/lib/parse.ts";
 
 describe("background actions", () => {
   class FakeVideo {

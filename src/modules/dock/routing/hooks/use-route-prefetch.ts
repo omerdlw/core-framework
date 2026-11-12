@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
+
 import type { NavigationActions } from "@/core/navigation/types";
 import { report } from "@/foundation/utils";
+
+import { DOCK_PREFETCH_INTENT_DELAY_MS } from "../../constants";
 import { isSafeInternalHref } from "../../model/paths";
 import type { PrefetchingRouter, RoutePrefetchState } from "../../types";
-import { DOCK_PREFETCH_INTENT_DELAY_MS } from "../../constants";
 
 export function useRoutePrefetch(
   router: PrefetchingRouter | null | undefined,

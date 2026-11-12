@@ -1,15 +1,17 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
+  type CSSProperties,
   Fragment,
   useMemo,
   useSyncExternalStore,
-  type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
+
 import { useRegistryEntries } from "@/core/kernel";
 import { useTheme } from "@/react/theme";
+
 import { controlsTheme } from "./constants";
 import { resolveControlsPairs } from "./entries";
 import { useControlsLayout } from "./hooks";

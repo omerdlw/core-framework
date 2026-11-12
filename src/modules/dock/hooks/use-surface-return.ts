@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useCallback, useMemo } from "react";
+
 import { useDockActions, useDockSelector } from "../context";
 import { isSamePath } from "../model/paths";
 import type { DockReturnHandoff } from "../types";

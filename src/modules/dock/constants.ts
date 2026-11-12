@@ -1,4 +1,5 @@
 import { defineThemeSpec } from "@/react/theme";
+
 import type { DockMotion, DockThemeSlot } from "./types";
 
 export const DOCK_STYLE_SECTIONS = Object.freeze([

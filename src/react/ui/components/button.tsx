@@ -1,15 +1,17 @@
 "use client";
 
 import NextLink from "next/link";
-import { useUi } from "../provider";
+
 import { splitVariants } from "@/foundation/recipes/split";
-import { Loader } from "./loader";
 import type {
   ButtonBaseProps,
   ButtonElementProps,
   ButtonLinkProps,
   ButtonProps,
 } from "@/react/ui/types";
+
+import { useUi } from "../provider";
+import { Loader } from "./loader";
 
 export function Button({
   children,

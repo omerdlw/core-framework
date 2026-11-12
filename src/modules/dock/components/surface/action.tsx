@@ -1,9 +1,10 @@
 "use client";
 
-import { type ComponentType, type ReactNode, isValidElement } from "react";
+import { type ComponentType, isValidElement, type ReactNode } from "react";
+
+import type { DockActionSlot } from "../../lib/card";
 import { useSurfaceAction } from "../../surface/context";
 import { useDockSurfaceExtension } from "../../surface/hooks/use-surface-extensions";
-import type { DockActionSlot } from "../../lib/card";
 import { DockMediaControls } from "../media-controls";
 
 export function DockSurfaceAction({ children }: { children: ReactNode }) {

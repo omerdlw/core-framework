@@ -1,12 +1,9 @@
 "use client";
 
 import { lazy, useCallback, useMemo } from "react";
+
 import { DOCK_SURFACE_FLOW_STATUS } from "../constants";
-import {
-  createSurfaceReturnHandshake,
-  normalizeSurfaceFlowSnapshot,
-  resolveSurfaceFlowReturnHandshake,
-} from "./helpers";
+import { useDockActions, useDockSelector } from "../context";
 import type {
   BoundSurfaceFactory,
   DefineStepSurfaceOptions,
@@ -28,9 +25,13 @@ import type {
   SurfaceStep,
   UseSurfaceInput,
 } from "../types";
-import { useDockActions, useDockSelector } from "../context";
-import { EMPTY_SURFACE_STACK } from "./model/records";
+import {
+  createSurfaceReturnHandshake,
+  normalizeSurfaceFlowSnapshot,
+  resolveSurfaceFlowReturnHandshake,
+} from "./helpers";
 import { normalizeSurfaceDefinition } from "./model/normalize";
+import { EMPTY_SURFACE_STACK } from "./model/records";
 
 export function createSurfaceEntryDefinition(
   input: SurfaceInput | unknown,

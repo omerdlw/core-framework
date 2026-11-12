@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -8,26 +9,20 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useRequiredContext, useStore } from "@/react/hooks";
+
 import { useModule } from "@/core/kernel";
-import { globalEvents } from "@/foundation/events";
-import { createNavigator } from "@/core/navigation/navigator";
 import { NAVIGATION_STATUS } from "@/core/navigation/constants";
+import { createNavigator } from "@/core/navigation/navigator";
 import type {
   NavigationBlock,
   NavigationRouter,
   NavigationState,
   Navigator,
 } from "@/core/navigation/types";
+import { globalEvents } from "@/foundation/events";
 import { report, shallowEqual } from "@/foundation/utils";
-import { getDockLocationKey, isSamePath } from "../model/paths";
-import type {
-  DockActions,
-  DockItem,
-  DockRoutePolicy,
-  DockRouteSnapshot,
-} from "../types";
+import { useRequiredContext, useStore } from "@/react/hooks";
+
 import { DOCK_EVENTS } from "../constants";
 import {
   DockContext,
@@ -35,6 +30,13 @@ import {
   useDockLoadingActions as useLoadingActions,
 } from "../context";
 import { blurActiveElement } from "../lib/dom";
+import { getDockLocationKey, isSamePath } from "../model/paths";
+import type {
+  DockActions,
+  DockItem,
+  DockRoutePolicy,
+  DockRouteSnapshot,
+} from "../types";
 import { openDockGuardConfirmation } from "./guards";
 import { resolveDockRoutePolicy } from "./model/policy";
 

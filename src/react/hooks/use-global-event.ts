@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef } from "react";
-import { globalEvents, type FrameworkEventMap } from "@/foundation/events";
+
+import { type FrameworkEventMap, globalEvents } from "@/foundation/events";
+
 import type { UseGlobalEventOptions } from "./types";
 
 export function useGlobalEvent<K extends keyof FrameworkEventMap>(

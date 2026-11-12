@@ -1,6 +1,8 @@
 import { type Transition } from "motion/react";
+
 import { cssTransition, gpuTransform } from "@/foundation/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/react/theme";
+
 import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
 import type {
   DockMotion,

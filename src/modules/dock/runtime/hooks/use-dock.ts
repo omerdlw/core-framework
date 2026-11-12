@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRequiredContext } from "@/react/hooks";
+
 import { normalizePath, shallowEqual } from "@/foundation/utils";
+import { useRequiredContext } from "@/react/hooks";
+
 import { DOCK_ATTENTION_KIND } from "../../constants";
-import type { DockNavigateOptions } from "../../types";
-import { useDockRouteReset } from "../../hooks/use-dock-route-reset";
 import { DockContext, useDockActions, useDockSelector } from "../../context";
+import { useDockRouteReset } from "../../hooks/use-dock-route-reset";
 import { useDockNavigation } from "../../routing/navigation";
+import type { DockNavigateOptions } from "../../types";
 import { useDockDisplay } from "../display";
 import { useDockLayout } from "./use-dock-layout";
 

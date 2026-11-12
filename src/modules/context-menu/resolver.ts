@@ -1,6 +1,7 @@
 import { isObject, toArray } from "@/foundation/utils";
+
 import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
-import { resolveMenuItems, resolveAsBoolean, safeInvoke } from "./items";
+import { resolveAsBoolean, resolveMenuItems, safeInvoke } from "./items";
 import {
   type ContextMenuCandidate,
   type ContextMenuConfig,

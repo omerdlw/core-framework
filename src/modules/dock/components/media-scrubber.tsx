@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
-import { useDockMotion } from "../motion";
-import { useDockMediaScrubberModel } from "../hooks/use-media-scrubber-model";
+
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { useDockMediaScrubberModel } from "../hooks/use-media-scrubber-model";
 import { formatMediaTime } from "../lib/helpers";
+import { useDockMotion } from "../motion";
 
 export const DockMediaScrubber = memo(function DockMediaScrubber({
   className = "",

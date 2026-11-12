@@ -1,25 +1,25 @@
 import { analyzeAmbientPixels } from "./analyze";
 import {
+  type AmbientExtractRequest,
+  type AmbientExtractResult,
   extractHere,
   fetchImageBlob,
   readPixels,
-  type AmbientExtractRequest,
-  type AmbientExtractResult,
 } from "./pipeline";
 import {
   getAmbientSettings,
   resolveAnalysis,
   resolveProxyUrl,
 } from "./settings";
-import {
-  AMBIENT_WORKER_REQUEST,
-  AMBIENT_WORKER_RESPONSE,
-} from "./worker/index";
 import type {
   AmbientExtractOptions,
   AmbientImageSource,
   AmbientPalette,
 } from "./types";
+import {
+  AMBIENT_WORKER_REQUEST,
+  AMBIENT_WORKER_RESPONSE,
+} from "./worker/index";
 
 const WORKER_PATIENCE = 15_000;
 

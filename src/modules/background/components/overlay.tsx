@@ -1,14 +1,16 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+
 import { cn } from "@/foundation/recipes/cn";
+
 import { useBackgroundOverlayModel } from "../hooks/use-background-overlay-model";
+import { YouTubeBackgroundPlayer } from "../youtube/components/player";
 import { BackgroundGradients } from "./background-gradients";
 import { EdgeGradient } from "./edge-gradient";
 import { NativeVideo } from "./native-video";
 import { NoiseOverlay } from "./noise-overlay";
 import { SolidOverlay } from "./solid-overlay";
-import { YouTubeBackgroundPlayer } from "../youtube/components/player";
 
 export function BackgroundOverlay() {
   const {

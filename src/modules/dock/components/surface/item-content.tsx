@@ -1,11 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
+
 import { Spinner } from "@/react/ui/components/loader";
-import type { DockItem, DockItemSurfaceFields } from "../../types";
-import { stopPropagationOnly } from "../../lib/card";
+
 import { useDockTheme } from "../../hooks/use-dock-theme";
+import { stopPropagationOnly } from "../../lib/card";
 import { isValidComponentType } from "../../lib/element-helpers";
+import type { DockItem, DockItemSurfaceFields } from "../../types";
 import { DockSurfaceShell } from "./shell";
 
 function DockSurfaceLoader() {

@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
+import { splitStyle } from "../lib/styles";
 import { useDockMotion } from "../motion";
 import type { DockTitleProps } from "../types";
-import { splitStyle } from "../lib/styles";
-import { useDockTheme } from "../hooks/use-dock-theme";
 
 export const DockTitle = memo(function DockTitle({
   text,

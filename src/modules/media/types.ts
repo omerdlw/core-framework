@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import type { RegistryMetadata } from "@/core/kernel";
 import type { ExternalStore } from "@/foundation/utils";
 

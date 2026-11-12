@@ -1,11 +1,13 @@
 "use client";
 
 import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
-import { useDockSurfaceExtensionsBarModel } from "../../surface/hooks/use-surface-extensions-bar-model";
-import type { DockItem, NormalizedSurfaceExtension } from "../../types";
+
 import { useDockTheme } from "../../hooks/use-dock-theme";
 import { isValidComponentType } from "../../lib/element-helpers";
+import { useDockSurfaceExtensionsBarModel } from "../../surface/hooks/use-surface-extensions-bar-model";
+import type { DockItem, NormalizedSurfaceExtension } from "../../types";
 
 function ExtensionPill({
   ext,

@@ -1,9 +1,11 @@
 "use client";
 
+import { useMotionValue, useSpring } from "motion/react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { clamp } from "@/foundation/utils";
-import { useMotionValue, useSpring } from "motion/react";
+
 import { useDockMedia } from "../context";
 import { useDockMotion } from "../motion";
 

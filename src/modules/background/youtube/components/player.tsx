@@ -1,10 +1,12 @@
 "use client";
 
 import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { Spinner } from "@/react/ui/components/loader";
-import { useYouTubeBackgroundPlayerModel } from "../hooks/use-youtube-background-player-model";
+
 import { type YouTubeBackgroundPlayerProps } from "../../types";
+import { useYouTubeBackgroundPlayerModel } from "../hooks/use-youtube-background-player-model";
 
 export const YouTubeBackgroundPlayer = memo(function YouTubeBackgroundPlayer({
   codec = "auto",

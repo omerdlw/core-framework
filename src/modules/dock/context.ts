@@ -1,22 +1,24 @@
 "use client";
 
-import { use, type ComponentType } from "react";
-import { useRequiredContext, useStore } from "@/react/hooks";
+import { type ComponentType, use } from "react";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore, shallowEqual } from "@/foundation/utils";
 import {
-  useOptionalMediaActions,
-  useOptionalMediaState,
-  type MediaActions,
-  type MediaState,
-} from "@/modules/media";
-import {
-  useOptionalLoadingActions,
-  useOptionalLoadingState,
   type LoadingActions,
   type LoadingStateWithPage,
+  useOptionalLoadingActions,
+  useOptionalLoadingState,
 } from "@/modules/loading";
+import {
+  type MediaActions,
+  type MediaState,
+  useOptionalMediaActions,
+  useOptionalMediaState,
+} from "@/modules/media";
 import { useNotificationVisible } from "@/modules/notification";
+import { useRequiredContext, useStore } from "@/react/hooks";
+
 import type {
   DockActions,
   DockContextValue,

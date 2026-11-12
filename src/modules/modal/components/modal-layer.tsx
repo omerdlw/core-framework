@@ -1,19 +1,21 @@
 "use client";
 
-import { createElement } from "react";
 import { motion } from "motion/react";
-import { cn } from "@/foundation/recipes/cn";
+import { createElement } from "react";
+
 import { ModuleBoundary } from "@/core/kernel";
+import { cn } from "@/foundation/recipes/cn";
+
 import { MODAL_POSITIONS } from "../constants";
+import { useModalLayerModel } from "../hooks";
+import { type Theme } from "../lib/theme";
+import { getModalLayout, getModalPosition } from "../model/layout";
 import {
-  MODAL_COMPOSITOR_STYLE,
   getModalPositionMotion,
+  MODAL_COMPOSITOR_STYLE,
   useModalMotion,
 } from "../motion";
 import { type ModalComponent, type ModalEntry } from "../types";
-import { getModalLayout, getModalPosition } from "../model/layout";
-import { useModalLayerModel } from "../hooks";
-import { type Theme } from "../lib/theme";
 import { ModalLayerSwitcher } from "./modal-layer-switcher";
 
 export function ModalLayer({

@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+
+import type { DockItem } from "../../types";
 import {
   findDockItemIndex,
   isSameItem,
@@ -10,7 +12,6 @@ import {
   reorderItemsWithActiveFirst,
   replaceActiveItem,
 } from "../pipeline";
-import type { DockItem } from "../../types";
 
 export function useDockLayout({
   dockItems,

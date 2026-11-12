@@ -1,7 +1,8 @@
 "use client";
 
-import { useUi } from "../provider";
 import type { SkeletonBlockProps, SkeletonLinesProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 
 export function SkeletonBlock({
   className,

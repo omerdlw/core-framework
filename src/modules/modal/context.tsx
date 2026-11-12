@@ -1,9 +1,14 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
-import { createStore, report, type ExternalStore } from "@/foundation/utils";
+import { createStore, type ExternalStore, report } from "@/foundation/utils";
+
 import { MODAL_CHROME } from "./constants";
+import { getModalIdentity } from "./model/identity";
+import { normalizePosition } from "./model/layout";
+import { createModalState, INITIAL_MODAL_STATE } from "./model/state";
 import {
   type ModalActions,
   type ModalEntry,
@@ -11,9 +16,6 @@ import {
   type ModalProviderProps,
   type ModalState,
 } from "./types";
-import { INITIAL_MODAL_STATE, createModalState } from "./model/state";
-import { getModalIdentity } from "./model/identity";
-import { normalizePosition } from "./model/layout";
 
 export interface ModalContextValue {
   actions: ModalActions;

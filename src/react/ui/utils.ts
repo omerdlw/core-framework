@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+
 import type { PillBox, ScrollState } from "./types";
 
 export function initialsOf(name?: string): string {

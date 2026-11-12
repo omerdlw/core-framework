@@ -1,29 +1,20 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
+  type ComponentType,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type ComponentType,
 } from "react";
-import { usePathname } from "next/navigation";
+
+import { STATUS_CLEAR_DURATION } from "../constants";
 import type {
-  StatusState,
   QueuedApiError,
   ScheduleStatusClearOptions,
+  StatusState,
 } from "../types";
-import { STATUS_CLEAR_DURATION } from "../constants";
-import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
-import {
-  createConnectionStatus,
-  isEquivalentOverlayStatus,
-  isErrorStatus,
-  resolveStatusPriority,
-  clearPersistedOverlayStatus,
-  isPersistableOverlayStatus,
-  restorePersistedOverlayStatus,
-} from "./model";
 import {
   subscribeToApiErrorStatusEvents,
   subscribeToApplicationErrorStatusEvents,
@@ -32,6 +23,16 @@ import {
   subscribeToGuardStatusEvents,
   subscribeToNotFoundStatusEvents,
 } from "./events";
+import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
+import {
+  clearPersistedOverlayStatus,
+  createConnectionStatus,
+  isEquivalentOverlayStatus,
+  isErrorStatus,
+  isPersistableOverlayStatus,
+  resolveStatusPriority,
+  restorePersistedOverlayStatus,
+} from "./model";
 
 function usePersistedOverlayStatusRestoration({
   scheduleStatusClear,

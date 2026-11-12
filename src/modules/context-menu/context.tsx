@@ -1,25 +1,26 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
+  type ReactNode,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  useLayoutEffect,
 } from "react";
-import { usePathname } from "next/navigation";
-import { useStore } from "@/react/hooks";
-import { getOrCreateGlobalContext } from "@/core/kernel";
 
+import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+import { useStore } from "@/react/hooks";
+
+import { safeInvoke } from "./items";
 import { prepareMenu } from "./resolver";
 import {
   createInitialMenuState,
   emitContextMenuVisibility,
   resolveNextOpenState,
 } from "./state";
-import { safeInvoke } from "./items";
 import {
   type ContextMenuActions,
   type ContextMenuContextValue,

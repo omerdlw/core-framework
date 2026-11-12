@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
-import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
-import type { DockCardBannerProps } from "../types";
+
 import { useDockCardBannerModel } from "../hooks/use-card-banner-model";
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
+import type { DockCardBannerProps } from "../types";
 
 export const DockCardBanner = memo(function DockCardBanner({
   banner,

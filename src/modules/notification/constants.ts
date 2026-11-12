@@ -1,9 +1,10 @@
 import { USER_MESSAGES } from "@/foundation/utils";
 import { defineThemeSpec } from "@/react/theme";
+
 import {
   type NotificationActions,
-  type NotificationState,
   type NotificationMotion,
+  type NotificationState,
   type NotificationThemeSlot,
 } from "./types";
 

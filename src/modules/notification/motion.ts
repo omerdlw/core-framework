@@ -1,4 +1,5 @@
 import { useModuleMotion } from "@/react/theme";
+
 import { notificationTheme } from "./constants";
 
 export const NOTIFICATION_COMPOSITOR_STYLE = Object.freeze({

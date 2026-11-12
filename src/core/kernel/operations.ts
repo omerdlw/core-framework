@@ -4,21 +4,15 @@ import {
   getSourceRecord,
   getSourceRecords,
   hasRecordChanged,
+  type MaybeEntry,
   removeSourceRecord,
   resolveRecordPriority,
   setSourceRecord,
-  type MaybeEntry,
 } from "./operations-records";
 import {
   createResolverCacheFor,
   resolveEntryValueFor,
 } from "./operations-resolve";
-import {
-  resolveInstanceId,
-  resolveRegisterInput,
-  resolveScope,
-  resolveUnregisterInput,
-} from "./utils";
 import { validateRegistryKey } from "./schema";
 import type {
   RegisterOperation,
@@ -29,6 +23,12 @@ import type {
   RegistryState,
   UnregisterOperation,
 } from "./types";
+import {
+  resolveInstanceId,
+  resolveRegisterInput,
+  resolveScope,
+  resolveUnregisterInput,
+} from "./utils";
 
 export function createRegisterOperation(
   type: string,

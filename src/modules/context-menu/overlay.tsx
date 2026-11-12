@@ -1,16 +1,18 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "motion/react";
-import { Icon } from "@/react/ui/components/icon";
+
 import { isImageIconSource } from "@/foundation/utils";
+import { Icon } from "@/react/ui/components/icon";
+
+import { joinClassNames } from "./dom";
 import {
   useContextMenu,
   useContextMenuContentModel,
   useContextMenuListener,
 } from "./hooks";
-import { joinClassNames } from "./dom";
 import { resolveMenuItems } from "./items";
 import { useContextMenuMotion } from "./motion";
 import {

@@ -1,10 +1,10 @@
+import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../../constants";
 import type {
   SurfaceId,
   SurfaceTransitionEffect,
   SurfaceTransitionResult,
   SurfaceTransitionState,
 } from "../../types";
-import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../../constants";
 
 const SURFACE_PHASES: readonly unknown[] = Object.values(DOCK_SURFACE_PHASE);
 

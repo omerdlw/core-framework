@@ -1,12 +1,13 @@
-import { type ReactNode, isValidElement, lazy } from "react";
+import { isValidElement, lazy, type ReactNode } from "react";
+
 import { isPlainObject } from "@/foundation/utils";
+
 import { DOCK_SURFACE_RENDER_MODE } from "../../constants";
 import {
   isValidComponentType,
   resolveComponentType,
   resolveRenderableContent,
 } from "../../lib/element-helpers";
-import { isSurfaceDescriptor, normalizeSurfaceExtension } from "../helpers";
 import type {
   DockComponentProps,
   NormalizedSurfaceDefinition,
@@ -15,6 +16,7 @@ import type {
   SurfaceDescriptor,
   SurfaceStep,
 } from "../../types";
+import { isSurfaceDescriptor, normalizeSurfaceExtension } from "../helpers";
 
 const isNormalizedExtension = (
   extension: NormalizedSurfaceExtension | null,

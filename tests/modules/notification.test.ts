@@ -1,8 +1,19 @@
 import "../support/dom.ts";
-import { afterEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, describe, mock, test } from "node:test";
 import { act, createElement as h } from "react";
-import { renderHook } from "../support/render.ts";
+
+import {
+  EVENT_TYPES,
+  globalEvents,
+} from "../../src/foundation/events/index.ts";
+import { err, ok } from "../../src/foundation/result/index.ts";
+import {
+  setReportSink,
+  USER_MESSAGES,
+  UserError,
+} from "../../src/foundation/utils/index.ts";
 import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import {
   NotificationListener,
@@ -10,22 +21,13 @@ import {
   useToast,
 } from "../../src/modules/notification/hooks.ts";
 import {
-  EVENT_TYPES,
-  globalEvents,
-} from "../../src/foundation/events/index.ts";
-import { err, ok } from "../../src/foundation/result/index.ts";
-import {
-  USER_MESSAGES,
-  UserError,
-  setReportSink,
-} from "../../src/foundation/utils/index.ts";
-import {
   getActiveNotification,
   isNotificationDataObject,
   normalizeFeedbackText,
   normalizeToastOptions,
   withDefaultDuration,
 } from "../../src/modules/notification/state.ts";
+import { renderHook } from "../support/render.ts";
 
 afterEach(() => mock.timers.reset());
 

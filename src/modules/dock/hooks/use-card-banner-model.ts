@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { isValidBannerUrl } from "../lib/styles";
 import type { DockCardBannerProps } from "../types";
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useUi } from "../provider";
 import { splitVariants } from "@/foundation/recipes/split";
 import type { SwitchProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 
 export function Switch({
   checked = false,

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useEffectEvent } from "react";
+
 import { isBrowser } from "@/foundation/utils";
+
 import { type UseHotkeyOptions } from "./types";
 
 function isEditableElement(target: EventTarget | null): boolean {

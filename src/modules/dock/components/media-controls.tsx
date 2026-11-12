@@ -1,10 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
+import { useDockMediaControlsModel } from "../hooks/use-media-controls-model";
 import {
   getDockActionMotionProps,
   getDockMediaVolumeFillTransition,
@@ -12,8 +16,6 @@ import {
   getDockMediaVolumeThumbPositionTransition,
   useDockMotion,
 } from "../motion";
-import { useDockMediaControlsModel } from "../hooks/use-media-controls-model";
-import { useDockTheme } from "../hooks/use-dock-theme";
 
 export const DockMediaControls = memo(function DockMediaControls({
   className = "",

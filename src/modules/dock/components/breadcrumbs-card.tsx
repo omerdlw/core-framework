@@ -1,19 +1,21 @@
 "use client";
 
-import { memo } from "react";
 import { motion } from "motion/react";
+import Link from "next/link";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { Icon as Iconify } from "@/react/ui/components/icon";
-import Link from "next/link";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
+import { stopPropagationOnly } from "../lib/card";
 import {
   DOCK_COMPOSITOR_STYLE,
   getDockLayoutTransition,
   useDockMotion,
 } from "../motion";
-import type { BreadcrumbItem } from "../types";
-import { stopPropagationOnly } from "../lib/card";
-import { useDockTheme } from "../hooks/use-dock-theme";
 import { useDockBreadcrumbsCardModel } from "../routing/breadcrumbs";
+import type { BreadcrumbItem } from "../types";
 
 export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
   className = "",

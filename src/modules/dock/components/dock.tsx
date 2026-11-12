@@ -1,16 +1,17 @@
 "use client";
 
-import type { ReactPortal } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
+
+import { DOCK_SURFACE_PHASE } from "../constants";
+import { useDockTheme } from "../hooks/use-dock-theme";
 import {
   getDockBackdropTransition,
   getDockStackAnimateProps,
   getDockStackTransformTransition,
   useDockMotion,
 } from "../motion";
-import { useDockTheme } from "../hooks/use-dock-theme";
-import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockModel } from "../runtime/dock";
 import { DockBreadcrumbsCard } from "./breadcrumbs-card";
 import { DockCardItem } from "./card-item";

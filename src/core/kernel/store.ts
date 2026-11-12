@@ -1,14 +1,14 @@
+import { DEFAULT_SOURCE } from "./constants";
 import {
   createRegistryOperations,
   createUnregisterOperation,
 } from "./operations";
 import { createRecordKey } from "./operations-records";
-import { DEFAULT_SOURCE } from "./constants";
 import { createRegistryTransaction } from "./runtime";
 import {
   createInitialState,
-  normalizeInitialEntries,
   type InitialRegistryEntries,
+  normalizeInitialEntries,
 } from "./store-entries";
 import { createNoopHandle, createRegistrationHandle } from "./store-handles";
 import { prepareRegisterOperation } from "./store-registration";

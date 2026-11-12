@@ -1,15 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { applyVideoPlaybackState } from "../../model/playback";
-import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "../lib/parse";
+import { type YouTubeBackgroundPlayerProps } from "../../types";
 import {
   AUDIO_SYNC_EVENTS,
   setElementMuted,
   unlockAudioOnGesture,
 } from "../lib/audio";
+import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "../lib/parse";
 import { useYouTubeIframePlayer } from "./use-youtube-iframe-player";
-import { type YouTubeBackgroundPlayerProps } from "../../types";
 
 export function useYouTubeBackgroundPlayerModel({
   codec = "auto",

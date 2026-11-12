@@ -1,6 +1,9 @@
 import { isValidElement } from "react";
-import { createRegisterOperation, type RegistryOperations } from "./operations";
+
+import { report } from "@/foundation/utils";
+
 import { REGISTRY_VALIDATION_MODES } from "./constants";
+import { createRegisterOperation, type RegistryOperations } from "./operations";
 import { validateRegistryMetadata, validateRegistryValue } from "./schema";
 import { createNoopHandle } from "./store-handles";
 import type {
@@ -10,7 +13,6 @@ import type {
   RegistryMetadata,
   RegistrySourceOrOptions,
 } from "./types";
-import { report } from "@/foundation/utils";
 
 export function cloneRegistryValue<T>(
   value: T,

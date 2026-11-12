@@ -1,21 +1,19 @@
 import "../support/dom.ts";
-import { describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { describe, mock, test } from "node:test";
 import { createElement as h } from "react";
-import { render, renderHook } from "../support/render.ts";
-import {
-  ambientThemeConfig,
-  primitivesThemeConfig,
-} from "../support/themes.ts";
+
 import {
   defineMotion,
   retimeModuleMotion,
 } from "../../src/foundation/utils/tempo.ts";
-import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
+import { DockCardBanner } from "../../src/modules/dock/components/card-banner.tsx";
 import {
-  dockTheme,
   DOCK_SURFACE_PHASE,
+  dockTheme,
 } from "../../src/modules/dock/constants.ts";
+import { getDockItemCardProps } from "../../src/modules/dock/lib/styles.ts";
 import {
   getDockCardDelay,
   getDockItemExitValues,
@@ -25,11 +23,15 @@ import {
   getDockStackTransformTransition,
   getDockStackTransition,
 } from "../../src/modules/dock/motion.ts";
-import { getDockItemCardProps } from "../../src/modules/dock/lib/styles.ts";
-import { DockCardBanner } from "../../src/modules/dock/components/card-banner.tsx";
 import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/hooks/use-surface-shell-model.ts";
-import { dockMotion } from "../support/motion/dock.ts";
 import type { DockMotion } from "../../src/modules/dock/types/index.ts";
+import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
+import { dockMotion } from "../support/motion/dock.ts";
+import { render, renderHook } from "../support/render.ts";
+import {
+  ambientThemeConfig,
+  primitivesThemeConfig,
+} from "../support/themes.ts";
 
 const PHASE = DOCK_SURFACE_PHASE;
 

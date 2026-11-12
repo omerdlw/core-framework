@@ -1,8 +1,10 @@
 "use client";
 
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { useUi } from "../provider";
+
 import type { TooltipProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 
 export function Tooltip({
   children,

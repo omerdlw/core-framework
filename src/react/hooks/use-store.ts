@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useSyncExternalStore } from "react";
+
 import { type ExternalStore } from "@/foundation/utils";
 
 export function useStore<TState, TSlice = TState>(

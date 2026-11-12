@@ -1,4 +1,4 @@
-import { extractHere, type AmbientExtractRequest } from "../pipeline";
+import { type AmbientExtractRequest, extractHere } from "../pipeline";
 
 export const AMBIENT_WORKER_REQUEST = "ambient:extract";
 export const AMBIENT_WORKER_RESPONSE = "ambient:palette";

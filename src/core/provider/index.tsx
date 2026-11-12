@@ -1,16 +1,17 @@
 "use client";
 
-import { useMemo, type JSX, type ReactNode } from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { type JSX, type ReactNode, useMemo } from "react";
+
 import { GlobalError, GlobalErrorListener, ModuleError } from "@/core/error";
-import { ModuleMotionConfig } from "@/react/theme";
 import {
-  Compose,
-  ModuleHost,
   type AnyCoreModule,
   type AppRegistryEntry,
+  Compose,
+  ModuleHost,
   type ProviderEntry,
 } from "@/core/kernel";
+import { ModuleMotionConfig } from "@/react/theme";
 
 interface CoreTooltipConfig {
   delayDuration?: number;

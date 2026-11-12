@@ -1,26 +1,28 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
+
 import { normalizePath } from "@/foundation/utils";
 import { useRequiredContext } from "@/react/hooks";
-import { formatSlugTitle } from "./model/policy";
+
 import type {
   BreadcrumbConfig,
   BreadcrumbContextValue,
   BreadcrumbItem,
   BreadcrumbOverride,
-  DockIconSource,
   DefineBreadcrumbOptions,
   DockComponentProps,
+  DockIconSource,
 } from "../types";
+import { formatSlugTitle } from "./model/policy";
 
 function formatPath(path: string | null): string {
   return normalizePath(path) || "/";

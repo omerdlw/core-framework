@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+
 import { type Theme } from "../lib/theme";
 import { DEFAULT_COLOR, generateBaseGradient } from "../model/visual";
 

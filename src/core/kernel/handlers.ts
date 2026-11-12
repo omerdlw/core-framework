@@ -1,6 +1,7 @@
+import { isObject, report } from "@/foundation/utils";
+
 import { DEFAULT_SOURCE, REGISTRY_LIFECYCLES } from "./constants";
 import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
-import { isObject, report } from "@/foundation/utils";
 import type {
   AnyCoreModule,
   PageConfig,

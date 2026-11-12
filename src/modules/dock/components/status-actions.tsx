@@ -1,13 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
-import { useRouter } from "next/navigation";
+
+import { useDockActions } from "../context";
+import { useDockActionClass, useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMotion } from "../motion";
 import type { ErrorActionsProps, GuardActionsProps } from "../types";
-import { useDockActionClass, useDockTheme } from "../hooks/use-dock-theme";
-import { useDockActions } from "../context";
 
 export function ErrorActions({
   onRetry,

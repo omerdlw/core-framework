@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import type { DockActions, DockItem } from "../types";
+
 import { isEditableDockTarget, isInteractiveTarget } from "../lib/dom";
+import type { DockActions, DockItem } from "../types";
 
 export function useDockKeyboard({
   expanded,

@@ -2,40 +2,42 @@
 
 import {
   isValidElement,
-  useMemo,
-  useRef,
   type ReactNode,
   useLayoutEffect,
+  useMemo,
+  useRef,
 } from "react";
+
 import {
   defineModule,
   type ModulePageContext,
   type PageConfig,
+  type PageModuleApi,
   type PageRegistration,
   type ValidationResult,
-  type PageModuleApi,
 } from "@/core/kernel";
 import { isObject, isPlainObject } from "@/foundation/utils";
-import { createInlineSurfaceEntry } from "./surface/definition";
-import type {
-  DockActions,
-  DockPageConfig,
-  DockPageApi,
-  DockPageGuard,
-  DockSlotContent,
-  DockStatusTheme,
-  DockSurfaceSlot,
-} from "./types";
-import { DockContext, statusActionDefaults, useDockActions } from "./context";
-import { useDockGuard } from "./routing/guards";
-import { useDockContextActions } from "./runtime/commands";
-import { DockProvider } from "./provider";
+
 import { Dock } from "./components/dock";
 import {
   ErrorActions,
   GuardActions,
   NotFoundActions,
 } from "./components/status-actions";
+import { DockContext, statusActionDefaults, useDockActions } from "./context";
+import { DockProvider } from "./provider";
+import { useDockGuard } from "./routing/guards";
+import { useDockContextActions } from "./runtime/commands";
+import { createInlineSurfaceEntry } from "./surface/definition";
+import type {
+  DockActions,
+  DockPageApi,
+  DockPageConfig,
+  DockPageGuard,
+  DockSlotContent,
+  DockStatusTheme,
+  DockSurfaceSlot,
+} from "./types";
 
 const CARD_FIELD_TYPES: Readonly<Record<string, string>> = Object.freeze({
   bannerOpacity: "number",

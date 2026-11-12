@@ -1,4 +1,5 @@
 import { createStore, report } from "@/foundation/utils";
+
 import {
   NAVIGATION_EVENTS,
   NAVIGATION_PHASE,

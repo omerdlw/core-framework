@@ -2,18 +2,19 @@
 
 import {
   useCallback,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
-  useLayoutEffect,
 } from "react";
+
 import { report } from "@/foundation/utils";
+
 import {
   DOCK_OPERATION_EVENTS,
   DOCK_OPERATION_MAX_ENTRIES,
   DOCK_OPERATION_STATUS,
 } from "../../constants";
-import type { DockOperationInput } from "../../types";
 import { createDockOperationHud } from "../../model/hud-definition";
 import {
   createDockOperation,
@@ -21,6 +22,7 @@ import {
   dockOperationReducer,
   resolveActiveDockOperation,
 } from "../../model/state";
+import type { DockOperationInput } from "../../types";
 
 export function useDockOperationState() {
   const [operationState, dispatchOperation] = useReducer(

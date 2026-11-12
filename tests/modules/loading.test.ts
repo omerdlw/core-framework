@@ -1,13 +1,14 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import type { ReactNode } from "react";
+
+import { DEFAULT_LOADING_STATE } from "../../src/modules/loading/constants.ts";
 import {
   calculateRemainingMinDuration,
   normalizeLoadingOptions,
   resolveLoadingState,
   selectPageLoading,
 } from "../../src/modules/loading/state.ts";
-import { DEFAULT_LOADING_STATE } from "../../src/modules/loading/constants.ts";
 
 describe("normalizeLoadingOptions", () => {
   test("defaults show the overlay without a message or delay", () => {

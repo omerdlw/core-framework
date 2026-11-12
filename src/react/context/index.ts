@@ -1,4 +1,4 @@
-import { createContext, type Context } from "react";
+import { type Context, createContext } from "react";
 
 export function getOrCreateGlobalContext<T>(
   name: string,

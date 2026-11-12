@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+
 import { DEFAULT_MEDIA_STATE } from "./constants";
 import { bindFollowers, sameElements, toggleElement } from "./playback";
 import {

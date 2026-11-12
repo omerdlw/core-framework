@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+import { report } from "@/foundation/utils";
+
+import { DOCK_SURFACE_PHASE } from "../constants";
+import { focusDockElement, shouldRestoreDockFocus } from "../lib/dom";
+import { isValidComponentType } from "../lib/element-helpers";
+import { createDockScheduler } from "../lib/helpers";
+import { useDockSurfaceTimings } from "../motion";
 import type {
+  DockComponentProps,
   DockScheduledTaskId,
   DockScheduler,
-  DockComponentProps,
   OpenSurfaceOptions,
   SurfaceEntryFactory,
   SurfaceFlowSession,
@@ -16,38 +24,32 @@ import type {
   SurfaceTransitionEvent,
   SurfaceUrlState,
 } from "../types";
-import { DOCK_SURFACE_PHASE } from "../constants";
-import { focusDockElement, shouldRestoreDockFocus } from "../lib/dom";
-import { createDockScheduler } from "../lib/helpers";
-import { isValidComponentType } from "../lib/element-helpers";
 import { createSurfaceEntryDefinition, createSurfaceError } from "./definition";
-import { IS_BROWSER, getSurfaceUrlValue, syncSurfaceUrl } from "./model/url";
 import {
-  releaseSurfaceResources,
+  useSurfaceFlows,
+  useSurfaceLifecycleEffects,
+} from "./hooks/use-surface-flows";
+import { runSurfaceTransition } from "./machine";
+import {
   createSurfaceLifecycleState,
+  createSurfaceMaps,
+  createSurfaceRecord,
   createSurfaceRuntimeEntry,
   createSurfaceState,
   findSurfaceEntry,
   getTargetSurfaceId,
   initialSurfaceState,
+  releaseSurfaceResources,
   resolveSurfaceEntry,
-  updateSurfaceStackEntry,
-  createSurfaceMaps,
-  createSurfaceRecord,
   type SurfaceRuntimeRefs,
+  updateSurfaceStackEntry,
 } from "./model/records";
 import {
+  createSurfaceTransitionState,
   SURFACE_TRANSITION_EFFECTS,
   SURFACE_TRANSITION_EVENTS,
-  createSurfaceTransitionState,
 } from "./model/transition-state";
-import { runSurfaceTransition } from "./machine";
-import {
-  useSurfaceFlows,
-  useSurfaceLifecycleEffects,
-} from "./hooks/use-surface-flows";
-import { useDockSurfaceTimings } from "../motion";
-import { report } from "@/foundation/utils";
+import { getSurfaceUrlValue, IS_BROWSER, syncSurfaceUrl } from "./model/url";
 
 export function useSurfaceStack({
   onSurfaceFlowSettled = null,

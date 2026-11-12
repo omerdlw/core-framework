@@ -1,6 +1,7 @@
 "use client";
 
-import { type RefObject, useRef, useLayoutEffect } from "react";
+import { type RefObject, useLayoutEffect, useRef } from "react";
+
 import { getObservedHeight, hasMeaningfulHeightChange } from "../model/layout";
 
 export function useElementHeight(

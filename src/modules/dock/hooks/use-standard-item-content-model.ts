@@ -1,9 +1,10 @@
 "use client";
 
 import { type SyntheticEvent, useCallback } from "react";
-import type { StandardItemContentProps } from "../types";
+
 import { useDockMedia, useDockMediaActions } from "../context";
 import { shouldShowMediaIcon, stopAndPrevent } from "../lib/card";
+import type { StandardItemContentProps } from "../types";
 
 export function useStandardItemContentModel({
   item: propItem,

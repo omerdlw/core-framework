@@ -1,16 +1,15 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import {
+  type ReactNode,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
-  type ReactNode,
-  useLayoutEffect,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
-import { createStore } from "@/foundation/utils";
-import { watchHistory, watchIntent } from "./listeners";
 import { createNavigator } from "@/core/navigation/navigator";
 import { getNavigationSettings } from "@/core/navigation/settings";
 import { createNavigationState } from "@/core/navigation/state";
@@ -22,6 +21,9 @@ import type {
   NavigationState,
 } from "@/core/navigation/types";
 import { readWindowLocation } from "@/core/navigation/utils";
+import { createStore } from "@/foundation/utils";
+
+import { watchHistory, watchIntent } from "./listeners";
 
 export const NavigationContext =
   getOrCreateGlobalContext<NavigationRuntime | null>("NavigationContext", null);

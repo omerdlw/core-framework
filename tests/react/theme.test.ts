@@ -1,13 +1,14 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { createElement as h } from "react";
-import { render, renderHook } from "../support/render.ts";
+
 import {
-  ThemeProvider,
   defineTheme,
   defineThemeSpec,
+  ThemeProvider,
   useTheme,
 } from "../../src/react/theme/index.tsx";
+import { render, renderHook } from "../support/render.ts";
 
 const spec = defineThemeSpec("sample");
 const entry = defineTheme(spec, {

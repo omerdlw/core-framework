@@ -1,8 +1,9 @@
 "use client";
 
 import { defineModule } from "@/core/kernel";
-import { NavigationContext, NavigationProvider } from "./context";
 import type { NavigationTrip } from "@/core/navigation/types";
+
+import { NavigationContext, NavigationProvider } from "./context";
 
 export const navigationModule = defineModule({
   id: "navigation",

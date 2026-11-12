@@ -1,5 +1,7 @@
-import { type ReactNode, isValidElement } from "react";
+import { isValidElement, type ReactNode } from "react";
+
 import { isObject as isObjectLike } from "@/foundation/utils";
+
 import type { DockComponent, DockHudDescriptor } from "../types";
 
 export function isValidComponentType(type: unknown): type is DockComponent {

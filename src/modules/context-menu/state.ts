@@ -1,4 +1,5 @@
 import { isBrowser, toFiniteNumber } from "@/foundation/utils";
+
 import { CONTEXT_MENU_VISIBILITY_EVENT, INITIAL_POSITION } from "./constants";
 import { type ContextMenuOpenInput, type ContextMenuState } from "./types";
 

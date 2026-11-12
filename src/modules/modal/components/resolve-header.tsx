@@ -1,12 +1,13 @@
 "use client";
 
 import { type ReactNode } from "react";
+
+import { type Theme } from "../lib/theme";
 import {
-  isHeaderConfig,
   hasSlotContent,
+  isHeaderConfig,
   resolveHeaderActions,
 } from "../model/header";
-import { type Theme } from "../lib/theme";
 import {
   type ModalContainerHeaderConfig,
   type ModalContainerProps,

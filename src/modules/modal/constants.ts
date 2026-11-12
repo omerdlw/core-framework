@@ -1,4 +1,5 @@
 import { defineThemeSpec } from "@/react/theme";
+
 import { type ModalMotion, type ModalThemeSlot } from "./types";
 
 export const MODAL_POSITIONS = Object.freeze({

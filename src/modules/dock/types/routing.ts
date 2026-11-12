@@ -1,4 +1,5 @@
 import type { NavigationTrip } from "@/core/navigation/types";
+
 import type {
   DockComponentProps,
   DockEventHandler,

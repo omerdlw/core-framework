@@ -1,15 +1,17 @@
 "use client";
 
 import {
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+
 import { INITIAL_NOTIFICATION_STATE } from "./constants";
 import { createNotificationEntry } from "./state";
 import {

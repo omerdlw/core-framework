@@ -1,9 +1,17 @@
 import "../support/dom.ts";
-import { describe, test } from "node:test";
-import assert from "node:assert/strict";
-import { setReportSink } from "../../src/foundation/utils/index.ts";
 
+import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { createElement as h } from "react";
+
+import { setReportSink } from "../../src/foundation/utils/index.ts";
+import { MENU_SCREEN_MARGIN } from "../../src/modules/context-menu/constants.ts";
+import {
+  getNextActiveIndex,
+  isScrollLockKey,
+  joinClassNames,
+  positionMenu,
+} from "../../src/modules/context-menu/dom.ts";
 import {
   extractNodeText,
   resolveAsBoolean,
@@ -14,17 +22,9 @@ import {
   safeInvoke,
 } from "../../src/modules/context-menu/items.ts";
 import {
-  getNextActiveIndex,
-  isScrollLockKey,
-  joinClassNames,
-  positionMenu,
-} from "../../src/modules/context-menu/dom.ts";
-import {
   prepareMenu,
   resolveContextMenu,
 } from "../../src/modules/context-menu/resolver.ts";
-
-import { MENU_SCREEN_MARGIN } from "../../src/modules/context-menu/constants.ts";
 
 describe("context menu utils", () => {
   describe("safeInvoke", () => {

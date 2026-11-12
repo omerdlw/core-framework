@@ -1,6 +1,7 @@
-import { type ReactNode, isValidElement } from "react";
+import { isValidElement, type ReactNode } from "react";
+
 import { isObject } from "@/foundation/utils";
-import type { DockHudDescriptor, DockOperation } from "../types";
+
 import {
   DOCK_HUD_PRIORITY,
   DOCK_HUD_RENDER_MODE,
@@ -11,6 +12,7 @@ import {
   resolveComponentType,
   resolveRenderableContent,
 } from "../lib/element-helpers";
+import type { DockHudDescriptor, DockOperation } from "../types";
 import { normalizeAutoDismiss, normalizePriority } from "./hud";
 
 export function createHudDefinition(

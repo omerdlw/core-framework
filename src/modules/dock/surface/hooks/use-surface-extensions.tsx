@@ -6,12 +6,13 @@ import {
   use,
   useCallback,
   useId,
+  useLayoutEffect,
   useMemo,
   useSyncExternalStore,
-  useLayoutEffect,
 } from "react";
-import type { DockComponentProps, DockItem } from "../../types";
+
 import { DOCK_SURFACE_PHASE } from "../../constants";
+import type { DockComponentProps, DockItem } from "../../types";
 import { SurfaceExtensionsContext, useSurfaceId } from "../context";
 
 export function useDockSurfaceExtension({

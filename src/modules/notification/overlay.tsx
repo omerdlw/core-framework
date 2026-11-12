@@ -1,14 +1,16 @@
 "use client";
 
-import { type KeyboardEvent, type MouseEvent } from "react";
-import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
+import { type KeyboardEvent, type MouseEvent } from "react";
 import { type CSSProperties } from "react";
+import { createPortal } from "react-dom";
+
 import { cn } from "@/foundation/recipes/cn";
+
 import { DOCK_STACK_ELEMENT_ID } from "./constants";
-import { type NotificationEntry } from "./types";
+import { NotificationListener, useNotificationContainerModel } from "./hooks";
 import { NOTIFICATION_COMPOSITOR_STYLE, useNotificationMotion } from "./motion";
-import { useNotificationContainerModel, NotificationListener } from "./hooks";
+import { type NotificationEntry } from "./types";
 
 function Toast({
   className,

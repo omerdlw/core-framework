@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import type { DockItem } from "../types";
+
 import { getDockCardWidth, getTargetItemWidth } from "../model/layout";
+import type { DockItem } from "../types";
 
 const emptySubscribe = () => () => {};
 

@@ -1,8 +1,9 @@
 import "../support/dom.ts";
-import { afterEach, beforeEach, describe, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, test } from "node:test";
 import { act } from "react";
-import { renderHook } from "../support/render.ts";
+
 import {
   AMBIENT_TONES,
   analyzeAmbientPixels,
@@ -20,21 +21,22 @@ import {
   toneOf,
   useAmbientColor,
 } from "../../src/modules/ambient/index.ts";
-import { kmeans } from "../../src/modules/ambient/quantize.ts";
 import { oklchToLinearSrgb } from "../../src/modules/ambient/oklab.ts";
-import { resolveProxyUrl } from "../../src/modules/ambient/settings.ts";
-import { serveAmbientWorker } from "../../src/modules/ambient/worker/index.ts";
+import { kmeans } from "../../src/modules/ambient/quantize.ts";
 import {
+  type AmbientDecoder,
   extractAmbientPalette,
   extractAmbientPaletteFromBytes,
   isPrivateAddress,
   isPublicImageUrl,
-  type AmbientDecoder,
 } from "../../src/modules/ambient/server/index.ts";
+import { resolveProxyUrl } from "../../src/modules/ambient/settings.ts";
 import type {
   AmbientPalette,
   AmbientPixels,
 } from "../../src/modules/ambient/types.ts";
+import { serveAmbientWorker } from "../../src/modules/ambient/worker/index.ts";
+import { renderHook } from "../support/render.ts";
 
 type RGB = [number, number, number];
 

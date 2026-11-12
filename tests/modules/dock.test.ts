@@ -1,9 +1,31 @@
 import "../support/dom.ts";
-import { afterEach, beforeEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, mock, test } from "node:test";
 import { act, createElement as h } from "react";
+import { createElement as hh } from "react";
 import { createRoot } from "react-dom/client";
-import { DockProvider } from "../../src/modules/dock/provider.tsx";
+
+import {
+  PageControllerProvider,
+  RegistryProvider,
+  usePage,
+} from "../../src/core/kernel/index.ts";
+import {
+  EVENT_TYPES,
+  globalEvents,
+} from "../../src/foundation/events/index.ts";
+import { USER_MESSAGES } from "../../src/foundation/utils/index.ts";
+import {
+  DOCK_OPERATION_EVENTS,
+  DOCK_OPERATION_MAX_ENTRIES,
+} from "../../src/modules/dock/constants.ts";
+import { OVERLAY_STATUS_STORAGE_KEY } from "../../src/modules/dock/constants.ts";
+import {
+  DOCK_ATTENTION_KIND,
+  DOCK_PENDING_ROUTE_HOLD_MS,
+} from "../../src/modules/dock/constants.ts";
+import { useDockConfig } from "../../src/modules/dock/hooks/use-dock-config.ts";
 import {
   useDockActions,
   useDockContextActions,
@@ -12,83 +34,6 @@ import {
   useDockSelector,
   useDockState,
 } from "../../src/modules/dock/index.ts";
-import { useDockConfig } from "../../src/modules/dock/hooks/use-dock-config.ts";
-import {
-  createDockScheduler,
-  formatMediaTime,
-  normalizeUpper,
-} from "../../src/modules/dock/lib/helpers.ts";
-import {
-  getDockLocationKey,
-  isPathPrefix,
-  isSafeInternalHref,
-  isSamePath,
-} from "../../src/modules/dock/model/paths.ts";
-import { isValidBannerUrl } from "../../src/modules/dock/lib/styles.ts";
-import {
-  PageControllerProvider,
-  RegistryProvider,
-  usePage,
-} from "../../src/core/kernel/index.ts";
-import { createDockGuardRegistry } from "../../src/modules/dock/routing/guards.ts";
-import {
-  createDockOperation,
-  createDockOperationState,
-  dockOperationReducer,
-  resolveActiveDockOperation,
-} from "../../src/modules/dock/model/state.ts";
-import {
-  DOCK_OPERATION_EVENTS,
-  DOCK_OPERATION_MAX_ENTRIES,
-} from "../../src/modules/dock/constants.ts";
-import {
-  SURFACE_TRANSITION_EFFECTS as EFFECT,
-  SURFACE_TRANSITION_EVENTS as EVENT,
-  createSurfaceTransitionState,
-} from "../../src/modules/dock/surface/model/transition-state.ts";
-import {
-  runSurfaceTransition,
-  transitionSurface,
-} from "../../src/modules/dock/surface/machine.ts";
-import { dockMotion } from "../support/motion/dock.ts";
-import {
-  subscribeToApiErrorStatusEvents,
-  subscribeToApplicationErrorStatusEvents,
-} from "../../src/modules/dock/status/events.tsx";
-import {
-  EVENT_TYPES,
-  globalEvents,
-} from "../../src/foundation/events/index.ts";
-import { USER_MESSAGES } from "../../src/foundation/utils/index.ts";
-
-import { createElement as hh } from "react";
-import {
-  createSurfaceReturnHandshake,
-  isSurfaceDescriptor,
-  normalizeSurfaceExtension,
-  normalizeSurfaceFlowSnapshot,
-  resolveSurfaceFlowReturnHandshake,
-} from "../../src/modules/dock/surface/helpers.ts";
-import {
-  findDockItemIndex,
-  getItemKey,
-  removeAncestorDuplicates,
-  removeInactiveLoadingItems,
-  reorderItemsWithActiveFirst,
-  replaceActiveItem,
-  resolveActiveIndex,
-  resolveDockHeaderKey,
-} from "../../src/modules/dock/runtime/pipeline.ts";
-import {
-  getImageIconStyle,
-  getLineClampStyle,
-  resolveDockActionClass,
-  splitStyle,
-} from "../../src/modules/dock/lib/styles.ts";
-import {
-  getItemMeasurementKey,
-  getRouteMeasurementKey,
-} from "../../src/modules/dock/model/layout.ts";
 import {
   isEditableDockTarget,
   isInteractiveTarget,
@@ -101,19 +46,62 @@ import {
   resolveRenderableContent,
   toSearchableText,
 } from "../../src/modules/dock/lib/element-helpers.ts";
-import { toObject } from "../../src/modules/dock/lib/helpers.ts";
-
 import {
-  createInlineSurfaceEntry,
-  createSurfaceEntryDefinition,
-  createSurfaceError,
-  createSurfaceFlowBuilder,
-  createSurfaceFlowDefinition,
-  createSurfaceFlowSession,
-  updateSurfaceFlowSession,
-} from "../../src/modules/dock/surface/definition.ts";
-import { normalizeExtensions } from "../../src/modules/dock/surface/model/normalize.ts";
-
+  createDockScheduler,
+  formatMediaTime,
+  normalizeUpper,
+} from "../../src/modules/dock/lib/helpers.ts";
+import { toObject } from "../../src/modules/dock/lib/helpers.ts";
+import { isValidBannerUrl } from "../../src/modules/dock/lib/styles.ts";
+import {
+  getImageIconStyle,
+  getLineClampStyle,
+  resolveDockActionClass,
+  splitStyle,
+} from "../../src/modules/dock/lib/styles.ts";
+import {
+  getItemMeasurementKey,
+  getRouteMeasurementKey,
+} from "../../src/modules/dock/model/layout.ts";
+import {
+  getDockLocationKey,
+  isPathPrefix,
+  isSafeInternalHref,
+  isSamePath,
+} from "../../src/modules/dock/model/paths.ts";
+import {
+  createDockOperation,
+  createDockOperationState,
+  dockOperationReducer,
+  resolveActiveDockOperation,
+} from "../../src/modules/dock/model/state.ts";
+import { DockProvider } from "../../src/modules/dock/provider.tsx";
+import { createDockGuardRegistry } from "../../src/modules/dock/routing/guards.ts";
+import {
+  resolveActiveItem,
+  usePendingRouteHold,
+} from "../../src/modules/dock/runtime/display.ts";
+import { useDockLayout } from "../../src/modules/dock/runtime/hooks/use-dock-layout.ts";
+import {
+  buildDockItems,
+  isNotFoundItem,
+  resolveBaseActiveItemMatch,
+  selectPendingRouteItem,
+} from "../../src/modules/dock/runtime/model/items.ts";
+import {
+  findDockItemIndex,
+  getItemKey,
+  removeAncestorDuplicates,
+  removeInactiveLoadingItems,
+  reorderItemsWithActiveFirst,
+  replaceActiveItem,
+  resolveActiveIndex,
+  resolveDockHeaderKey,
+} from "../../src/modules/dock/runtime/pipeline.ts";
+import {
+  subscribeToApiErrorStatusEvents,
+  subscribeToApplicationErrorStatusEvents,
+} from "../../src/modules/dock/status/events.tsx";
 import {
   applyStatusOverlay,
   clearPersistedOverlayStatus,
@@ -126,23 +114,33 @@ import {
   resolveStatusPriority,
   restorePersistedOverlayStatus,
 } from "../../src/modules/dock/status/model.tsx";
-import { OVERLAY_STATUS_STORAGE_KEY } from "../../src/modules/dock/constants.ts";
-
 import {
-  buildDockItems,
-  isNotFoundItem,
-  resolveBaseActiveItemMatch,
-  selectPendingRouteItem,
-} from "../../src/modules/dock/runtime/model/items.ts";
+  createInlineSurfaceEntry,
+  createSurfaceEntryDefinition,
+  createSurfaceError,
+  createSurfaceFlowBuilder,
+  createSurfaceFlowDefinition,
+  createSurfaceFlowSession,
+  updateSurfaceFlowSession,
+} from "../../src/modules/dock/surface/definition.ts";
 import {
-  resolveActiveItem,
-  usePendingRouteHold,
-} from "../../src/modules/dock/runtime/display.ts";
-import { useDockLayout } from "../../src/modules/dock/runtime/hooks/use-dock-layout.ts";
+  createSurfaceReturnHandshake,
+  isSurfaceDescriptor,
+  normalizeSurfaceExtension,
+  normalizeSurfaceFlowSnapshot,
+  resolveSurfaceFlowReturnHandshake,
+} from "../../src/modules/dock/surface/helpers.ts";
 import {
-  DOCK_ATTENTION_KIND,
-  DOCK_PENDING_ROUTE_HOLD_MS,
-} from "../../src/modules/dock/constants.ts";
+  runSurfaceTransition,
+  transitionSurface,
+} from "../../src/modules/dock/surface/machine.ts";
+import { normalizeExtensions } from "../../src/modules/dock/surface/model/normalize.ts";
+import {
+  createSurfaceTransitionState,
+  SURFACE_TRANSITION_EFFECTS as EFFECT,
+  SURFACE_TRANSITION_EVENTS as EVENT,
+} from "../../src/modules/dock/surface/model/transition-state.ts";
+import { dockMotion } from "../support/motion/dock.ts";
 
 describe("dock context", () => {
   function createTestScheduler() {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+
 import type { DockHudDescriptor } from "../types";
 
 export function useDockHudViewModel({

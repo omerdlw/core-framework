@@ -1,5 +1,7 @@
 import { isValidElement } from "react";
+
 import { isPlainObject } from "@/foundation/utils";
+
 import { isValidComponentType } from "../lib/element-helpers";
 import { isSafeInternalHref } from "../model/paths";
 import type {

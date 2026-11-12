@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useCallback, useMemo, useSyncExternalStore } from "react";
+
 import type { DockItem, NormalizedSurfaceExtension } from "../../types";
 import { SurfaceExtensionsContext } from "../context";
 import { normalizeSurfaceExtension } from "../helpers";

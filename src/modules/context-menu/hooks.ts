@@ -1,29 +1,31 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type MouseEvent as ReactMouseEvent,
-  type RefObject,
 } from "react";
-import { usePathname } from "next/navigation";
-import { useRequiredContext, useStore } from "@/react/hooks";
+
 import {
+  type RegistryMetadata,
   useModuleRegistration,
   useRegistryEntries,
-  type RegistryMetadata,
 } from "@/core/kernel";
-import { useTheme } from "@/react/theme";
 import {
   type DockItem,
   type DockState,
   useOptionalDockState,
 } from "@/modules/dock";
+import { useRequiredContext, useStore } from "@/react/hooks";
+import { useTheme } from "@/react/theme";
+
 import { contextMenuTheme } from "./constants";
 import { ContextMenuContext } from "./context";
 import {

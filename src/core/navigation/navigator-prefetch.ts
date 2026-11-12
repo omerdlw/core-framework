@@ -1,4 +1,5 @@
 import { report } from "@/foundation/utils";
+
 import type { getNavigationSettings } from "./settings";
 import type {
   NavigationIntentListener,

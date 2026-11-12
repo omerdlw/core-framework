@@ -3,17 +3,18 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
-  useLayoutEffect,
 } from "react";
+
 import {
   DOCK_CARD_LAYOUT,
   DOCK_HEIGHT_BUFFER,
   DOCK_SURFACE_PHASE,
 } from "../constants";
-import type { UseDockHeightControllerOptions } from "../types";
 import { getContainerHeight, publishDockHeightCssVar } from "../model/layout";
+import type { UseDockHeightControllerOptions } from "../types";
 
 export function useDockHeightController({
   contentKey = null,

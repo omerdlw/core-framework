@@ -1,4 +1,5 @@
 import { normalizePath } from "@/foundation/utils";
+
 import { isSamePath } from "../../model/paths";
 import type { DockItem, DockTopology, DockTopologyNode } from "../../types";
 

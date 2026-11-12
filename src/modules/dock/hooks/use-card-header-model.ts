@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+
 import { isValidBannerUrl } from "../lib/styles";
-import type { DockCardHeaderProps } from "../types";
 import { resolveDockHeaderKey } from "../runtime/pipeline";
+import type { DockCardHeaderProps } from "../types";
 
 export function useDockCardHeaderModel({
   item: propItem,

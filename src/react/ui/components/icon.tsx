@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon as IconifyIcon } from "@iconify-icon/react";
+
 import type { IconProps } from "@/react/ui/types";
 
 export function Icon({

@@ -8,14 +8,16 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useRequiredContext, useStore } from "@/react/hooks";
+
 import {
+  type RegistryMetadata,
   useModuleRegistration,
   useRegistryEntries,
-  type RegistryMetadata,
 } from "@/core/kernel";
 import { acquireGlobalScrollLock } from "@/foundation/utils";
+import { useRequiredContext, useStore } from "@/react/hooks";
 import { useTheme } from "@/react/theme";
+
 import {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,
@@ -23,7 +25,18 @@ import {
   modalTheme,
 } from "./constants";
 import { ModalContext } from "./context";
+import {
+  dispatchSmoothScrollLock,
+  getFocusableElements,
+  trapFocus,
+} from "./lib/dom";
 import { getModalIdentity } from "./model/identity";
+import {
+  getViewportIsMobile,
+  isSidePosition,
+  isVerticalEdgePosition,
+  resolveActivePosition,
+} from "./model/layout";
 import {
   type ModalActions,
   type ModalComponent,
@@ -35,17 +48,6 @@ import {
   type ModalPageConfig,
   type ModalState,
 } from "./types";
-import {
-  dispatchSmoothScrollLock,
-  getFocusableElements,
-  trapFocus,
-} from "./lib/dom";
-import {
-  getViewportIsMobile,
-  isSidePosition,
-  isVerticalEdgePosition,
-  resolveActivePosition,
-} from "./model/layout";
 
 export function useModalRegistration(
   config: ModalPageConfig | null | undefined,

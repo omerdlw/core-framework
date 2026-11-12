@@ -1,4 +1,5 @@
 import { defineThemeSpec } from "@/react/theme";
+
 import { type BackgroundMotion, type BackgroundThemeSlot } from "./types";
 
 export const backgroundTheme = defineThemeSpec<

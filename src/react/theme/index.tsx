@@ -1,14 +1,15 @@
 "use client";
 
-import { use, useMemo, type CSSProperties, type ReactNode } from "react";
 import { MotionConfig, useReducedMotion } from "motion/react";
-import { getOrCreateGlobalContext } from "@/react/context";
+import { type CSSProperties, type ReactNode, use, useMemo } from "react";
+
 import {
   defineMotion,
-  retimeModuleMotion,
   type MotionClock,
   type MotionTokens,
+  retimeModuleMotion,
 } from "@/foundation/utils/tempo";
+import { getOrCreateGlobalContext } from "@/react/context";
 
 export interface ThemeSpec<S extends string = string, M = never> {
   readonly id: string;

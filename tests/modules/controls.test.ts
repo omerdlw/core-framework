@@ -1,10 +1,11 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { createElement as h } from "react";
+
 import {
-  areLayoutsEqual,
-  getControlsLayout,
-} from "../../src/modules/controls/layout.ts";
+  CONTROLS_DOCK_GAP,
+  CONTROLS_EDGE_INSET,
+} from "../../src/modules/controls/constants.ts";
 import {
   isControlSide,
   normalizePageControls,
@@ -12,9 +13,9 @@ import {
   validateControlEntry,
 } from "../../src/modules/controls/entries.ts";
 import {
-  CONTROLS_DOCK_GAP,
-  CONTROLS_EDGE_INSET,
-} from "../../src/modules/controls/constants.ts";
+  areLayoutsEqual,
+  getControlsLayout,
+} from "../../src/modules/controls/layout.ts";
 
 const entry = (over: any = {}) => ({
   content: "x",

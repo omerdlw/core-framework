@@ -1,5 +1,5 @@
-import { type ComponentType, type ReactNode } from "react";
 import { type Transition, type Variants } from "motion/react";
+import { type ComponentType, type ReactNode } from "react";
 
 export type ModalPosition = "center" | "bottom" | "right" | "left" | "top";
 

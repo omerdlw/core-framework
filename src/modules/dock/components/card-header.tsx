@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
-import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
-import type { DockCardHeaderProps } from "../types";
+
 import { useDockCardHeaderModel } from "../hooks/use-card-header-model";
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
+import type { DockCardHeaderProps } from "../types";
 import { Badge } from "./badge";
 import { DockCommandBar } from "./command-bar";
 import { DockDescription } from "./description";

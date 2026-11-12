@@ -1,23 +1,24 @@
 "use client";
 
 import {
-  useEffect,
-  useRef,
   type Dispatch,
   type MutableRefObject,
   type RefObject,
   type SetStateAction,
+  useEffect,
+  useRef,
 } from "react";
-import { createYouTubeVideoElementProxy } from "../lib/parse";
+
+import { type BackgroundActions } from "../../types";
 import {
-  PLAYER_STATE,
   loadYouTubeIframeApi,
+  PLAYER_STATE,
   setHighQuality,
   type YouTubeLiveState,
   type YouTubePlayer,
   type YouTubePlayerEvent,
 } from "../lib/iframe";
-import { type BackgroundActions } from "../../types";
+import { createYouTubeVideoElementProxy } from "../lib/parse";
 
 export function useYouTubeIframePlayer({
   enabled,

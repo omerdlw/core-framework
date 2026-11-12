@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, use } from "react";
+
 import type { DockIconSource } from "../../types";
 import { DockSurfaceHeaderRadiusContext } from "../context";
 

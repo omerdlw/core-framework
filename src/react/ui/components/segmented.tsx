@@ -1,12 +1,13 @@
 "use client";
 
-import { useUi } from "../provider";
 import { splitVariants } from "@/foundation/recipes/split";
+import type { SegmentedControlProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
+import { useSlidingPill } from "../utils";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { SlidingPill } from "./indicator";
-import type { SegmentedControlProps } from "@/react/ui/types";
-import { useSlidingPill } from "../utils";
 
 export function SegmentedControl<K extends string>({
   ariaLabel,

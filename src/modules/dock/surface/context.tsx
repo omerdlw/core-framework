@@ -1,13 +1,15 @@
 "use client";
 
-import { use, useCallback, useEffect, useMemo, createContext } from "react";
+import { createContext, use, useCallback, useEffect, useMemo } from "react";
+
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+
 import type {
   DockSlotContent,
   NormalizedSurfaceExtension,
-  SurfaceId,
   SurfaceFlowContextValue,
+  SurfaceId,
 } from "../types";
 import { normalizeSurfaceExtension } from "./helpers";
 

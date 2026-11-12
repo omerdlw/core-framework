@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
+import { getLineClampStyle, splitStyle } from "../lib/styles";
 import { useDockMotion } from "../motion";
 import type { DockDescriptionProps } from "../types";
-import { getLineClampStyle, splitStyle } from "../lib/styles";
-import { useDockTheme } from "../hooks/use-dock-theme";
 
 export const DockDescription = memo(function DockDescription({
   text,

@@ -1,5 +1,6 @@
-import { type CSSProperties, type ReactNode } from "react";
 import { type TargetAndTransition, type Transition } from "motion/react";
+import { type CSSProperties, type ReactNode } from "react";
+
 import { type ModuleRuntime, type RegistryMetadata } from "@/core/kernel";
 import { type ResolvedTheme } from "@/react/theme";
 

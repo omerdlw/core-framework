@@ -1,5 +1,5 @@
-import { after } from "node:test";
 import { Window } from "happy-dom";
+import { after } from "node:test";
 
 const window = new Window({ url: "http://localhost/" });
 

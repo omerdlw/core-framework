@@ -1,22 +1,23 @@
 "use client";
 
 import {
+  type ReactNode,
   useCallback,
   useMemo,
   useState,
   useSyncExternalStore,
-  type ReactNode,
 } from "react";
-import { useRequiredContext } from "@/react/hooks";
-import { getOrCreateGlobalContext } from "@/react/context";
 
+import { getOrCreateGlobalContext } from "@/react/context";
+import { useRequiredContext } from "@/react/hooks";
+
+import { createRegistryStore } from "./store";
+import { type InitialRegistryEntries } from "./store-entries";
 import type {
   RegistryDefinitions,
   RegistrySchema,
   RegistryStore,
 } from "./types";
-import { createRegistryStore } from "./store";
-import { type InitialRegistryEntries } from "./store-entries";
 
 type RegistryValueOf<K extends string> = K extends keyof RegistrySchema
   ? RegistrySchema[K]

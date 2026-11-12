@@ -1,23 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { useClickOutside, useIsFullscreenStateActive } from "@/react/hooks";
+
 import { DOCK_SURFACE_PHASE } from "../constants";
-import { getIsItemActive, getItemKey } from "./pipeline";
-import { useDockKeyboard } from "../hooks/use-dock-keyboard";
-import { useDockHeightController } from "../hooks/use-dock-height-controller";
-import { useDockViewport } from "../hooks/use-dock-viewport";
 import {
   useDockActions,
   useDockNotificationVisible,
   useDockSelector,
 } from "../context";
-import { useDockViewConnection } from "../routing/navigation";
+import { useDockHeightController } from "../hooks/use-dock-height-controller";
+import { useDockKeyboard } from "../hooks/use-dock-keyboard";
+import { useDockViewport } from "../hooks/use-dock-viewport";
 import { resolveDockScene } from "../model/state";
-import { useDockBreadcrumbs } from "../routing/breadcrumbs";
-import { useIsSurfaceExtensionsVisible } from "../surface/hooks/use-surface-extensions";
 import { getDockStackTransition, useDockMotion } from "../motion";
+import { useDockBreadcrumbs } from "../routing/breadcrumbs";
+import { useDockViewConnection } from "../routing/navigation";
+import { useIsSurfaceExtensionsVisible } from "../surface/hooks/use-surface-extensions";
 import { useDock } from "./hooks/use-dock";
+import { getIsItemActive, getItemKey } from "./pipeline";
 
 export function useDockModel() {
   const {

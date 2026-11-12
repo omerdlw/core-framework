@@ -1,10 +1,11 @@
 "use client";
 
-import { useUi } from "../provider";
 import { splitVariants } from "@/foundation/recipes/split";
+import type { CheckboxIndicatorProps, CheckboxProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 import { Icon } from "./icon";
 import { Loader } from "./loader";
-import type { CheckboxIndicatorProps, CheckboxProps } from "@/react/ui/types";
 
 export function CheckboxIndicator({
   className,

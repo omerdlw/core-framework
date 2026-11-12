@@ -1,8 +1,9 @@
 "use client";
 
+import type { LoaderProps, SpinnerProps } from "@/react/ui/types";
+
 import { useUi } from "../provider";
 import { Icon } from "./icon";
-import type { LoaderProps, SpinnerProps } from "@/react/ui/types";
 
 function Dots({ color, size }: { color?: string; size?: number }) {
   const { parts } = useUi();

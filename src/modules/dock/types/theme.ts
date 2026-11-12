@@ -1,10 +1,11 @@
-import type { CSSProperties } from "react";
 import type {
   SpringOptions,
   TargetAndTransition,
   Transition,
   Variants,
 } from "motion/react";
+import type { CSSProperties } from "react";
+
 import type { ResolvedTheme } from "@/react/theme";
 
 export type DockStyleSectionName = "card" | "icon" | "title" | "description";

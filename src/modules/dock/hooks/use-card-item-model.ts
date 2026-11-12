@@ -1,5 +1,7 @@
 "use client";
 
+import type { TargetAndTransition } from "motion/react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   type KeyboardEvent,
   type UIEvent,
@@ -8,23 +10,23 @@ import {
   useRef,
   useState,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/foundation/recipes/cn";
+
 import { useModule } from "@/core/kernel";
-import type { TargetAndTransition } from "motion/react";
-import { getDockItemCardProps, resolveDockVisualStyle } from "../lib/styles";
-import { useDockTheme } from "./use-dock-theme";
-import type { DockCardItemProps } from "../types";
+import { cn } from "@/foundation/recipes/cn";
+
 import { DOCK_SURFACE_PHASE } from "../constants";
-import { getItemMeasurementKey, getRouteMeasurementKey } from "../model/layout";
-import { useElementHeight } from "./use-element-height";
 import { useDockHasMedia } from "../context";
-import { getDockCardDelay, getDockPhaseMotion, useDockMotion } from "../motion";
-import { resolveDockRoutePolicy } from "../routing/model/policy";
-import { useRoutePrefetch } from "../routing/hooks/use-route-prefetch";
 import { isSurfaceLayerShown, ownsPathname } from "../lib/card";
+import { getDockItemCardProps, resolveDockVisualStyle } from "../lib/styles";
+import { getItemMeasurementKey, getRouteMeasurementKey } from "../model/layout";
+import { getDockCardDelay, getDockPhaseMotion, useDockMotion } from "../motion";
+import { useRoutePrefetch } from "../routing/hooks/use-route-prefetch";
+import { resolveDockRoutePolicy } from "../routing/model/policy";
+import type { DockCardItemProps } from "../types";
 import { useActionSlot } from "./use-action-slot";
 import { useDockBadge } from "./use-badge";
+import { useDockTheme } from "./use-dock-theme";
+import { useElementHeight } from "./use-element-height";
 
 export function useDockCardItemModel({
   activeItem = null,

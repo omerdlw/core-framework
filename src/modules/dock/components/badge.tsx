@@ -1,10 +1,11 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
 import { useDockMotion } from "../motion";
 import type { DockBadgeState } from "../types";
-import { useDockTheme } from "../hooks/use-dock-theme";
 
 export const Badge = memo(function Badge({
   badge,

@@ -1,5 +1,7 @@
 "use client";
 
+import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../constants";
+import { createDockScheduler } from "../lib/helpers";
 import type {
   DockScheduledTaskId,
   DockScheduler,
@@ -9,17 +11,15 @@ import type {
   SurfaceTransitionResult,
   SurfaceTransitionState,
 } from "../types";
-import { createDockScheduler } from "../lib/helpers";
-import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../constants";
 import {
-  EMPTY_SURFACE_TRANSITION_EFFECTS,
-  SURFACE_TRANSITION_EFFECTS,
-  SURFACE_TRANSITION_EVENTS,
   createReleaseEffect,
   createScheduledTransition,
   createSurfaceTransitionState,
   createTransitionResult,
+  EMPTY_SURFACE_TRANSITION_EFFECTS,
   freezeSurfaceTransitionState,
+  SURFACE_TRANSITION_EFFECTS,
+  SURFACE_TRANSITION_EVENTS,
 } from "./model/transition-state";
 
 export function transitionSurface(

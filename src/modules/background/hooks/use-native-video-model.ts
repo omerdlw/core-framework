@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type CSSProperties } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef } from "react";
+
 import { report } from "@/foundation/utils";
+
 import { applyVideoPlaybackState } from "../model/playback";
 import { type BackgroundActions } from "../types";
 

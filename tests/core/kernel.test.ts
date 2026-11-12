@@ -1,22 +1,26 @@
 import "../support/dom.ts";
-import { afterEach, beforeEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, mock, test } from "node:test";
+import { act, createContext, createElement as h } from "react";
+import { createRoot } from "react-dom/client";
+
 import {
   Compose,
   composeProviders,
   createProviderEntry,
 } from "../../src/core/kernel/compose.ts";
-import { act, createContext, createElement as h } from "react";
-import { createRoot } from "react-dom/client";
+import { applyRegistryConfig as applyPayload } from "../../src/core/kernel/handlers.ts";
+import { createRegistryApplyContext as createRegistryApplyContext__4 } from "../../src/core/kernel/hooks.ts";
 import {
-  ModuleHost,
-  PageControllerProvider,
-  RegistryProvider,
   applyRegistryConfig,
   createModuleRegistryDefinitions,
   createRegistryApplyContext,
   createRegistryStore,
   defineModule,
+  ModuleHost,
+  PageControllerProvider,
+  RegistryProvider,
   sortModules,
   useModule,
   useModuleRegistration,
@@ -24,19 +28,38 @@ import {
   usePageController,
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
-import { createStore } from "../../src/foundation/utils/store.ts";
-import { loadingModule } from "../../src/modules/loading/module.tsx";
-import { ThemeProvider } from "../../src/react/theme/index.tsx";
+import { createModulePayload } from "../../src/core/kernel/installed.ts";
 import {
-  ambientThemeConfig,
-  loadingThemeConfig,
-  primitivesThemeConfig,
-} from "../support/themes.ts";
+  createRegisterOperation,
+  createUnregisterOperation,
+} from "../../src/core/kernel/operations.ts";
+import { createRecordKey } from "../../src/core/kernel/operations-records.ts";
+import { createStore } from "../../src/foundation/utils/store.ts";
+import { AmbientProvider } from "../../src/modules/ambient/context.tsx";
+import {
+  useAmbient,
+  useAmbientTheme,
+} from "../../src/modules/ambient/hooks.ts";
+import { ambientModule } from "../../src/modules/ambient/module.tsx";
+import {
+  useBackgroundActions,
+  useBackgroundState,
+} from "../../src/modules/background/hooks.ts";
+import { backgroundModule } from "../../src/modules/background/module.tsx";
+import { CONTEXT_MENU_VISIBILITY_EVENT } from "../../src/modules/context-menu/constants.ts";
+import { ContextMenuProvider } from "../../src/modules/context-menu/context.tsx";
+import {
+  useContextMenu,
+  useContextMenuActions,
+  useContextMenuState,
+} from "../../src/modules/context-menu/hooks.ts";
+import { contextMenuModule } from "../../src/modules/context-menu/module.tsx";
 import {
   useLoadingActions,
   useLoadingRegistration,
   useLoadingState,
 } from "../../src/modules/loading/index.ts";
+import { loadingModule } from "../../src/modules/loading/module.tsx";
 import { ModalProvider } from "../../src/modules/modal/context.tsx";
 import {
   useModal,
@@ -51,40 +74,19 @@ import {
   useToast,
 } from "../../src/modules/notification/index.ts";
 import { notificationModule } from "../../src/modules/notification/module.tsx";
-import { AmbientProvider } from "../../src/modules/ambient/context.tsx";
-import {
-  useAmbient,
-  useAmbientTheme,
-} from "../../src/modules/ambient/hooks.ts";
-import { ambientModule } from "../../src/modules/ambient/module.tsx";
-import { ContextMenuProvider } from "../../src/modules/context-menu/context.tsx";
-import {
-  useContextMenu,
-  useContextMenuActions,
-  useContextMenuState,
-} from "../../src/modules/context-menu/hooks.ts";
-import { CONTEXT_MENU_VISIBILITY_EVENT } from "../../src/modules/context-menu/constants.ts";
-import { contextMenuModule } from "../../src/modules/context-menu/module.tsx";
+import { ThemeProvider } from "../../src/react/theme/index.tsx";
 import { navigationTestState } from "../support/next-navigation.mjs";
-import {
-  useBackgroundActions,
-  useBackgroundState,
-} from "../../src/modules/background/hooks.ts";
-import { backgroundModule } from "../../src/modules/background/module.tsx";
 import {
   builtInModules,
   createRegistryStore as createRegistryStore__4,
   createRegistryStore as createRegistryStore__6,
   registryOperations,
 } from "../support/registry.ts";
-import { applyRegistryConfig as applyPayload } from "../../src/core/kernel/handlers.ts";
-import { createRegistryApplyContext as createRegistryApplyContext__4 } from "../../src/core/kernel/hooks.ts";
-import { createModulePayload } from "../../src/core/kernel/installed.ts";
-import { createRecordKey } from "../../src/core/kernel/operations-records.ts";
 import {
-  createRegisterOperation,
-  createUnregisterOperation,
-} from "../../src/core/kernel/operations.ts";
+  ambientThemeConfig,
+  loadingThemeConfig,
+  primitivesThemeConfig,
+} from "../support/themes.ts";
 
 describe("compose", () => {
   function OuterProvider({ children }) {

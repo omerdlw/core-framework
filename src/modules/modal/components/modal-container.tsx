@@ -1,17 +1,19 @@
 "use client";
 
 import { motion } from "motion/react";
+
 import { cn } from "@/foundation/recipes/cn";
+
+import { useModalContainerModel } from "../hooks";
+import { hasSlotContent } from "../model/header";
+import { hasHeightConstraint, isSidePosition } from "../model/layout";
 import { useModalMotion } from "../motion";
 import {
   type ModalContainerFooterConfig,
   type ModalContainerProps,
 } from "../types";
-import { hasHeightConstraint, isSidePosition } from "../model/layout";
-import { hasSlotContent } from "../model/header";
-import { useModalContainerModel } from "../hooks";
-import { SlotRow } from "./slot-row";
 import { resolveHeader } from "./resolve-header";
+import { SlotRow } from "./slot-row";
 
 export function ModalContainer({
   bodyClassName,

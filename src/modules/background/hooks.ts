@@ -1,9 +1,11 @@
 "use client";
 
 import { use, useMemo } from "react";
-import { useRequiredContext, useStore } from "@/react/hooks";
-import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
+
+import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+import { useRequiredContext, useStore } from "@/react/hooks";
+
 import { BackgroundContext } from "./context";
 import {
   DEFAULT_BACKGROUND_COMPUTED,

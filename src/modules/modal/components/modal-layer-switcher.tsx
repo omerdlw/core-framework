@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/react/ui/components/button";
-import { getModalLabel } from "../model/identity";
+
 import { type Theme } from "../lib/theme";
+import { getModalLabel } from "../model/identity";
 import { type ModalEntry } from "../types";
 
 export function ModalLayerSwitcher({

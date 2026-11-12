@@ -1,6 +1,9 @@
 import { report } from "@/foundation/utils";
+
+import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../../constants";
 import type {
   DockSurfaceHistoryState,
+  GeneralSurfaceHandle,
   NormalizedSurfaceDefinition,
   ResolvedSurfaceEntry,
   SurfaceFlowDefinition,
@@ -13,10 +16,8 @@ import type {
   SurfaceStackEntry,
   SurfaceState,
   SurfaceUrlState,
-  GeneralSurfaceHandle,
 } from "../../types";
 import { normalizeSurfaceFlowSnapshot } from "../helpers";
-import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../../constants";
 import { IS_BROWSER, syncSurfaceUrl } from "./url";
 
 export interface SurfaceRecord {

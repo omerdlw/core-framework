@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useRef, useLayoutEffect } from "react";
+import dynamic from "next/dynamic";
+import { useLayoutEffect, useMemo, useRef } from "react";
+
 import {
   defineModule,
   type PageConfig,
   type PageModuleApi,
 } from "@/core/kernel";
-import dynamic from "next/dynamic";
+
 import { ModalContext, ModalProvider } from "./context";
 import { useModal, useModalActions } from "./hooks";
+import { getModalIdentity } from "./model/identity";
 import {
   type DefineModalOptions,
   type ModalDefinition,
@@ -16,7 +19,6 @@ import {
   type ModalPageApi,
   type ModalPageConfig,
 } from "./types";
-import { getModalIdentity } from "./model/identity";
 
 const LazyModal = dynamic(
   () => import("./components/overlay").then((view) => view.Modal),

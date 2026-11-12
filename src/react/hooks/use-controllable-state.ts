@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState, useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+
 import { type UseControllableStateOptions } from "./types";
 
 export function useControllableState<T>({

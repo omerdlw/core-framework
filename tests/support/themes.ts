@@ -1,4 +1,5 @@
 import { createElement as h } from "react";
+
 import { errorTheme } from "../../src/core/error/theme.ts";
 import { loadingTheme } from "../../src/modules/loading/constants.ts";
 import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";

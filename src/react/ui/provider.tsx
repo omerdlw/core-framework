@@ -1,15 +1,16 @@
 "use client";
 
-import { use, useMemo, type ReactNode } from "react";
-import { getOrCreateGlobalContext } from "@/react/context";
-import { useMotionTokens } from "@/react/theme";
-import { retimeModuleMotion } from "@/foundation/utils/tempo";
+import { type ReactNode, use, useMemo } from "react";
+
 import {
   defaultUi,
   type RegisteredUi,
   type Ui,
   type UiMotion,
 } from "@/foundation/recipes/define";
+import { retimeModuleMotion } from "@/foundation/utils/tempo";
+import { getOrCreateGlobalContext } from "@/react/context";
+import { useMotionTokens } from "@/react/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- RegisteredUi collapses to Ui here but differs once consumers augment it
 const UiContext = getOrCreateGlobalContext<Ui>("UiContext", defaultUi as Ui);

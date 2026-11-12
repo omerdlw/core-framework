@@ -1,7 +1,11 @@
 "use client";
 
-import { Suspense, memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo, Suspense } from "react";
+
+import { DOCK_SURFACE_PHASE } from "../constants";
+import { useDockCardItemModel } from "../hooks/use-card-item-model";
+import { useDockTheme } from "../hooks/use-dock-theme";
 import {
   DOCK_COMPOSITOR_STYLE,
   DOCK_UNSEEN_EXIT,
@@ -13,15 +17,12 @@ import {
   useDockMotion,
 } from "../motion";
 import type { DockCardItemProps } from "../types";
-import { useDockCardItemModel } from "../hooks/use-card-item-model";
-import { useDockTheme } from "../hooks/use-dock-theme";
-import { DOCK_SURFACE_PHASE } from "../constants";
 import { DockCardBanner } from "./card-banner";
-import { DockMediaScrubber } from "./media-scrubber";
-import { DockSurfaceExtensionsBar } from "./surface/extensions-bar";
 import { LoadingItemContent, StandardItemContent } from "./item-content";
-import { SurfaceItemContent } from "./surface/item-content";
+import { DockMediaScrubber } from "./media-scrubber";
 import { renderActionSlot } from "./surface/action";
+import { DockSurfaceExtensionsBar } from "./surface/extensions-bar";
+import { SurfaceItemContent } from "./surface/item-content";
 
 export const DockCardItem = memo(function DockCardItem({
   ref,

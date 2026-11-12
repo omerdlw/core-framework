@@ -1,9 +1,9 @@
 import { findContentBounds } from "./analyze-bounds";
 import {
+  type Cluster,
   MIN_CHROMA,
   REGION_BITS,
   reliability,
-  type Cluster,
 } from "./analyze-measures";
 import { clamp, labToLch, maxChroma, srgbToOklab } from "./oklab";
 import { kmeans } from "./quantize";

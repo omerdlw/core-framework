@@ -1,10 +1,12 @@
 "use client";
 
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
-import { trimToNull } from "@/foundation/utils";
-import { useUi } from "../provider";
+
 import { splitVariants } from "@/foundation/recipes/split";
+import { trimToNull } from "@/foundation/utils";
 import type { ImageProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 import { watchDistance } from "../utils";
 
 export function Image({

@@ -1,5 +1,5 @@
-import { UserError, toUserMessage } from "@/foundation/utils/user-message";
 import { report } from "@/foundation/utils/report";
+import { toUserMessage, UserError } from "@/foundation/utils/user-message";
 
 export interface SuccessResult<T> {
   readonly code?: string;

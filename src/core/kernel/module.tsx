@@ -1,16 +1,19 @@
 "use client";
 
-import { createElement, use, useState, type ReactNode } from "react";
-import { useStore } from "@/react/hooks";
+import { createElement, type ReactNode, use, useState } from "react";
+
 import { createStore, type ExternalStore } from "@/foundation/utils";
+import { report } from "@/foundation/utils";
+import { useStore } from "@/react/hooks";
+
 import {
+  type BoundaryComponent,
+  createModuleRegistryDefinitions,
   EMPTY_MODULES,
   ModuleHostContext,
-  PassthroughBoundary,
-  createModuleRegistryDefinitions,
-  sortModules,
-  type BoundaryComponent,
   type ModuleHostValue,
+  PassthroughBoundary,
+  sortModules,
 } from "./installed";
 import { PageControllerProvider } from "./page-controller";
 import { RegistryProvider } from "./provider";
@@ -23,7 +26,6 @@ import type {
   ModuleRuntimeOf,
   ModuleStateOf,
 } from "./types";
-import { report } from "@/foundation/utils";
 
 export function defineModule<
   TId extends string,

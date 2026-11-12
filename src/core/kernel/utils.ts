@@ -1,10 +1,11 @@
+import { isObject, trimToNull } from "@/foundation/utils";
+
 import {
   DEFAULT_REGISTRY_SCOPE,
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_RANK,
 } from "./constants";
 import type { RegistryMetadata } from "./types";
-import { isObject, trimToNull } from "@/foundation/utils";
 
 export function hasOwnProperty(target: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(target, key);

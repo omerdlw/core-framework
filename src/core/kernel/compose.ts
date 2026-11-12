@@ -1,7 +1,7 @@
 import {
+  type ComponentType,
   createElement,
   Fragment,
-  type ComponentType,
   type JSX,
   type ReactNode,
 } from "react";

@@ -1,18 +1,20 @@
 "use client";
 
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { useRequiredContext, useStore } from "@/react/hooks";
+
 import { shallowEqual } from "@/foundation/utils";
+import { useRequiredContext, useStore } from "@/react/hooks";
 import { useTheme } from "@/react/theme";
+
 import { ambientTheme } from "./constants";
-import { getAmbientSettings } from "./settings";
 import { AmbientContext } from "./context";
-import { extractPaletteFromImage, primeAmbientPalette } from "./extractor";
 import {
   applyScopedCssVariables,
   resolveAmbientVarMap,
   resolveTargetElement,
 } from "./dom";
+import { extractPaletteFromImage, primeAmbientPalette } from "./extractor";
+import { getAmbientSettings } from "./settings";
 import type {
   AmbientConfig,
   AmbientContextValue,

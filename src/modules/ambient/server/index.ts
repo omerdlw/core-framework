@@ -1,16 +1,16 @@
 import { analyzeAmbientPixels } from "../analyze";
-import {
-  isIpLiteral,
-  isPrivateAddress,
-  isPrivateHostname,
-  normalizeHost,
-} from "./address";
 import { resolveAnalysis } from "../settings";
 import type {
   AmbientAnalysisOptions,
   AmbientPalette,
   AmbientPixels,
 } from "../types";
+import {
+  isIpLiteral,
+  isPrivateAddress,
+  isPrivateHostname,
+  normalizeHost,
+} from "./address";
 
 export {
   AMBIENT_ANALYSIS_VERSION,

@@ -1,19 +1,21 @@
 "use client";
 
-import { type ReactNode, memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo, type ReactNode } from "react";
+
 import { cn } from "@/foundation/recipes/cn";
 import { isImageIconSource } from "@/foundation/utils";
 import { Icon } from "@/react/ui/components/icon";
+
+import { useDockTheme } from "../hooks/use-dock-theme";
+import { stopAndPrevent } from "../lib/card";
+import { getImageIconStyle, splitStyle } from "../lib/styles";
 import { getDockActionMotionProps, useDockMotion } from "../motion";
 import type {
   DockIconOverlayProps,
   DockIconProps,
   DockIconSource,
 } from "../types";
-import { stopAndPrevent } from "../lib/card";
-import { getImageIconStyle, splitStyle } from "../lib/styles";
-import { useDockTheme } from "../hooks/use-dock-theme";
 
 const DockIconOverlay = memo(function DockIconOverlay({
   overlay,

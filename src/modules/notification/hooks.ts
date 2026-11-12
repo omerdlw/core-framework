@@ -1,23 +1,25 @@
 "use client";
 
 import {
-  useCallback,
+  type ReactNode,
   use,
+  useCallback,
   useMemo,
   useSyncExternalStore,
-  type ReactNode,
 } from "react";
+
 import { EVENT_TYPES } from "@/foundation/events";
+import { toUserMessage } from "@/foundation/utils";
 import { useGlobalEvent, useRequiredContext, useStore } from "@/react/hooks";
 import { useTheme } from "@/react/theme";
-import { toUserMessage } from "@/foundation/utils";
+
 import {
   INERT_NOTIFICATION_ACTIONS,
+  notificationTheme,
   SESSION_EXPIRED_MESSAGE,
   TOAST_DURATIONS,
-  notificationTheme,
 } from "./constants";
-import { NotificationContext, NOOP_NOTIFICATION_STORE } from "./context";
+import { NOOP_NOTIFICATION_STORE, NotificationContext } from "./context";
 import {
   getActiveNotification,
   getOutcomeMessage,

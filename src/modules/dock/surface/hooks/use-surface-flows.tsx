@@ -1,7 +1,10 @@
 "use client";
 
 import { type RefObject, useCallback, useEffect } from "react";
+
 import { report } from "@/foundation/utils";
+
+import { DOCK_SURFACE_FLOW_STATUS } from "../../constants";
 import type {
   DockScheduledTaskId,
   DockScheduler,
@@ -12,7 +15,6 @@ import type {
   SurfaceResult,
   SurfaceStackEntry,
 } from "../../types";
-import { DOCK_SURFACE_FLOW_STATUS } from "../../constants";
 import {
   createSurfaceError,
   createSurfaceFlowDefinition,
@@ -20,17 +22,17 @@ import {
   updateSurfaceFlowSession,
 } from "../definition";
 import {
-  IS_BROWSER,
-  getSurfaceUrlValue,
-  syncSurfaceFlowUrlState,
-} from "../model/url";
-import {
-  type SurfaceRuntimeRefs,
   getRestorableSurfaceFlowSnapshot,
   releaseSurfaceResources,
+  type SurfaceRuntimeRefs,
   toSurfaceFlowState,
   updateSurfaceStackEntry,
 } from "../model/records";
+import {
+  getSurfaceUrlValue,
+  IS_BROWSER,
+  syncSurfaceFlowUrlState,
+} from "../model/url";
 
 export function useSurfaceFlows({
   closeSurface,

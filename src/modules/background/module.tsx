@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
+
 import { defineModule, type PageModuleApi } from "@/core/kernel";
+
+import { BackgroundOverlay } from "./components/overlay";
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import { BackgroundContext, BackgroundProvider } from "./context";
 import { useBackground, useBackgroundActions } from "./hooks";
 import { normalizeBackgroundInput } from "./model/state";
-import { BackgroundOverlay } from "./components/overlay";
 import {
   type BackgroundPageApi,
   type BackgroundPageConfig,

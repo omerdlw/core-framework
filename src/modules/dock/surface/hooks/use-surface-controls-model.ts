@@ -1,8 +1,9 @@
 "use client";
 
 import { use, useCallback, useSyncExternalStore } from "react";
-import type { DockItem } from "../../types";
+
 import { DOCK_SURFACE_PHASE } from "../../constants";
+import type { DockItem } from "../../types";
 import { SurfaceExtensionsContext } from "../context";
 
 export function useDockSurfaceControlsModel({

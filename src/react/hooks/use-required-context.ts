@@ -1,6 +1,6 @@
 "use client";
 
-import { use, type Context } from "react";
+import { type Context, use } from "react";
 
 export function useRequiredContext<T>(
   context: Context<T | null>,

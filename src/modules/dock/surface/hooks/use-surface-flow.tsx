@@ -1,14 +1,15 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
+
+import { DOCK_SURFACE_FLOW_STATUS } from "../../constants";
 import type {
   SurfaceFlowDefinitionInput,
   SurfaceFlowState,
   SurfaceResult,
 } from "../../types";
-import { DOCK_SURFACE_FLOW_STATUS } from "../../constants";
-import { createSurfaceError, createSurfaceFlowDefinition } from "../definition";
 import { SurfaceFlowContext } from "../context";
+import { createSurfaceError, createSurfaceFlowDefinition } from "../definition";
 
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);

@@ -1,9 +1,11 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
+
 import { useGlobalEvent } from "@/react/hooks";
-import type { DockBadgeState } from "../types";
+
 import { DOCK_EVENTS } from "../constants";
+import type { DockBadgeState } from "../types";
 
 export function useDockBadge(
   dockKey?: string | null,

@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useMemo } from "react";
-import type { DockItem, DockSlotContent } from "../types";
-import { shouldRenderInlineAction } from "../runtime/pipeline";
+
 import { useDockHasMedia } from "../context";
 import {
   type DockActionSlot,
   isSurfaceLayerShown,
   ownsPathname,
 } from "../lib/card";
+import { shouldRenderInlineAction } from "../runtime/pipeline";
+import type { DockItem, DockSlotContent } from "../types";
 
 function isRenderableAction(action: DockSlotContent | undefined): boolean {
   return React.isValidElement(action) || typeof action === "function";

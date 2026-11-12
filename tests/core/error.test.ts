@@ -1,6 +1,25 @@
 import "../support/dom.ts";
-import { afterEach, beforeEach, describe, mock, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, mock, test } from "node:test";
+import { act, createElement as h } from "react";
+
+import {
+  ComponentError,
+  ErrorBoundaryCore,
+  GlobalError,
+  ModuleError,
+} from "../../src/core/error/boundary.tsx";
+import {
+  DEFAULT_DEDUPE_WINDOW,
+  ERROR_MESSAGES,
+} from "../../src/core/error/constants.ts";
+import { GlobalErrorListener } from "../../src/core/error/listener.ts";
+import {
+  createConsoleHandler,
+  createSentryHandler,
+  getErrorReporter,
+} from "../../src/core/error/reporter.ts";
 import {
   createReport,
   fingerprint,
@@ -10,34 +29,17 @@ import {
   shouldIgnoreError,
 } from "../../src/core/error/utils.ts";
 import {
-  DEFAULT_DEDUPE_WINDOW,
-  ERROR_MESSAGES,
-} from "../../src/core/error/constants.ts";
-import {
-  createConsoleHandler,
-  createSentryHandler,
-  getErrorReporter,
-} from "../../src/core/error/reporter.ts";
-import { act, createElement as h } from "react";
-import { render } from "../support/render.ts";
-import { Themed } from "../support/themes.ts";
-import {
-  ComponentError,
-  ErrorBoundaryCore,
-  GlobalError,
-  ModuleError,
-} from "../../src/core/error/boundary.tsx";
-import {
   EVENT_TYPES,
   globalEvents,
 } from "../../src/foundation/events/index.ts";
-import { errorThemeConfig } from "../support/themes.ts";
 import {
-  USER_MESSAGES,
   report,
   setReportSink,
+  USER_MESSAGES,
 } from "../../src/foundation/utils/index.ts";
-import { GlobalErrorListener } from "../../src/core/error/listener.ts";
+import { render } from "../support/render.ts";
+import { Themed } from "../support/themes.ts";
+import { errorThemeConfig } from "../support/themes.ts";
 
 describe("error utils", () => {
   describe("getErrorMessage", () => {

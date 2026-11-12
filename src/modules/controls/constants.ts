@@ -1,4 +1,5 @@
 import { defineThemeSpec } from "@/react/theme";
+
 import { type ControlsThemeSlot } from "./types";
 
 export const CONTROLS_EDGE_INSET = 4;

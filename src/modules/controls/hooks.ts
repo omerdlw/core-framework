@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
+import { useEffect, useMemo, useState } from "react";
+
+import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
+
+import { normalizePageControls, resolveSlot } from "./entries";
+import { areLayoutsEqual, getDockElement, measureLayout } from "./layout";
 import {
   type ControlEntry,
   type ControlsLayout,
@@ -10,8 +14,6 @@ import {
   type ControlsUseOptions,
   type DefineControlsOptions,
 } from "./types";
-import { normalizePageControls, resolveSlot } from "./entries";
-import { areLayoutsEqual, getDockElement, measureLayout } from "./layout";
 
 export function useControlsLayout(): ControlsLayout | null {
   const [layout, setLayout] = useState<ControlsLayout | null>(null);

@@ -1,6 +1,12 @@
 "use client";
 
 import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  type Variants,
+} from "motion/react";
+import {
   type CSSProperties,
   type KeyboardEvent,
   useCallback,
@@ -12,22 +18,16 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import {
-  AnimatePresence,
-  LayoutGroup,
-  motion,
-  type Variants,
-} from "motion/react";
+
+import { splitVariants } from "@/foundation/recipes/split";
 import {
   useControllableState,
   useEscapeKey,
   useScrollLock,
 } from "@/react/hooks";
-import { useUi, useUiMotion } from "../provider";
-import { splitVariants } from "@/foundation/recipes/split";
-import { Icon } from "./icon";
-import { SlidingHighlight } from "./indicator";
 import type { Anchor, SelectOption, SelectProps } from "@/react/ui/types";
+
+import { useUi, useUiMotion } from "../provider";
 import {
   canAnchor,
   cannotAnchor,
@@ -35,6 +35,8 @@ import {
   noSubscribe,
   readHost,
 } from "../utils";
+import { Icon } from "./icon";
+import { SlidingHighlight } from "./indicator";
 
 export function Select<T extends string = string>({
   ariaLabel,

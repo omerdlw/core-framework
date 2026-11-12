@@ -1,13 +1,15 @@
 "use client";
 
 import { use, useMemo } from "react";
+
+import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
 import {
   useIsFullscreenStateActive,
   useRequiredContext,
   useStore,
 } from "@/react/hooks";
-import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
 import { useTheme } from "@/react/theme";
+
 import { INERT_LOADING_ACTIONS, loadingTheme } from "./constants";
 import { LoadingContext, NOOP_LOADING_STORE } from "./context";
 import {

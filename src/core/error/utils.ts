@@ -1,4 +1,5 @@
 import type { ErrorInfo } from "react";
+
 import { DEFAULT_DEDUPE_WINDOW, ERROR_LISTENER_CONFIG } from "./constants";
 import type {
   BrowserEnvironment,

@@ -1,3 +1,6 @@
+import type { Icon as IconifyIcon } from "@iconify-icon/react";
+import type * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import type NextLink from "next/link";
 import type {
   ButtonHTMLAttributes,
   ComponentProps,
@@ -9,9 +12,7 @@ import type {
   Ref,
   TextareaHTMLAttributes,
 } from "react";
-import type NextLink from "next/link";
-import type { Icon as IconifyIcon } from "@iconify-icon/react";
-import type * as TooltipPrimitive from "@radix-ui/react-tooltip";
+
 import type {
   PartClassNames,
   PartProps,

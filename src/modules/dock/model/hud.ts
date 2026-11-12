@@ -1,10 +1,11 @@
 import {
-  shallowEqual as areShallowCollectionsEqual,
   isObject,
+  shallowEqual as areShallowCollectionsEqual,
   toArray,
 } from "@/foundation/utils";
-import type { DockHudDescriptor } from "../types";
+
 import { DOCK_HUD_PRIORITY } from "../constants";
+import type { DockHudDescriptor } from "../types";
 
 export type DockHudEntries = Record<string, DockHudDescriptor>;
 

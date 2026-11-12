@@ -1,16 +1,17 @@
+import { isObject, shallowEqual } from "@/foundation/utils";
+
 import {
   DEFAULT_REGISTRY_SCOPE,
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_PRIORITY,
 } from "./constants";
-import { isObject, shallowEqual } from "@/foundation/utils";
-import { getSourceRank, hasOwnProperty } from "./utils";
 import type {
   RegistryDefinitions,
   RegistryEntryRecords,
   RegistryState,
   SourceRecord,
 } from "./types";
+import { getSourceRank, hasOwnProperty } from "./utils";
 
 export type MaybeEntry = RegistryEntryRecords | null | undefined;
 

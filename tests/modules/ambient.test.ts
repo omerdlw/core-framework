@@ -1,6 +1,8 @@
 import "../support/dom.ts";
-import { describe, test } from "node:test";
+
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
+
 import { resolvePageAmbientTheme } from "../../src/modules/ambient/index.ts";
 
 describe("ambient page", () => {

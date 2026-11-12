@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+
+import { DOCK_HUD_PRIORITY } from "./constants";
+import { useDockActions } from "./context";
+import { areHudDefinitionsEqual } from "./model/hud";
+import { createHudDefinition } from "./model/hud-definition";
 import type {
   DefineHudOptions,
   DockComponentProps,
@@ -10,10 +15,6 @@ import type {
   DockHudTrigger,
   UseHudReturn,
 } from "./types";
-import { DOCK_HUD_PRIORITY } from "./constants";
-import { useDockActions } from "./context";
-import { areHudDefinitionsEqual } from "./model/hud";
-import { createHudDefinition } from "./model/hud-definition";
 
 export function useDockHud(descriptor: DockHudDescriptor) {
   const { setHud, clearHud } = useDockActions();

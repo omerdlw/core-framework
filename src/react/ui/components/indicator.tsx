@@ -1,5 +1,6 @@
 "use client";
 
+import { LayoutGroup, motion } from "motion/react";
 import {
   createContext,
   type FocusEvent,
@@ -9,9 +10,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { LayoutGroup, motion } from "motion/react";
-import { useUi, useUiMotion } from "../provider";
+
 import type { PillBox, Tracker } from "@/react/ui/types";
+
+import { useUi, useUiMotion } from "../provider";
 import { HIGHLIGHT_STYLE, INSTANT, PILL_BOX_STYLE, PILL_STYLE } from "../utils";
 
 export function SlidingHighlight({

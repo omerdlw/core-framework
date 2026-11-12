@@ -1,4 +1,8 @@
 import type { ClassValue } from "clsx";
+
+import type { UiRegister } from "@/foundation/recipes";
+
+import { ANATOMY, type Anatomy } from "./anatomy";
 import { createCn, type MergeVocabulary } from "./cn";
 import {
   compileRecipe,
@@ -9,8 +13,6 @@ import {
   type RecipeOverride,
   type VariantsOf,
 } from "./recipe";
-import { ANATOMY, type Anatomy } from "./anatomy";
-import type { UiRegister } from "@/foundation/recipes";
 
 type Ease = readonly [number, number, number, number];
 

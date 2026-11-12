@@ -1,9 +1,10 @@
 "use client";
 
-import { type ReactNode } from "react";
 import { motion, type Variants } from "motion/react";
-import { hasSlotContent } from "../model/header";
+import { type ReactNode } from "react";
+
 import { type Theme } from "../lib/theme";
+import { hasSlotContent } from "../model/header";
 
 export function SlotRow({
   center,

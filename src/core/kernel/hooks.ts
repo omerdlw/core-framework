@@ -1,16 +1,18 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useId, useMemo, useRef, useState, useLayoutEffect } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+import { isObject, shallowEqual } from "@/foundation/utils";
+
 import { applyRegistryConfig } from "./handlers";
 import { createModulePayload, useInstalledModules } from "./installed";
 import { useRegistryActions } from "./provider";
 import { stabilizeRegistryValue } from "./stabilize";
-import { isObject, shallowEqual } from "@/foundation/utils";
 import type {
   PageConfig,
-  RegistryCleanupTimer,
   RegistryApplyContext,
+  RegistryCleanupTimer,
   RegistryMetadata,
   RegistryQueue,
   RegistrySourceOrOptions,

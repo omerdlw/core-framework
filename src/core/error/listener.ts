@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+
 import { EVENT_TYPES, globalEvents } from "@/foundation/events";
+import { report, setReportSink, toUserMessage } from "@/foundation/utils";
+
 import { ERROR_LISTENER_CONFIG } from "./constants";
 import { getErrorReporter } from "./reporter";
 import { getErrorMessage, shouldIgnoreError } from "./utils";
-import { report, setReportSink, toUserMessage } from "@/foundation/utils";
 
 export function GlobalErrorListener(): null {
   const lastError = useRef<number>(0);

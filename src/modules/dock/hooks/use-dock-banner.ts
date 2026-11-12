@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+
 import type { DockBannerInput } from "../types";
 import { useDockRegistration } from "./use-dock-registration";
 

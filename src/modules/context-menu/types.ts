@@ -1,11 +1,12 @@
-import { type ReactNode } from "react";
 import {
   type TargetAndTransition,
   type Transition,
   type Variants,
 } from "motion/react";
-import { type ExternalStore } from "@/foundation/utils";
+import { type ReactNode } from "react";
+
 import { type RegistryMetadata } from "@/core/kernel";
+import { type ExternalStore } from "@/foundation/utils";
 
 export interface ContextMenuTrigger {
   clientX?: number;

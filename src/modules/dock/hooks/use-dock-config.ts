@@ -1,8 +1,10 @@
 "use client";
 
 import { use, useMemo } from "react";
-import { useStore } from "@/react/hooks";
+
 import { createStore, shallowEqual } from "@/foundation/utils";
+import { useStore } from "@/react/hooks";
+
 import { DockContext, EMPTY_DOCK_STATE } from "../context";
 import type { DockState } from "../types";
 import { useDockRegistration } from "./use-dock-registration";

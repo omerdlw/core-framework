@@ -1,25 +1,27 @@
 "use client";
 
 import { type ComponentType } from "react";
+
 import { Icon } from "@/react/ui/components/icon";
+
+import {
+  ERROR_STATUS_TYPES,
+  OVERLAY_STATUS_STORAGE_KEY,
+  STATUS_PRIORITY,
+} from "../constants";
+import { statusActionDefaults } from "../context";
+import { normalizeUpper } from "../lib/helpers";
 import type {
-  StatusState,
   DockIconSource,
+  DockItem,
   DockSlotContent,
   DockStatusDescriptor,
   DockStatusTheme,
   ErrorActionsProps,
   GuardActionsProps,
   PersistedOverlayStatus,
-  DockItem,
+  StatusState,
 } from "../types";
-import {
-  ERROR_STATUS_TYPES,
-  STATUS_PRIORITY,
-  OVERLAY_STATUS_STORAGE_KEY,
-} from "../constants";
-import { statusActionDefaults } from "../context";
-import { normalizeUpper } from "../lib/helpers";
 
 export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
 

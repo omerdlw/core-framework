@@ -1,23 +1,35 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { type ComponentType, use, useEffect, useMemo, useState } from "react";
+
 import { useRegistryEntries } from "@/core/kernel";
 import {
-  shallowEqual as areShallowCollectionsEqual,
   normalizePath,
+  shallowEqual as areShallowCollectionsEqual,
 } from "@/foundation/utils";
-import { usePathname } from "next/navigation";
 import { useTheme } from "@/react/theme";
-import { resolveActiveIndex } from "./pipeline";
+
+import { applyMediaAction } from "../components/media-action";
 import {
   DOCK_ATTENTION_KIND,
   DOCK_PENDING_ROUTE_HOLD_MS,
   dockTheme,
 } from "../constants";
+import {
+  DockContext,
+  useDockActions,
+  useDockHasMedia,
+  useDockLoadingState as useLoadingState,
+  useDockMediaActions,
+  useDockSelector,
+} from "../context";
+import { resolveDockAttention } from "../model/state";
+import { createDockTopology } from "../routing/model/topology";
+import { useDockStatus } from "../status/hooks";
+import { applyStatusOverlay } from "../status/model";
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";
-import { applyStatusOverlay } from "../status/model";
-import { applyMediaAction } from "../components/media-action";
 import type {
   DockAttention,
   DockItem,
@@ -26,23 +38,13 @@ import type {
   SurfaceViewModelOptions,
 } from "../types";
 import {
-  DockContext,
-  useDockActions,
-  useDockHasMedia,
-  useDockMediaActions,
-  useDockSelector,
-  useDockLoadingState as useLoadingState,
-} from "../context";
-import { resolveDockAttention } from "../model/state";
-import { createDockTopology } from "../routing/model/topology";
-import { useDockStatus } from "../status/hooks";
-import {
-  type DockBaseMatch,
   buildDockItems,
+  type DockBaseMatch,
   isNotFoundItem,
   resolveBaseActiveItemMatch,
   selectPendingRouteItem,
 } from "./model/items";
+import { resolveActiveIndex } from "./pipeline";
 
 export function usePendingRouteHold(
   pathname: string,

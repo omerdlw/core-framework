@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import type { DockComponent, DockComponentProps } from "./card";
 import type { DockIconSource } from "./media";
 

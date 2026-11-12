@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { createPortal } from "react-dom";
+
+import { useModalModel } from "../hooks";
 import { useModalMotion } from "../motion";
 import { type ModalEntry } from "../types";
-import { useModalModel } from "../hooks";
 import { ModalLayer } from "./modal-layer";
 
 export function Modal() {

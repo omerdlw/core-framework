@@ -1,38 +1,39 @@
-import { describe, test } from "node:test";
-import assert from "node:assert/strict";
-import { act, createElement as h, useContext, type ReactNode } from "react";
 import { MotionConfigContext } from "motion/react";
-import { render, renderHook } from "../support/render.ts";
-import { withThemes } from "../support/themes.ts";
+import assert from "node:assert/strict";
+import { describe, test } from "node:test";
+import { act, createElement as h, type ReactNode, useContext } from "react";
+
 import {
   defineMotion,
   retime,
   retimeModuleMotion,
 } from "../../src/foundation/utils/tempo.ts";
 import { cssTransition } from "../../src/foundation/utils/transform.ts";
+import { render, renderHook } from "../support/render.ts";
+import { withThemes } from "../support/themes.ts";
 
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
-import {
-  ModuleMotionConfig,
-  ThemeProvider,
-  defineTheme,
-  defineThemeSpec,
-  useModuleMotion,
-  useMotionTokens,
-  useOptionalModuleMotion,
-} from "../../src/react/theme/index.tsx";
-import { CoreProvider } from "../../src/core/provider/index.tsx";
 import { defineModule } from "../../src/core/kernel/index.ts";
+import { CoreProvider } from "../../src/core/provider/index.tsx";
 import { notificationTheme } from "../../src/modules/notification/constants.ts";
 import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import { useToast } from "../../src/modules/notification/hooks.ts";
 import { NotificationLayer } from "../../src/modules/notification/overlay.tsx";
-import { motion as starterTokens } from "../support/motion/tokens.ts";
+import {
+  defineTheme,
+  defineThemeSpec,
+  ModuleMotionConfig,
+  ThemeProvider,
+  useModuleMotion,
+  useMotionTokens,
+  useOptionalModuleMotion,
+} from "../../src/react/theme/index.tsx";
+import { backgroundMotion } from "../support/motion/background.ts";
+import { contextMenuMotion } from "../support/motion/context-menu.ts";
 import { dockMotion } from "../support/motion/dock.ts";
 import { modalMotion } from "../support/motion/modal.ts";
 import { notificationMotion } from "../support/motion/notification.ts";
-import { contextMenuMotion } from "../support/motion/context-menu.ts";
-import { backgroundMotion } from "../support/motion/background.ts";
+import { motion as starterTokens } from "../support/motion/tokens.ts";
 
 const CUSTOM_SAMPLES = [undefined, 0, 1, 2, 3, 5, 9, -2, "14", 0.5];
 

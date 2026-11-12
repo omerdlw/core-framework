@@ -1,3 +1,5 @@
+import { isObject, isPlainObject } from "@/foundation/utils";
+
 import {
   DEFAULT_SOURCE,
   REGISTRY_LIFECYCLE_VALUES,
@@ -6,8 +8,6 @@ import {
   REGISTRY_METADATA_KEYS,
   REGISTRY_VALIDATION_MODES,
 } from "./constants";
-import { isObject, isPlainObject } from "@/foundation/utils";
-import { getValidString, parseFiniteNumber } from "./utils";
 import type {
   NormalizedRegistryMetadata,
   RegistryDefinitions,
@@ -16,6 +16,7 @@ import type {
   RegistryValidationMode,
   ValidationResult,
 } from "./types";
+import { getValidString, parseFiniteNumber } from "./utils";
 
 function resolveLifecycle(
   metadata: RegistryMetadata | null | undefined,

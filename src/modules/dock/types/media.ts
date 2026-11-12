@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+
 import type { DockEventHandler } from "./card";
 import type { DockVisualStyleSection } from "./theme";
 

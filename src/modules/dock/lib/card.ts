@@ -1,7 +1,8 @@
 import type { SyntheticEvent } from "react";
+
+import { DOCK_SURFACE_PHASE } from "../constants";
 import { isInlineActionPathMatch } from "../model/paths";
 import type { DockItem, DockSlotContent } from "../types";
-import { DOCK_SURFACE_PHASE } from "../constants";
 
 const PAGE_FACING_SURFACE_PHASES: ReadonlySet<string> = new Set([
   DOCK_SURFACE_PHASE.DISMISSING_ACTION,

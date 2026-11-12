@@ -1,19 +1,20 @@
-import { describe, test } from "node:test";
-import assert from "node:assert/strict";
-import { act, createElement as h, useState } from "react";
 import { MotionGlobalConfig } from "motion/react";
-import { render } from "../support/render.ts";
+import assert from "node:assert/strict";
+import { describe, test } from "node:test";
+import { act, createElement as h, useState } from "react";
+
 import {
   Avatar,
   Button,
   Checkbox,
+  defineUi,
   Input,
   SegmentedControl,
   Select,
   Switch,
   UiProvider,
-  defineUi,
 } from "../../src/react/ui/index.ts";
+import { render } from "../support/render.ts";
 
 MotionGlobalConfig.skipAnimations = true;
 

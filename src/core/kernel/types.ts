@@ -1,4 +1,5 @@
 import type { ComponentType, Context, ReactNode } from "react";
+
 import type { ExternalStore } from "@/foundation/utils";
 
 export type AnyFunction = (...args: unknown[]) => unknown;

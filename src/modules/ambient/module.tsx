@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
+
 import {
   defineModule,
   type PageConfig,
   type PageModuleApi,
 } from "@/core/kernel";
 import { useOptionalBackgroundState } from "@/modules/background";
+
 import { AmbientContext, AmbientProvider } from "./context";
 import { useAmbientTheme } from "./hooks";
 import type {

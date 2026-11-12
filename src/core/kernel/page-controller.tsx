@@ -1,23 +1,24 @@
 "use client";
 
 import {
+  type ReactNode,
   use,
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
-  type ReactNode,
-  useLayoutEffect,
 } from "react";
+
+import { report } from "@/foundation/utils";
 import { getOrCreateGlobalContext } from "@/react/context";
+
 import { useRegistry, useShallowStable } from "./hooks";
 import { selectModuleSlice, useInstalledModules } from "./installed";
 import { pickRegistryMetadata } from "./schema";
-import { mergeModuleConfigs } from "./utils";
-
 import type {
   PageConfig,
   PageController,
@@ -26,7 +27,7 @@ import type {
   PageModules,
   PageOptions,
 } from "./types";
-import { report } from "@/foundation/utils";
+import { mergeModuleConfigs } from "./utils";
 
 const EMPTY_OBJECT: PageConfig = Object.freeze({});
 

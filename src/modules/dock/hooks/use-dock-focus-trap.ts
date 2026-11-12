@@ -1,6 +1,7 @@
 "use client";
 
 import { type RefObject, useEffect, useRef } from "react";
+
 import { focusDockElement, getDockFocusableElements } from "../lib/dom";
 
 export function useDockFocusTrap({

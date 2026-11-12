@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useStore } from "@/react/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
-import { useOptionalMediaActions } from "@/modules/media";
 import { createStore } from "@/foundation/utils";
+import { useOptionalMediaActions } from "@/modules/media";
+import { useStore } from "@/react/hooks";
+
 import { BACKGROUND_MEDIA_ID, BACKGROUND_REGISTRY_KEY } from "./constants";
-import {
-  computeBackgroundState,
-  normalizeBackgroundInput,
-  resolveBackgroundState,
-} from "./model/state";
 import {
   syncVideoLoopDirect,
   syncVideoMutedDirect,
   triggerVideoPlaybackDirect,
 } from "./model/playback";
+import {
+  computeBackgroundState,
+  normalizeBackgroundInput,
+  resolveBackgroundState,
+} from "./model/state";
 import {
   type BackgroundActions,
   type BackgroundContextValue,

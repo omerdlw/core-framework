@@ -1,5 +1,5 @@
-import { createRegisterOperation, type RegistryOperations } from "./operations";
 import { REGISTRY_SOURCES } from "./constants";
+import { createRegisterOperation, type RegistryOperations } from "./operations";
 import { cloneRegistryValue, validateRegistration } from "./store-registration";
 import type {
   AppRegistryEntry,

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+
 import { ENTRIES } from "./entries.mjs";
 
 const DIST = path.resolve("dist");

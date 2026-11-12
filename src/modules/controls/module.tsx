@@ -1,19 +1,21 @@
 "use client";
 
 import { useMemo } from "react";
+
 import {
   defineModule,
   type PageConfig,
   type PageModuleApi,
 } from "@/core/kernel";
-import { useControls } from "./hooks";
+
 import { normalizePageControls, validateControlEntry } from "./entries";
+import { useControls } from "./hooks";
 import { Controls } from "./overlay";
 import {
   type ControlsPageApi,
-  type DefinedControls,
-  type DefineControlsOptions,
   type ControlsPageConfig,
+  type DefineControlsOptions,
+  type DefinedControls,
   type PageControlEntry,
 } from "./types";
 

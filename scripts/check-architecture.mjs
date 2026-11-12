@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ENTRIES, buildExports } from "./entries.mjs";
+
+import { buildExports, ENTRIES } from "./entries.mjs";
 
 const files = [];
 const walk = (dir) => {

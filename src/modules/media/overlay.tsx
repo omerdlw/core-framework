@@ -1,6 +1,7 @@
 "use client";
 
 import { useRegistryValue } from "@/core/kernel";
+
 import { MEDIA_REGISTRY_KEY, PAGE_MEDIA_ID } from "./constants";
 import { useMedia } from "./hooks";
 import { type MediaPageOptions, type MediaSourceProps } from "./types";

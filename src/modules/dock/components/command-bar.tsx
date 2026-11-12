@@ -1,17 +1,19 @@
 "use client";
 
-import { memo } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { memo } from "react";
+
 import { Tooltip } from "@/react/ui/components/tooltip";
+
+import { useDockCommandBarModel } from "../hooks/use-command-bar-model";
+import { useDockTheme } from "../hooks/use-dock-theme";
 import {
   DOCK_COMPOSITOR_STYLE,
   getDockActionMotionProps,
   useDockMotion,
 } from "../motion";
-import type { DockActionDescriptor, DockItem } from "../types";
-import { useDockCommandBarModel } from "../hooks/use-command-bar-model";
 import type { DockCommandEntry } from "../runtime/commands";
-import { useDockTheme } from "../hooks/use-dock-theme";
+import type { DockActionDescriptor, DockItem } from "../types";
 import { renderIconNode } from "./icon";
 
 const DockCommand = memo(function DockCommand({

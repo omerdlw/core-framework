@@ -1,7 +1,8 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { describe, test } from "node:test";
+
 import { ENTRIES } from "../../scripts/entries.mjs";
 
 const PKG = "@omerdlw/base-framework";

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { type ComponentType, type SyntheticEvent } from "react";
+
 import type { DockItem, DockSlotContent } from "../types";
 
 function resolveActionNode(

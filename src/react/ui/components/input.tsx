@@ -1,8 +1,9 @@
 "use client";
 
-import { useUi } from "../provider";
 import { splitVariants } from "@/foundation/recipes/split";
 import type { InputProps, TextareaProps } from "@/react/ui/types";
+
+import { useUi } from "../provider";
 
 export function Input({ className, ref, type = "text", ...props }: InputProps) {
   const { parts } = useUi();

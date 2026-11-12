@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties } from "react";
+
 import { useNativeVideoModel } from "../hooks/use-native-video-model";
 import { type BackgroundActions } from "../types";
 

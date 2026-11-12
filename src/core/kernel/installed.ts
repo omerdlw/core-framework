@@ -1,8 +1,10 @@
 "use client";
 
-import { use, type ComponentType, type ReactNode } from "react";
+import { type ComponentType, type ReactNode, use } from "react";
+
 import { isObject } from "@/foundation/utils";
 import { getOrCreateGlobalContext } from "@/react/context";
+
 import type {
   AnyCoreModule,
   PageConfig,

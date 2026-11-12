@@ -1,4 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
+
 import { type RegistryMetadata } from "@/core/kernel";
 import { type ResolvedTheme } from "@/react/theme";
 

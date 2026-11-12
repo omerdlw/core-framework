@@ -1,8 +1,9 @@
-import { registerHooks } from "node:module";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { registerHooks } from "node:module";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
+
 import { ENTRIES } from "../../scripts/entries.mjs";
 
 const SRC_ROOT = path.resolve(
