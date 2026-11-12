@@ -24,6 +24,10 @@ import type {
 } from "../types";
 import { formatSlugTitle } from "./model/policy";
 
+const ROOT_BREADCRUMB_ID = "home";
+const ROOT_BREADCRUMB_TITLE = "Home";
+const DEFAULT_BREADCRUMB_ID = "breadcrumb";
+
 function formatPath(path: string | null): string {
   return normalizePath(path) || "/";
 }
@@ -33,8 +37,8 @@ function createRootBreadcrumb(
   isCurrent: boolean,
 ): BreadcrumbItem {
   return {
-    id: root?.id || "home",
-    title: root?.title || "Home",
+    id: root?.id || ROOT_BREADCRUMB_ID,
+    title: root?.title || ROOT_BREADCRUMB_TITLE,
     path: root?.path || "/",
     icon: root?.icon || null,
     isCurrent,
@@ -120,6 +124,38 @@ function resolveRouteBreadcrumbs(
   return generated;
 }
 
+type BreadcrumbOverrides = Record<string, BreadcrumbOverride>;
+
+function withBreadcrumbOverride(
+  currentOverrides: BreadcrumbOverrides,
+  normalizedPath: string,
+  overrideConfig: BreadcrumbOverride,
+): BreadcrumbOverrides {
+  const existing = currentOverrides[normalizedPath];
+  if (
+    existing?.title === overrideConfig.title &&
+    existing?.icon === overrideConfig.icon
+  ) {
+    return currentOverrides;
+  }
+  return {
+    ...currentOverrides,
+    [normalizedPath]: {
+      title: overrideConfig.title || null,
+      icon: overrideConfig.icon || null,
+    },
+  };
+}
+
+function withoutBreadcrumbOverride(
+  currentOverrides: BreadcrumbOverrides,
+  normalizedPath: string,
+): BreadcrumbOverrides {
+  if (!currentOverrides[normalizedPath]) return currentOverrides;
+  const { [normalizedPath]: _, ...nextOverrides } = currentOverrides;
+  return nextOverrides;
+}
+
 const EMPTY_BREADCRUMB_CONFIG: BreadcrumbConfig = {};
 
 const BreadcrumbContext = createContext<BreadcrumbContextValue | null>(null);
@@ -131,31 +167,20 @@ export function BreadcrumbProvider({
   children?: ReactNode;
   config?: BreadcrumbConfig | null;
 }) {
-  const [overrides, setOverrides] = useState<
-    Record<string, BreadcrumbOverride>
-  >({});
+  const [overrides, setOverrides] = useState<BreadcrumbOverrides>({});
 
   const registerOverride = useCallback(
     (path: string, overrideConfig: BreadcrumbOverride) => {
       if (!path || !overrideConfig) return;
       const normalizedPath = formatPath(path);
 
-      setOverrides((currentOverrides) => {
-        const existing = currentOverrides[normalizedPath];
-        if (
-          existing?.title === overrideConfig.title &&
-          existing?.icon === overrideConfig.icon
-        ) {
-          return currentOverrides;
-        }
-        return {
-          ...currentOverrides,
-          [normalizedPath]: {
-            title: overrideConfig.title || null,
-            icon: overrideConfig.icon || null,
-          },
-        };
-      });
+      setOverrides((currentOverrides) =>
+        withBreadcrumbOverride(
+          currentOverrides,
+          normalizedPath,
+          overrideConfig,
+        ),
+      );
     },
     [],
   );
@@ -164,11 +189,9 @@ export function BreadcrumbProvider({
     if (!path) return;
     const normalizedPath = formatPath(path);
 
-    setOverrides((currentOverrides) => {
-      if (!currentOverrides[normalizedPath]) return currentOverrides;
-      const { [normalizedPath]: _, ...nextOverrides } = currentOverrides;
-      return nextOverrides;
-    });
+    setOverrides((currentOverrides) =>
+      withoutBreadcrumbOverride(currentOverrides, normalizedPath),
+    );
   }, []);
 
   const value = useMemo<BreadcrumbContextValue>(
@@ -237,6 +260,10 @@ export function useRegisterBreadcrumbOverride({
   }, [icon, path, registerOverride, title, unregisterOverride]);
 }
 
+/**
+ * Defines a breadcrumb override for a path. `create` builds the override from
+ * props, and `use()` registers it for the lifetime of the calling component.
+ */
 export function defineBreadcrumb(definition: DefineBreadcrumbOptions = {}) {
   const { icon = null, path = null, title = null, ...extraConfig } = definition;
 
@@ -271,7 +298,7 @@ export function defineBreadcrumb(definition: DefineBreadcrumbOptions = {}) {
   return Object.freeze({
     config: { icon, path, title, ...extraConfig },
     create: createOverride,
-    id: path || "breadcrumb",
+    id: path || DEFAULT_BREADCRUMB_ID,
     use: useDefinedBreadcrumb,
   });
 }

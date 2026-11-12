@@ -41,6 +41,15 @@ import { openDockGuardConfirmation } from "./guards";
 import { resolveDockRoutePolicy } from "./model/policy";
 
 const LOCATION_SYNC_EVENT = "dock:location-sync";
+const DEFAULT_NAVIGATION_SOURCE = "dock";
+const GUARD_CANCEL_REASON = "guard";
+
+function isFailedNavigation(status: string) {
+  return (
+    status === NAVIGATION_STATUS.TIMED_OUT ||
+    status === NAVIGATION_STATUS.FAILED
+  );
+}
 
 function subscribeToBrowserLocation(onChange: () => void): () => void {
   window.addEventListener("hashchange", onChange);
@@ -165,17 +174,14 @@ export function useDockNavigation() {
     if (!lastTransaction) return;
     if (lastTransaction.status === NAVIGATION_STATUS.COMPLETED) {
       syncLocationKey();
-    } else if (
-      lastTransaction.status === NAVIGATION_STATUS.TIMED_OUT ||
-      lastTransaction.status === NAVIGATION_STATUS.FAILED
-    ) {
+    } else if (isFailedNavigation(lastTransaction.status)) {
       clearPreparedRouteReset();
       stopLoading();
     }
   }, [clearPreparedRouteReset, lastTransaction, stopLoading, syncLocationKey]);
 
   const cancelDock = useCallback(
-    (reason = "guard") => {
+    (reason = GUARD_CANCEL_REASON) => {
       navigator.cancel(reason);
       clearPreparedRouteReset();
       closeSurface({ cancelled: true, reason, success: false });
@@ -190,7 +196,7 @@ export function useDockNavigation() {
       href,
       item,
       routePolicy,
-      source = "dock",
+      source = DEFAULT_NAVIGATION_SOURCE,
     }: {
       force?: boolean;
       from: string;
@@ -242,7 +248,7 @@ export function useDockNavigation() {
       {
         force = false,
         item = null,
-        source = "dock",
+        source = DEFAULT_NAVIGATION_SOURCE,
       }: { force?: boolean; item?: DockItem | null; source?: string } = {},
     ) => {
       if (!href) return false;
