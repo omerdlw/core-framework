@@ -8,17 +8,29 @@ import type {
 } from "./types";
 import { isSafeInternalHref, locationKeyOf, pathOf } from "./utils";
 
+interface PrefetcherOptions {
+  getRouter: () => NavigationRouter | null;
+  now: () => number;
+  settings: typeof getNavigationSettings;
+}
+
 export function createPrefetcher({
   getRouter,
   now,
   settings,
-}: {
-  getRouter: () => NavigationRouter | null;
-  now: () => number;
-  settings: typeof getNavigationSettings;
-}) {
+}: PrefetcherOptions) {
   const warmed = new Map<string, number>();
   const intentListeners = new Set<NavigationIntentListener>();
+
+  function notifyIntent(href: string): void {
+    for (const listener of intentListeners) {
+      try {
+        listener(pathOf(href), href);
+      } catch (error) {
+        report("Navigation intent listener", error);
+      }
+    }
+  }
 
   function prefetch(
     href: string,
@@ -32,13 +44,7 @@ export function createPrefetcher({
     if (!force && at !== undefined && now() - at < settings().prefetchTtlMs)
       return false;
     warmed.set(key, now());
-    for (const listener of intentListeners) {
-      try {
-        listener(pathOf(href), href);
-      } catch (error) {
-        report("Navigation intent listener", error);
-      }
-    }
+    notifyIntent(href);
     try {
       router.prefetch(href, {
         kind: kind ?? settings().prefetchKind,

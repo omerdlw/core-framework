@@ -7,9 +7,12 @@ import {
 } from "./constants";
 import type {
   NavigationIntentSettings,
+  NavigationPrefetchKind,
   NavigationSettings,
   NavigationSettingsInput,
 } from "./types";
+
+const DEFAULT_PREFETCH_KIND: NavigationPrefetchKind = "full";
 
 const matchEveryLink = () => true;
 
@@ -22,7 +25,7 @@ const createDefaults = (): NavigationSettings => ({
   arrivalTtlMs: NAVIGATION_ARRIVAL_TTL_MS,
   intent: { ...DEFAULT_INTENT },
   maxHoldMs: NAVIGATION_MAX_HOLD_MS,
-  prefetchKind: "full",
+  prefetchKind: DEFAULT_PREFETCH_KIND,
   prefetchTtlMs: NAVIGATION_PREFETCH_TTL_MS,
   timeoutMs: NAVIGATION_TIMEOUT_MS,
 });
@@ -33,8 +36,21 @@ type GlobalWithSettings = typeof globalThis & {
 };
 const scope = globalThis as GlobalWithSettings;
 
+/**
+ * Returns the current navigation settings.
+ */
 export function getNavigationSettings(): NavigationSettings {
   return (scope[SETTINGS_KEY] ??= createDefaults());
+}
+
+function mergeIntent(
+  base: NavigationSettings["intent"],
+  intent: NavigationSettingsInput["intent"],
+): NavigationSettings["intent"] {
+  if (intent === false) return false;
+  if (intent === true) return base || { ...DEFAULT_INTENT };
+  if (intent) return { ...(base || DEFAULT_INTENT), ...intent };
+  return base;
 }
 
 export function mergeNavigationSettings(
@@ -44,15 +60,14 @@ export function mergeNavigationSettings(
   const { intent, ...rest } = input;
   const defined = Object.fromEntries(
     Object.entries(rest).filter(([, value]) => value !== undefined),
-  ) as Partial<NavigationSettings>;
-  let nextIntent = base.intent;
-  if (intent === false) nextIntent = false;
-  else if (intent === true) nextIntent = base.intent || { ...DEFAULT_INTENT };
-  else if (intent)
-    nextIntent = { ...(base.intent || DEFAULT_INTENT), ...intent };
-  return { ...base, ...defined, intent: nextIntent };
+  ) as Partial<NavigationSettings>; // Object.fromEntries widens values to any
+  return { ...base, ...defined, intent: mergeIntent(base.intent, intent) };
 }
 
+/**
+ * Overrides navigation settings and returns a function that restores the
+ * previous ones.
+ */
 export function configureNavigation(
   input: NavigationSettingsInput,
 ): () => void {

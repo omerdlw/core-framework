@@ -7,14 +7,16 @@ import {
   NAVIGATION_SOURCE,
   NAVIGATION_STATUS,
 } from "./constants";
+import { afterPaint, emitGlobal, type Timer } from "./navigator-defaults";
 import { createNavigationHolds } from "./navigator-holds";
 import { createPayloadProviders } from "./navigator-payload";
 import { createPrefetcher } from "./navigator-prefetch";
-import { afterPaint, emitGlobal, type Timer } from "./navigator-support";
 import { getNavigationSettings } from "./settings";
 import {
   createNavigationState,
   createTrip,
+  judgeArrival,
+  type SettleDetails,
   settleTrip,
   tripDestination,
 } from "./state";
@@ -38,6 +40,22 @@ import {
   readWindowLocation,
 } from "./utils";
 
+interface DepartOptions {
+  replay?: () => void;
+  source?: string;
+}
+
+function toBlock(
+  verdict: NavigationBlock | boolean | undefined | void,
+): NavigationBlock {
+  if (typeof verdict === "boolean") return { blocked: verdict };
+  return verdict ?? { blocked: false };
+}
+
+/**
+ * Creates a navigator: the state machine behind client navigation, covering
+ * guards, holds, prefetching, payloads and arrival detection.
+ */
 export function createNavigator(options: NavigatorOptions = {}): Navigator {
   const now = options.now ?? Date.now;
   const settings = options.settings ?? getNavigationSettings;
@@ -104,11 +122,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   function settle(
     id: number,
     status: NavigationStatus,
-    details: {
-      arrivedAt?: string;
-      error?: unknown;
-      reason?: string | null;
-    } = {},
+    details: SettleDetails = {},
   ): boolean {
     const trip = active();
     if (!trip || trip.id !== id) return false;
@@ -174,6 +188,21 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     return true;
   }
 
+  /** Runs the guard; returns the blocking result, or null to continue. */
+  async function checkGuard(
+    trip: NavigationTrip,
+    guard: NonNullable<NavigateOptions["guard"]>,
+  ): Promise<NavigationResult | null> {
+    const verdict = await guard(trip);
+    if (!isCurrent(trip.id)) return { ok: false, trip: latest(trip.id) };
+    const block = toBlock(verdict);
+    if (!block.blocked) return null;
+    settle(trip.id, NAVIGATION_STATUS.CANCELLED, {
+      reason: NAVIGATION_REASON.GUARD,
+    });
+    return { blocked: block, ok: false, trip: latest(trip.id) };
+  }
+
   async function navigate(
     href: string,
     {
@@ -196,18 +225,8 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     const trip = begin(href, source, payload);
     try {
       if (!force && guard) {
-        const verdict = await guard(trip);
-        if (!isCurrent(trip.id)) return { ok: false, trip: latest(trip.id) };
-        const block: NavigationBlock =
-          typeof verdict === "boolean"
-            ? { blocked: verdict }
-            : (verdict ?? { blocked: false });
-        if (block.blocked) {
-          settle(trip.id, NAVIGATION_STATUS.CANCELLED, {
-            reason: NAVIGATION_REASON.GUARD,
-          });
-          return { blocked: block, ok: false, trip: latest(trip.id) };
-        }
+        const stopped = await checkGuard(trip, guard);
+        if (stopped) return stopped;
       }
 
       await runHolds(trip, false);
@@ -230,10 +249,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
 
   function depart(
     to: string,
-    {
-      replay: go,
-      source = NAVIGATION_SOURCE.HISTORY,
-    }: { replay?: () => void; source?: string } = {},
+    { replay: go, source = NAVIGATION_SOURCE.HISTORY }: DepartOptions = {},
   ): NavigationTrip | null {
     if (!isSafeInternalHref(to)) return null;
     const trip = begin(to, source);
@@ -260,17 +276,13 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     }
     const trip = state.active;
     if (!trip) return;
-    if (trip.phase === NAVIGATION_PHASE.ROUTING) {
-      if (isSameLocation(key, trip.from) && !isSameLocation(key, trip.to))
-        return;
+    const verdict = judgeArrival(trip, key);
+    if (verdict === "complete")
       settle(trip.id, NAVIGATION_STATUS.COMPLETED, { arrivedAt: key });
-    } else if (isSameLocation(key, trip.to)) {
-      settle(trip.id, NAVIGATION_STATUS.COMPLETED, { arrivedAt: key });
-    } else if (!isSameLocation(key, trip.from)) {
+    else if (verdict === "cancel")
       settle(trip.id, NAVIGATION_STATUS.CANCELLED, {
         reason: NAVIGATION_REASON.SUPERSEDED,
       });
-    }
   }
 
   function arrival(pathname: string): NavigationTrip | null {
@@ -280,12 +292,9 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       now() - candidate.startedAt < ttl &&
       isSamePathname(tripDestination(candidate), pathname);
     if (trip?.phase === NAVIGATION_PHASE.ROUTING && fresh(trip)) return trip;
-    if (
-      last?.status === NAVIGATION_STATUS.COMPLETED &&
-      landedVisit === visit &&
-      fresh(last)
-    )
-      return last;
+    const landedHere =
+      last?.status === NAVIGATION_STATUS.COMPLETED && landedVisit === visit;
+    if (last && landedHere && fresh(last)) return last;
     return null;
   }
 

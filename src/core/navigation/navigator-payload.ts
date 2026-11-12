@@ -13,6 +13,8 @@ export function createPayloadProviders() {
     const payload: Record<string, unknown> = {};
     for (const { key, value } of providers) {
       try {
+        // Payload values are lazy when given as a function; narrowing a
+        // generic value union to a callable needs the cast.
         payload[key] =
           typeof value === "function" ? (value as () => unknown)() : value;
       } catch (error) {
@@ -26,7 +28,7 @@ export function createPayloadProviders() {
     key: K,
     value: NavigationPayloadValue<K>,
   ): () => void {
-    const entry = { key: key as string, value: value as unknown };
+    const entry = { key, value };
     providers.push(entry);
     return () => {
       const index = providers.indexOf(entry);
