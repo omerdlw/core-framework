@@ -6,6 +6,9 @@ import type { DockItem, NormalizedSurfaceExtension } from "../../types";
 import { SurfaceExtensionsContext } from "../context";
 import { normalizeSurfaceExtension } from "../helpers";
 
+// Stable subscribe for when no store is mounted.
+const NOOP_SUBSCRIBE = () => () => {};
+
 export function useDockSurfaceExtensionsBarModel({
   activeItem,
 }: {
@@ -13,10 +16,8 @@ export function useDockSurfaceExtensionsBarModel({
 }) {
   const store = use(SurfaceExtensionsContext)?.extensions ?? null;
   const surfaceId = activeItem?.surfaceId || "active";
-  // Compiled: the compiler keeps subscribe stable while the store is, so
-  // useSyncExternalStore does not resubscribe per render.
-  const subscribe = (onStoreChange: () => void) =>
-    store ? store.subscribe(onStoreChange) : () => {};
+  // store.subscribe is a stable class-field arrow.
+  const subscribe = store?.subscribe ?? NOOP_SUBSCRIBE;
   const getSnapshot = () =>
     store ? store.getExtensionsForSurface(surfaceId) : [];
   const dynamicExtensions = useSyncExternalStore(

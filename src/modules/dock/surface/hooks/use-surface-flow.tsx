@@ -21,7 +21,9 @@ const FLOW_UNAVAILABLE_MESSAGE = "Dock surface flow is unavailable";
  */
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);
-  const definition = createSurfaceFlowDefinition(input);
+  // stable identity: effect dep (flow restore) and input of the contract
+  // memos below
+  const definition = useMemo(() => createSurfaceFlowDefinition(input), [input]);
   const restoredFlowIdsRef = useRef(new Set<string>());
   const flowId = definition?.id ?? null;
 

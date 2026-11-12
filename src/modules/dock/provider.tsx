@@ -75,6 +75,8 @@ export function DockProvider({
   const [{ onSurfaceFlowSettled, restorePending, setRoute }] = useState(() =>
     createSurfaceFlowReturns(continuity, { pathname, router }),
   );
+  // Runs after the children's layout effects; fine, since onSurfaceFlowSettled
+  // only fires from later timers and events, never during this commit.
   useLayoutEffect(() => {
     setRoute({ pathname, router });
   }, [pathname, router, setRoute]);

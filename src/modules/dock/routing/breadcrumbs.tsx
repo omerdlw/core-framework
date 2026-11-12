@@ -1,7 +1,15 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, type ReactNode, useEffect, useState } from "react";
+import {
+  createContext,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { normalizePath } from "@/foundation/utils";
 import { useRequiredContext } from "@/react/hooks";
@@ -153,6 +161,32 @@ const EMPTY_BREADCRUMB_CONFIG: BreadcrumbConfig = {};
 
 const BreadcrumbContext = createContext<BreadcrumbContextValue | null>(null);
 
+/** Override actions; built once per provider so consumer effects stay put. */
+function createBreadcrumbActions(
+  setOverrides: Dispatch<SetStateAction<BreadcrumbOverrides>>,
+): BreadcrumbContextValue["actions"] {
+  return {
+    registerOverride(path: string, overrideConfig: BreadcrumbOverride) {
+      if (!path || !overrideConfig) return;
+      const normalizedPath = formatPath(path);
+      setOverrides((currentOverrides) =>
+        withBreadcrumbOverride(
+          currentOverrides,
+          normalizedPath,
+          overrideConfig,
+        ),
+      );
+    },
+    unregisterOverride(path: string) {
+      if (!path) return;
+      const normalizedPath = formatPath(path);
+      setOverrides((currentOverrides) =>
+        withoutBreadcrumbOverride(currentOverrides, normalizedPath),
+      );
+    },
+  };
+}
+
 export function BreadcrumbProvider({
   children,
   config = null,
@@ -162,34 +196,17 @@ export function BreadcrumbProvider({
 }) {
   const [overrides, setOverrides] = useState<BreadcrumbOverrides>({});
 
-  // Compiled: the compiler keeps both actions stable and rebuilds the value
-  // only when config or overrides change.
-  const registerOverride = (
-    path: string,
-    overrideConfig: BreadcrumbOverride,
-  ) => {
-    if (!path || !overrideConfig) return;
-    const normalizedPath = formatPath(path);
+  const [actions] = useState(() => createBreadcrumbActions(setOverrides));
 
-    setOverrides((currentOverrides) =>
-      withBreadcrumbOverride(currentOverrides, normalizedPath, overrideConfig),
-    );
-  };
-
-  const unregisterOverride = (path: string) => {
-    if (!path) return;
-    const normalizedPath = formatPath(path);
-
-    setOverrides((currentOverrides) =>
-      withoutBreadcrumbOverride(currentOverrides, normalizedPath),
-    );
-  };
-
-  const value: BreadcrumbContextValue = {
-    actions: { registerOverride, unregisterOverride },
-    config: config || EMPTY_BREADCRUMB_CONFIG,
-    overrides,
-  };
+  // stable identity: consumers subscribe by reference
+  const value = useMemo<BreadcrumbContextValue>(
+    () => ({
+      actions,
+      config: config || EMPTY_BREADCRUMB_CONFIG,
+      overrides,
+    }),
+    [actions, config, overrides],
+  );
 
   return <BreadcrumbContext value={value}>{children}</BreadcrumbContext>;
 }

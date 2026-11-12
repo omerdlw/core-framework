@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 import { useRegistryEntries } from "@/core/kernel";
 import {
@@ -84,7 +84,13 @@ export function usePendingRouteHold(
     pathname: normalizedPathname,
   });
   const isHeld = selected !== match.item;
-  return isHeld && selected ? { ...selected, isRoutePending: true } : selected;
+  // stable identity: effect dep (activeItem feeds publishRoute in
+  // useDockViewConnection)
+  return useMemo(
+    () =>
+      isHeld && selected ? { ...selected, isRoutePending: true } : selected,
+    [isHeld, selected],
+  );
 }
 
 /**
@@ -157,7 +163,12 @@ function stripChildrenSystemFields(item: DockItem): DockItem {
 
 export function useDockItems(): { rawItems: DockItem[] } {
   const entries = useRegistryEntries<"dock", DockItem>("dock");
-  const rawItems = Object.values(entries).map(stripChildrenSystemFields);
+  // stable identity: render-phase comparison (usePendingRouteHold compares
+  // match.item, which comes from these items, against its held item)
+  const rawItems = useMemo(
+    () => Object.values(entries).map(stripChildrenSystemFields),
+    [entries],
+  );
   return { rawItems };
 }
 
@@ -206,13 +217,23 @@ export function useDockDisplay(
     areShallowCollectionsEqual,
   );
 
-  const surfaceState = {
-    activeSurfaceId,
-    activeSurfaceEntry,
-    isSurfaceOpen,
-    surfaceStack,
-    surfacePhase,
-  };
+  // stable identity: input of the attention and activeItem memos below
+  const surfaceState = useMemo(
+    () => ({
+      activeSurfaceId,
+      activeSurfaceEntry,
+      isSurfaceOpen,
+      surfaceStack,
+      surfacePhase,
+    }),
+    [
+      activeSurfaceId,
+      activeSurfaceEntry,
+      isSurfaceOpen,
+      surfaceStack,
+      surfacePhase,
+    ],
+  );
 
   const dockCtx = use(DockContext);
   const mediaAction = dockCtx?.runtimeActions?.mediaAction ?? null;
@@ -222,46 +243,82 @@ export function useDockDisplay(
   const actionStackClass = useTheme(dockTheme).slots.actionStack;
   const { toggle: toggleMedia } = useDockMediaActions();
 
-  const attention = resolveDockAttention({
-    hud,
-    isPageLoading,
-    operation: activeOperation,
-    status: statusState,
-    surface: surfaceState,
-  });
+  // stable identity: input of activeItem; returned to useDock consumers
+  const attention = useMemo(
+    () =>
+      resolveDockAttention({
+        hud,
+        isPageLoading,
+        operation: activeOperation,
+        status: statusState,
+        surface: surfaceState,
+      }),
+    [activeOperation, hud, isPageLoading, statusState, surfaceState],
+  );
 
   const isNotFoundPage = rawItems.some(isNotFoundItem);
 
-  const dockItems = buildDockItems({
-    rawItems,
-    expanded,
-    searchQuery,
-    isNotFoundPage,
-  });
+  // stable identity: render-phase comparison (match.item comes from these)
+  const dockItems = useMemo(
+    () => buildDockItems({ rawItems, expanded, searchQuery, isNotFoundPage }),
+    [rawItems, expanded, searchQuery, isNotFoundPage],
+  );
 
-  const baseMatch = resolveBaseActiveItemMatch({
-    rawItems,
-    dockItems,
-    pathname,
-    isNotFoundPage,
-  });
+  // stable identity: render-phase comparison in usePendingRouteHold
+  const baseMatch = useMemo(
+    () =>
+      resolveBaseActiveItemMatch({
+        rawItems,
+        dockItems,
+        pathname,
+        isNotFoundPage,
+      }),
+    [rawItems, dockItems, pathname, isNotFoundPage],
+  );
   const baseActiveItem = usePendingRouteHold(pathname, baseMatch, {
     isNavigating,
   });
 
-  const activeItem = resolveActiveItem({
-    baseActiveItem,
-    rawItems,
-    dockItems,
-    pathname,
-    isNotFoundPage,
-    surfaceState,
-    statusState,
-    hasMedia,
-    toggleMedia,
-    mediaAction,
-    actionStackClass,
-    surfaceActions: {
+  // stable identity: effect dep (publishRoute in useDockViewConnection)
+  const activeItem = useMemo(
+    () =>
+      resolveActiveItem({
+        baseActiveItem,
+        rawItems,
+        dockItems,
+        pathname,
+        isNotFoundPage,
+        surfaceState,
+        statusState,
+        hasMedia,
+        toggleMedia,
+        mediaAction,
+        actionStackClass,
+        surfaceActions: {
+          closeSurface,
+          closeAllSurfaces,
+          goBackSurface,
+          pushStep,
+          popStep,
+          goToStep,
+          getSurfaceFlow,
+          surfaceStack,
+        },
+        isPageLoading,
+        attention,
+      }),
+    [
+      baseActiveItem,
+      rawItems,
+      dockItems,
+      pathname,
+      isNotFoundPage,
+      surfaceState,
+      statusState,
+      hasMedia,
+      toggleMedia,
+      mediaAction,
+      actionStackClass,
       closeSurface,
       closeAllSurfaces,
       goBackSurface,
@@ -270,20 +327,29 @@ export function useDockDisplay(
       goToStep,
       getSurfaceFlow,
       surfaceStack,
-    },
-    isPageLoading,
-    attention,
-  });
+      isPageLoading,
+      attention,
+    ],
+  );
 
   const activeIndex = resolveActiveIndex({ dockItems, activeItem, pathname });
-  const topology = createDockTopology(dockItems, { pathname });
 
-  return {
-    dockItems,
-    activeItem,
-    activeIndex,
-    statusState,
-    attention,
-    topology,
-  };
+  // stable identity: returned to useDock consumers
+  const topology = useMemo(
+    () => createDockTopology(dockItems, { pathname }),
+    [dockItems, pathname],
+  );
+
+  // stable identity: carries the stable values above to useDock
+  return useMemo(
+    () => ({
+      dockItems,
+      activeItem,
+      activeIndex,
+      statusState,
+      attention,
+      topology,
+    }),
+    [dockItems, activeItem, activeIndex, statusState, attention, topology],
+  );
 }

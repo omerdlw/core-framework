@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -64,9 +65,6 @@ function subscribeToBrowserLocation(onChange: () => void): () => void {
 export function useDockLocationKey() {
   const pathname = usePathname();
 
-  // Compiled: the compiler keeps these snapshot getters and syncLocationKey
-  // stable while pathname is (syncLocationKey is an effect dep in
-  // useDockNavigation).
   const getBrowserLocationKey = () =>
     getDockLocationKey({
       hash: typeof window === "undefined" ? "" : window.location.hash,
@@ -82,12 +80,15 @@ export function useDockLocationKey() {
     getServerLocationKey,
   );
 
-  const syncLocationKey = () => {
-    window.dispatchEvent(new Event(LOCATION_SYNC_EVENT));
-    return getBrowserLocationKey();
-  };
-
   return { locationKey, syncLocationKey };
+}
+
+/**
+ * Makes useSyncExternalStore re-read the location key. Module level, so it is
+ * a stable effect dep in useDockNavigation.
+ */
+function syncLocationKey() {
+  window.dispatchEvent(new Event(LOCATION_SYNC_EVENT));
 }
 
 export function useDockViewConnection({
@@ -125,7 +126,13 @@ function useDockNavigator(router: NavigationRouter): Navigator {
     own?.setRouter(router);
   }, [own, router]);
   useEffect(() => (own ? () => own.dispose() : undefined), [own]);
-  return own ?? { ...shared!.actions, dispose: () => {}, store: shared!.store };
+  // stable identity: effect dep (the arrive and setNavigator effects) and
+  // input of useDock's navigate
+  return useMemo(
+    () =>
+      own ?? { ...shared!.actions, dispose: () => {}, store: shared!.store },
+    [own, shared],
+  );
 }
 
 const selectTrips = (state: NavigationState) => ({

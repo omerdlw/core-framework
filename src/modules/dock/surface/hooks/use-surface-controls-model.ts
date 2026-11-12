@@ -6,6 +6,9 @@ import { DOCK_SURFACE_PHASE } from "../../constants";
 import type { DockItem } from "../../types";
 import { SurfaceExtensionsContext } from "../context";
 
+// Stable subscribe for when no store is mounted.
+const NOOP_SUBSCRIBE = () => () => {};
+
 export function useDockSurfaceControlsModel({
   activeItem = null,
   surfacePhase: propSurfacePhase,
@@ -26,9 +29,8 @@ export function useDockSurfaceControlsModel({
     : true;
   const actionStore = use(SurfaceExtensionsContext)?.headerActions ?? null;
   const surfaceId = activeItem?.surfaceId || "active";
-  // Compiled: the compiler keeps subscribeAction stable while the store is.
-  const subscribeAction = (onStoreChange: () => void) =>
-    actionStore ? actionStore.subscribe(onStoreChange) : () => {};
+  // store.subscribe is a stable class-field arrow.
+  const subscribeAction = actionStore?.subscribe ?? NOOP_SUBSCRIBE;
   const getActionSnapshot = () =>
     actionStore ? actionStore.getAction(surfaceId) : null;
   const dynamicAction = useSyncExternalStore(
