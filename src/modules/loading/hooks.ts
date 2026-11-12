@@ -19,6 +19,9 @@ import {
   type LoadingTheme,
 } from "./types";
 
+/**
+ * Registers a loading setting for the current page.
+ */
 export function useLoadingRegistration(
   config: LoadingPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -26,6 +29,9 @@ export function useLoadingRegistration(
   useModuleRegistration("loading", config, options);
 }
 
+/**
+ * Subscribes to the loading state.
+ */
 export function useLoadingState(): LoadingStateWithPage {
   const { store } = useRequiredContext(
     LoadingContext,
@@ -35,6 +41,9 @@ export function useLoadingState(): LoadingStateWithPage {
   return useStore(store);
 }
 
+/**
+ * Returns the loading actions without subscribing to state changes.
+ */
 export function useLoadingActions(): LoadingActions {
   return useRequiredContext(
     LoadingContext,
@@ -43,6 +52,10 @@ export function useLoadingActions(): LoadingActions {
   ).actions;
 }
 
+/**
+ * Registers an optional page loading setting and returns the state with the
+ * actions.
+ */
 export function useLoading(
   config?: LoadingPageConfig | null,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -55,6 +68,10 @@ export function useLoading(
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
 
+/**
+ * Like useLoadingState, but returns the default state outside a
+ * LoadingProvider. Accepts a selector.
+ */
 export function useOptionalLoadingState(): LoadingStateWithPage;
 export function useOptionalLoadingState<T>(
   selector: (state: LoadingStateWithPage) => T,
@@ -72,11 +89,17 @@ export function useOptionalLoadingState<T = LoadingStateWithPage>(
   );
 }
 
+/**
+ * Like useLoadingActions, but returns inert actions outside a LoadingProvider.
+ */
 export function useOptionalLoadingActions(): LoadingActions {
   const ctx = use(LoadingContext);
   return ctx?.actions ?? INERT_LOADING_ACTIONS;
 }
 
+/**
+ * Skeleton, visibility and theme for LoadingOverlay.
+ */
 export function useLoadingOverlayModel(): {
   skeleton: React.ReactNode | null;
   isVisible: boolean;

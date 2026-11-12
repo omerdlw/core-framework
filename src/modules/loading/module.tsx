@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { defineModule, type PageModuleApi } from "@/core/kernel";
 
-import { LOADING_REGISTRY_KEY } from "./constants";
+import { LOADING_REGISTRY_KEY, REGISTRY_CLEANUP_DELAY_MS } from "./constants";
 import { LoadingContext, LoadingProvider } from "./context";
 import { useLoading, useLoadingActions } from "./hooks";
 import { LoadingOverlay } from "./overlay";
@@ -30,6 +30,9 @@ function useLoadingPage(
   );
 }
 
+/**
+ * Creates a reusable loading definition whose `use` hook registers it.
+ */
 export function defineLoading(
   definition: (LoadingOptions & { id?: string }) | string = {},
 ): DefinedLoading {
@@ -48,13 +51,16 @@ export function defineLoading(
   });
 }
 
+/**
+ * Module definition that shows a loading overlay and manages loading state.
+ */
 export const loadingModule = defineModule({
   id: "loading",
   context: LoadingContext,
   Provider: LoadingProvider,
   Overlay: LoadingOverlay,
   registry: {
-    cleanupDelayMs: 600,
+    cleanupDelayMs: REGISTRY_CLEANUP_DELAY_MS,
     keyPolicy: "singleton",
     lifecycle: "graceful",
     singletonKey: LOADING_REGISTRY_KEY,

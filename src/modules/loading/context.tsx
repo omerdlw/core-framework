@@ -32,6 +32,9 @@ import {
   type SkeletonValue,
 } from "./types";
 
+/**
+ * React context holding the loading store and actions.
+ */
 export const LoadingContext =
   getOrCreateGlobalContext<LoadingContextValue | null>("LoadingContext", null);
 
@@ -43,11 +46,26 @@ interface LoadingTask {
   state: Omit<LoadingState, "isLoading">;
 }
 
+/**
+ * Store with the default state; used outside a LoadingProvider.
+ */
 export const NOOP_LOADING_STORE = createStore<LoadingStateWithPage>(
   DEFAULT_LOADING_STATE_WITH_PAGE,
 );
 
-export function LoadingProvider({ children }: LoadingProviderProps) {
+interface LoadingTasks {
+  beginTask: (key: LoadingTaskKey, options: LoadingOptions) => void;
+  endTask: (key: LoadingTaskKey) => void;
+  manualState: LoadingState;
+  nextTaskKey: () => number;
+  setSkeleton: (skeleton: SkeletonValue) => void;
+}
+
+/**
+ * Keeps the stack of running loading tasks, the state they show, and the
+ * minimum display time before loading may stop.
+ */
+function useLoadingTasks(): LoadingTasks {
   const [manualState, setManualState] = useState<LoadingState>(
     DEFAULT_LOADING_STATE,
   );
@@ -57,11 +75,6 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tasksRef = useRef<LoadingTask[]>([]);
   const nextTaskRef = useRef(1);
-
-  const registryLoading = useRegistryValue<"loading", LoadingOptions>(
-    "loading",
-    LOADING_REGISTRY_KEY,
-  );
 
   const clearStopTimer = useCallback(() => {
     if (stopTimerRef.current !== null) {
@@ -119,21 +132,6 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     [clearStopTimer, resetState],
   );
 
-  const startLoading = useCallback(
-    (options: LoadingOptions = {}) => beginTask(MANUAL_TASK, options),
-    [beginTask],
-  );
-
-  const stopLoading = useCallback(() => endTask(MANUAL_TASK), [endTask]);
-
-  const setLoading = useCallback(
-    (value: boolean) => {
-      if (value) startLoading();
-      else stopLoading();
-    },
-    [startLoading, stopLoading],
-  );
-
   const setSkeleton = useCallback((nextSkeleton: SkeletonValue) => {
     setManualState((currentState) => {
       const skeleton =
@@ -149,12 +147,44 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     });
   }, []);
 
+  const nextTaskKey = useCallback(() => nextTaskRef.current++, []);
+
+  useEffect(() => clearStopTimer, [clearStopTimer]);
+
+  return { beginTask, endTask, manualState, nextTaskKey, setSkeleton };
+}
+
+/**
+ * Builds the loading actions on top of the task stack.
+ */
+function useManualLoading(): {
+  actions: LoadingActions;
+  manualState: LoadingState;
+} {
+  const { beginTask, endTask, manualState, nextTaskKey, setSkeleton } =
+    useLoadingTasks();
+
+  const startLoading = useCallback(
+    (options: LoadingOptions = {}) => beginTask(MANUAL_TASK, options),
+    [beginTask],
+  );
+
+  const stopLoading = useCallback(() => endTask(MANUAL_TASK), [endTask]);
+
+  const setLoading = useCallback(
+    (value: boolean) => {
+      if (value) startLoading();
+      else stopLoading();
+    },
+    [startLoading, stopLoading],
+  );
+
   const withLoading = useCallback(
     async <T,>(
       task: Promise<T> | (() => Promise<T>),
       options: LoadingOptions | string = {},
     ): Promise<T> => {
-      const key = nextTaskRef.current++;
+      const key = nextTaskKey();
       beginTask(
         key,
         typeof options === "string" ? { message: options } : options,
@@ -165,14 +195,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
         endTask(key);
       }
     },
-    [beginTask, endTask],
-  );
-
-  useEffect(() => clearStopTimer, [clearStopTimer]);
-
-  const state = useMemo<LoadingStateWithPage>(
-    () => resolveLoadingState(manualState, registryLoading),
-    [manualState, registryLoading],
+    [beginTask, endTask, nextTaskKey],
   );
 
   const actions = useMemo<LoadingActions>(
@@ -184,6 +207,26 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       withLoading,
     }),
     [setLoading, setSkeleton, startLoading, stopLoading, withLoading],
+  );
+
+  return { actions, manualState };
+}
+
+/**
+ * Provides loading state and actions to its children. Page-level loading from
+ * the registry takes precedence over manual loading.
+ */
+export function LoadingProvider({ children }: LoadingProviderProps) {
+  const { actions, manualState } = useManualLoading();
+
+  const registryLoading = useRegistryValue<"loading", LoadingOptions>(
+    "loading",
+    LOADING_REGISTRY_KEY,
+  );
+
+  const state = useMemo<LoadingStateWithPage>(
+    () => resolveLoadingState(manualState, registryLoading),
+    [manualState, registryLoading],
   );
 
   const [store] = useState(() =>

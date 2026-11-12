@@ -5,6 +5,9 @@ import {
   type LoadingStateWithPage,
 } from "./types";
 
+/**
+ * Fills in defaults and validates loading options.
+ */
 export function normalizeLoadingOptions(
   options: LoadingOptions = {},
 ): Omit<LoadingState, "isLoading"> {
@@ -18,6 +21,9 @@ export function normalizeLoadingOptions(
   };
 }
 
+/**
+ * Converts a page `loading` setting into loading options, or null when unset.
+ */
 export function selectPageLoading(
   loading: LoadingPageConfig | null | undefined,
 ): LoadingOptions | null {
@@ -27,6 +33,10 @@ export function selectPageLoading(
   return loading;
 }
 
+/**
+ * Picks the page-level loading state when the page is loading, otherwise the
+ * manual one.
+ */
 export function resolveLoadingState(
   manualState: LoadingState,
   registryLoading?: LoadingOptions | null,
@@ -45,6 +55,9 @@ export function resolveLoadingState(
   };
 }
 
+/**
+ * Milliseconds left before the minimum display time has passed.
+ */
 export function calculateRemainingMinDuration(
   startTime: number | null,
   minDuration: number,
