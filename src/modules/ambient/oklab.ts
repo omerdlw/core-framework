@@ -4,6 +4,23 @@ export type Lab = [l: number, a: number, b: number];
 export type Rgb = [r: number, g: number, b: number];
 
 const DEG = Math.PI / 180;
+/** Tolerance when testing whether a linear sRGB channel is inside the gamut. */
+const GAMUT_EPSILON = 1e-5;
+/** Upper bound for the chroma search, above any sRGB colour's chroma. */
+const CHROMA_SEARCH_LIMIT = 0.4;
+const CHROMA_SEARCH_STEPS = 18;
+/** Chroma below which a colour is treated as achromatic. */
+const ACHROMATIC_CHROMA = 1e-6;
+const DISPLAY_ACHROMATIC_CHROMA = 0.0005;
+/** Share of the gamut's chroma that tones may use, keeping them off the edge. */
+export const GAMUT_HEADROOM = 0.96;
+const DEFAULT_TONE_CHROMA_CAP = 0.3;
+const DEFAULT_MIN_CONTRAST = 4.5;
+const ON_COLOR_STEPS = 12;
+const ON_LIGHT_START = 0.985;
+const ON_LIGHT_STEP = 0.0025;
+const ON_DARK_START = 0.18;
+const ON_DARK_STEP = 0.015;
 
 const LINEAR_LUT = new Float32Array(256);
 for (let i = 0; i < 256; i++) {
@@ -11,10 +28,12 @@ for (let i = 0; i < 256; i++) {
   LINEAR_LUT[i] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }
 
+/** Restricts a value to the range from min to max. */
 export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Smooth 0-to-1 ramp between two edges. */
 export function smoothstep(
   edge0: number,
   edge1: number,
@@ -24,6 +43,9 @@ export function smoothstep(
   return t * t * (3 - 2 * t);
 }
 
+/**
+ * Converts 8-bit sRGB channels to Oklab [L, a, b].
+ */
 export function srgbToOklab(r: number, g: number, b: number): Lab {
   const lr = LINEAR_LUT[r & 255];
   const lg = LINEAR_LUT[g & 255];
@@ -61,17 +83,21 @@ export function oklchToLinearSrgb(l: number, c: number, h: number): Rgb {
 
 export function labToLch([l, a, b]: Lab): OklchColor {
   const c = Math.sqrt(a * a + b * b);
-  const h = c < 1e-6 ? 0 : (Math.atan2(b, a) / DEG + 360) % 360;
+  const h = c < ACHROMATIC_CHROMA ? 0 : (Math.atan2(b, a) / DEG + 360) % 360;
   return { c, h, l };
 }
 
-const inGamut = (rgb: Rgb) => rgb.every((v) => v >= -1e-5 && v <= 1 + 1e-5);
+const inGamut = (rgb: Rgb) =>
+  rgb.every((v) => v >= -GAMUT_EPSILON && v <= 1 + GAMUT_EPSILON);
 
+/**
+ * Largest chroma that stays inside the sRGB gamut for a lightness and hue.
+ */
 export function maxChroma(l: number, h: number): number {
   if (l <= 0 || l >= 1) return 0;
   let low = 0;
-  let high = 0.4;
-  for (let step = 0; step < 18; step++) {
+  let high = CHROMA_SEARCH_LIMIT;
+  for (let step = 0; step < CHROMA_SEARCH_STEPS; step++) {
     const middle = (low + high) / 2;
     if (inGamut(oklchToLinearSrgb(l, middle, h))) low = middle;
     else high = middle;
@@ -94,6 +120,9 @@ export function luminance({ c, h, l }: OklchColor): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/**
+ * WCAG contrast ratio between two colours, from 1 to 21.
+ */
 export function contrastRatio(a: OklchColor, b: OklchColor): number {
   const la = luminance(a);
   const lb = luminance(b);
@@ -105,35 +134,46 @@ const round = (value: number, digits: number) => {
   return Math.round(value * factor) / factor;
 };
 
+/**
+ * Formats a colour as a CSS `oklch()` string.
+ */
 export function formatOklch({ c, h, l }: OklchColor): string {
-  const chroma = c < 0.0005 ? 0 : c;
+  const chroma = c < DISPLAY_ACHROMATIC_CHROMA ? 0 : c;
   return `oklch(${round(clamp(l, 0, 1), 3).toFixed(3)} ${round(chroma, 3).toFixed(3)} ${round(chroma === 0 ? 0 : h, 1).toFixed(1)})`;
 }
 
+/**
+ * Builds a colour at a hue and lightness whose chroma is a fraction of the
+ * gamut's room, capped at `cap`.
+ */
 export function toneOf(
   h: number,
   l: number,
   rel: number,
-  cap = 0.3,
+  cap = DEFAULT_TONE_CHROMA_CAP,
 ): OklchColor {
-  const room = maxChroma(l, h) * 0.96;
+  const room = maxChroma(l, h) * GAMUT_HEADROOM;
   return { c: Math.min(cap, clamp(rel, 0, 1) * room), h, l };
 }
 
+/**
+ * Picks a near-white or near-black text colour that meets `minContrast` on a
+ * background.
+ */
 export function onColorFor(
   background: OklchColor,
-  minContrast = 4.5,
+  minContrast = DEFAULT_MIN_CONTRAST,
 ): OklchColor {
   const light = (l: number) => toneOf(background.h, l, 0.12, 0.012);
   const dark = (l: number) => toneOf(background.h, l, 0.35, 0.03);
-  const towardLight = contrastRatio(light(0.985), background);
-  const towardDark = contrastRatio(dark(0.18), background);
+  const towardLight = contrastRatio(light(ON_LIGHT_START), background);
+  const towardDark = contrastRatio(dark(ON_DARK_START), background);
   const useLight = towardLight >= minContrast || towardLight >= towardDark;
 
-  for (let step = 0; step <= 12; step++) {
+  for (let step = 0; step <= ON_COLOR_STEPS; step++) {
     const candidate = useLight
-      ? light(Math.min(1, 0.985 + step * 0.0025))
-      : dark(Math.max(0, 0.18 - step * 0.015));
+      ? light(Math.min(1, ON_LIGHT_START + step * ON_LIGHT_STEP))
+      : dark(Math.max(0, ON_DARK_START - step * ON_DARK_STEP));
     if (contrastRatio(candidate, background) >= minContrast) return candidate;
   }
   return useLight ? { c: 0, h: 0, l: 1 } : { c: 0, h: 0, l: 0 };

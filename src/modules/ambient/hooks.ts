@@ -22,6 +22,7 @@ import type {
   AmbientImageSource,
   AmbientPalette,
   AmbientState,
+  AmbientTarget,
 } from "./types";
 
 export function useStableObject<T extends object | null | undefined>(
@@ -34,6 +35,10 @@ export function useStableObject<T extends object | null | undefined>(
   return ref.current;
 }
 
+/**
+ * Extracts a palette from an image and reports whether extraction is still
+ * running.
+ */
 export function useAmbientColor(
   imageSource: AmbientImageSource,
   options: AmbientExtractOptions | null = null,
@@ -82,6 +87,49 @@ export function useAmbientColor(
   return { isExtracting, palette };
 }
 
+interface ScopedVariablesOptions {
+  linger: number | undefined;
+  scope: AmbientTarget;
+  transition: boolean;
+}
+
+/** Applies a CSS variable map to the target element for as long as it is mounted. */
+function useScopedVariables(
+  varMap: Record<string, string>,
+  { linger, scope, transition }: ScopedVariablesOptions,
+): void {
+  const transitionClasses = useTheme(ambientTheme)
+    .slots.transition.split(/\s+/)
+    .filter(Boolean);
+  const transitionKey = transitionClasses.join(" ");
+
+  useEffect(() => {
+    if (Object.keys(varMap).length === 0) return;
+
+    const targetEl = resolveTargetElement(scope);
+    if (!targetEl) return;
+
+    if (transition) {
+      targetEl.classList.add(...transitionKey.split(" ").filter(Boolean));
+    }
+
+    const restoreVariables = applyScopedCssVariables(targetEl, varMap, {
+      linger: linger ?? (scope ? 0 : getAmbientSettings().linger),
+    });
+
+    return () => {
+      restoreVariables();
+      if (transition && scope) {
+        targetEl.classList.remove(...transitionKey.split(" ").filter(Boolean));
+      }
+    };
+  }, [linger, scope, transition, transitionKey, varMap]);
+}
+
+/**
+ * Extracts a palette and applies it, with any explicit colours, as CSS
+ * variables. Returns the extraction state.
+ */
 export function useAmbientTheme(
   config: AmbientConfig | string | null = null,
 ): AmbientState {
@@ -128,11 +176,6 @@ export function useAmbientTheme(
     );
   }, [ambientActions, extractedPalette, hasActiveConfig, isExtracting]);
 
-  const transitionClasses = useTheme(ambientTheme)
-    .slots.transition.split(/\s+/)
-    .filter(Boolean);
-  const transitionKey = transitionClasses.join(" ");
-
   const resolvedVarMap = useMemo(
     () =>
       resolveAmbientVarMap({
@@ -144,31 +187,15 @@ export function useAmbientTheme(
     [extractedPalette, image, stableColors, stableCssVars],
   );
 
-  useEffect(() => {
-    if (Object.keys(resolvedVarMap).length === 0) return;
-
-    const targetEl = resolveTargetElement(scope);
-    if (!targetEl) return;
-
-    if (transition) {
-      targetEl.classList.add(...transitionKey.split(" ").filter(Boolean));
-    }
-
-    const restoreVariables = applyScopedCssVariables(targetEl, resolvedVarMap, {
-      linger: linger ?? (scope ? 0 : getAmbientSettings().linger),
-    });
-
-    return () => {
-      restoreVariables();
-      if (transition && scope) {
-        targetEl.classList.remove(...transitionKey.split(" ").filter(Boolean));
-      }
-    };
-  }, [linger, resolvedVarMap, scope, transition, transitionKey]);
+  useScopedVariables(resolvedVarMap, { linger, scope, transition });
 
   return { isExtracting, palette: extractedPalette };
 }
 
+/**
+ * Reads the shared ambient state and actions; optionally applies a theme from a
+ * config or image URL.
+ */
 export function useAmbient(
   configOrImage?: AmbientConfig | string | null,
 ): AmbientContextValue {

@@ -1,5 +1,12 @@
 import { type Cluster, round3, skinLikeness, warmth } from "./analyze-measures";
-import { clamp, formatOklch, maxChroma, onColorFor, toneOf } from "./oklab";
+import {
+  clamp,
+  formatOklch,
+  GAMUT_HEADROOM,
+  maxChroma,
+  onColorFor,
+  toneOf,
+} from "./oklab";
 import { AMBIENT_TONES } from "./settings";
 import type { AmbientRamp, AmbientSwatch, OklchColor } from "./types";
 
@@ -16,7 +23,7 @@ export const roleChroma = (source: OklchColor, { cap, gain }: ChromaSpec) =>
   );
 
 export const fitTone = (h: number, l: number, c: number): OklchColor => ({
-  c: Math.max(0, Math.min(c, maxChroma(l, h) * 0.96)),
+  c: Math.max(0, Math.min(c, maxChroma(l, h) * GAMUT_HEADROOM)),
   h,
   l,
 });
@@ -27,7 +34,7 @@ export function buildSwatch(
   fromImage: boolean,
   minContrast: number,
 ): AmbientSwatch {
-  const room = maxChroma(tone.l, tone.h) * 0.96;
+  const room = maxChroma(tone.l, tone.h) * GAMUT_HEADROOM;
   const rel = room > 0 ? tone.c / room : 0;
   const ramp = {} as AmbientRamp;
   for (const step of AMBIENT_TONES) {

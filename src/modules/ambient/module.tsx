@@ -26,6 +26,10 @@ const firstString = (...values: unknown[]): string | null =>
   (values.find((value) => typeof value === "string" && value) as string) ??
   null;
 
+/**
+ * Resolves a page's `ambient` setting into an ambient config, falling back to
+ * the banner or the background poster.
+ */
 export function resolvePageAmbientTheme(
   slice: AmbientPageSlice | null,
   posterUrl: string | null,
@@ -70,6 +74,10 @@ export function useAmbientPage(
   );
 }
 
+/**
+ * Module definition that provides ambient colour extraction and page-level
+ * theming.
+ */
 export const ambientModule = defineModule({
   id: "ambient",
   context: AmbientContext,
@@ -96,6 +104,9 @@ function resolveValue<T, P>(value: T | ((props: P) => T), props: P): T {
     : value;
 }
 
+/**
+ * Creates a reusable ambient theme definition whose `use` hook applies it.
+ */
 export function defineAmbient(
   definition: DefineAmbientOptions = {},
 ): DefinedAmbient {

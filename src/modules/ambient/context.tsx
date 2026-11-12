@@ -11,9 +11,15 @@ import type {
   AmbientState,
 } from "./types";
 
+/**
+ * React context holding the ambient store and actions.
+ */
 export const AmbientContext =
   getOrCreateGlobalContext<AmbientProviderValue | null>("AmbientContext", null);
 
+/**
+ * Provides the ambient state to its children.
+ */
 export function AmbientProvider({
   children,
   initialPalette = null,

@@ -12,6 +12,9 @@ export type ResolvedCssVars = AmbientCssVarNames & {
   tones: readonly AmbientTone[] | false;
 };
 
+/**
+ * Merges CSS variable name overrides over the configured defaults.
+ */
 export function resolveCssVarNames(
   overrides?: AmbientCssVarConfig | null,
 ): ResolvedCssVars {
@@ -24,6 +27,10 @@ const fill = (template: string, values: Record<string, string | number>) =>
     key in values ? String(values[key]) : match,
   );
 
+/**
+ * Finds the element that should receive CSS variables; returns null on the
+ * server or when nothing matches.
+ */
 export function resolveTargetElement(
   target: AmbientTarget,
 ): HTMLElement | null {
@@ -35,6 +42,10 @@ export function resolveTargetElement(
   return "current" in target ? target.current : target;
 }
 
+/**
+ * Turns a map of colour names into CSS variable names, prefixing bare names
+ * with `--color-`.
+ */
 export function normalizeColorMap(
   colors: Record<string, string>,
 ): Record<string, string> {
@@ -96,19 +107,8 @@ function removeLayer(
   if (state.layers.length === 0) layersOf.delete(element);
 }
 
-export interface ScopedCssVariableOptions {
-  linger?: number;
-}
-
-export function applyScopedCssVariables(
-  element: HTMLElement,
-  varMap: Record<string, string>,
-  { linger = 0 }: ScopedCssVariableOptions = {},
-): () => void {
-  const vars: Record<string, string> = {};
-  for (const [name, value] of Object.entries(varMap)) {
-    if (name && value) vars[name] = value;
-  }
+/** Returns the element's layer state, dropping layers that are only lingering. */
+function acquireLayers(element: HTMLElement): ElementLayers {
   let state = layersOf.get(element);
   if (!state) {
     state = { base: new Map(), layers: [] };
@@ -118,33 +118,65 @@ export function applyScopedCssVariables(
     removeLayer(element, state, layer);
   }
   if (!layersOf.has(element)) layersOf.set(element, state);
-  for (const name of Object.keys(vars)) {
+  return state;
+}
+
+/** Remembers each variable's own inline value the first time it is touched. */
+function captureBaseValues(
+  element: HTMLElement,
+  state: ElementLayers,
+  names: string[],
+): void {
+  for (const name of names) {
     if (state.base.has(name)) continue;
     state.base.set(name, {
       priority: element.style.getPropertyPriority(name),
       value: element.style.getPropertyValue(name),
     });
   }
+}
+
+export interface ScopedCssVariableOptions {
+  linger?: number;
+}
+
+/**
+ * Sets CSS variables on an element and returns a function that restores the
+ * previous values. Overlapping calls stack, and `linger` delays the restore.
+ */
+export function applyScopedCssVariables(
+  element: HTMLElement,
+  varMap: Record<string, string>,
+  { linger = 0 }: ScopedCssVariableOptions = {},
+): () => void {
+  const vars: Record<string, string> = {};
+  for (const [name, value] of Object.entries(varMap)) {
+    if (name && value) vars[name] = value;
+  }
+  const state = acquireLayers(element);
+  captureBaseValues(element, state, Object.keys(vars));
   const layer: VariableLayer = { leaving: null, vars };
   state.layers.push(layer);
   paint(element, state, Object.keys(vars));
 
-  const owner = state;
   let released = false;
   return () => {
     if (released) return;
     released = true;
     if (linger > 0 && element.isConnected) {
       layer.leaving = setTimeout(
-        () => removeLayer(element, owner, layer),
+        () => removeLayer(element, state, layer),
         linger,
       );
     } else {
-      removeLayer(element, owner, layer);
+      removeLayer(element, state, layer);
     }
   };
 }
 
+/**
+ * Maps a palette to CSS variable names and values.
+ */
 export function paletteVarMap(
   palette: AmbientPalette | null | undefined,
   names: ResolvedCssVars = resolveCssVarNames(),
@@ -170,17 +202,22 @@ export function paletteVarMap(
   return varMap;
 }
 
+interface AmbientVarMapInput {
+  colors?: Record<string, string> | null;
+  cssVars?: AmbientCssVarConfig | null;
+  image?: AmbientImageSource;
+  palette?: AmbientPalette | null;
+}
+
+/**
+ * Combines palette variables and explicit colours into one CSS variable map.
+ */
 export function resolveAmbientVarMap({
   colors = null,
   cssVars = null,
   image = null,
   palette = null,
-}: {
-  colors?: Record<string, string> | null;
-  cssVars?: AmbientCssVarConfig | null;
-  image?: AmbientImageSource;
-  palette?: AmbientPalette | null;
-}): Record<string, string> {
+}: AmbientVarMapInput): Record<string, string> {
   const varMap: Record<string, string> = image
     ? paletteVarMap(palette, resolveCssVarNames(cssVars))
     : {};

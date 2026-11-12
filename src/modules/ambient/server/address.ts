@@ -83,6 +83,10 @@ function isPrivateIPv6(words: number[]): boolean {
   );
 }
 
+/**
+ * Whether an IP address is loopback, private, link-local or otherwise not
+ * publicly routable.
+ */
 export function isPrivateAddress(address: string): boolean {
   const host = normalizeHost(address);
   const v4 = parseIPv4(host);
@@ -96,6 +100,10 @@ export const isIpLiteral = (hostname: string) => {
   return parseIPv4(host) !== null || parseIPv6(host) !== null;
 };
 
+/**
+ * Whether a hostname is an IP literal or local name that points at a private
+ * network.
+ */
 export function isPrivateHostname(hostname: string): boolean {
   const host = normalizeHost(hostname);
   if (!host) return true;

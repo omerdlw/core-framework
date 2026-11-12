@@ -7,10 +7,16 @@ import type {
   AmbientTone,
 } from "./types";
 
+/**
+ * Every tone step of a colour ramp, from darkest to lightest.
+ */
 export const AMBIENT_TONES = Object.freeze([
   10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 95,
 ] as const) satisfies readonly AmbientTone[];
 
+/**
+ * Names of the palette colours.
+ */
 export const AMBIENT_ROLES = Object.freeze([
   "dominant",
   "vibrant",
@@ -18,6 +24,9 @@ export const AMBIENT_ROLES = Object.freeze([
   "accent",
 ] as const);
 
+/**
+ * Names of the image regions that have their own colour.
+ */
 export const AMBIENT_REGIONS = Object.freeze([
   "top",
   "bottom",
@@ -26,6 +35,9 @@ export const AMBIENT_REGIONS = Object.freeze([
   "center",
 ] as const);
 
+/**
+ * Default palette analysis options.
+ */
 export const DEFAULT_ANALYSIS: Readonly<AmbientAnalysisOptions> = Object.freeze(
   {
     centerWeight: 0.5,
@@ -38,6 +50,9 @@ export const DEFAULT_ANALYSIS: Readonly<AmbientAnalysisOptions> = Object.freeze(
   },
 );
 
+/**
+ * Default CSS variable name templates.
+ */
 export const DEFAULT_CSS_VAR_NAMES: Readonly<AmbientCssVarNames> =
   Object.freeze({
     on: "--ambient-on-{role}",
@@ -49,6 +64,10 @@ export const DEFAULT_CSS_VAR_NAMES: Readonly<AmbientCssVarNames> =
 
 export const DEFAULT_PROXY = "/api/ambient/proxy?url=";
 
+/**
+ * How long, in milliseconds, page-level variables stay after their owner
+ * unmounts.
+ */
 export const DEFAULT_LINGER_MS = 3_000;
 
 const createDefaults = (): AmbientSettings => ({
@@ -67,6 +86,9 @@ type GlobalWithSettings = typeof globalThis & {
 };
 const scope = globalThis as GlobalWithSettings;
 
+/**
+ * Returns the current global ambient settings.
+ */
 export function getAmbientSettings(): AmbientSettings {
   return (scope[SETTINGS_KEY] ??= createDefaults());
 }
@@ -86,6 +108,10 @@ export function mergeAmbientSettings(
   };
 }
 
+/**
+ * Overrides global ambient settings. Returns a function that restores the
+ * previous settings.
+ */
 export function configureAmbient(input: AmbientSettingsInput): () => void {
   const previous = getAmbientSettings();
   const next = mergeAmbientSettings(previous, input);

@@ -1,16 +1,26 @@
 import { srgbToOklab } from "./oklab";
 import type { AmbientPixels } from "./types";
 
-interface Bounds {
+export interface Bounds {
   bottom: number;
   left: number;
   right: number;
   top: number;
 }
 
+const ALPHA_THRESHOLD = 128;
+/** A bar is dark on average and never bright. */
+const BAR_MEAN_LIGHTNESS = 0.12;
+const BAR_MAX_LIGHTNESS = 0.2;
+/** Letterbox bars are searched for only within this share of each side. */
+const MAX_BAR_SHARE = 0.22;
+
 const lightnessAt = (data: ArrayLike<number>, index: number) =>
   srgbToOklab(data[index], data[index + 1], data[index + 2])[0];
 
+/**
+ * Finds the content rectangle of an image, ignoring dark letterbox bars.
+ */
 export function findContentBounds({
   data,
   height,
@@ -22,17 +32,19 @@ export function findContentBounds({
     let seen = 0;
     for (let step = 0; step < count; step++) {
       const index = at(step);
-      if (data[index + 3] < 128) continue;
+      if (data[index + 3] < ALPHA_THRESHOLD) continue;
       const l = lightnessAt(data, index);
       sum += l;
       if (l > max) max = l;
       seen++;
     }
-    return seen > 0 && sum / seen < 0.12 && max < 0.2;
+    return (
+      seen > 0 && sum / seen < BAR_MEAN_LIGHTNESS && max < BAR_MAX_LIGHTNESS
+    );
   };
   const row = (y: number) => isBar(width, (x) => (y * width + x) * 4);
-  const maxRows = Math.floor(height * 0.22);
-  const maxColumns = Math.floor(width * 0.22);
+  const maxRows = Math.floor(height * MAX_BAR_SHARE);
+  const maxColumns = Math.floor(width * MAX_BAR_SHARE);
 
   let top = 0;
   while (top < maxRows && row(top)) top++;

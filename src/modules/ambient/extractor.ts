@@ -15,6 +15,7 @@ import type {
   AmbientExtractOptions,
   AmbientImageSource,
   AmbientPalette,
+  AmbientProxy,
 } from "./types";
 import {
   AMBIENT_WORKER_REQUEST,
@@ -37,6 +38,9 @@ function cachePalette(key: string, palette: AmbientPalette): void {
   paletteCache.set(key, palette);
 }
 
+/**
+ * Stores a known palette for an image URL so it is not extracted again.
+ */
 export function primeAmbientPalette(
   src: string,
   palette: AmbientPalette,
@@ -44,6 +48,9 @@ export function primeAmbientPalette(
   if (src && palette) cachePalette(src, { ...palette, source: src });
 }
 
+/**
+ * Returns the cached palette for an image URL, or null.
+ */
 export function getCachedAmbientPalette(src: string): AmbientPalette | null {
   return paletteCache.get(src) ?? null;
 }
@@ -164,6 +171,14 @@ const isCrossOrigin = (url: string) => {
   }
 };
 
+function resolveAbsoluteProxyUrl(
+  proxy: AmbientProxy,
+  src: string,
+): string | null {
+  const proxied = resolveProxyUrl(proxy, src);
+  return proxied ? absoluteUrl(proxied) : null;
+}
+
 async function extractPalette(
   src: string,
   options: AmbientExtractOptions,
@@ -175,10 +190,7 @@ async function extractPalette(
   const request: AmbientExtractRequest = {
     analysis: resolveAnalysis(options.analysis),
     proxyUrl: isCrossOrigin(absolute)
-      ? (() => {
-          const proxied = resolveProxyUrl(proxy, absolute);
-          return proxied ? absoluteUrl(proxied) : null;
-        })()
+      ? resolveAbsoluteProxyUrl(proxy, absolute)
       : null,
     src: absolute,
   };
@@ -191,6 +203,10 @@ async function extractPalette(
   return extractOnMainThread(request);
 }
 
+/**
+ * Extracts a palette from an image in a worker or on the main thread. Results
+ * are cached and concurrent calls share one extraction.
+ */
 export async function extractPaletteFromImage(
   imageSource: AmbientImageSource,
   options: AmbientExtractOptions = {},

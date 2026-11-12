@@ -42,6 +42,9 @@ export function pickBest<T>(items: T[], score: (item: T) => number): T | null {
 
 export const round3 = (value: number) => Math.round(value * 1000) / 1000;
 
+/**
+ * Scores how close a colour is to a skin tone, from 0 to 1.
+ */
 export function skinLikeness({ c, h, l }: OklchColor): number {
   return (
     (1 - smoothstep(12, 26, hueDistance(h, 54))) *
