@@ -21,3 +21,8 @@ export function unlockAudioOnGesture(unlock: () => void) {
   window.addEventListener("pointerdown", handler, { once: true });
   window.addEventListener("keydown", handler, { once: true });
 }
+
+export function resolveCompanionVolume(volume: unknown) {
+  const numeric = Number(volume);
+  return Math.max(0, Math.min(1, Number.isFinite(numeric) ? numeric : 1));
+}

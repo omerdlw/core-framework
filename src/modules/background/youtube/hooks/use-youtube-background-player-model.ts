@@ -6,6 +6,7 @@ import { applyVideoPlaybackState } from "../../model/playback";
 import { type YouTubeBackgroundPlayerProps } from "../../types";
 import {
   AUDIO_SYNC_EVENTS,
+  resolveCompanionVolume,
   setElementMuted,
   unlockAudioOnGesture,
 } from "../lib/audio";
@@ -102,9 +103,7 @@ export function useYouTubeBackgroundPlayerModel({
         return;
       }
 
-      // A NaN volume passes through unchanged; the fallback never applies.
-      // eslint-disable-next-line no-constant-binary-expression
-      const volume = Math.max(0, Math.min(1, Number(video.volume) ?? 1));
+      const volume = resolveCompanionVolume(video.volume);
       if (Math.abs(audio.volume - volume) > 0.005) audio.volume = volume;
 
       const isSilent = Boolean(video.muted) || volume === 0;

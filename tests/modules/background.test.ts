@@ -18,6 +18,7 @@ import {
   resolveVideoOptions,
   selectPageBackground,
 } from "../../src/modules/background/index.ts";
+import { resolveCompanionVolume } from "../../src/modules/background/youtube/lib/audio.ts";
 import {
   extractYouTubeVideoId,
   isDirectVideoUrl,
@@ -675,4 +676,19 @@ test("background public surface is unchanged", async () => {
     "useOptionalBackgroundActions",
     "useOptionalBackgroundState",
   ]);
+});
+
+describe("youtube companion audio volume", () => {
+  test("falls back to 1 when the volume is unset or not finite", () => {
+    assert.equal(resolveCompanionVolume(undefined), 1);
+    assert.equal(resolveCompanionVolume(Number.NaN), 1);
+    assert.equal(resolveCompanionVolume("abc"), 1);
+  });
+
+  test("keeps finite volumes clamped to [0, 1]", () => {
+    assert.equal(resolveCompanionVolume(0), 0);
+    assert.equal(resolveCompanionVolume(0.4), 0.4);
+    assert.equal(resolveCompanionVolume(3), 1);
+    assert.equal(resolveCompanionVolume(-2), 0);
+  });
 });
