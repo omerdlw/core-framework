@@ -80,8 +80,8 @@ import {
 import { applyRegistryConfig as applyPayload } from "../../src/core/kernel/handlers.ts";
 import { createRegistryApplyContext as createRegistryApplyContext__4 } from "../../src/core/kernel/hooks.ts";
 import { createModulePayload } from "../../src/core/kernel/installed.ts";
+import { createRecordKey } from "../../src/core/kernel/operations-records.ts";
 import {
-  createRecordKey,
   createRegisterOperation,
   createUnregisterOperation,
 } from "../../src/core/kernel/operations.ts";

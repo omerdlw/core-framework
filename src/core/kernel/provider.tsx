@@ -15,7 +15,8 @@ import type {
   RegistrySchema,
   RegistryStore,
 } from "./types";
-import { createRegistryStore, type InitialRegistryEntries } from "./store";
+import { createRegistryStore } from "./store";
+import { type InitialRegistryEntries } from "./store-entries";
 
 type RegistryValueOf<K extends string> = K extends keyof RegistrySchema
   ? RegistrySchema[K]
