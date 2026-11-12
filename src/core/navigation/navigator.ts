@@ -1,4 +1,3 @@
-import { globalEvents } from "@/foundation/events";
 import { createStore, report } from "@/foundation/utils";
 import {
   NAVIGATION_EVENTS,
@@ -7,6 +6,10 @@ import {
   NAVIGATION_SOURCE,
   NAVIGATION_STATUS,
 } from "./constants";
+import { createNavigationHolds } from "./navigator-holds";
+import { createPayloadProviders } from "./navigator-payload";
+import { createPrefetcher } from "./navigator-prefetch";
+import { afterPaint, emitGlobal, type Timer } from "./navigator-support";
 import { getNavigationSettings } from "./settings";
 import {
   createNavigationState,
@@ -17,12 +20,7 @@ import {
 import type {
   NavigateOptions,
   NavigationBlock,
-  NavigationHold,
-  NavigationIntentListener,
   NavigationPayload,
-  NavigationPayloadKey,
-  NavigationPayloadValue,
-  NavigationPrefetchOptions,
   NavigationResult,
   NavigationRouter,
   NavigationState,
@@ -36,20 +34,8 @@ import {
   isSameLocation,
   isSamePathname,
   locationKeyOf,
-  pathOf,
   readWindowLocation,
 } from "./utils";
-
-type Timer = ReturnType<typeof setTimeout>;
-
-const emitGlobal = (event: string, payload: Record<string, unknown>) =>
-  globalEvents.emit(event, payload);
-
-const afterPaint = (callback: () => void) => {
-  if (typeof requestAnimationFrame === "function")
-    requestAnimationFrame(() => callback());
-  else setTimeout(callback, 0);
-};
 
 export function createNavigator(options: NavigatorOptions = {}): Navigator {
   const now = options.now ?? Date.now;
@@ -71,11 +57,13 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   let visit = 0;
   let landedVisit = -1;
 
-  let nextHoldId = 0;
-  const holds = new Map<number, { history: boolean; hold: NavigationHold }>();
-  const providers: { key: string; value: unknown }[] = [];
-  const warmed = new Map<string, number>();
-  const intentListeners = new Set<NavigationIntentListener>();
+  const { collectPayload, provide } = createPayloadProviders();
+  const { hold, holdsHistory, runHolds } = createNavigationHolds(settings);
+  const { onIntent, prefetch } = createPrefetcher({
+    getRouter: () => router,
+    now,
+    settings,
+  });
 
   const active = () => store.getSnapshot().active;
   const isCurrent = (id: number) => active()?.id === id;
@@ -135,19 +123,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     return true;
   }
 
-  function collectPayload(extra?: Partial<NavigationPayload>) {
-    const payload: Record<string, unknown> = {};
-    for (const { key, value } of providers) {
-      try {
-        payload[key] =
-          typeof value === "function" ? (value as () => unknown)() : value;
-      } catch (error) {
-        report(`Navigation payload (${key})`, error);
-      }
-    }
-    return { ...payload, ...extra };
-  }
-
   function begin(
     href: string,
     source: string,
@@ -196,35 +171,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
       });
     }
     return true;
-  }
-
-  function runHolds(trip: NavigationTrip, history: boolean): Promise<void> {
-    const pending: Promise<unknown>[] = [];
-    for (const entry of holds.values()) {
-      if (history && !entry.history) continue;
-      try {
-        const result = entry.hold(trip);
-        if (result && typeof result.then === "function")
-          pending.push(
-            Promise.resolve(result).catch((error) =>
-              report("Navigation hold", error),
-            ),
-          );
-      } catch (error) {
-        report("Navigation hold", error);
-      }
-    }
-    if (pending.length === 0) return Promise.resolve();
-    return new Promise<void>((resolve) => {
-      const done = () => {
-        clearTimeout(cap);
-        trip.signal.removeEventListener("abort", done);
-        resolve();
-      };
-      const cap = setTimeout(done, Math.max(0, settings().maxHoldMs));
-      trip.signal.addEventListener("abort", done);
-      void Promise.all(pending).then(done);
-    });
   }
 
   async function navigate(
@@ -347,74 +293,6 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
     return trip
       ? settle(trip.id, NAVIGATION_STATUS.CANCELLED, { reason })
       : false;
-  }
-
-  function hold(
-    run: NavigationHold,
-    { history = true }: { history?: boolean } = {},
-  ): () => void {
-    const id = ++nextHoldId;
-    holds.set(id, { history, hold: run });
-    return () => {
-      holds.delete(id);
-    };
-  }
-
-  function holdsHistory(): boolean {
-    for (const entry of holds.values()) if (entry.history) return true;
-    return false;
-  }
-
-  function provide<K extends NavigationPayloadKey>(
-    key: K,
-    value: NavigationPayloadValue<K>,
-  ): () => void {
-    const entry = { key: key as string, value: value as unknown };
-    providers.push(entry);
-    return () => {
-      const index = providers.indexOf(entry);
-      if (index !== -1) providers.splice(index, 1);
-    };
-  }
-
-  function prefetch(
-    href: string,
-    { force = false, kind }: NavigationPrefetchOptions = {},
-  ): boolean {
-    if (!isSafeInternalHref(href) || typeof router?.prefetch !== "function")
-      return false;
-    const key = locationKeyOf(href.split("#")[0]);
-    const at = warmed.get(key);
-    if (!force && at !== undefined && now() - at < settings().prefetchTtlMs)
-      return false;
-    warmed.set(key, now());
-    for (const listener of intentListeners) {
-      try {
-        listener(pathOf(href), href);
-      } catch (error) {
-        report("Navigation intent listener", error);
-      }
-    }
-    try {
-      router.prefetch(href, {
-        kind: kind ?? settings().prefetchKind,
-        onInvalidate: () => {
-          if (warmed.get(key) !== undefined) warmed.delete(key);
-        },
-      });
-      return true;
-    } catch (error) {
-      warmed.delete(key);
-      report("Navigation prefetch", error, "warn");
-      return false;
-    }
-  }
-
-  function onIntent(listener: NavigationIntentListener): () => void {
-    intentListeners.add(listener);
-    return () => {
-      intentListeners.delete(listener);
-    };
   }
 
   function setRouter(next: NavigationRouter | null): void {
