@@ -1,9 +1,10 @@
 "use client";
 
 import {
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
   use,
-  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -182,34 +183,46 @@ export function usePageController(): PageController {
   return scopedContext ?? storeController ?? FALLBACK_PAGE_CONTROLLER;
 }
 
+interface OverrideApi {
+  page: PageModuleApi;
+  reset: () => void;
+  set: PageModuleApi["set"];
+}
+
+function createOverrideApi(
+  setOverrides: Dispatch<SetStateAction<Partial<PageConfig>>>,
+): OverrideApi {
+  const set = (partial: Partial<PageConfig>) => {
+    if (!partial || typeof partial !== "object") return;
+    setOverrides((prev) => mergeModuleConfigs(prev, partial));
+  };
+  const reset = () => setOverrides(EMPTY_OBJECT);
+  return { page: { set }, reset, set };
+}
+
 /** Local config overrides layered over the page config, with set/reset. */
 function usePageOverrides(pageConfig: PageConfig) {
   const [overrides, setOverrides] = useState<Partial<PageConfig>>(EMPTY_OBJECT);
+  const [api] = useState(() => createOverrideApi(setOverrides));
 
-  const set = useCallback((partial: Partial<PageConfig>) => {
-    if (!partial || typeof partial !== "object") return;
-    setOverrides((prev) => mergeModuleConfigs(prev, partial));
-  }, []);
-
-  const reset = useCallback(() => {
-    setOverrides(EMPTY_OBJECT);
-  }, []);
-
+  // stable identity: part of the public hook contract
   const effectiveConfig = useMemo<PageConfig>(() => {
     const base = pageConfig || EMPTY_OBJECT;
     if (Object.keys(overrides).length === 0) return base;
     return mergeModuleConfigs(base, overrides);
   }, [pageConfig, overrides]);
 
-  return { effectiveConfig, reset, set };
+  return { api, effectiveConfig };
 }
 
 /** Runs each module's `page.use` hook on its slice and returns the controllers. */
 function useModuleControllers(
   modules: readonly AnyCoreModule[],
   effectiveConfig: PageConfig,
-  set: PageModuleApi["set"],
+  pageApi: PageModuleApi,
 ): PageModules {
+  // stable identity: part of the public hook contract
+  // (page.use receives the same slice until the page config changes)
   const moduleSlices = useMemo(
     () =>
       modules.map((coreModule) =>
@@ -218,7 +231,6 @@ function useModuleControllers(
     [effectiveConfig, modules],
   );
 
-  const pageApi = useMemo<PageModuleApi>(() => ({ set }), [set]);
   const moduleControllers: Record<string, unknown> = {};
   for (let index = 0; index < modules.length; index += 1) {
     const coreModule = modules[index];
@@ -244,18 +256,16 @@ export function usePage(
   const controllerStore = use(PageControllerStoreContext);
   const modules = useInstalledModules();
 
-  const { effectiveConfig, reset, set } = usePageOverrides(pageConfig);
+  const { api, effectiveConfig } = usePageOverrides(pageConfig);
+  const { reset, set } = api;
 
-  const registryMetadata = useMemo(
-    () => pickRegistryMetadata(options),
-    [options],
-  );
-  useRegistry(effectiveConfig, registryMetadata);
+  useRegistry(effectiveConfig, pickRegistryMetadata(options));
 
-  const pageModules = useModuleControllers(modules, effectiveConfig, set);
+  const pageModules = useModuleControllers(modules, effectiveConfig, api.page);
 
   const [scope] = useState(createControllerScope);
 
+  // stable identity: part of the public hook contract
   const controller = useMemo<PageController>(
     () => ({
       Provider: scope.Provider,

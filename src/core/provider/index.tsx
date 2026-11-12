@@ -1,7 +1,7 @@
 "use client";
 
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { type JSX, type ReactNode, useMemo } from "react";
+import { type JSX, type ReactNode } from "react";
 
 import { GlobalError, GlobalErrorListener, ModuleError } from "@/core/error";
 import {
@@ -80,19 +80,16 @@ export function CoreProvider({
   slots,
   tooltip = true,
 }: CoreProviderProps): JSX.Element {
-  const tooltipConfig = useMemo(() => resolveTooltipConfig(tooltip), [tooltip]);
+  const tooltipConfig = resolveTooltipConfig(tooltip);
 
-  const providerPipeline = useMemo<readonly ProviderEntry[]>(
-    () => [
-      GlobalError,
-      ...(tooltipConfig
-        ? [[TooltipPrimitive.Provider, tooltipConfig] as const]
-        : []),
-      [ModuleHost, { boundary: ModuleBoundary, modules, registryEntries }],
-      ...(providers ?? []),
-    ],
-    [modules, providers, registryEntries, tooltipConfig],
-  );
+  const providerPipeline: readonly ProviderEntry[] = [
+    GlobalError,
+    ...(tooltipConfig
+      ? [[TooltipPrimitive.Provider, tooltipConfig] as const]
+      : []),
+    [ModuleHost, { boundary: ModuleBoundary, modules, registryEntries }],
+    ...(providers ?? []),
+  ];
 
   return (
     <Compose providers={providerPipeline}>

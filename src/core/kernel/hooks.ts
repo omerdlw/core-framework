@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 
 import { isObject, shallowEqual } from "@/foundation/utils";
 
@@ -10,6 +10,7 @@ import { createModulePayload, useInstalledModules } from "./installed";
 import { useRegistryActions } from "./provider";
 import { stabilizeRegistryValue } from "./stabilize";
 import type {
+  AnyCoreModule,
   PageConfig,
   RegistryApplyContext,
   RegistryCleanupTimer,
@@ -78,30 +79,78 @@ export function useShallowStable<T extends object>(value: T): T {
   return ref.current;
 }
 
+/**
+ * What `useRegistry` applies. The context and payload are derived from these
+ * inside the layout effect, so they stay stable without hand-written memos.
+ */
+interface RegistryInputs {
+  actions: Pick<RegistryApplyContext, "batch"> & RegistryQueue;
+  cleanupScope: Map<string, RegistryCleanupTimer>;
+  config: PageConfig | null | undefined;
+  instanceId: string;
+  metadata: RegistryMetadata | undefined;
+  modules: readonly AnyCoreModule[];
+  pathname: string;
+}
+
 interface AppliedConfig {
   cleanup: () => void;
   config: unknown;
   context: RegistryApplyContext;
-  payload: PageConfig | null;
+  inputs: RegistryInputs;
 }
 
-function useAppliedRegistryConfig(
-  payload: PageConfig | null,
-  context: RegistryApplyContext,
-  componentSlices: ReadonlySet<string>,
-): void {
+const NO_METADATA: RegistryMetadata = Object.freeze({});
+
+function sameContextInputs(a: RegistryInputs, b: RegistryInputs): boolean {
+  return (
+    a.actions.batch === b.actions.batch &&
+    a.actions.register === b.actions.register &&
+    a.actions.unregister === b.actions.unregister &&
+    a.cleanupScope === b.cleanupScope &&
+    a.instanceId === b.instanceId &&
+    a.modules === b.modules &&
+    a.pathname === b.pathname
+  );
+}
+
+function samePayloadInputs(a: RegistryInputs, b: RegistryInputs): boolean {
+  return (
+    a.config === b.config &&
+    a.modules === b.modules &&
+    shallowEqual(a.metadata ?? NO_METADATA, b.metadata ?? NO_METADATA)
+  );
+}
+
+function componentSliceIds(
+  modules: readonly AnyCoreModule[],
+): ReadonlySet<string> {
+  return new Set(
+    modules
+      .filter((coreModule) => coreModule.registry?.valueKind === "component")
+      .map((coreModule) => coreModule.id),
+  );
+}
+
+function useAppliedRegistryConfig(inputs: RegistryInputs): void {
   const functionEntriesRef = useRef(new Map<string, StableFunctionEntry>());
   const appliedRef = useRef<AppliedConfig | null>(null);
 
   useLayoutEffect(() => {
     const previous = appliedRef.current;
-    if (
-      previous &&
-      previous.payload === payload &&
-      previous.context === context
-    ) {
+    const sameContext =
+      previous !== null && sameContextInputs(previous.inputs, inputs);
+    if (previous && sameContext && samePayloadInputs(previous.inputs, inputs)) {
       return;
     }
+    const context =
+      previous && sameContext
+        ? previous.context
+        : createRegistryApplyContext(inputs.actions, inputs);
+    const payload = inputs.config
+      ? createModulePayload(inputs.modules, inputs.config, inputs.metadata)
+      : null;
+    const componentSlices = componentSliceIds(inputs.modules);
     const functionEntries = functionEntriesRef.current;
     const usedPaths = new Set<string>();
     const config = stabilizeRegistryValue(
@@ -114,12 +163,8 @@ function useAppliedRegistryConfig(
       if (!usedPaths.has(path)) functionEntries.delete(path);
     });
 
-    if (
-      previous &&
-      previous.config === config &&
-      previous.context === context
-    ) {
-      previous.payload = payload;
+    if (previous && previous.config === config && sameContext) {
+      previous.inputs = inputs;
       return;
     }
     previous?.cleanup();
@@ -127,7 +172,7 @@ function useAppliedRegistryConfig(
       cleanup: applyRegistryConfig(config as PageConfig | null, context),
       config,
       context,
-      payload,
+      inputs,
     };
   });
 
@@ -218,34 +263,13 @@ export function useRegistry(
     () => new Map<string, RegistryCleanupTimer>(),
   );
 
-  const context = useMemo(
-    () =>
-      createRegistryApplyContext(
-        { batch, register, unregister },
-        {
-          cleanupScope,
-          instanceId,
-          modules,
-          pathname,
-        },
-      ),
-    [batch, cleanupScope, instanceId, modules, pathname, register, unregister],
-  );
-
-  const payload = useMemo(
-    () => (config ? createModulePayload(modules, config, metadata) : null),
-    [config, metadata, modules],
-  );
-  const componentSlices = useMemo(
-    () =>
-      new Set(
-        modules
-          .filter(
-            (coreModule) => coreModule.registry?.valueKind === "component",
-          )
-          .map((coreModule) => coreModule.id),
-      ),
-    [modules],
-  );
-  useAppliedRegistryConfig(payload, context, componentSlices);
+  useAppliedRegistryConfig({
+    actions: { batch, register, unregister },
+    cleanupScope,
+    config,
+    instanceId,
+    metadata,
+    modules,
+    pathname,
+  });
 }
