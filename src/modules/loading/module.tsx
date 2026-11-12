@@ -21,6 +21,7 @@ function useLoadingPage(
   page: PageModuleApi,
 ): LoadingPageApi {
   const actions = useLoadingActions();
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

@@ -4,13 +4,12 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
-import { createStore } from "@/foundation/utils";
+import { createStore, shallowEqual } from "@/foundation/utils";
 
 import {
   DEFAULT_LOADING_STATE,
@@ -172,42 +171,28 @@ function useLoadingTasks(): LoadingTasks {
 }
 
 /**
- * Builds the loading actions on top of the task stack.
+ * Builds the loading actions on top of the task stack. The task functions are
+ * stable, so the actions are built once.
  */
-function useManualLoading(): {
-  actions: LoadingActions;
-  manualState: LoadingState;
-} {
-  const { beginTask, endTask, manualState, setSkeleton, withLoading } =
-    useLoadingTasks();
-
-  const startLoading = useCallback(
-    (options: LoadingOptions = {}) => beginTask(MANUAL_TASK, options),
-    [beginTask],
-  );
-
-  const stopLoading = useCallback(() => endTask(MANUAL_TASK), [endTask]);
-
-  const setLoading = useCallback(
-    (value: boolean) => {
+function createLoadingActions({
+  beginTask,
+  endTask,
+  setSkeleton,
+  withLoading,
+}: Omit<LoadingTasks, "manualState">): LoadingActions {
+  const startLoading = (options: LoadingOptions = {}) =>
+    beginTask(MANUAL_TASK, options);
+  const stopLoading = () => endTask(MANUAL_TASK);
+  return {
+    setLoading: (value: boolean) => {
       if (value) startLoading();
       else stopLoading();
     },
-    [startLoading, stopLoading],
-  );
-
-  const actions = useMemo<LoadingActions>(
-    () => ({
-      setLoading,
-      setSkeleton,
-      startLoading,
-      stopLoading,
-      withLoading,
-    }),
-    [setLoading, setSkeleton, startLoading, stopLoading, withLoading],
-  );
-
-  return { actions, manualState };
+    setSkeleton,
+    startLoading,
+    stopLoading,
+    withLoading,
+  };
 }
 
 /**
@@ -215,29 +200,26 @@ function useManualLoading(): {
  * the registry takes precedence over manual loading.
  */
 export function LoadingProvider({ children }: LoadingProviderProps) {
-  const { actions, manualState } = useManualLoading();
+  const tasks = useLoadingTasks();
+  const { manualState } = tasks;
 
   const registryLoading = useRegistryValue<"loading", LoadingOptions>(
     "loading",
     LOADING_REGISTRY_KEY,
   );
 
-  const state = useMemo<LoadingStateWithPage>(
-    () => resolveLoadingState(manualState, registryLoading),
-    [manualState, registryLoading],
-  );
-
-  const [store] = useState(() =>
-    createStore<LoadingStateWithPage>(state, { freezeSnapshots: false }),
-  );
+  const [value] = useState<LoadingContextValue>(() => ({
+    actions: createLoadingActions(tasks),
+    store: createStore<LoadingStateWithPage>(
+      resolveLoadingState(manualState, registryLoading),
+      { freezeSnapshots: false },
+    ),
+  }));
+  const { store } = value;
   useLayoutEffect(() => {
-    store.publish(state);
-  }, [state, store]);
-
-  const value = useMemo<LoadingContextValue>(
-    () => ({ actions, store }),
-    [actions, store],
-  );
+    const next = resolveLoadingState(manualState, registryLoading);
+    store.publish((current) => (shallowEqual(current, next) ? current : next));
+  }, [manualState, registryLoading, store]);
 
   return <LoadingContext value={value}>{children}</LoadingContext>;
 }

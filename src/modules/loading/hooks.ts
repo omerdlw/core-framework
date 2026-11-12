@@ -65,6 +65,7 @@ export function useLoading(
   const actions = useLoadingActions();
   const state = useLoadingState();
 
+  // stable identity: part of the public hook contract
   return useMemo(() => ({ ...state, ...actions }), [actions, state]);
 }
 
