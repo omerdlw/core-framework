@@ -27,6 +27,25 @@ export function isSurfaceDescriptor(
 
 let generatedExtensionId = 0;
 
+function normalizeExtensionAlign(align: unknown): "left" | "right" | "center" {
+  if (align === "right" || align === "end") return "right";
+  if (align === "center") return "center";
+  return "left";
+}
+
+function normalizeExtensionContent(content: unknown) {
+  const isRenderable =
+    isValidElement(content) ||
+    (typeof content === "string" && content !== "") ||
+    typeof content === "number";
+  return isRenderable ? (content as SurfaceExtension["content"]) : null;
+}
+
+function nextExtensionId() {
+  return `ext-${++generatedExtensionId}`;
+}
+
+/** Normalizes an element or extension descriptor, or null when unusable. */
 export function normalizeSurfaceExtension(
   input: unknown,
 ): NormalizedSurfaceExtension | null {
@@ -37,7 +56,7 @@ export function normalizeSurfaceExtension(
       className: "",
       component: null,
       content: input,
-      id: `ext-${++generatedExtensionId}`,
+      id: nextExtensionId(),
       order: 0,
       props: {},
       unstyled: false,
@@ -49,31 +68,17 @@ export function normalizeSurfaceExtension(
   const component = isValidComponentType(extension.component)
     ? extension.component
     : null;
-  const content =
-    isValidElement(extension.content) ||
-    (typeof extension.content === "string" && extension.content !== "") ||
-    typeof extension.content === "number"
-      ? extension.content
-      : null;
+  const content = normalizeExtensionContent(extension.content);
 
   if (!component && content == null) return null;
 
-  const align =
-    extension.align === "right" || extension.align === "end"
-      ? "right"
-      : extension.align === "center"
-        ? "center"
-        : "left";
-
   return {
-    align,
+    align: normalizeExtensionAlign(extension.align),
     className:
       typeof extension.className === "string" ? extension.className : "",
     component,
     content,
-    id: String(
-      extension.id || extension.key || `ext-${++generatedExtensionId}`,
-    ),
+    id: String(extension.id || extension.key || nextExtensionId()),
     order: Number.isFinite(Number(extension.order))
       ? Number(extension.order)
       : 0,

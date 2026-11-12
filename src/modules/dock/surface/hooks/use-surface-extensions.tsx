@@ -13,7 +13,11 @@ import {
 
 import { DOCK_SURFACE_PHASE } from "../../constants";
 import type { DockComponentProps, DockItem } from "../../types";
-import { SurfaceExtensionsContext, useSurfaceId } from "../context";
+import {
+  ACTIVE_SURFACE_KEY,
+  SurfaceExtensionsContext,
+  useSurfaceId,
+} from "../context";
 
 export function useDockSurfaceExtension({
   align = "left",
@@ -52,8 +56,8 @@ export function useDockSurfaceExtension({
       unstyled,
     };
     store.setExtension(surfaceId, extension);
-    if (surfaceId && surfaceId !== "active") {
-      store.setExtension("active", extension);
+    if (surfaceId && surfaceId !== ACTIVE_SURFACE_KEY) {
+      store.setExtension(ACTIVE_SURFACE_KEY, extension);
     }
   });
 
@@ -61,8 +65,8 @@ export function useDockSurfaceExtension({
     return () => {
       if (store) {
         store.removeExtension(surfaceId, effectiveId);
-        if (surfaceId && surfaceId !== "active") {
-          store.removeExtension("active", effectiveId);
+        if (surfaceId && surfaceId !== ACTIVE_SURFACE_KEY) {
+          store.removeExtension(ACTIVE_SURFACE_KEY, effectiveId);
         }
       }
     };
@@ -73,7 +77,7 @@ export function useIsSurfaceExtensionsVisible(
   activeItem: DockItem | null | undefined,
 ): boolean {
   const store = use(SurfaceExtensionsContext)?.extensions ?? null;
-  const surfaceId = activeItem?.surfaceId || "active";
+  const surfaceId = activeItem?.surfaceId || ACTIVE_SURFACE_KEY;
   const isSurface = Boolean(activeItem?.isSurface);
   const phase = activeItem?.surfacePhase;
   const isBodyVisible =

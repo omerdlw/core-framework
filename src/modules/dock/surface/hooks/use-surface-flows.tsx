@@ -29,8 +29,8 @@ import {
   updateSurfaceStackEntry,
 } from "../model/records";
 import {
-  getSurfaceUrlValue,
   IS_BROWSER,
+  isSurfaceUrlOutOfSync,
   syncSurfaceFlowUrlState,
 } from "../model/url";
 
@@ -222,11 +222,7 @@ export function useSurfaceLifecycleEffects({
       const activeEntry =
         refs.stackRef.current[refs.stackRef.current.length - 1];
       if (!activeEntry?.syncWithUrl && !activeEntry?.urlKey) return;
-      if (
-        new URL(window.location.href).searchParams.get("surface") ===
-        getSurfaceUrlValue(activeEntry)
-      )
-        return;
+      if (!isSurfaceUrlOutOfSync(activeEntry)) return;
       closeAllSurfaces({
         success: false,
         cancelled: true,

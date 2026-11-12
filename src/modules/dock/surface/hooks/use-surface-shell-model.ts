@@ -12,7 +12,16 @@ import { DOCK_SURFACE_PHASE } from "../../constants";
 import { useDockFocusTrap } from "../../hooks/use-dock-focus-trap";
 import { getDockPhaseMotion, useDockMotion } from "../../motion";
 import type { DockSurfaceShellProps } from "../../types";
+import { ACTIVE_SURFACE_KEY } from "../context";
+import {
+  isSwipeDismissGesture,
+  SURFACE_DRAG_IGNORE_SELECTOR,
+} from "../lib/drag";
 
+/**
+ * State and handlers for a surface shell: focus trap, swipe-to-dismiss drag
+ * and body motion variants.
+ */
 export function useDockSurfaceShellModel({
   ref,
   onClose = null,
@@ -60,9 +69,7 @@ export function useDockSurfaceShellModel({
     )
       return;
     const { dismiss } = dockMotion.drag;
-    if (info.offset.y > dismiss.offset || info.velocity.y > dismiss.velocity) {
-      onClose();
-    }
+    if (isSwipeDismissGesture(info, dismiss)) onClose();
   };
   const dragControls = useDragControls();
   const canDragDismiss = Boolean(
@@ -75,13 +82,7 @@ export function useDockSurfaceShellModel({
     (event: React.PointerEvent<HTMLElement>) => {
       if (!canDragDismiss) return;
       const target = event.target as HTMLElement | null;
-      if (
-        target?.closest?.(
-          'input, textarea, select, [role="slider"], [data-no-surface-drag], [data-lenis-prevent]',
-        )
-      ) {
-        return;
-      }
+      if (target?.closest?.(SURFACE_DRAG_IGNORE_SELECTOR)) return;
       dragControls.start(event);
     },
     [canDragDismiss, dragControls],
@@ -89,7 +90,7 @@ export function useDockSurfaceShellModel({
   const isBodyVisible =
     surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY ||
     surfacePhase === DOCK_SURFACE_PHASE.OPEN;
-  const resolvedSurfaceId = surfaceId || "active";
+  const resolvedSurfaceId = surfaceId || ACTIVE_SURFACE_KEY;
   const bodyVariants = useMemo(() => {
     const { surfaceBody } = dockMotion.variants;
     const { surfaceExit } = dockMotion.transitions;

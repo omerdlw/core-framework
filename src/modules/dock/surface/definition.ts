@@ -26,13 +26,23 @@ import type {
   UseSurfaceInput,
 } from "../types";
 import {
+  DEFAULT_STEP_SURFACE_ID,
+  DEFAULT_SURFACE_DESCRIPTION_MAX_LINES,
+} from "./constants";
+import {
   createSurfaceReturnHandshake,
   normalizeSurfaceFlowSnapshot,
   resolveSurfaceFlowReturnHandshake,
 } from "./helpers";
+import {
+  createSurfaceOpenEntry,
+  resolveFromProps,
+  resolveSurfaceTargetComponent,
+} from "./lib/target";
 import { normalizeSurfaceDefinition } from "./model/normalize";
 import { EMPTY_SURFACE_STACK } from "./model/records";
 
+/** Normalizes any accepted surface input and open options into a definition. */
 export function createSurfaceEntryDefinition(
   input: SurfaceInput | unknown,
   config: OpenSurfaceOptions = {},
@@ -40,9 +50,7 @@ export function createSurfaceEntryDefinition(
   return normalizeSurfaceDefinition(input, config);
 }
 
-export function createSurfaceFlowBuilder(
-  definition: SurfaceBuilderDefinition = {},
-): SurfaceBuilderFactory {
+function resolveBuilderSettings(definition: SurfaceBuilderDefinition) {
   const {
     action = null,
     allowSwipeDismiss = true,
@@ -52,7 +60,7 @@ export function createSurfaceFlowBuilder(
     loader,
     defaultProps = {},
     description = null,
-    descriptionMaxLines = 2,
+    descriptionMaxLines = DEFAULT_SURFACE_DESCRIPTION_MAX_LINES,
     dismissible = true,
     extensions = [],
     headerAction = null,
@@ -68,6 +76,80 @@ export function createSurfaceFlowBuilder(
     ...extraConfig
   } = definition;
 
+  return {
+    action,
+    allowSwipeDismiss,
+    badge,
+    closeLabel,
+    component,
+    defaultProps,
+    description,
+    descriptionMaxLines,
+    dismissible,
+    extensions,
+    extraConfig,
+    headerAction,
+    icon,
+    id,
+    loader,
+    onClose,
+    showAction,
+    syncWithUrl,
+    title,
+    trailing,
+    urlKey,
+    width,
+  };
+}
+
+type BuilderSettings = ReturnType<typeof resolveBuilderSettings>;
+
+function buildBuilderDescriptor(
+  settings: BuilderSettings,
+  resolvedComponent: SurfaceDescriptor["component"],
+  props: DockComponentProps,
+  overrides: Partial<SurfaceDescriptor>,
+): SurfaceDescriptor {
+  const { defaultProps, description, icon, id, loader, title } = settings;
+  const mergedProps = { ...defaultProps, ...props };
+
+  return {
+    id: overrides.id ?? id,
+    component: overrides.component ?? resolvedComponent,
+    loader: overrides.loader ?? loader,
+    props: mergedProps,
+    title: resolveFromProps(title, mergedProps),
+    description: resolveFromProps(description, mergedProps),
+    icon: resolveFromProps(icon, mergedProps),
+    action: settings.action,
+    allowSwipeDismiss: settings.allowSwipeDismiss,
+    badge: settings.badge,
+    closeLabel: settings.closeLabel,
+    descriptionMaxLines: settings.descriptionMaxLines,
+    dismissible: settings.dismissible,
+    extensions: settings.extensions,
+    headerAction: settings.headerAction,
+    onClose: settings.onClose,
+    showAction: settings.showAction,
+    syncWithUrl: settings.syncWithUrl,
+    trailing: settings.trailing,
+    urlKey: settings.urlKey,
+    width: settings.width,
+    ...settings.extraConfig,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates a callable surface factory from a definition. Calling it with props
+ * returns a descriptor ready to open; `open` opens it with a given opener.
+ */
+export function createSurfaceFlowBuilder(
+  definition: SurfaceBuilderDefinition = {},
+): SurfaceBuilderFactory {
+  const settings = resolveBuilderSettings(definition);
+  const { component, id, loader } = settings;
+
   const resolvedComponent =
     component ?? (typeof loader === "function" ? lazy(loader) : null);
 
@@ -75,40 +157,12 @@ export function createSurfaceFlowBuilder(
     props: DockComponentProps = {},
     overrides: Partial<SurfaceDescriptor> = {},
   ): SurfaceDescriptor {
-    const mergedProps = { ...defaultProps, ...props };
-    const resolvedTitle =
-      typeof title === "function" ? title(mergedProps) : title;
-    const resolvedDescription =
-      typeof description === "function"
-        ? description(mergedProps)
-        : description;
-    const resolvedIcon = typeof icon === "function" ? icon(mergedProps) : icon;
-
-    return {
-      id: overrides.id ?? id,
-      component: overrides.component ?? resolvedComponent,
-      loader: overrides.loader ?? loader,
-      props: mergedProps,
-      title: resolvedTitle,
-      description: resolvedDescription,
-      icon: resolvedIcon,
-      action,
-      allowSwipeDismiss,
-      badge,
-      closeLabel,
-      descriptionMaxLines,
-      dismissible,
-      extensions,
-      headerAction,
-      onClose,
-      showAction,
-      syncWithUrl,
-      trailing,
-      urlKey,
-      width,
-      ...extraConfig,
-      ...overrides,
-    };
+    return buildBuilderDescriptor(
+      settings,
+      resolvedComponent,
+      props,
+      overrides,
+    );
   };
 
   const surfaceEntryFactory: SurfaceBuilderFactory = Object.assign(
@@ -132,6 +186,7 @@ export function createSurfaceFlowBuilder(
   return surfaceEntryFactory;
 }
 
+/** Normalizes a one-off surface input (including plain nodes) for opening. */
 export function createInlineSurfaceEntry(
   surface: SurfaceInput | unknown,
 ): NormalizedSurfaceDefinition | null {
@@ -142,6 +197,11 @@ export function createInlineSurfaceEntry(
   );
 }
 
+/**
+ * Returns controls for the dock's surfaces. With a definition, returns an
+ * `[open, controls]` handle bound to that surface; without, the general
+ * open/close API and the current stack.
+ */
 export function useSurface(
   surfaceDefinition?: UseSurfaceInput | null,
 ): SurfaceHandle | GeneralSurfaceHandle {
@@ -154,12 +214,7 @@ export function useSurface(
   const specificSurface = useMemo((): SurfaceHandle | null => {
     if (!surfaceDefinition) return null;
 
-    const targetComponent =
-      typeof surfaceDefinition === "string"
-        ? null
-        : typeof surfaceDefinition === "function"
-          ? surfaceDefinition.component || surfaceDefinition
-          : surfaceDefinition.component || null;
+    const targetComponent = resolveSurfaceTargetComponent(surfaceDefinition);
 
     const matchingEntry =
       surfaceStack.find(
@@ -168,17 +223,9 @@ export function useSurface(
     const isThisSurfaceOpen = Boolean(matchingEntry);
 
     const open: SurfaceOpenFn = (props, overrides) => {
-      const entry: SurfaceDescriptor =
-        typeof surfaceDefinition === "function"
-          ? surfaceDefinition(props, overrides)
-          : typeof surfaceDefinition === "string"
-            ? { id: surfaceDefinition, props, ...overrides }
-            : {
-                ...surfaceDefinition,
-                props: { ...(surfaceDefinition.props || {}), ...props },
-                ...overrides,
-              };
-      return openSurface(entry);
+      return openSurface(
+        createSurfaceOpenEntry(surfaceDefinition, props, overrides),
+      );
     };
 
     const close = (res?: SurfaceResult) =>
@@ -219,6 +266,10 @@ export function useSurface(
   return surfaceDefinition ? specificSurface! : generalSurface;
 }
 
+/**
+ * Defines a reusable surface. The returned factory builds descriptors, and
+ * its `use()` hook returns the open/close handle for this surface.
+ */
 export function defineSurface(
   definition: SurfaceBuilderDefinition = {},
 ): BoundSurfaceFactory {
@@ -230,11 +281,15 @@ export function defineSurface(
   return factory;
 }
 
+/**
+ * Defines a multi-step surface. Steps and title may be static or derived
+ * from props; `use()` returns the handle bound to this surface.
+ */
 export function defineStepSurface(definition: DefineStepSurfaceOptions = {}) {
   const {
     currentStepIndex = 0,
     defaultProps = {},
-    id = "wizard-surface",
+    id = DEFAULT_STEP_SURFACE_ID,
     steps = [],
     title = null,
     width = null,
@@ -246,10 +301,8 @@ export function defineStepSurface(definition: DefineStepSurfaceOptions = {}) {
     overrides: Partial<SurfaceDescriptor> = {},
   ): SurfaceDescriptor {
     const mergedProps = { ...defaultProps, ...props };
-    const resolvedTitle =
-      typeof title === "function" ? title(mergedProps) : title;
-    const resolvedSteps =
-      typeof steps === "function" ? steps(mergedProps) : steps;
+    const resolvedTitle = resolveFromProps(title, mergedProps);
+    const resolvedSteps = resolveFromProps(steps, mergedProps);
     return {
       id: overrides.id ?? id,
       title: overrides.title ?? resolvedTitle,
@@ -283,6 +336,10 @@ export function defineStepSurface(definition: DefineStepSurfaceOptions = {}) {
   return stepSurfaceFactory;
 }
 
+/**
+ * Step navigation for the topmost surface: current step, position and
+ * next, prev, goTo and push controls.
+ */
 export function useSurfaceStep() {
   const { closeSurface, goToStep, popStep, pushStep } = useDockActions();
   const surfaceStack =
@@ -334,6 +391,7 @@ export function useSurfaceStep() {
   };
 }
 
+/** Creates an Error carrying a machine-readable `code`. */
 export function createSurfaceError(
   code: string,
   message: string,
@@ -343,6 +401,7 @@ export function createSurfaceError(
   return error;
 }
 
+/** Validates and normalizes a flow definition, or null when invalid. */
 export function createSurfaceFlowDefinition(
   input: SurfaceFlowDefinitionInput | SurfaceFlowDefinition | null | undefined,
 ): SurfaceFlowDefinition | null {
@@ -361,6 +420,7 @@ export function createSurfaceFlowDefinition(
   };
 }
 
+/** Starts a flow session for a definition with an optional snapshot. */
 export function createSurfaceFlowSession(
   definition: SurfaceFlowDefinition | null,
   { input = null, snapshot }: { input?: unknown; snapshot?: unknown } = {},
@@ -378,6 +438,7 @@ export function createSurfaceFlowSession(
   };
 }
 
+/** Returns the session with a new snapshot, or null without a session. */
 export function updateSurfaceFlowSession(
   session: SurfaceFlowSession | null | undefined,
   snapshot: unknown,

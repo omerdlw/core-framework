@@ -11,6 +11,14 @@ import type {
 import { SurfaceFlowContext } from "../context";
 import { createSurfaceError, createSurfaceFlowDefinition } from "../definition";
 
+const FLOW_UNAVAILABLE_CODE = "DOCK_SURFACE_FLOW_UNAVAILABLE";
+const FLOW_UNAVAILABLE_MESSAGE = "Dock surface flow is unavailable";
+
+/**
+ * Binds a component to a named surface flow: tracks its state and exposes
+ * open, update, complete and cancel controls. Restores the flow from the URL
+ * once on mount.
+ */
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);
   const definition = useMemo(() => createSurfaceFlowDefinition(input), [input]);
@@ -43,8 +51,8 @@ export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
         return Promise.resolve({
           success: false,
           error: createSurfaceError(
-            "DOCK_SURFACE_FLOW_UNAVAILABLE",
-            "Dock surface flow is unavailable",
+            FLOW_UNAVAILABLE_CODE,
+            FLOW_UNAVAILABLE_MESSAGE,
           ),
         });
       }

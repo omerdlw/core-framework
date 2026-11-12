@@ -18,7 +18,7 @@ import type {
   SurfaceUrlState,
 } from "../../types";
 import { normalizeSurfaceFlowSnapshot } from "../helpers";
-import { IS_BROWSER, syncSurfaceUrl } from "./url";
+import { IS_BROWSER, SURFACE_URL_PARAM, syncSurfaceUrl } from "./url";
 
 export interface SurfaceRecord {
   entry: SurfaceStackEntry;
@@ -80,7 +80,7 @@ export function getRestorableSurfaceFlowSnapshot(
   const dockSurface = historyState?.dockSurface;
   const flow = dockSurface?.flow;
   const currentSurfaceValue = new URL(window.location.href).searchParams.get(
-    "surface",
+    SURFACE_URL_PARAM,
   );
 
   if (

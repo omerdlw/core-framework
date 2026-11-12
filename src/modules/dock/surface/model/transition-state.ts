@@ -6,6 +6,8 @@ import type {
   SurfaceTransitionState,
 } from "../../types";
 
+const MS_PER_SECOND = 1000;
+
 const SURFACE_PHASES: readonly unknown[] = Object.values(DOCK_SURFACE_PHASE);
 
 const SURFACE_LIFECYCLES: readonly unknown[] = Object.values(DOCK_LIFECYCLE);
@@ -49,7 +51,7 @@ export function createScheduledTransition(
   label: string,
 ): SurfaceTransitionEffect {
   return {
-    delayMs: Math.max(0, Math.round((Number(seconds) || 0) * 1000)),
+    delayMs: Math.max(0, Math.round((Number(seconds) || 0) * MS_PER_SECOND)),
     event: { type: SURFACE_TRANSITION_EVENTS.ADVANCE },
     label,
     type: SURFACE_TRANSITION_EFFECTS.SCHEDULE,
@@ -65,6 +67,16 @@ export function createReleaseEffect(
   };
 }
 
+function deriveLifecycle(phase: string, hasClosingSurfaces: boolean) {
+  if (phase === DOCK_SURFACE_PHASE.IDLE) return DOCK_LIFECYCLE.IDLE;
+  if (phase === DOCK_SURFACE_PHASE.OPEN) return DOCK_LIFECYCLE.OPEN;
+  return hasClosingSurfaces ? DOCK_LIFECYCLE.CLOSING : DOCK_LIFECYCLE.OPENING;
+}
+
+/**
+ * Normalizes a partial transition state: dedupes ids and falls back to a
+ * phase and lifecycle derived from the remaining surfaces.
+ */
 export function createSurfaceTransitionState(
   input: Partial<SurfaceTransitionState> | null = {},
 ): SurfaceTransitionState {
@@ -79,21 +91,15 @@ export function createSurfaceTransitionState(
       Array.isArray(source.closingSurfaceIds) ? source.closingSurfaceIds : [],
     ),
   ].filter((s) => surfaceIds.includes(s));
+  const fallbackPhase =
+    surfaceIds.length > 0 ? DOCK_SURFACE_PHASE.OPEN : DOCK_SURFACE_PHASE.IDLE;
   const phase = SURFACE_PHASES.includes(source.phase)
     ? source.phase!
-    : surfaceIds.length > 0
-      ? DOCK_SURFACE_PHASE.OPEN
-      : DOCK_SURFACE_PHASE.IDLE;
+    : fallbackPhase;
 
   const surfaceLifecycle = SURFACE_LIFECYCLES.includes(source.surfaceLifecycle)
     ? source.surfaceLifecycle!
-    : phase === DOCK_SURFACE_PHASE.IDLE
-      ? DOCK_LIFECYCLE.IDLE
-      : phase === DOCK_SURFACE_PHASE.OPEN
-        ? DOCK_LIFECYCLE.OPEN
-        : closingSurfaceIds.length > 0
-          ? DOCK_LIFECYCLE.CLOSING
-          : DOCK_LIFECYCLE.OPENING;
+    : deriveLifecycle(phase, closingSurfaceIds.length > 0);
 
   return freezeSurfaceTransitionState({
     closingSurfaceIds,
