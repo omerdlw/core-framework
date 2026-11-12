@@ -401,16 +401,17 @@ const DockIconOverlay = memo(function DockIconOverlay({
   const { icon, onClick, title = "" } = overlay;
 
   const isInteractive = typeof onClick === "function";
-  const content = isImageIconSource(icon) ? (
-    <span
-      className={theme.slots.iconOverlayImage}
-      style={{ backgroundImage: `url(${icon})` }}
-    />
-  ) : (
-    <span className={theme.slots.iconOverlayGlyph}>
-      {renderIconNode(icon, 12)}
-    </span>
-  );
+  const content =
+    typeof icon === "string" && isImageIconSource(icon) ? (
+      <span
+        className={theme.slots.iconOverlayImage}
+        style={{ backgroundImage: `url(${icon})` }}
+      />
+    ) : (
+      <span className={theme.slots.iconOverlayGlyph}>
+        {renderIconNode(icon, 12)}
+      </span>
+    );
 
   return (
     <AnimatePresence mode="popLayout">

@@ -32,7 +32,7 @@ export function ContextMenuHeaderIcon({
 }) {
   const iconClassName = classes.headerIcon;
 
-  if (isImageIconSource(icon)) {
+  if (typeof icon === "string" && isImageIconSource(icon)) {
     return (
       <div
         className={iconClassName}

@@ -17,7 +17,7 @@ export function normalizePath(path: unknown): string {
   return stripTrailingSlash(trimmed);
 }
 
-export function isImageIconSource(icon: unknown): icon is string {
+export function isImageIconSource(icon: unknown): boolean {
   return (
     typeof icon === "string" &&
     (icon.startsWith("http://") ||
