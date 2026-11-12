@@ -20,6 +20,7 @@ function useMediaPage(
   page: PageModuleApi,
 ): MediaPageApi {
   const actions = useMediaActions();
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

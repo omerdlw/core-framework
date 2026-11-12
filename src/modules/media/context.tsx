@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
@@ -95,82 +95,81 @@ function toggleEntryLoop(
   patch(entry.id, { loop });
 }
 
+interface MediaInstance {
+  /** Releases the follower binding. */
+  dispose: () => void;
+  value: MediaContextValue;
+}
+
+/** Builds the media store, its source registry and the actions over them. */
+function createMedia(): MediaInstance {
+  const store = createStore<MediaState>(DEFAULT_MEDIA_STATE, {
+    freezeSnapshots: false,
+  });
+  const sources = new Map<string, MediaEntry>();
+  let session: MediaSession | null = null;
+  let order = 0;
+  let binding: Binding | null = null;
+
+  const commit = () => {
+    session = resolveMediaSession([...sources.values()]);
+    binding = rebindFollowers(binding, session);
+    const next = createMediaState(session);
+    store.publish((prev) => (mediaStatesEqual(prev, next) ? prev : next));
+  };
+
+  const patch = (id: string, changes: Partial<MediaEntry>) => {
+    const current = sources.get(id);
+    if (!current) return;
+    sources.set(id, { ...current, ...changes });
+    commit();
+  };
+
+  const actions: MediaActions = {
+    removeSource: (id) => {
+      if (sources.delete(id)) commit();
+    },
+    setMuted: (muted) => {
+      const audible = session?.audible;
+      if (audible) setEntryMuted(audible, muted);
+    },
+    toggle: () => {
+      const transport = session?.transport;
+      if (transport) toggleEntry(transport);
+    },
+    toggleLoop: () => {
+      const transport = session?.transport;
+      if (transport) toggleEntryLoop(transport, patch);
+    },
+    upsertSource: (input) => {
+      const current = sources.get(input.id);
+      if (!current) order += 1;
+      sources.set(input.id, mergeMediaSource(current, input, order));
+      commit();
+      if (!current) {
+        findDisplacedAudio([...sources.values()], session, input.id).forEach(
+          (entry) => entry.element?.pause(),
+        );
+      }
+    },
+  };
+
+  return {
+    dispose: () => {
+      binding?.cleanup();
+      binding = null;
+    },
+    value: { actions, store },
+  };
+}
+
 /**
  * Provides media state and actions to its children and keeps follower
  * sources in sync with their transport.
  */
 export function MediaProvider({ children }: MediaProviderProps) {
-  const [store] = useState(() =>
-    createStore<MediaState>(DEFAULT_MEDIA_STATE, { freezeSnapshots: false }),
-  );
-  const sourcesRef = useRef(new Map<string, MediaEntry>());
-  const sessionRef = useRef<MediaSession | null>(null);
-  const orderRef = useRef(0);
-  const bindingRef = useRef<Binding | null>(null);
-
-  const actions = useMemo<MediaActions>(() => {
-    const commit = () => {
-      const session = resolveMediaSession([...sourcesRef.current.values()]);
-      sessionRef.current = session;
-      bindingRef.current = rebindFollowers(bindingRef.current, session);
-      const next = createMediaState(session);
-      store.publish((prev) => (mediaStatesEqual(prev, next) ? prev : next));
-    };
-
-    const patch = (id: string, changes: Partial<MediaEntry>) => {
-      const current = sourcesRef.current.get(id);
-      if (!current) return;
-      sourcesRef.current.set(id, { ...current, ...changes });
-      commit();
-    };
-
-    return {
-      removeSource: (id) => {
-        if (sourcesRef.current.delete(id)) commit();
-      },
-      setMuted: (muted) => {
-        const audible = sessionRef.current?.audible;
-        if (audible) setEntryMuted(audible, muted);
-      },
-      toggle: () => {
-        const transport = sessionRef.current?.transport;
-        if (transport) toggleEntry(transport);
-      },
-      toggleLoop: () => {
-        const transport = sessionRef.current?.transport;
-        if (transport) toggleEntryLoop(transport, patch);
-      },
-      upsertSource: (input) => {
-        const current = sourcesRef.current.get(input.id);
-        if (!current) orderRef.current += 1;
-        sourcesRef.current.set(
-          input.id,
-          mergeMediaSource(current, input, orderRef.current),
-        );
-        commit();
-        if (!current) {
-          findDisplacedAudio(
-            [...sourcesRef.current.values()],
-            sessionRef.current,
-            input.id,
-          ).forEach((entry) => entry.element?.pause());
-        }
-      },
-    };
-  }, [store]);
-
-  useEffect(
-    () => () => {
-      bindingRef.current?.cleanup();
-      bindingRef.current = null;
-    },
-    [],
-  );
-
-  const value = useMemo<MediaContextValue>(
-    () => ({ actions, store }),
-    [actions, store],
-  );
+  const [{ dispose, value }] = useState(createMedia);
+  useEffect(() => dispose, [dispose]);
 
   return <MediaContext value={value}>{children}</MediaContext>;
 }

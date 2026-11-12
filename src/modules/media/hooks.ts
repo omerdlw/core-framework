@@ -150,13 +150,17 @@ export function useMedia(options: MediaOptions): MediaHandle {
     upsertSource({ follow, id, ...(follow ? {} : { loop: audio.loop }) });
   }, [follow, id, isEnabled, loop, muted, src, upsertSource, volume]);
 
+  // stable identity: part of the public hook contract
   const play = useCallback(() => {
     const audio = audioRef.current;
     if (audio) void Promise.resolve(audio.play()).catch(() => {});
   }, []);
+  // stable identity: part of the public hook contract
   const pause = useCallback(() => audioRef.current?.pause(), []);
+  // stable identity: part of the public hook contract
   const toggle = useCallback(() => toggleElement(audioRef.current), []);
 
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({ id, pause, play, toggle }),
     [id, pause, play, toggle],
