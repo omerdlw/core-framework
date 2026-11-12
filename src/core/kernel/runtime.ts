@@ -43,33 +43,47 @@ interface TransactionStore {
   batch: (executor: (queue: TransactionBatchQueue) => void) => unknown;
 }
 
+const TRACE_RADIX = 36;
+const TRACE_SUFFIX_LENGTH = 6;
+
+function createTraceId(): string {
+  const time = Date.now().toString(TRACE_RADIX);
+  const suffix = Math.random()
+    .toString(TRACE_RADIX)
+    .slice(2, 2 + TRACE_SUFFIX_LENGTH);
+  return `tx-${time}-${suffix}`;
+}
+
+/** Fills in the transaction's default source and scope where options omit them. */
+function withTransactionDefaults(
+  metadata: RegistryMetadata,
+  options: RegistryMetadata | undefined,
+): RegistryMetadata {
+  const baseOpts = options && typeof options === "object" ? options : {};
+  const needsSource = metadata.source && !baseOpts.source;
+  const needsScope = metadata.scope && !baseOpts.scope;
+
+  if (!needsSource && !needsScope) return baseOpts;
+
+  return {
+    ...baseOpts,
+    ...(needsSource ? { source: metadata.source } : {}),
+    ...(needsScope ? { scope: metadata.scope } : {}),
+  };
+}
+
 export function createRegistryTransaction(
   store: TransactionStore,
   metadata: RegistryMetadata & { source?: string; traceId?: string } = {},
 ): RegistryTransaction {
   const operations: QueuedOperation[] = [];
   let status: TransactionStatus = "open";
-  const traceId =
-    metadata.traceId ||
-    `tx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const traceId = metadata.traceId || createTraceId();
 
   const ensureOpen = () => status === "open";
 
-  const mergeOptions = (
-    options: RegistryMetadata | undefined,
-  ): RegistryMetadata => {
-    const baseOpts = options && typeof options === "object" ? options : {};
-    const needsSource = metadata.source && !baseOpts.source;
-    const needsScope = metadata.scope && !baseOpts.scope;
-
-    if (!needsSource && !needsScope) return baseOpts;
-
-    return {
-      ...baseOpts,
-      ...(needsSource ? { source: metadata.source } : {}),
-      ...(needsScope ? { scope: metadata.scope } : {}),
-    };
-  };
+  const mergeOptions = (options: RegistryMetadata | undefined) =>
+    withTransactionDefaults(metadata, options);
 
   const register: RegistryTransactionQueue["register"] = (
     type,

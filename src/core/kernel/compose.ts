@@ -11,6 +11,9 @@ export type ProviderComponent<P = any> = ComponentType<
   P & { children?: ReactNode }
 >;
 
+/**
+ * A provider component, or a [component, props] pair.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider props are erased at the composition boundary
 export type ProviderEntry<P = any> =
   ProviderComponent<P> | readonly [ProviderComponent<P>, P];
@@ -27,6 +30,9 @@ export function createProviderEntry<P extends object>(
   return [component, props] as const;
 }
 
+/**
+ * Nests the given providers around its children, first entry outermost.
+ */
 export function Compose({ providers, children }: ComposeProps): JSX.Element {
   return providers.reduceRight<JSX.Element>(
     (acc, entry) => {

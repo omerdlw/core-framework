@@ -28,25 +28,17 @@ function resolveLifecycle(
     : fallback;
 }
 
-export function validateRegistryMetadata(metadata: unknown): ValidationResult {
-  if (metadata === undefined || metadata === null)
-    return { issues: [], valid: true };
-  if (!isObject(metadata))
-    return { issues: ["registry metadata must be an object"], valid: false };
+function checkNonEmptyStrings(
+  metadata: Record<string, unknown>,
+  issues: string[],
+): void {
+  for (const field of ["source", "instanceId", "scope"]) {
+    if (metadata[field] !== undefined && !getValidString(metadata[field]))
+      issues.push(`${field} must be a non-empty string`);
+  }
+}
 
-  const issues: string[] = [];
-
-  Object.keys(metadata).forEach((key) => {
-    if (!REGISTRY_METADATA_KEY_SET.has(key))
-      issues.push(`unknown registry metadata field: ${key}`);
-  });
-
-  if (metadata.source !== undefined && !getValidString(metadata.source))
-    issues.push("source must be a non-empty string");
-  if (metadata.instanceId !== undefined && !getValidString(metadata.instanceId))
-    issues.push("instanceId must be a non-empty string");
-  if (metadata.scope !== undefined && !getValidString(metadata.scope))
-    issues.push("scope must be a non-empty string");
+function checkNumbers(metadata: Record<string, unknown>, issues: string[]) {
   if (
     metadata.priority !== undefined &&
     parseFiniteNumber(metadata.priority) === null
@@ -58,7 +50,9 @@ export function validateRegistryMetadata(metadata: unknown): ValidationResult {
     if (delay === null || delay < 0)
       issues.push("cleanupDelayMs must be a non-negative finite number");
   }
+}
 
+function checkEnums(metadata: Record<string, unknown>, issues: string[]) {
   const lifecycle = metadata.lifecycle ?? metadata.cleanup;
   if (
     lifecycle !== undefined &&
@@ -80,6 +74,24 @@ export function validateRegistryMetadata(metadata: unknown): ValidationResult {
       `validation must be one of: ${Object.values(REGISTRY_VALIDATION_MODES).join(", ")}`,
     );
   }
+}
+
+export function validateRegistryMetadata(metadata: unknown): ValidationResult {
+  if (metadata === undefined || metadata === null)
+    return { issues: [], valid: true };
+  if (!isObject(metadata))
+    return { issues: ["registry metadata must be an object"], valid: false };
+
+  const issues: string[] = [];
+
+  Object.keys(metadata).forEach((key) => {
+    if (!REGISTRY_METADATA_KEY_SET.has(key))
+      issues.push(`unknown registry metadata field: ${key}`);
+  });
+
+  checkNonEmptyStrings(metadata, issues);
+  checkNumbers(metadata, issues);
+  checkEnums(metadata, issues);
 
   return { issues, valid: issues.length === 0 };
 }
@@ -152,17 +164,28 @@ export function validateRegistryValue(
   return { issues, valid: issues.length === 0 };
 }
 
+interface NormalizeDefaults {
+  defaultCleanupDelayMs?: number | null;
+  defaultLifecycle?: RegistryLifecycle | null;
+  defaultSource?: string;
+}
+
+function resolveCleanupDelay(
+  lifecycle: RegistryLifecycle | null,
+  candidate: number | null,
+  fallback: number | null,
+): number | null {
+  if (lifecycle === REGISTRY_LIFECYCLES.IMMEDIATE) return 0;
+  return candidate !== null && candidate >= 0 ? candidate : fallback;
+}
+
 export function normalizeRegistryMetadata(
   metadata: unknown,
   {
     defaultCleanupDelayMs = null,
     defaultLifecycle = null,
     defaultSource = DEFAULT_SOURCE,
-  }: {
-    defaultCleanupDelayMs?: number | null;
-    defaultLifecycle?: RegistryLifecycle | null;
-    defaultSource?: string;
-  } = {},
+  }: NormalizeDefaults = {},
 ): NormalizedRegistryMetadata {
   const registryMeta = isObject(metadata) ? metadata : {};
 
@@ -187,21 +210,11 @@ export function normalizeRegistryMetadata(
     ? registryMeta.validation
     : null;
 
-  const cleanupDelayCandidate = parseFiniteNumber(registryMeta.cleanupDelayMs);
-  let cleanupDelayMs =
-    cleanupDelayCandidate !== null && cleanupDelayCandidate >= 0
-      ? cleanupDelayCandidate
-      : fallbackCleanupDelayMs;
-
-  if (lifecycle === REGISTRY_LIFECYCLES.IMMEDIATE) {
-    cleanupDelayMs = 0;
-  } else if (
-    (lifecycle === REGISTRY_LIFECYCLES.GRACEFUL ||
-      lifecycle === REGISTRY_LIFECYCLES.ROUTE) &&
-    cleanupDelayMs === null
-  ) {
-    cleanupDelayMs = fallbackCleanupDelayMs;
-  }
+  const cleanupDelayMs = resolveCleanupDelay(
+    lifecycle,
+    parseFiniteNumber(registryMeta.cleanupDelayMs),
+    fallbackCleanupDelayMs,
+  );
 
   return {
     cleanupDelayMs,

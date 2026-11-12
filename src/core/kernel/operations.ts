@@ -117,6 +117,22 @@ function applyOperationFor(
   return state;
 }
 
+function unregisterHasEffect(
+  entry: MaybeEntry,
+  operation: UnregisterOperation,
+): boolean {
+  const { instanceId, scope, source } = operation;
+  if (typeof instanceId !== "string" || instanceId.length === 0) {
+    return getSourceRecords(entry, source, scope).length > 0;
+  }
+  if (scope === null) {
+    return getSourceRecords(entry, source).some(
+      ({ record }) => record?.instanceId === instanceId,
+    );
+  }
+  return Boolean(getSourceRecord(entry, source, instanceId, scope));
+}
+
 function hasOperationEffectFor(
   definitions: RegistryDefinitions,
   state: RegistryState,
@@ -136,26 +152,9 @@ function hasOperationEffectFor(
   }
 
   if (operation.kind === "unregister") {
-    const entry = state[operation.type]?.[operation.key];
-    if (
-      typeof operation.instanceId === "string" &&
-      operation.instanceId.length > 0
-    ) {
-      return operation.scope === null
-        ? getSourceRecords(entry, operation.source).some(
-            ({ record }) => record?.instanceId === operation.instanceId,
-          )
-        : Boolean(
-            getSourceRecord(
-              entry,
-              operation.source,
-              operation.instanceId,
-              operation.scope,
-            ),
-          );
-    }
-    return (
-      getSourceRecords(entry, operation.source, operation.scope).length > 0
+    return unregisterHasEffect(
+      state[operation.type]?.[operation.key],
+      operation,
     );
   }
   return false;
@@ -178,6 +177,10 @@ function resolveEffectiveOperationsFor(
   return { effectiveOperations, nextState };
 }
 
+/**
+ * Creates the pure operations (apply, resolve, validate targets) for a set of
+ * registry definitions.
+ */
 export function createRegistryOperations(definitions: RegistryDefinitions) {
   return Object.freeze({
     applyOperation: (state: RegistryState, operation: RegistryOperation) =>

@@ -5,6 +5,7 @@ import {
 } from "./operations";
 import { createRecordKey } from "./operations-records";
 import { createRegistryTransaction } from "./runtime";
+import { createBatchQueue } from "./store-batch";
 import {
   createInitialState,
   type InitialRegistryEntries,
@@ -12,9 +13,10 @@ import {
 } from "./store-entries";
 import { createNoopHandle, createRegistrationHandle } from "./store-handles";
 import { prepareRegisterOperation } from "./store-registration";
+import { createSnapshotReaders } from "./store-snapshots";
 import {
-  getOrCreateKeyListeners,
-  notifyListeners,
+  collectChangedKeys,
+  createListenerRegistry,
 } from "./store-subscriptions";
 import type {
   RegisterOperation,
@@ -31,6 +33,10 @@ import type {
 
 const NO_DEFINITIONS: RegistryDefinitions = new Map();
 
+/**
+ * Creates a registry store: a prioritized, observable collection of typed
+ * entries.
+ */
 export function createRegistryStore(
   initialEntries: InitialRegistryEntries = [],
   definitions: RegistryDefinitions = NO_DEFINITIONS,
@@ -42,49 +48,12 @@ export function createRegistryStore(
     0,
   );
 
-  const listenersByType = new Map<
-    string,
-    Map<string | null, Set<() => void>>
-  >();
-  const entrySnapshots = new Map<
-    string,
-    {
-      typeRegistry: RegistryState[string];
-      value: Readonly<Record<string, unknown>>;
-    }
-  >();
-  const valueSnapshots = new Map<
-    string,
-    Map<
-      string,
-      { entry: RegistryState[string][string] | undefined; value: unknown }
-    >
-  >();
+  const listeners = createListenerRegistry();
   const resolveCachedValue = ops.createResolverCache();
-
-  const subscribe = (
-    type: string,
-    key: string | null | undefined,
-    listener: () => void,
-  ) => {
-    const keyListeners = getOrCreateKeyListeners(
-      listenersByType,
-      type,
-      key ?? null,
-    );
-    keyListeners.add(listener);
-
-    return () => {
-      keyListeners.delete(listener);
-      if (keyListeners.size > 0) return;
-
-      const listeners = listenersByType.get(type);
-      if (listeners) {
-        listeners.delete(key ?? null);
-        if (listeners.size === 0) listenersByType.delete(type);
-      }
-    };
-  };
+  const { getEntriesSnapshot, getSnapshot } = createSnapshotReaders(
+    () => registries,
+    resolveCachedValue,
+  );
 
   const commit = (
     nextState: RegistryState,
@@ -94,35 +63,11 @@ export function createRegistryStore(
     const previousState = registries;
     registries = nextState;
 
-    const changedKeysByType = new Map<string, Set<string>>();
-    for (const operation of operations) {
-      if (!ops.isValidRegistryTarget(operation?.type, operation?.key)) continue;
-      let keys = changedKeysByType.get(operation.type);
-      if (!keys) {
-        keys = new Set();
-        changedKeysByType.set(operation.type, keys);
-      }
-      keys.add(operation.key);
-    }
-
-    for (const [type, changedKeys] of changedKeysByType) {
-      const previousRegistry = previousState[type] || {};
-      const nextRegistry = nextState[type] || {};
-      const typeListeners = listenersByType.get(type);
-      let typeChanged = false;
-
-      if (!typeListeners) continue;
-
-      for (const key of changedKeys) {
-        if (previousRegistry[key] === nextRegistry[key]) continue;
-        typeChanged = true;
-        notifyListeners(typeListeners.get(key));
-      }
-
-      if (typeChanged) {
-        notifyListeners(typeListeners.get(null));
-      }
-    }
+    listeners.notifyChanged(
+      previousState,
+      nextState,
+      collectChangedKeys(operations, ops.isValidRegistryTarget),
+    );
   };
 
   const isCurrent = (operation: RegisterOperation) => {
@@ -200,44 +145,18 @@ export function createRegistryStore(
 
   const batch = (executor: (queue: RegistryQueue) => void): number => {
     if (typeof executor !== "function") return 0;
-    const timestamp = Date.now();
     const operations: RegistryOperation[] = [];
 
-    const queue: RegistryQueue = {
-      register: (
-        type: string,
-        key: string,
-        item: unknown,
-        sourceOrOptions: RegistrySourceOrOptions = DEFAULT_SOURCE,
-        optionsArg: RegistryMetadata = {},
-      ): RegistrationHandle => {
-        const prepared = prepareRegisterOperation(
-          ops,
-          definitions,
-          type,
-          key,
-          item,
-          sourceOrOptions,
-          optionsArg,
-          timestamp,
-          ++sequence,
-        );
-        if ("rejected" in prepared) return prepared.rejected;
-
-        operations.push(prepared.operation);
-        return createRegistrationHandle(store, prepared.operation);
-      },
-      unregister: (
-        type: string,
-        key: string,
-        sourceOrOptions: RegistrySourceOrOptions = DEFAULT_SOURCE,
-      ): void => {
-        if (!ops.isValidRegistryTarget(type, key)) return;
-        operations.push(createUnregisterOperation(type, key, sourceOrOptions));
-      },
-    };
-
-    executor(queue);
+    executor(
+      createBatchQueue({
+        definitions,
+        getStore: () => store,
+        nextSequence: () => ++sequence,
+        operations,
+        ops,
+        timestamp: Date.now(),
+      }),
+    );
     if (operations.length === 0) return 0;
 
     const { effectiveOperations, nextState } = ops.resolveEffectiveOperations(
@@ -250,57 +169,6 @@ export function createRegistryStore(
     return effectiveOperations.length;
   };
 
-  const getSnapshot = (
-    type: string,
-    key: string,
-    scope: string | null = null,
-  ): unknown => {
-    const entry = registries[type]?.[key];
-    let snapshots = valueSnapshots.get(type);
-    if (!snapshots) {
-      snapshots = new Map();
-      valueSnapshots.set(type, snapshots);
-    }
-
-    const cacheKey = scope === null ? key : `${scope}\u0000${key}`;
-
-    if (entry === undefined) {
-      snapshots.delete(cacheKey);
-      return undefined;
-    }
-
-    const cached = snapshots.get(cacheKey);
-    if (cached && cached.entry === entry) return cached.value;
-
-    const value = resolveCachedValue(type, entry, scope);
-    snapshots.set(cacheKey, { entry, value });
-    return value;
-  };
-
-  const getEntriesSnapshot = (
-    type: string,
-    scope: string | null = null,
-  ): Readonly<Record<string, unknown>> => {
-    const typeRegistry = registries[type] || {};
-
-    const cacheKey = `${type}::${scope ?? "null"}`;
-    const cached = entrySnapshots.get(cacheKey);
-
-    if (cached?.typeRegistry === typeRegistry) return cached.value;
-
-    const resolved: Record<string, unknown> = {};
-    for (const key in typeRegistry) {
-      if (Object.prototype.hasOwnProperty.call(typeRegistry, key)) {
-        const value = resolveCachedValue(type, typeRegistry[key], scope);
-        if (value !== undefined) resolved[key] = value;
-      }
-    }
-
-    const finalValue = Object.freeze(resolved);
-    entrySnapshots.set(cacheKey, { typeRegistry, value: finalValue });
-    return finalValue;
-  };
-
   const store = {
     batch,
     dispose,
@@ -308,7 +176,7 @@ export function createRegistryStore(
     getSnapshot,
     isCurrent,
     register,
-    subscribe,
+    subscribe: listeners.subscribe,
     transaction: (
       executor: (tx: RegistryTransactionQueue) => void,
       metadata: RegistryMetadata = {},

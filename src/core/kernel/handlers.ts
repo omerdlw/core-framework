@@ -1,6 +1,10 @@
 import { isObject, report } from "@/foundation/utils";
 
-import { DEFAULT_SOURCE, REGISTRY_LIFECYCLES } from "./constants";
+import {
+  DEFAULT_SOURCE,
+  REGISTRY_LIFECYCLES,
+  REGISTRY_VALIDATION_MODES,
+} from "./constants";
 import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
 import type {
   AnyCoreModule,
@@ -84,6 +88,24 @@ type ModuleRegistration = RegistrationEntry & {
   type: string;
 };
 
+/** Item-level `registry` metadata, merged over the page-level metadata. */
+function resolveItemMetadata(
+  item: unknown,
+  pageMetadata: RegistryMetadata,
+): RegistryMetadata {
+  const itemMetadata =
+    isObject(item) && isObject(item.registry) ? item.registry : {};
+  return { ...pageMetadata, ...itemMetadata };
+}
+
+/** The item without its `registry` metadata key, as the module sees it. */
+function stripRegistryKey(item: unknown): unknown {
+  if (!isObject(item)) return item;
+  return Object.fromEntries(
+    Object.entries(item).filter(([key]) => key !== "registry"),
+  );
+}
+
 function collectModuleRegistrations(
   coreModule: AnyCoreModule,
   slice: unknown,
@@ -101,21 +123,15 @@ function collectModuleRegistrations(
 
   for (const item of items) {
     if (item == null || item === false) continue;
-    const itemMetadata =
-      isObject(item) && isObject(item.registry) ? item.registry : {};
-    const metadata = { ...pageMetadata, ...itemMetadata };
+    const metadata = resolveItemMetadata(item, pageMetadata);
     if (
-      metadata.validation === "strict" &&
+      metadata.validation === REGISTRY_VALIDATION_MODES.STRICT &&
       !validateRegistryMetadata(metadata).valid
     ) {
       continue;
     }
 
-    const payload: unknown = isObject(item)
-      ? Object.fromEntries(
-          Object.entries(item).filter(([key]) => key !== "registry"),
-        )
-      : item;
+    const payload = stripRegistryKey(item);
     const { cleanupDelayMs, lifecycle, registerOptions, scope, source } =
       normalizeRegistryMetadata(metadata, {
         defaultCleanupDelayMs: definition.cleanupDelayMs ?? null,
@@ -151,18 +167,15 @@ function collectModuleRegistrations(
   return registrations;
 }
 
-const NO_CLEANUP = () => {};
-
-export function applyRegistryConfig(
-  config: PageConfig | null | undefined,
+function collectRegistrations(
+  modules: readonly AnyCoreModule[],
+  config: PageConfig,
   context: RegistryApplyContext,
-): () => void {
-  const modules = context.modules ?? [];
-  if (!config || modules.length === 0) return NO_CLEANUP;
+): ModuleRegistration[] {
   const pageMetadata = isObject(config.registry) ? config.registry : {};
   const slices = config as Record<string, unknown>;
 
-  const registrations = modules.flatMap((coreModule) => {
+  return modules.flatMap((coreModule) => {
     try {
       return collectModuleRegistrations(
         coreModule,
@@ -175,22 +188,25 @@ export function applyRegistryConfig(
       return [];
     }
   });
-  if (registrations.length === 0) return NO_CLEANUP;
+}
 
-  const cleanupScope = getCleanupScope(context);
+function hasCleanupDelay(delayMs: number | null): delayMs is number {
+  return typeof delayMs === "number" && delayMs > 0;
+}
+
+/**
+ * Builds the teardown for applied registrations: delayed ones are scheduled,
+ * the rest are unregistered together in one batch.
+ */
+function createTeardown(
+  registrations: ModuleRegistration[],
+  context: RegistryApplyContext,
+  cleanupScope: CleanupScope,
+): () => void {
   const owner = (registration: ModuleRegistration) => ({
     instanceId: context.instanceId,
     scope: registration.scope,
     source: registration.source,
-  });
-
-  runRegistrationBatch(context, (queue) => {
-    registrations.forEach(
-      ({ cleanupKey, key, registerOptions, source, type, value }) => {
-        clearCleanupTimer(cleanupScope, cleanupKey);
-        queue.register(type, key, value, source, registerOptions);
-      },
-    );
   });
 
   return () => {
@@ -198,7 +214,7 @@ export function applyRegistryConfig(
     registrations.forEach((registration) => {
       if (isPersistentLifecycle(registration.lifecycle)) return;
       const { cleanupDelayMs, cleanupKey, key, type } = registration;
-      if (typeof cleanupDelayMs === "number" && cleanupDelayMs > 0) {
+      if (hasCleanupDelay(cleanupDelayMs)) {
         scheduleCleanup(
           cleanupScope,
           cleanupKey,
@@ -220,4 +236,34 @@ export function applyRegistryConfig(
       );
     });
   };
+}
+
+const NO_CLEANUP = () => {};
+
+/**
+ * Registers a page config's module slices into the registry and returns a
+ * function that tears them down according to each entry's lifecycle.
+ */
+export function applyRegistryConfig(
+  config: PageConfig | null | undefined,
+  context: RegistryApplyContext,
+): () => void {
+  const modules = context.modules ?? [];
+  if (!config || modules.length === 0) return NO_CLEANUP;
+
+  const registrations = collectRegistrations(modules, config, context);
+  if (registrations.length === 0) return NO_CLEANUP;
+
+  const cleanupScope = getCleanupScope(context);
+
+  runRegistrationBatch(context, (queue) => {
+    registrations.forEach(
+      ({ cleanupKey, key, registerOptions, source, type, value }) => {
+        clearCleanupTimer(cleanupScope, cleanupKey);
+        queue.register(type, key, value, source, registerOptions);
+      },
+    );
+  });
+
+  return createTeardown(registrations, context, cleanupScope);
 }

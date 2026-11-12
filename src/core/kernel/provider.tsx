@@ -39,15 +39,21 @@ const RegistryContext = getOrCreateGlobalContext<RegistryContextValue | null>(
   null,
 );
 
+interface RegistryProviderProps {
+  children?: ReactNode;
+  definitions?: RegistryDefinitions;
+  initialEntries?: InitialRegistryEntries;
+}
+
+/**
+ * Provides a registry store, optionally seeded with initial entries, to its
+ * subtree.
+ */
 export function RegistryProvider({
   children,
   definitions,
   initialEntries = [],
-}: {
-  children?: ReactNode;
-  definitions?: RegistryDefinitions;
-  initialEntries?: InitialRegistryEntries;
-}) {
+}: RegistryProviderProps) {
   const [store] = useState(() =>
     createRegistryStore(initialEntries, definitions),
   );
@@ -88,6 +94,9 @@ function useRegistrySubscription(): RegistryContextValue["subscription"] {
   ).subscription;
 }
 
+/**
+ * Subscribes to the resolved value of one registry key.
+ */
 export function useRegistryValue<
   K extends string = string,
   T = RegistryValueOf<K>,
@@ -106,6 +115,9 @@ export function useRegistryValue<
   return useSyncExternalStore(subscribeToKey, getValue, getValue);
 }
 
+/**
+ * Subscribes to all resolved entries of a registry type.
+ */
 export function useRegistryEntries<
   K extends string = string,
   T = RegistryValueOf<K>,

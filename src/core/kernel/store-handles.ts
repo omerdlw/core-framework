@@ -1,9 +1,12 @@
+import { REGISTRY_VALIDATION_MODES } from "./constants";
 import type {
   RegisterOperation,
   RegistrationHandle,
   RegistryMetadata,
   RegistryStore,
 } from "./types";
+
+const DEFAULT_VALIDATION = REGISTRY_VALIDATION_MODES.WARN;
 
 export function createNoopHandle(
   status: RegistrationHandle["status"] = "rejected",
@@ -21,7 +24,7 @@ export function createNoopHandle(
     type: "",
     update: (): RegistrationHandle => handle,
     updatedAt: 0,
-    validation: "warn",
+    validation: DEFAULT_VALIDATION,
   });
   return handle;
 }
@@ -81,16 +84,17 @@ export function createRegistrationHandle(
     source: { enumerable: true, value: operation.source },
     status: {
       enumerable: true,
-      get: () =>
-        disposed
-          ? "disposed"
-          : store.isCurrent(operation)
-            ? "active"
-            : "superseded",
+      get: () => {
+        if (disposed) return "disposed";
+        return store.isCurrent(operation) ? "active" : "superseded";
+      },
     },
     type: { enumerable: true, value: operation.type },
     updatedAt: { enumerable: true, value: operation.record.updatedAt },
-    validation: { enumerable: true, value: operation.validation || "warn" },
+    validation: {
+      enumerable: true,
+      value: operation.validation || DEFAULT_VALIDATION,
+    },
   });
 
   return handle;

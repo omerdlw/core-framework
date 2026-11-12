@@ -7,6 +7,9 @@ import {
 } from "./constants";
 import type { RegistryMetadata } from "./types";
 
+/**
+ * Safe own-property check that works on objects without a prototype.
+ */
 export function hasOwnProperty(target: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(target, key);
 }

@@ -216,6 +216,36 @@ export function setSourceRecord(
   };
 }
 
+interface KeyedRecord {
+  recordKey: string;
+  record: SourceRecord;
+}
+
+/** Records an unregister targets: one exact record, or every match. */
+function findRecordsToRemove(
+  entry: RegistryEntryRecords,
+  source: string,
+  instanceId: string | null,
+  scope: string | null,
+): KeyedRecord[] {
+  if (
+    typeof instanceId === "string" &&
+    instanceId.length > 0 &&
+    scope !== null
+  ) {
+    const safeScope = scope || DEFAULT_REGISTRY_SCOPE;
+    const record = getSourceRecord(entry, source, instanceId, safeScope);
+    if (!record) return [];
+    return [
+      { recordKey: createRecordKey(source, instanceId, safeScope), record },
+    ];
+  }
+
+  return getSourceRecords(entry, source, scope)
+    .filter(({ record }) => !instanceId || record?.instanceId === instanceId)
+    .filter((candidate): candidate is KeyedRecord => Boolean(candidate.record));
+}
+
 export function removeSourceRecord(
   state: RegistryState,
   type: string,
@@ -228,25 +258,12 @@ export function removeSourceRecord(
   const currentEntry = typeRegistry?.[key];
   if (!typeRegistry || !currentEntry) return state;
 
-  let activeRecords: { recordKey: string; record: SourceRecord }[] = [];
-
-  if (
-    typeof instanceId === "string" &&
-    instanceId.length > 0 &&
-    scope !== null
-  ) {
-    const safeScope = scope || DEFAULT_REGISTRY_SCOPE;
-    const recordKey = createRecordKey(source, instanceId, safeScope);
-    const record = getSourceRecord(currentEntry, source, instanceId, safeScope);
-
-    if (record) activeRecords.push({ recordKey, record });
-  } else {
-    activeRecords = getSourceRecords(currentEntry, source, scope)
-      .filter(({ record }) => !instanceId || record?.instanceId === instanceId)
-      .filter((entry): entry is { recordKey: string; record: SourceRecord } =>
-        Boolean(entry.record),
-      );
-  }
+  const activeRecords = findRecordsToRemove(
+    currentEntry,
+    source,
+    instanceId,
+    scope,
+  );
 
   if (activeRecords.length === 0) return state;
 

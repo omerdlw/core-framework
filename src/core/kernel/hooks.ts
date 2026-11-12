@@ -78,18 +78,20 @@ export function useShallowStable<T extends object>(value: T): T {
   return ref.current;
 }
 
+interface AppliedConfig {
+  cleanup: () => void;
+  config: unknown;
+  context: RegistryApplyContext;
+  payload: PageConfig | null;
+}
+
 function useAppliedRegistryConfig(
   payload: PageConfig | null,
   context: RegistryApplyContext,
   componentSlices: ReadonlySet<string>,
 ): void {
   const functionEntriesRef = useRef(new Map<string, StableFunctionEntry>());
-  const appliedRef = useRef<{
-    cleanup: () => void;
-    config: unknown;
-    context: RegistryApplyContext;
-    payload: PageConfig | null;
-  } | null>(null);
+  const appliedRef = useRef<AppliedConfig | null>(null);
 
   useLayoutEffect(() => {
     const previous = appliedRef.current;
@@ -138,18 +140,9 @@ function useAppliedRegistryConfig(
   );
 }
 
-export function createRegistryApplyContext(
-  actions: RegistryQueue & Pick<RegistryApplyContext, "batch">,
-  {
-    cleanupScope = new Map<string, RegistryCleanupTimer>(),
-    instanceId,
-    modules = [],
-    pathname,
-  }: Pick<RegistryApplyContext, "instanceId" | "modules" | "pathname"> & {
-    cleanupScope?: RegistryApplyContext["cleanupScope"];
-  },
-): RegistryApplyContext {
-  const stamp = (queue: RegistryQueue): RegistryQueue => ({
+/** Wraps a queue so every register/unregister carries the instance id. */
+function stampQueue(queue: RegistryQueue, instanceId: string): RegistryQueue {
+  return {
     register: (
       type: string,
       key: string,
@@ -177,13 +170,34 @@ export function createRegistryApplyContext(
         key,
         withInstanceIdForUnregister(instanceId, sourceOrOptions),
       ),
-  });
+  };
+}
 
+interface ApplyContextOptions extends Pick<
+  RegistryApplyContext,
+  "instanceId" | "modules" | "pathname"
+> {
+  cleanupScope?: RegistryApplyContext["cleanupScope"];
+}
+
+/**
+ * Creates the context used to apply a page config: registry actions stamped
+ * with one instance id, plus the cleanup scope and installed modules.
+ */
+export function createRegistryApplyContext(
+  actions: RegistryQueue & Pick<RegistryApplyContext, "batch">,
+  {
+    cleanupScope = new Map<string, RegistryCleanupTimer>(),
+    instanceId,
+    modules = [],
+    pathname,
+  }: ApplyContextOptions,
+): RegistryApplyContext {
   return {
-    ...stamp(actions),
+    ...stampQueue(actions, instanceId),
     batch: (executor) =>
       typeof executor === "function"
-        ? actions.batch((queue) => executor(stamp(queue)))
+        ? actions.batch((queue) => executor(stampQueue(queue, instanceId)))
         : 0,
     cleanupScope,
     instanceId,

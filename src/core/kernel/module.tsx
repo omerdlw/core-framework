@@ -2,8 +2,7 @@
 
 import { createElement, type ReactNode, use, useState } from "react";
 
-import { createStore, type ExternalStore } from "@/foundation/utils";
-import { report } from "@/foundation/utils";
+import { createStore, type ExternalStore, report } from "@/foundation/utils";
 import { useStore } from "@/react/hooks";
 
 import {
@@ -27,6 +26,9 @@ import type {
   ModuleStateOf,
 } from "./types";
 
+/**
+ * Declares a module with full type inference.
+ */
 export function defineModule<
   TId extends string,
   TRuntime = never,
@@ -73,6 +75,27 @@ export interface ModuleHostProps {
   registryEntries?: readonly AppRegistryEntry[];
 }
 
+/** Renders each module's Backdrop or Overlay inside its own error boundary. */
+function renderModuleSlots(
+  modules: readonly AnyCoreModule[],
+  slot: "Backdrop" | "Overlay",
+  Boundary: BoundaryComponent,
+): ReactNode[] {
+  return modules.map((coreModule) => {
+    const Slot = coreModule[slot];
+    if (!Slot) return null;
+    return (
+      <Boundary key={coreModule.id} name={coreModule.id}>
+        <Slot />
+      </Boundary>
+    );
+  });
+}
+
+/**
+ * Installs modules: provides the registry, page controller and each module's
+ * provider, backdrop and overlay.
+ */
 export function ModuleHost({
   boundary = PassthroughBoundary,
   children,
@@ -82,23 +105,14 @@ export function ModuleHost({
   const [host] = useState(() => createModuleHost(modules, boundary));
   const { Boundary } = host;
 
+  const backdrops = renderModuleSlots(host.modules, "Backdrop", Boundary);
+  const overlays = renderModuleSlots(host.modules, "Overlay", Boundary);
+
   const content = (
     <>
-      {host.modules.map(({ Backdrop, id }) =>
-        Backdrop ? (
-          <Boundary key={id} name={id}>
-            <Backdrop />
-          </Boundary>
-        ) : null,
-      )}
+      {backdrops}
       {children}
-      {host.modules.map(({ Overlay, id }) =>
-        Overlay ? (
-          <Boundary key={id} name={id}>
-            <Overlay />
-          </Boundary>
-        ) : null,
-      )}
+      {overlays}
     </>
   );
 
@@ -119,6 +133,9 @@ export function ModuleHost({
   );
 }
 
+/**
+ * Returns a module's runtime, or null when it is not installed.
+ */
 export function useModule<K extends ModuleId>(
   id: K,
 ): ModuleRuntimeOf<CoreModules[K]> | null {
@@ -143,6 +160,10 @@ export interface ModulePeer<K extends ModuleId> {
   ): T;
 }
 
+/**
+ * Defines typed hooks for an optional peer module, falling back to an inert
+ * runtime when it is absent.
+ */
 export function definePeer<K extends ModuleId>(
   id: K,
   inert: ModuleRuntimeOf<CoreModules[K]>,
@@ -166,6 +187,10 @@ export function definePeer<K extends ModuleId>(
 
 const NO_MODULE_STORE: ExternalStore<unknown> = createStore<unknown>(undefined);
 
+/**
+ * Selects state from a module's store, returning the fallback when the module
+ * is not installed.
+ */
 export function useModuleState<K extends ModuleId, T>(
   id: K,
   selector: (state: ModuleStateOf<K>) => T,
@@ -180,17 +205,22 @@ export function useModuleState<K extends ModuleId, T>(
   );
 }
 
-export function ModuleBoundary({
-  children,
-  name,
-}: {
+interface ModuleBoundaryProps {
   children?: ReactNode;
   name?: string;
-}) {
+}
+
+/**
+ * Wraps children in the error boundary supplied to the module host.
+ */
+export function ModuleBoundary({ children, name }: ModuleBoundaryProps) {
   const Boundary = use(ModuleHostContext)?.Boundary ?? PassthroughBoundary;
   return createElement(Boundary, { name }, children);
 }
 
+/**
+ * True when a module with this id is installed.
+ */
 export function useIsModuleInstalled(id: ModuleId): boolean {
   return use(ModuleHostContext)?.byId.has(id) ?? false;
 }

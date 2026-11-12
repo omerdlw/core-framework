@@ -20,6 +20,7 @@ import { useRegistry, useShallowStable } from "./hooks";
 import { selectModuleSlice, useInstalledModules } from "./installed";
 import { pickRegistryMetadata } from "./schema";
 import type {
+  AnyCoreModule,
   PageConfig,
   PageController,
   PageControllerStore,
@@ -28,6 +29,10 @@ import type {
   PageOptions,
 } from "./types";
 import { mergeModuleConfigs } from "./utils";
+
+interface ChildrenProps {
+  children?: ReactNode;
+}
 
 const EMPTY_OBJECT: PageConfig = Object.freeze({});
 
@@ -90,7 +95,7 @@ function createControllerScope(): {
   };
   const getSnapshot = () => current;
 
-  function PageProvider({ children }: { children?: ReactNode }) {
+  function PageProvider({ children }: ChildrenProps) {
     const controller = useSyncExternalStore(
       subscribe,
       getSnapshot,
@@ -116,8 +121,7 @@ function createControllerScope(): {
 const fallbackStandaloneStore = createPageControllerStore();
 
 const noopHook = () => {};
-const PassthroughProvider = ({ children }: { children?: ReactNode }) =>
-  children;
+const PassthroughProvider = ({ children }: ChildrenProps) => children;
 
 const PageControllerContext = getOrCreateGlobalContext<PageController | null>(
   "PageControllerContext",
@@ -130,7 +134,10 @@ const PageControllerStoreContext =
     fallbackStandaloneStore,
   );
 
-export function PageControllerProvider({ children }: { children?: ReactNode }) {
+/**
+ * Provides the page controller store that tracks mounted pages.
+ */
+export function PageControllerProvider({ children }: ChildrenProps) {
   const [store] = useState<PageControllerStore>(() =>
     createPageControllerStore(),
   );
@@ -152,6 +159,9 @@ const FALLBACK_PAGE_CONTROLLER: PageController = Object.freeze({
   set: noopHook,
 });
 
+/**
+ * Returns the current page's controller, or an inert fallback outside any page.
+ */
 export function usePageController(): PageController {
   const scopedContext = use(PageControllerContext);
   const controllerStore = use(PageControllerStoreContext);
@@ -172,14 +182,8 @@ export function usePageController(): PageController {
   return scopedContext ?? storeController ?? FALLBACK_PAGE_CONTROLLER;
 }
 
-export function usePage(
-  pageConfig: PageConfig = EMPTY_OBJECT,
-  options?: PageOptions,
-): PageController {
-  const instanceId = useId();
-  const controllerStore = use(PageControllerStoreContext);
-  const modules = useInstalledModules();
-
+/** Local config overrides layered over the page config, with set/reset. */
+function usePageOverrides(pageConfig: PageConfig) {
   const [overrides, setOverrides] = useState<Partial<PageConfig>>(EMPTY_OBJECT);
 
   const set = useCallback((partial: Partial<PageConfig>) => {
@@ -197,6 +201,15 @@ export function usePage(
     return mergeModuleConfigs(base, overrides);
   }, [pageConfig, overrides]);
 
+  return { effectiveConfig, reset, set };
+}
+
+/** Runs each module's `page.use` hook on its slice and returns the controllers. */
+function useModuleControllers(
+  modules: readonly AnyCoreModule[],
+  effectiveConfig: PageConfig,
+  set: PageModuleApi["set"],
+): PageModules {
   const moduleSlices = useMemo(
     () =>
       modules.map((coreModule) =>
@@ -204,12 +217,6 @@ export function usePage(
       ),
     [effectiveConfig, modules],
   );
-
-  const registryMetadata = useMemo(
-    () => pickRegistryMetadata(options),
-    [options],
-  );
-  useRegistry(effectiveConfig, registryMetadata);
 
   const pageApi = useMemo<PageModuleApi>(() => ({ set }), [set]);
   const moduleControllers: Record<string, unknown> = {};
@@ -222,7 +229,30 @@ export function usePage(
       );
     }
   }
-  const pageModules = useShallowStable(moduleControllers) as PageModules;
+  return useShallowStable(moduleControllers);
+}
+
+/**
+ * Declares the current page: applies its config to the registry and returns its
+ * controller.
+ */
+export function usePage(
+  pageConfig: PageConfig = EMPTY_OBJECT,
+  options?: PageOptions,
+): PageController {
+  const instanceId = useId();
+  const controllerStore = use(PageControllerStoreContext);
+  const modules = useInstalledModules();
+
+  const { effectiveConfig, reset, set } = usePageOverrides(pageConfig);
+
+  const registryMetadata = useMemo(
+    () => pickRegistryMetadata(options),
+    [options],
+  );
+  useRegistry(effectiveConfig, registryMetadata);
+
+  const pageModules = useModuleControllers(modules, effectiveConfig, set);
 
   const [scope] = useState(createControllerScope);
 

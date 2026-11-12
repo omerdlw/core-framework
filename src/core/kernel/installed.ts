@@ -69,6 +69,10 @@ export function createModulePayload(
 
 const MODULE_ID_PATTERN = /^[a-z][a-zA-Z0-9]*$/;
 
+/**
+ * Validates module ids and orders modules so each comes after the modules it
+ * uses.
+ */
 export function sortModules(
   modules: readonly AnyCoreModule[],
 ): AnyCoreModule[] {
@@ -107,6 +111,9 @@ export function sortModules(
   return sorted;
 }
 
+/**
+ * Collects the registry definitions declared by modules, keyed by module id.
+ */
 export function createModuleRegistryDefinitions(
   modules: readonly AnyCoreModule[],
 ): RegistryDefinitions {

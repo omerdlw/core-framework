@@ -1,4 +1,10 @@
-import { Children, cloneElement, isValidElement } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
 import type { AnyFunction, StableFunctionEntry } from "./types";
 
@@ -68,103 +74,102 @@ function hasSameObjectKeys(
   );
 }
 
-export function stabilizeRegistryValue(
-  value: unknown,
+interface StabilizeState {
+  depth: number;
+  scope: StabilizeScope;
+  seen: WeakSet<object>;
+}
+
+function stabilizeFunction(
+  fn: AnyFunction,
   path: string,
   scope: StabilizeScope,
-  previousValue?: unknown,
-  seen = new WeakSet<object>(),
-  depth = 0,
 ): unknown {
-  if (depth > MAX_STABILIZATION_DEPTH) return value;
+  const isComponent = fn.name && /^[A-Z]/.test(fn.name);
+  if (
+    isComponent ||
+    isDirectRegistryComponentPath(path, scope.componentSlices)
+  ) {
+    return fn;
+  }
+  scope.usedPaths.add(path);
+  let entry = scope.functionEntries.get(path);
+  if (!entry) {
+    entry = createStableFunctionEntry(fn);
+    scope.functionEntries.set(path, entry);
+  } else {
+    entry.current = fn;
+  }
+  return entry.stable;
+}
 
-  if (typeof value === "function") {
-    const isComponent = value.name && /^[A-Z]/.test(value.name);
-    if (
-      isComponent ||
-      isDirectRegistryComponentPath(path, scope.componentSlices)
-    ) {
-      return value;
+function stabilizeElement(
+  element: ReactElement<Record<string, unknown>>,
+  path: string,
+  previousValue: unknown,
+  state: StabilizeState,
+): unknown {
+  const nextProps = stabilizeNested(
+    element.props,
+    `${path}.props`,
+    isValidElement(previousValue) ? previousValue.props : undefined,
+    state,
+  ) as Record<string, unknown>;
+  if (
+    isValidElement(previousValue) &&
+    previousValue.type === element.type &&
+    previousValue.key === element.key &&
+    previousValue.props === nextProps
+  ) {
+    return previousValue;
+  }
+  return cloneElement(element, nextProps);
+}
+
+function stabilizeArray(
+  array: unknown[],
+  path: string,
+  previousValue: unknown,
+  state: StabilizeState,
+): unknown {
+  const nextValue = array.every(isReactNodeLike)
+    ? Children.toArray(array as ReactNode[]) // every item passed isReactNodeLike
+    : array;
+  const previousArray = Array.isArray(previousValue) ? previousValue : null;
+  let hasChanged = !previousArray || previousArray.length !== nextValue.length;
+
+  const stabilizedValue: unknown[] = nextValue.map((item, index) => {
+    const nextItem = stabilizeNested(
+      item,
+      `${path}[${index}]`,
+      previousArray?.[index],
+      state,
+    );
+    if (!previousArray || nextItem !== previousArray[index]) {
+      hasChanged = true;
     }
-    scope.usedPaths.add(path);
-    let entry = scope.functionEntries.get(path);
-    if (!entry) {
-      entry = createStableFunctionEntry(value as AnyFunction);
-      scope.functionEntries.set(path, entry);
-    } else {
-      entry.current = value as AnyFunction;
-    }
-    return entry.stable;
-  }
+    return nextItem;
+  });
+  return !hasChanged ? previousArray : stabilizedValue;
+}
 
-  if (value && typeof value === "object") {
-    if (seen.has(value)) return value;
-    seen.add(value);
-  }
-
-  if (isValidElement(value)) {
-    const nextProps = stabilizeRegistryValue(
-      value.props,
-      `${path}.props`,
-      scope,
-      isValidElement(previousValue) ? previousValue.props : undefined,
-      seen,
-      depth + 1,
-    ) as Record<string, unknown>;
-    if (
-      isValidElement(previousValue) &&
-      previousValue.type === value.type &&
-      previousValue.key === value.key &&
-      previousValue.props === nextProps
-    ) {
-      return previousValue;
-    }
-    return cloneElement(value, nextProps);
-  }
-
-  if (Array.isArray(value)) {
-    const nextValue = value.every(isReactNodeLike)
-      ? Children.toArray(value)
-      : value;
-    const previousArray = Array.isArray(previousValue) ? previousValue : null;
-    let hasChanged =
-      !previousArray || previousArray.length !== nextValue.length;
-
-    const stabilizedValue: unknown[] = nextValue.map((item, index) => {
-      const nextItem = stabilizeRegistryValue(
-        item,
-        `${path}[${index}]`,
-        scope,
-        previousArray?.[index],
-        seen,
-        depth + 1,
-      );
-      if (!previousArray || nextItem !== previousArray[index]) {
-        hasChanged = true;
-      }
-      return nextItem;
-    });
-    return !hasChanged ? previousArray : stabilizedValue;
-  }
-
-  if (typeof value !== "object" || value === null) {
-    return value;
-  }
-
-  const source = value as Record<string, unknown>;
+function stabilizeObject(
+  source: Record<string, unknown>,
+  path: string,
+  previousValue: unknown,
+  state: StabilizeState,
+): unknown {
   const previousRecord = previousValue as Record<string, unknown> | undefined;
   const stabilizedValue: Record<string, unknown> = {};
-  const canReusePrevious = hasSameObjectKeys(previousValue, value);
+  const canReusePrevious = hasSameObjectKeys(previousValue, source);
   let hasChanged = !canReusePrevious;
 
   Object.keys(source).forEach((key) => {
-    const nextValue = stabilizeRegistryValue(
+    const nextValue = stabilizeNested(
       source[key],
       `${path}.${key}`,
-      scope,
       previousRecord?.[key],
-      seen,
-      depth + 1,
+      state,
     );
     stabilizedValue[key] = nextValue;
     if (!canReusePrevious || nextValue !== previousRecord?.[key]) {
@@ -173,4 +178,65 @@ export function stabilizeRegistryValue(
   });
 
   return !hasChanged ? previousValue : stabilizedValue;
+}
+
+function stabilizeNested(
+  value: unknown,
+  path: string,
+  previousValue: unknown,
+  state: StabilizeState,
+): unknown {
+  return stabilize(value, path, previousValue, {
+    ...state,
+    depth: state.depth + 1,
+  });
+}
+
+function stabilize(
+  value: unknown,
+  path: string,
+  previousValue: unknown,
+  state: StabilizeState,
+): unknown {
+  if (state.depth > MAX_STABILIZATION_DEPTH) return value;
+
+  if (typeof value === "function") {
+    return stabilizeFunction(value as AnyFunction, path, state.scope);
+  }
+
+  if (value && typeof value === "object") {
+    if (state.seen.has(value)) return value;
+    state.seen.add(value);
+  }
+
+  if (isValidElement<Record<string, unknown>>(value)) {
+    return stabilizeElement(value, path, previousValue, state);
+  }
+  if (Array.isArray(value)) {
+    return stabilizeArray(value, path, previousValue, state);
+  }
+  if (typeof value !== "object" || value === null) return value;
+
+  return stabilizeObject(
+    value as Record<string, unknown>,
+    path,
+    previousValue,
+    state,
+  );
+}
+
+/**
+ * Replaces function values with stable wrappers and reuses unchanged objects
+ * from `previousValue`, so a config can be compared by reference across
+ * renders.
+ */
+export function stabilizeRegistryValue(
+  value: unknown,
+  path: string,
+  scope: StabilizeScope,
+  previousValue?: unknown,
+  seen = new WeakSet<object>(),
+  depth = 0,
+): unknown {
+  return stabilize(value, path, previousValue, { depth, scope, seen });
 }
