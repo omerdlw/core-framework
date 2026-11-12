@@ -25,8 +25,8 @@ export const INERT_MEDIA_ACTIONS: MediaActions = Object.freeze({
 });
 
 /**
- * How far, in seconds, a follower may drift from its transport before being re-
- * synced.
+ * How far, in seconds, a follower may drift from its transport before it is
+ * resynced.
  */
 export const MEDIA_SYNC_DRIFT_SECONDS = 0.3;
 

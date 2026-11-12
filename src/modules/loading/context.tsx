@@ -57,7 +57,7 @@ interface LoadingTasks {
   beginTask: (key: LoadingTaskKey, options: LoadingOptions) => void;
   endTask: (key: LoadingTaskKey) => void;
   manualState: LoadingState;
-  nextTaskKey: () => number;
+  withLoading: LoadingActions["withLoading"];
   setSkeleton: (skeleton: SkeletonValue) => void;
 }
 
@@ -147,11 +147,28 @@ function useLoadingTasks(): LoadingTasks {
     });
   }, []);
 
-  const nextTaskKey = useCallback(() => nextTaskRef.current++, []);
+  const withLoading = useCallback(
+    async <T,>(
+      task: Promise<T> | (() => Promise<T>),
+      options: LoadingOptions | string = {},
+    ): Promise<T> => {
+      const key = nextTaskRef.current++;
+      beginTask(
+        key,
+        typeof options === "string" ? { message: options } : options,
+      );
+      try {
+        return typeof task === "function" ? await task() : await task;
+      } finally {
+        endTask(key);
+      }
+    },
+    [beginTask, endTask],
+  );
 
   useEffect(() => clearStopTimer, [clearStopTimer]);
 
-  return { beginTask, endTask, manualState, nextTaskKey, setSkeleton };
+  return { beginTask, endTask, manualState, setSkeleton, withLoading };
 }
 
 /**
@@ -161,7 +178,7 @@ function useManualLoading(): {
   actions: LoadingActions;
   manualState: LoadingState;
 } {
-  const { beginTask, endTask, manualState, nextTaskKey, setSkeleton } =
+  const { beginTask, endTask, manualState, setSkeleton, withLoading } =
     useLoadingTasks();
 
   const startLoading = useCallback(
@@ -177,25 +194,6 @@ function useManualLoading(): {
       else stopLoading();
     },
     [startLoading, stopLoading],
-  );
-
-  const withLoading = useCallback(
-    async <T,>(
-      task: Promise<T> | (() => Promise<T>),
-      options: LoadingOptions | string = {},
-    ): Promise<T> => {
-      const key = nextTaskKey();
-      beginTask(
-        key,
-        typeof options === "string" ? { message: options } : options,
-      );
-      try {
-        return typeof task === "function" ? await task() : await task;
-      } finally {
-        endTask(key);
-      }
-    },
-    [beginTask, endTask, nextTaskKey],
   );
 
   const actions = useMemo<LoadingActions>(

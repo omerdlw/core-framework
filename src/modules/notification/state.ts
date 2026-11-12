@@ -44,8 +44,8 @@ export function normalizeToastOptions(
 }
 
 /**
- * Converts a duration to milliseconds, or null for "never dismiss". Undefined
- * means the default.
+ * Validates a toast duration in milliseconds. Undefined means the default;
+ * null, zero, negative or invalid values mean never dismiss.
  */
 export function normalizeDuration(value: unknown): number | null {
   if (value === null) return null;
