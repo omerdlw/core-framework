@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { Icon as Iconify } from "@/react/ui/components/icon";
@@ -21,7 +20,7 @@ const DEFAULT_MAX_BREADCRUMBS = 4;
 const TRAILING_BREADCRUMBS = 2;
 const SEPARATOR_ICON_SIZE = 12;
 
-export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
+export function DockBreadcrumbsCard({
   className = "",
   maxItems = DEFAULT_MAX_BREADCRUMBS,
   onNavigate,
@@ -115,4 +114,4 @@ export const DockBreadcrumbsCard = memo(function DockBreadcrumbsCard({
       </nav>
     </motion.div>
   );
-});
+}

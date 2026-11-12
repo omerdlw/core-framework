@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 import {
   DOCK_CARD_LAYOUT,
@@ -17,78 +11,93 @@ import {
 import { getContainerHeight, publishDockHeightCssVar } from "../model/layout";
 import type { UseDockHeightControllerOptions } from "../types";
 
+interface HeightControllerInputs {
+  isHud: boolean;
+  setDockHeight: UseDockHeightControllerOptions["setDockHeight"];
+}
+
+function getBaseHeight(isHud: boolean): number {
+  return isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight;
+}
+
+/**
+ * Measures the top card and publishes the container and spacer heights.
+ * Built once per dock; the hook pushes `isHud` and `setDockHeight` in after
+ * each commit.
+ */
+function createHeightController(
+  initial: HeightControllerInputs,
+  setContainerHeight: (height: number) => void,
+) {
+  let inputs = initial;
+  let contentHeight = 0;
+  let frame: number | null = null;
+  let lastAppliedContainerHeight = getBaseHeight(initial.isHud);
+  let lastAppliedSpacerHeight = lastAppliedContainerHeight + DOCK_HEIGHT_BUFFER;
+
+  const applyHeight = () => {
+    if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
+
+    const height = getContainerHeight({
+      cardContentHeight: contentHeight,
+      isHud: inputs.isHud,
+    });
+
+    const totalSpacerHeight = height + DOCK_HEIGHT_BUFFER;
+
+    if (Math.abs(height - lastAppliedContainerHeight) > HEIGHT_EPSILON) {
+      lastAppliedContainerHeight = height;
+      setContainerHeight(height);
+    }
+    if (
+      Math.abs(totalSpacerHeight - lastAppliedSpacerHeight) > HEIGHT_EPSILON
+    ) {
+      lastAppliedSpacerHeight = totalSpacerHeight;
+      publishDockHeightCssVar(totalSpacerHeight);
+      inputs.setDockHeight(totalSpacerHeight);
+    }
+  };
+
+  return {
+    applyHeight,
+    dispose: () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+    },
+    handleContentHeightChange: (height: number | string) => {
+      const numericHeight = Number(height);
+      contentHeight = Number.isFinite(numericHeight)
+        ? Math.max(0, numericHeight)
+        : 0;
+      applyHeight();
+    },
+    setInputs: (next: HeightControllerInputs) => {
+      inputs = next;
+    },
+  };
+}
+
 export function useDockHeightController({
   contentKey = null,
   isHud = false,
   setDockHeight,
   surfacePhase = DOCK_SURFACE_PHASE.IDLE,
 }: UseDockHeightControllerOptions) {
-  const [containerHeight, setContainerHeight] = useState<number>(
-    isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight,
+  const [containerHeight, setContainerHeight] = useState<number>(() =>
+    getBaseHeight(isHud),
   );
-
-  const heightRef = useRef<{ content: number }>({ content: 0 });
-  const rafRef = useRef<number | null>(null);
-  const isHudRef = useRef(isHud);
-
-  const lastAppliedContainerHeightRef = useRef<number>(
-    isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight,
-  );
-  const lastAppliedSpacerHeightRef = useRef<number>(
-    (isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight) +
-      DOCK_HEIGHT_BUFFER,
-  );
+  const [{ applyHeight, dispose, handleContentHeightChange, setInputs }] =
+    useState(() =>
+      createHeightController({ isHud, setDockHeight }, setContainerHeight),
+    );
 
   useLayoutEffect(() => {
-    isHudRef.current = isHud;
-  }, [isHud]);
+    setInputs({ isHud, setDockHeight });
+  }, [isHud, setDockHeight, setInputs]);
 
-  const applyHeight = useCallback(() => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-
-    const { content } = heightRef.current;
-    const height = getContainerHeight({
-      cardContentHeight: content,
-      isHud: isHudRef.current,
-    });
-
-    const totalSpacerHeight = height + DOCK_HEIGHT_BUFFER;
-
-    if (
-      Math.abs(height - lastAppliedContainerHeightRef.current) > HEIGHT_EPSILON
-    ) {
-      lastAppliedContainerHeightRef.current = height;
-      setContainerHeight(height);
-    }
-    if (
-      Math.abs(totalSpacerHeight - lastAppliedSpacerHeightRef.current) >
-      HEIGHT_EPSILON
-    ) {
-      lastAppliedSpacerHeightRef.current = totalSpacerHeight;
-      publishDockHeightCssVar(totalSpacerHeight);
-      setDockHeight(totalSpacerHeight);
-    }
-  }, [setDockHeight]);
-
-  const handleContentHeightChange = useCallback(
-    (height: number | string) => {
-      const numericHeight = Number(height);
-      heightRef.current.content = Number.isFinite(numericHeight)
-        ? Math.max(0, numericHeight)
-        : 0;
-      applyHeight();
-    },
-    [applyHeight],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
+  useEffect(() => dispose, [dispose]);
 
   useLayoutEffect(() => applyHeight(), [applyHeight, contentKey]);
   useLayoutEffect(() => applyHeight(), [applyHeight, surfacePhase]);

@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -65,30 +64,28 @@ function subscribeToBrowserLocation(onChange: () => void): () => void {
 export function useDockLocationKey() {
   const pathname = usePathname();
 
-  const getBrowserLocationKey = useCallback(
-    () =>
-      getDockLocationKey({
-        hash: typeof window === "undefined" ? "" : window.location.hash,
-        pathname,
-        search: typeof window === "undefined" ? "" : window.location.search,
-      }),
-    [pathname],
-  );
+  // Compiled: the compiler keeps these snapshot getters and syncLocationKey
+  // stable while pathname is (syncLocationKey is an effect dep in
+  // useDockNavigation).
+  const getBrowserLocationKey = () =>
+    getDockLocationKey({
+      hash: typeof window === "undefined" ? "" : window.location.hash,
+      pathname,
+      search: typeof window === "undefined" ? "" : window.location.search,
+    });
 
-  const getServerLocationKey = useCallback(
-    () => getDockLocationKey({ hash: "", pathname, search: "" }),
-    [pathname],
-  );
+  const getServerLocationKey = () =>
+    getDockLocationKey({ hash: "", pathname, search: "" });
   const locationKey = useSyncExternalStore(
     subscribeToBrowserLocation,
     getBrowserLocationKey,
     getServerLocationKey,
   );
 
-  const syncLocationKey = useCallback(() => {
+  const syncLocationKey = () => {
     window.dispatchEvent(new Event(LOCATION_SYNC_EVENT));
     return getBrowserLocationKey();
-  }, [getBrowserLocationKey]);
+  };
 
   return { locationKey, syncLocationKey };
 }
@@ -128,11 +125,7 @@ function useDockNavigator(router: NavigationRouter): Navigator {
     own?.setRouter(router);
   }, [own, router]);
   useEffect(() => (own ? () => own.dispose() : undefined), [own]);
-  return useMemo(
-    () =>
-      own ?? { ...shared!.actions, dispose: () => {}, store: shared!.store },
-    [own, shared],
-  );
+  return own ?? { ...shared!.actions, dispose: () => {}, store: shared!.store };
 }
 
 const selectTrips = (state: NavigationState) => ({

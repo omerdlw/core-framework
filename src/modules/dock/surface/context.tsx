@@ -64,6 +64,7 @@ export const SurfaceItemContext = getOrCreateGlobalContext<{
 /** Dimensions of the surface the calling component is rendered in. */
 export function useSurfaceDimensions() {
   const { width } = use(SurfaceItemContext);
+  // stable identity: part of the public hook contract
   return useMemo(() => ({ width }), [width]);
 }
 
@@ -76,6 +77,7 @@ export function useSurfaceId() {
 export function useSurfaceHeader() {
   const store = use(SurfaceExtensionsContext)?.headerActions ?? null;
   const surfaceId = useSurfaceId();
+  // stable identity: part of the public hook contract
   return useCallback(
     (
       patch:

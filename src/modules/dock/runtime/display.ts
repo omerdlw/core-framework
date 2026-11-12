@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 import { useRegistryEntries } from "@/core/kernel";
 import {
@@ -84,11 +84,7 @@ export function usePendingRouteHold(
     pathname: normalizedPathname,
   });
   const isHeld = selected !== match.item;
-  return useMemo(
-    () =>
-      isHeld && selected ? { ...selected, isRoutePending: true } : selected,
-    [isHeld, selected],
-  );
+  return isHeld && selected ? { ...selected, isRoutePending: true } : selected;
 }
 
 /**
@@ -161,10 +157,7 @@ function stripChildrenSystemFields(item: DockItem): DockItem {
 
 export function useDockItems(): { rawItems: DockItem[] } {
   const entries = useRegistryEntries<"dock", DockItem>("dock");
-  const rawItems = useMemo(
-    () => Object.values(entries).map(stripChildrenSystemFields),
-    [entries],
-  );
+  const rawItems = Object.values(entries).map(stripChildrenSystemFields);
   return { rawItems };
 }
 
@@ -213,22 +206,13 @@ export function useDockDisplay(
     areShallowCollectionsEqual,
   );
 
-  const surfaceState = useMemo(
-    () => ({
-      activeSurfaceId,
-      activeSurfaceEntry,
-      isSurfaceOpen,
-      surfaceStack,
-      surfacePhase,
-    }),
-    [
-      activeSurfaceId,
-      activeSurfaceEntry,
-      isSurfaceOpen,
-      surfaceStack,
-      surfacePhase,
-    ],
-  );
+  const surfaceState = {
+    activeSurfaceId,
+    activeSurfaceEntry,
+    isSurfaceOpen,
+    surfaceStack,
+    surfacePhase,
+  };
 
   const dockCtx = use(DockContext);
   const mediaAction = dockCtx?.runtimeActions?.mediaAction ?? null;
@@ -238,81 +222,46 @@ export function useDockDisplay(
   const actionStackClass = useTheme(dockTheme).slots.actionStack;
   const { toggle: toggleMedia } = useDockMediaActions();
 
-  const attention = useMemo(
-    () =>
-      resolveDockAttention({
-        hud,
-        isPageLoading,
-        operation: activeOperation,
-        status: statusState,
-        surface: surfaceState,
-      }),
-    [activeOperation, hud, isPageLoading, statusState, surfaceState],
-  );
+  const attention = resolveDockAttention({
+    hud,
+    isPageLoading,
+    operation: activeOperation,
+    status: statusState,
+    surface: surfaceState,
+  });
 
-  const isNotFoundPage = useMemo(
-    () => rawItems.some(isNotFoundItem),
-    [rawItems],
-  );
+  const isNotFoundPage = rawItems.some(isNotFoundItem);
 
-  const dockItems = useMemo(
-    () => buildDockItems({ rawItems, expanded, searchQuery, isNotFoundPage }),
-    [rawItems, expanded, searchQuery, isNotFoundPage],
-  );
+  const dockItems = buildDockItems({
+    rawItems,
+    expanded,
+    searchQuery,
+    isNotFoundPage,
+  });
 
-  const baseMatch = useMemo(
-    () =>
-      resolveBaseActiveItemMatch({
-        rawItems,
-        dockItems,
-        pathname,
-        isNotFoundPage,
-      }),
-    [rawItems, dockItems, pathname, isNotFoundPage],
-  );
+  const baseMatch = resolveBaseActiveItemMatch({
+    rawItems,
+    dockItems,
+    pathname,
+    isNotFoundPage,
+  });
   const baseActiveItem = usePendingRouteHold(pathname, baseMatch, {
     isNavigating,
   });
 
-  const activeItem = useMemo(
-    () =>
-      resolveActiveItem({
-        baseActiveItem,
-        rawItems,
-        dockItems,
-        pathname,
-        isNotFoundPage,
-        surfaceState,
-        statusState,
-        hasMedia,
-        toggleMedia,
-        mediaAction,
-        actionStackClass,
-        surfaceActions: {
-          closeSurface,
-          closeAllSurfaces,
-          goBackSurface,
-          pushStep,
-          popStep,
-          goToStep,
-          getSurfaceFlow,
-          surfaceStack,
-        },
-        isPageLoading,
-        attention,
-      }),
-    [
-      baseActiveItem,
-      rawItems,
-      dockItems,
-      pathname,
-      isNotFoundPage,
-      surfaceState,
-      statusState,
-      hasMedia,
-      toggleMedia,
-      mediaAction,
-      actionStackClass,
+  const activeItem = resolveActiveItem({
+    baseActiveItem,
+    rawItems,
+    dockItems,
+    pathname,
+    isNotFoundPage,
+    surfaceState,
+    statusState,
+    hasMedia,
+    toggleMedia,
+    mediaAction,
+    actionStackClass,
+    surfaceActions: {
       closeSurface,
       closeAllSurfaces,
       goBackSurface,
@@ -321,30 +270,20 @@ export function useDockDisplay(
       goToStep,
       getSurfaceFlow,
       surfaceStack,
-      isPageLoading,
-      attention,
-    ],
-  );
+    },
+    isPageLoading,
+    attention,
+  });
 
-  const activeIndex = useMemo(
-    () => resolveActiveIndex({ dockItems, activeItem, pathname }),
-    [dockItems, activeItem, pathname],
-  );
+  const activeIndex = resolveActiveIndex({ dockItems, activeItem, pathname });
+  const topology = createDockTopology(dockItems, { pathname });
 
-  const topology = useMemo(
-    () => createDockTopology(dockItems, { pathname }),
-    [dockItems, pathname],
-  );
-
-  return useMemo(
-    () => ({
-      dockItems,
-      activeItem,
-      activeIndex,
-      statusState,
-      attention,
-      topology,
-    }),
-    [dockItems, activeItem, activeIndex, statusState, attention, topology],
-  );
+  return {
+    dockItems,
+    activeItem,
+    activeIndex,
+    statusState,
+    attention,
+    topology,
+  };
 }

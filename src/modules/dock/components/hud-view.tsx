@@ -1,13 +1,11 @@
 "use client";
 
-import { memo } from "react";
-
 import { DOCK_HUD_RENDER_MODE } from "../constants";
 import { useDockHudViewModel } from "../hooks/use-hud-view-model";
 import { isValidComponentType } from "../lib/element-helpers";
 import type { DockHudDescriptor } from "../types";
 
-export const DockHudView = memo(function DockHudView({
+export function DockHudView({
   clearHud,
   hud,
   pathname,
@@ -26,4 +24,4 @@ export const DockHudView = memo(function DockHudView({
     return <Component {...hud.props} onDismiss={dismiss} />;
   }
   return hud.content ?? null;
-});
+}

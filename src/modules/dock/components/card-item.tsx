@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo, Suspense } from "react";
+import { Suspense } from "react";
 
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockCardItemModel } from "../hooks/use-card-item-model";
@@ -24,7 +24,7 @@ import { renderActionSlot } from "./surface/action";
 import { DockSurfaceExtensionsBar } from "./surface/extensions-bar";
 import { SurfaceItemContent } from "./surface/item-content";
 
-export const DockCardItem = memo(function DockCardItem({
+export function DockCardItem({
   ref,
   activeItem = null,
   onContentHeightChange,
@@ -278,4 +278,4 @@ export const DockCardItem = memo(function DockCardItem({
       </motion.div>
     </motion.div>
   );
-});
+}

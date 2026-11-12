@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
 
 import type { DockItem } from "../../types";
 import { computeDockLayout } from "../model/layout";
@@ -18,9 +17,10 @@ export function useDockLayout({
   const routePathname = usePathname();
   const pathname = overridePathname || routePathname;
 
-  const { displayItems, displayActiveIndex } = useMemo(
-    () => computeDockLayout(dockItems, activeItem, pathname),
-    [pathname, dockItems, activeItem],
+  const { displayItems, displayActiveIndex } = computeDockLayout(
+    dockItems,
+    activeItem,
+    pathname,
   );
 
   return {

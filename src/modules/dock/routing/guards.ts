@@ -137,6 +137,7 @@ export function useDockGuard(options: UseDockGuardOptions = {}) {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [message]);
 
+  // stable identity: part of the public hook contract
   const setGuard = useCallback(
     (
       active:
@@ -149,6 +150,7 @@ export function useDockGuard(options: UseDockGuardOptions = {}) {
     [],
   );
 
+  // stable identity: part of the public hook contract
   const clearGuard = useCallback(() => {
     whenRef.current = false;
     setIsActive(false);

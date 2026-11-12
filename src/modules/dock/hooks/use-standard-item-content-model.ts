@@ -1,6 +1,6 @@
 "use client";
 
-import { type SyntheticEvent, useCallback } from "react";
+import type { SyntheticEvent } from "react";
 
 import { useDockMedia, useDockMediaActions } from "../context";
 import { shouldShowMediaIcon, stopAndPrevent } from "../lib/card";
@@ -22,20 +22,17 @@ export function useStandardItemContentModel({
   const description = item.description;
   const effectiveIconOverlay = showVideoIcon ? null : item.iconOverlay;
   const isIconInteractive = Boolean(item.onClick || showVideoIcon);
-  const handleIconClick = useCallback(
-    (event: SyntheticEvent) => {
-      if (showVideoIcon) {
-        stopAndPrevent(event);
-        toggleMedia();
-        return;
-      }
-      if (item.onClick) {
-        stopAndPrevent(event);
-        item.onClick(event);
-      }
-    },
-    [item, showVideoIcon, toggleMedia],
-  );
+  const handleIconClick = (event: SyntheticEvent) => {
+    if (showVideoIcon) {
+      stopAndPrevent(event);
+      toggleMedia();
+      return;
+    }
+    if (item.onClick) {
+      stopAndPrevent(event);
+      item.onClick(event);
+    }
+  };
 
   return {
     item,

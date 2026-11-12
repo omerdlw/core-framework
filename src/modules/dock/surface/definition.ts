@@ -122,6 +122,7 @@ export function useSurface(
   );
   const surfaceStack = rawSurfaceStack || EMPTY_SURFACE_STACK;
 
+  // stable identity: part of the public hook contract
   const specificSurface = useMemo((): SurfaceHandle | null => {
     if (!surfaceDefinition) return null;
 
@@ -164,6 +165,7 @@ export function useSurface(
     surfaceStack,
   ]);
 
+  // stable identity: part of the public hook contract
   const generalSurface = useMemo(
     (): GeneralSurfaceHandle => ({
       closeAllSurfaces,
@@ -265,14 +267,17 @@ export function useSurfaceStep() {
   const isFirst = stepIndex <= 0;
   const isLast = stepsTotal > 0 && stepIndex >= stepsTotal - 1;
 
+  // stable identity: part of the public hook contract
   const next = useCallback(() => {
     if (!isLast) goToStep(stepIndex + 1);
   }, [goToStep, isLast, stepIndex]);
 
+  // stable identity: part of the public hook contract
   const prev = useCallback(() => {
     if (!isFirst) popStep();
   }, [isFirst, popStep]);
 
+  // stable identity: part of the public hook contract
   const goTo = useCallback(
     (idx: number) => {
       goToStep(idx);
@@ -280,6 +285,7 @@ export function useSurfaceStep() {
     [goToStep],
   );
 
+  // stable identity: part of the public hook contract
   const push = useCallback(
     (step: SurfaceStep) => {
       pushStep(step);

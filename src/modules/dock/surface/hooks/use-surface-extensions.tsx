@@ -4,10 +4,8 @@ import {
   type ComponentType,
   type ReactNode,
   use,
-  useCallback,
   useId,
   useLayoutEffect,
-  useMemo,
   useSyncExternalStore,
 } from "react";
 
@@ -84,21 +82,15 @@ export function useIsSurfaceExtensionsVisible(
     phase === DOCK_SURFACE_PHASE.EXPANDING_BODY ||
     phase === DOCK_SURFACE_PHASE.OPEN;
 
-  const subscribe = useCallback(
-    (onStoreChange: () => void) =>
-      store ? store.subscribe(onStoreChange) : () => {},
-    [store],
-  );
-  const getSnapshot = useCallback(
-    () => (store ? store.getExtensionsForSurface(surfaceId).length : 0),
-    [store, surfaceId],
-  );
+  // Compiled: the compiler keeps subscribe stable while the store is.
+  const subscribe = (onStoreChange: () => void) =>
+    store ? store.subscribe(onStoreChange) : () => {};
+  const getSnapshot = () =>
+    store ? store.getExtensionsForSurface(surfaceId).length : 0;
 
   const dynamicCount = useSyncExternalStore(subscribe, getSnapshot, () => 0);
-  const descriptorCount = useMemo(() => {
-    const raw = activeItem?.surfaceExtensions || activeItem?.extensions || [];
-    return Array.isArray(raw) ? raw.length : 0;
-  }, [activeItem?.surfaceExtensions, activeItem?.extensions]);
+  const raw = activeItem?.surfaceExtensions || activeItem?.extensions || [];
+  const descriptorCount = Array.isArray(raw) ? raw.length : 0;
 
   return Boolean(
     isSurface && ((isBodyVisible && dynamicCount > 0) || descriptorCount > 0),

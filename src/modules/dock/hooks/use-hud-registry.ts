@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 import {
   areSelectionModeStatesEqual,
@@ -15,49 +15,50 @@ import {
 } from "../model/hud-definition";
 import type { DockHudDescriptor } from "../types";
 
+function createHudActions(
+  setHudEntries: Dispatch<SetStateAction<DockHudEntries>>,
+  setSelectionModeState: Dispatch<SetStateAction<DockHudDescriptor | null>>,
+) {
+  return {
+    actions: {
+      clearHud: (targetId?: string) => {
+        setHudEntries((prev) => removeHudEntries(prev, targetId));
+      },
+      clearSelectionMode: () => setSelectionModeState(null),
+      setHud: (descriptor: DockHudDescriptor) => {
+        const definition = createHudDefinition(descriptor);
+        if (!definition) return;
+        setHudEntries((prev) => upsertHudEntry(prev, definition));
+      },
+      setSelectionMode: (
+        config: Parameters<typeof createSelectionModeState>[0],
+      ) => {
+        setSelectionModeState((curr) => {
+          const nextSelection = createSelectionModeState(config);
+          return areSelectionModeStatesEqual(curr, nextSelection)
+            ? curr
+            : nextSelection;
+        });
+      },
+    },
+    clearTransientHud: () => {
+      setSelectionModeState(null);
+      setHudEntries({});
+    },
+  };
+}
+
 export function useDockHudRegistry() {
   const [selectionModeState, setSelectionModeState] =
     useState<DockHudDescriptor | null>(null);
   const [hudEntries, setHudEntries] = useState<DockHudEntries>({});
-
-  const setHud = useCallback((descriptor: DockHudDescriptor) => {
-    const definition = createHudDefinition(descriptor);
-    if (!definition) return;
-    setHudEntries((prev) => upsertHudEntry(prev, definition));
-  }, []);
-
-  const clearHud = useCallback((targetId?: string) => {
-    setHudEntries((prev) => removeHudEntries(prev, targetId));
-  }, []);
-
-  const setSelectionMode = useCallback(
-    (config: Parameters<typeof createSelectionModeState>[0]) => {
-      setSelectionModeState((curr) => {
-        const nextSelection = createSelectionModeState(config);
-        return areSelectionModeStatesEqual(curr, nextSelection)
-          ? curr
-          : nextSelection;
-      });
-    },
-    [],
+  const [{ actions, clearTransientHud }] = useState(() =>
+    createHudActions(setHudEntries, setSelectionModeState),
   );
 
-  const clearSelectionMode = useCallback(() => setSelectionModeState(null), []);
-
-  const clearTransientHud = useCallback(() => {
-    setSelectionModeState(null);
-    setHudEntries({});
-  }, []);
-
-  const registeredHud = useMemo(
-    () => getActiveDockHud(hudEntries, selectionModeState),
-    [hudEntries, selectionModeState],
-  );
-
-  const actions = useMemo(
-    () => ({ clearHud, clearSelectionMode, setHud, setSelectionMode }),
-    [clearHud, clearSelectionMode, setHud, setSelectionMode],
-  );
+  // getActiveDockHud returns an existing entry (or null), so this keeps the
+  // hud's identity without a memo.
+  const registeredHud = getActiveDockHud(hudEntries, selectionModeState);
 
   return {
     actions,

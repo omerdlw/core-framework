@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
@@ -19,11 +18,7 @@ import {
   useDockMotion,
 } from "../motion";
 
-export const DockMediaControls = memo(function DockMediaControls({
-  className = "",
-}: {
-  className?: string;
-}) {
+export function DockMediaControls({ className = "" }: { className?: string }) {
   const dockMotion = useDockMotion();
   const {
     handleVolumeKeyDown,
@@ -192,4 +187,4 @@ export const DockMediaControls = memo(function DockMediaControls({
       </div>
     </div>
   );
-});
+}

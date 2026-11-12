@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 import { isEditableDockTarget, isInteractiveTarget } from "../lib/dom";
 import type { DockActions, DockItem } from "../types";
@@ -24,61 +24,53 @@ export function useDockKeyboard({
   setExpanded: (expanded: boolean) => void;
   setFocusedIndex: (update: number | ((current: number) => number)) => void;
 }) {
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (
-        isEditableDockTarget(event.target) ||
-        isInteractiveTarget(event.target)
-      ) {
-        return;
-      }
-      if (isOverlayActive || !expanded) return;
+  // An effect event: the listener below reads the latest props without
+  // re-subscribing on every change.
+  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (
+      isEditableDockTarget(event.target) ||
+      isInteractiveTarget(event.target)
+    ) {
+      return;
+    }
+    if (isOverlayActive || !expanded) return;
 
-      const { key } = event;
-      if (key === "Escape") {
-        event.preventDefault();
-        setExpanded(false);
-        return;
+    const { key } = event;
+    if (key === "Escape") {
+      event.preventDefault();
+      setExpanded(false);
+      return;
+    }
+    if (key === "Enter" && focusedIndex !== NO_FOCUSED_INDEX) {
+      event.preventDefault();
+      const focusedItem = dockItems[focusedIndex];
+      if (focusedItem?.path) {
+        void navigate(focusedItem.path, { item: focusedItem });
       }
-      if (key === "Enter" && focusedIndex !== NO_FOCUSED_INDEX) {
-        event.preventDefault();
-        const focusedItem = dockItems[focusedIndex];
-        if (focusedItem?.path) {
-          void navigate(focusedItem.path, { item: focusedItem });
-        }
-        return;
-      }
+      return;
+    }
 
-      if (dockItems.length === 0) return;
+    if (dockItems.length === 0) return;
 
-      if (key === "ArrowDown") {
-        event.preventDefault();
-        setFocusedIndex((current) =>
-          current < dockItems.length - 1 ? current + 1 : 0,
-        );
-        return;
-      }
-      if (key === "ArrowUp") {
-        event.preventDefault();
-        setFocusedIndex((current) =>
-          current > 0 ? current - 1 : dockItems.length - 1,
-        );
-      }
-    },
-    [
-      expanded,
-      focusedIndex,
-      isOverlayActive,
-      navigate,
-      dockItems,
-      setExpanded,
-      setFocusedIndex,
-    ],
-  );
+    if (key === "ArrowDown") {
+      event.preventDefault();
+      setFocusedIndex((current) =>
+        current < dockItems.length - 1 ? current + 1 : 0,
+      );
+      return;
+    }
+    if (key === "ArrowUp") {
+      event.preventDefault();
+      setFocusedIndex((current) =>
+        current > 0 ? current - 1 : dockItems.length - 1,
+      );
+    }
+  });
 
   useEffect(() => {
     if (!expanded) return;
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [expanded, handleKeyDown]);
+    const onKeyDown = (event: KeyboardEvent) => handleKeyDown(event);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expanded]);
 }

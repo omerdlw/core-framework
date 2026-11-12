@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import {
   getVisibleToolbarActions,
@@ -12,26 +12,24 @@ import {
 } from "../lib/command-bar";
 import type { DockActionDescriptor, DockItem } from "../types";
 
-function useDockCommands({
+function resolveDockCommands({
   activeItem,
   contextCommands = [],
 }: {
   activeItem?: DockItem | null;
   contextCommands?: DockActionDescriptor[];
 } = {}) {
-  return useMemo(() => {
-    if (isActionlessDockItem(activeItem)) return [];
+  if (isActionlessDockItem(activeItem)) return [];
 
-    const extendedCommands = normalizeToolbarActions(activeItem?.actions);
-    const dynamicContextCommands = normalizeToolbarActions(contextCommands);
-    const mergedCommands = [...extendedCommands, ...dynamicContextCommands];
+  const extendedCommands = normalizeToolbarActions(activeItem?.actions);
+  const dynamicContextCommands = normalizeToolbarActions(contextCommands);
+  const mergedCommands = [...extendedCommands, ...dynamicContextCommands];
 
-    if (activeItem?.isStatus && !isStatusToolbarActionAllowed(activeItem)) {
-      return [];
-    }
+  if (activeItem?.isStatus && !isStatusToolbarActionAllowed(activeItem)) {
+    return [];
+  }
 
-    return sortToolbarActionsByOrder(getVisibleToolbarActions(mergedCommands));
-  }, [activeItem, contextCommands]);
+  return sortToolbarActionsByOrder(getVisibleToolbarActions(mergedCommands));
 }
 
 export function useDockCommandBarModel({
@@ -42,7 +40,7 @@ export function useDockCommandBarModel({
   contextCommands?: DockActionDescriptor[];
   hasBanner?: boolean;
 }) {
-  const actions = useDockCommands({ activeItem, contextCommands });
+  const actions = resolveDockCommands({ activeItem, contextCommands });
   const pathname = usePathname();
   const currentPath =
     pathname ||
@@ -58,9 +56,9 @@ export function useDockCommandBarModel({
     }
     setPrevActionsCount(actions.length);
   }
-  const handleExitComplete = useCallback(() => {
+  const handleExitComplete = () => {
     if (actions.length === 0) setIsExiting(false);
-  }, [actions.length]);
+  };
 
   return { actions, currentPath, isExiting, handleExitComplete };
 }

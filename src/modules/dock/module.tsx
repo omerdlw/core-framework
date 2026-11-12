@@ -50,6 +50,7 @@ function useDockPage(
     surfacesRef.current = slice?.surfaces;
   }, [slice?.surfaces]);
 
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

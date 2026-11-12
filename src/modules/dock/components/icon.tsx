@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { isImageIconSource } from "@/foundation/utils";
@@ -20,9 +20,7 @@ import type {
 const DEFAULT_ICON_SIZE = 24;
 const OVERLAY_ICON_SIZE = 12;
 
-const DockIconOverlay = memo(function DockIconOverlay({
-  overlay,
-}: DockIconOverlayProps) {
+function DockIconOverlay({ overlay }: DockIconOverlayProps) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
   if (!overlay?.icon) return null;
@@ -84,10 +82,10 @@ const DockIconOverlay = memo(function DockIconOverlay({
       )}
     </AnimatePresence>
   );
-});
+}
 
 /** Icon slot for a dock card; accepts an icon name, image URL or node, plus an overlay. */
-export const DockIcon = memo(function DockIcon({
+export function DockIcon({
   icon,
   iconOverlay = null,
   style,
@@ -151,7 +149,7 @@ export const DockIcon = memo(function DockIcon({
       <DockIconOverlay overlay={iconOverlay} />
     </div>
   );
-});
+}
 
 export function renderIconNode(icon: DockIconSource, size: number): ReactNode {
   return typeof icon === "string" ? <Icon icon={icon} size={size} /> : icon;

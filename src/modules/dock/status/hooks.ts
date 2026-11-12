@@ -1,13 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  type ComponentType,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ComponentType, useEffect, useRef, useState } from "react";
 
 import { STATUS_CLEAR_DURATION } from "../constants";
 import type {
@@ -107,6 +101,107 @@ function useDockStatusTimerCleanup(clearAllTimers: () => void) {
   useEffect(() => () => clearAllTimers(), [clearAllTimers]);
 }
 
+/**
+ * Status timers and setters. Built once per provider so every function keeps
+ * its identity and the subscription effect below runs once.
+ */
+function createStatusController(setStatus: StatusSetter) {
+  const apiErrorQueueRef: { current: QueuedApiError[] } = { current: [] };
+  const batchTimerRef: TimerRef = { current: null };
+  const statusClearTimerRef: TimerRef = { current: null };
+  const onlineResetTimerRef: TimerRef = { current: null };
+  const offlineDispatchTimerRef: TimerRef = { current: null };
+
+  const clearTimer = (timerRef: TimerRef) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const clearTransientTimers = () => {
+    clearTimer(batchTimerRef);
+    clearTimer(onlineResetTimerRef);
+    clearTimer(offlineDispatchTimerRef);
+  };
+
+  const clearAllTimers = () => {
+    clearTransientTimers();
+    clearTimer(statusClearTimerRef);
+  };
+
+  const clearStatus = () => {
+    clearPersistedOverlayStatus();
+    setStatus(null);
+  };
+
+  const updateStatus = (nextStatusOrFn: StatusUpdate) => {
+    setStatus((currentStatus) =>
+      resolveUpdatedStatus(currentStatus, nextStatusOrFn),
+    );
+  };
+
+  const scheduleStatusClear = ({
+    duration = STATUS_CLEAR_DURATION,
+    clearWhen = [],
+  }: ScheduleStatusClearOptions = {}) => {
+    clearTimer(statusClearTimerRef);
+    const clearTypes = Array.isArray(clearWhen)
+      ? clearWhen.filter(Boolean)
+      : [];
+
+    statusClearTimerRef.current = setTimeout(() => {
+      statusClearTimerRef.current = null;
+      setStatus((currentStatus) => {
+        const nextStatus = resolveExpiredStatus(currentStatus, clearTypes);
+        if (nextStatus !== currentStatus) clearPersistedOverlayStatus();
+        return nextStatus;
+      });
+    }, duration);
+  };
+
+  const dispatchOfflineEvent = () => {
+    clearTimer(offlineDispatchTimerRef);
+    offlineDispatchTimerRef.current = setTimeout(() => {
+      offlineDispatchTimerRef.current = null;
+      window.dispatchEvent(new Event(OFFLINE_WINDOW_EVENT));
+    }, 0);
+  };
+
+  const handleOffline = () => {
+    updateStatus(createConnectionStatus(OFFLINE_STATUS_TYPE));
+  };
+
+  const handleOnline = () => {
+    setStatus((currentStatus) => {
+      if (currentStatus?.type !== OFFLINE_STATUS_TYPE) return null;
+      clearTimer(onlineResetTimerRef);
+      onlineResetTimerRef.current = setTimeout(() => {
+        onlineResetTimerRef.current = null;
+        setStatus((nextStatus) =>
+          nextStatus?.type === ONLINE_STATUS_TYPE ? null : nextStatus,
+        );
+      }, STATUS_CLEAR_DURATION);
+      return createConnectionStatus(ONLINE_STATUS_TYPE);
+    });
+  };
+
+  return {
+    apiErrorQueueRef,
+    batchTimerRef,
+    clearAllTimers,
+    clearStatus,
+    clearTimer,
+    clearTransientTimers,
+    dispatchOfflineEvent,
+    handleOffline,
+    handleOnline,
+    scheduleStatusClear,
+    statusClearTimerRef,
+    updateStatus,
+  };
+}
+
 export function useDockStatus(
   options: { notFoundAction?: ComponentType | null } = {},
 ) {
@@ -119,89 +214,23 @@ export function useDockStatus(
   const [status, setStatus] = useState<StatusState>(null);
 
   const previousPathRef = useRef(pathname);
-  const apiErrorQueueRef = useRef<QueuedApiError[]>([]);
   const skipPersistedStatusCleanupRef = useRef(false);
-  const batchTimerRef: TimerRef = useRef(null);
-  const statusClearTimerRef: TimerRef = useRef(null);
-  const onlineResetTimerRef: TimerRef = useRef(null);
-  const offlineDispatchTimerRef: TimerRef = useRef(null);
-
-  const clearTimer = useCallback((timerRef: TimerRef) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  const clearTransientTimers = useCallback(() => {
-    clearTimer(batchTimerRef);
-    clearTimer(onlineResetTimerRef);
-    clearTimer(offlineDispatchTimerRef);
-  }, [clearTimer]);
-
-  const clearAllTimers = useCallback(() => {
-    clearTransientTimers();
-    clearTimer(statusClearTimerRef);
-  }, [clearTimer, clearTransientTimers]);
-
-  const clearStatus = useCallback(() => {
-    clearPersistedOverlayStatus();
-    setStatus(null);
-  }, []);
-
-  const updateStatus = useCallback((nextStatusOrFn: StatusUpdate) => {
-    setStatus((currentStatus) =>
-      resolveUpdatedStatus(currentStatus, nextStatusOrFn),
-    );
-  }, []);
-
-  const scheduleStatusClear = useCallback(
-    ({
-      duration = STATUS_CLEAR_DURATION,
-      clearWhen = [],
-    }: ScheduleStatusClearOptions = {}) => {
-      clearTimer(statusClearTimerRef);
-      const clearTypes = Array.isArray(clearWhen)
-        ? clearWhen.filter(Boolean)
-        : [];
-
-      statusClearTimerRef.current = setTimeout(() => {
-        statusClearTimerRef.current = null;
-        setStatus((currentStatus) => {
-          const nextStatus = resolveExpiredStatus(currentStatus, clearTypes);
-          if (nextStatus !== currentStatus) clearPersistedOverlayStatus();
-          return nextStatus;
-        });
-      }, duration);
+  const [
+    {
+      apiErrorQueueRef,
+      batchTimerRef,
+      clearAllTimers,
+      clearStatus,
+      clearTimer,
+      clearTransientTimers,
+      dispatchOfflineEvent,
+      handleOffline,
+      handleOnline,
+      scheduleStatusClear,
+      statusClearTimerRef,
+      updateStatus,
     },
-    [clearTimer],
-  );
-
-  const dispatchOfflineEvent = useCallback(() => {
-    clearTimer(offlineDispatchTimerRef);
-    offlineDispatchTimerRef.current = setTimeout(() => {
-      offlineDispatchTimerRef.current = null;
-      window.dispatchEvent(new Event(OFFLINE_WINDOW_EVENT));
-    }, 0);
-  }, [clearTimer]);
-
-  const handleOffline = useCallback(() => {
-    updateStatus(createConnectionStatus(OFFLINE_STATUS_TYPE));
-  }, [updateStatus]);
-
-  const handleOnline = useCallback(() => {
-    setStatus((currentStatus) => {
-      if (currentStatus?.type !== OFFLINE_STATUS_TYPE) return null;
-      clearTimer(onlineResetTimerRef);
-      onlineResetTimerRef.current = setTimeout(() => {
-        onlineResetTimerRef.current = null;
-        setStatus((nextStatus) =>
-          nextStatus?.type === ONLINE_STATUS_TYPE ? null : nextStatus,
-        );
-      }, STATUS_CLEAR_DURATION);
-      return createConnectionStatus(ONLINE_STATUS_TYPE);
-    });
-  }, [clearTimer]);
+  ] = useState(() => createStatusController(setStatus));
 
   usePersistedOverlayStatusRestoration({
     scheduleStatusClear,
@@ -260,6 +289,7 @@ export function useDockStatus(
     handleOnline,
     notFoundActionRef,
     scheduleStatusClear,
+    statusClearTimerRef,
     updateStatus,
   ]);
 

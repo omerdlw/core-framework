@@ -1,14 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  type KeyboardEvent,
-  type UIEvent,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type KeyboardEvent, type UIEvent, useRef, useState } from "react";
 
 import { useModule } from "@/core/kernel";
 
@@ -91,19 +84,16 @@ export function useDockCardItemModel({
   const actionSlot = useActionSlot(item, pathname, { isTop });
   const cardContentRef = useRef<HTMLDivElement>(null);
   const showBorder = expanded ? isHovered : isHovered || isStackHovered;
-  const effectiveStyle = useMemo(() => {
-    return mergeStatusStyle(item.style, statusStyle);
-  }, [item.style, statusStyle]);
+  const effectiveStyle = mergeStatusStyle(item.style, statusStyle);
   const theme = useDockTheme();
   const isStatusCard = Boolean(item.isStatus || item.isNotFound || statusStyle);
-  const itemStyle = useMemo(() => {
-    const resolved = resolveDockVisualStyle(effectiveStyle, {
-      isActive,
-      isHovered: showBorder,
-    });
-    if (!isStatusCard) return resolved;
-    return applyStatusSlots(resolved, theme.slots);
-  }, [effectiveStyle, isActive, isStatusCard, showBorder, theme]);
+  const resolvedStyle = resolveDockVisualStyle(effectiveStyle, {
+    isActive,
+    isHovered: showBorder,
+  });
+  const itemStyle = isStatusCard
+    ? applyStatusSlots(resolvedStyle, theme.slots)
+    : resolvedStyle;
   const showsSurfaceLayer = isSurfaceLayerShown(item);
   const renderedActionSlot =
     showsSurfaceLayer || isTopHudActive ? null : actionSlot;
@@ -115,9 +105,9 @@ export function useDockCardItemModel({
     renderedActionSlot || showsSurfaceLayer,
   );
   const dockMotion = useDockMotion();
-  const headerRestoreVariants = useMemo(
-    () => getDockHeaderRestoreVariants(dockMotion, item.surfacePhase),
-    [dockMotion, item.surfacePhase],
+  const headerRestoreVariants = getDockHeaderRestoreVariants(
+    dockMotion,
+    item.surfacePhase,
   );
   useElementHeight(
     onContentHeightChange,
@@ -134,7 +124,7 @@ export function useDockCardItemModel({
       }),
     ),
   );
-  const handleMouseEnter = useCallback(() => {
+  const handleMouseEnter = () => {
     if (item.isOverlay) return;
     setIsHovered(true);
     if (
@@ -143,14 +133,14 @@ export function useDockCardItemModel({
     )
       prefetchRoute(item.path);
     if (!expanded) onMouseEnter?.();
-  }, [expanded, item, onMouseEnter, prefetchRoute]);
-  const handleMouseLeave = useCallback(() => {
+  };
+  const handleMouseLeave = () => {
     if (item.isOverlay) return;
     if (item.path) cancelRoutePrefetch(item.path);
     setIsHovered(false);
     if (!expanded) onMouseLeave?.();
-  }, [cancelRoutePrefetch, expanded, item, onMouseLeave]);
-  const handleFocus = useCallback(() => {
+  };
+  const handleFocus = () => {
     if (item.isOverlay) return;
     setIsHovered(true);
     const targetHref = item.targetPath || item.path;
@@ -161,24 +151,21 @@ export function useDockCardItemModel({
       prefetchRoute(targetHref, { immediate: true });
     }
     onMouseEnter?.();
-  }, [item, onMouseEnter, prefetchRoute]);
-  const handleBlur = useCallback(() => {
+  };
+  const handleBlur = () => {
     if (item.isOverlay) return;
     setIsHovered(false);
     onMouseLeave?.();
-  }, [item, onMouseLeave]);
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (event.target !== event.currentTarget) return;
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      onClick?.(event);
-    },
-    [onClick],
-  );
-  const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+  };
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onClick?.(event);
+  };
+  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     if (event.currentTarget.scrollTop !== 0) event.currentTarget.scrollTop = 0;
-  }, []);
+  };
   const { isCollapsedBackgroundCard, isCollapsedGhostCard, isExtensionShelf } =
     resolveCardStackFlags(
       expanded,
@@ -208,10 +195,11 @@ export function useDockCardItemModel({
     }),
     hasExtensions,
   });
-  const cardDelay = useMemo(
-    () => getDockCardDelay(dockMotion, { expanded, isStackHovered, position }),
-    [dockMotion, expanded, isStackHovered, position],
-  );
+  const cardDelay = getDockCardDelay(dockMotion, {
+    expanded,
+    isStackHovered,
+    position,
+  });
 
   return {
     item,

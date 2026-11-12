@@ -21,18 +21,15 @@ const FLOW_UNAVAILABLE_MESSAGE = "Dock surface flow is unavailable";
  */
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);
-  const definition = useMemo(() => createSurfaceFlowDefinition(input), [input]);
+  const definition = createSurfaceFlowDefinition(input);
   const restoredFlowIdsRef = useRef(new Set<string>());
   const flowId = definition?.id ?? null;
 
-  const activeFlow = useMemo((): SurfaceFlowState | null => {
-    if (!flowId) return null;
-    return (
-      context?.surfaceState?.surfaceStack
+  const activeFlow: SurfaceFlowState | null = flowId
+    ? (context?.surfaceState?.surfaceStack
         ?.map((s) => s.flow)
-        .find((f) => f?.flowId === flowId) ?? null
-    );
-  }, [context?.surfaceState?.surfaceStack, flowId]);
+        .find((f) => f?.flowId === flowId) ?? null)
+    : null;
 
   useEffect(() => {
     if (
@@ -45,6 +42,7 @@ export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
     void context.restoreSurfaceFlow(definition);
   }, [context, definition]);
 
+  // stable identity: part of the public hook contract
   const open = useCallback(
     (flowInput: unknown = null): Promise<SurfaceResult> => {
       if (!definition || !context?.openSurfaceFlow) {
@@ -61,6 +59,7 @@ export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
     [context, definition],
   );
 
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       activeFlow,

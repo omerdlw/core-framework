@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useDockActions, useDockSelector } from "../context";
 import { isSamePath } from "../model/paths";
@@ -15,21 +15,16 @@ export function useSurfaceReturn() {
     (state) => state.dockReturnHandoffs,
   );
 
-  const entries = useMemo(
-    () =>
-      (dockReturnHandoffs || []).filter((handoff) =>
-        isSamePath(handoff.path, pathname),
-      ),
-    [dockReturnHandoffs, pathname],
-  );
-  const consume = useCallback(
-    (handoffId: string | null = null) =>
-      continuity.consumeReturn(pathname, handoffId),
-    [continuity, pathname],
-  );
-
-  return useMemo(
-    () => ({ consume, entries, peek: () => entries[0] || null }),
-    [consume, entries],
-  );
+  // stable identity: part of the public hook contract
+  return useMemo(() => {
+    const entries = (dockReturnHandoffs || []).filter((handoff) =>
+      isSamePath(handoff.path, pathname),
+    );
+    return {
+      consume: (handoffId: string | null = null) =>
+        continuity.consumeReturn(pathname, handoffId),
+      entries,
+      peek: () => entries[0] || null,
+    };
+  }, [continuity, dockReturnHandoffs, pathname]);
 }

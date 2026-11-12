@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo } from "react";
 
 import { Tooltip } from "@/react/ui/components/tooltip";
 
@@ -16,7 +15,7 @@ import type { DockCommandEntry } from "../runtime/commands";
 import type { DockActionDescriptor, DockItem } from "../types";
 import { renderIconNode } from "./icon";
 
-const DockCommand = memo(function DockCommand({
+function DockCommand({
   action,
   hasBanner,
 }: {
@@ -63,9 +62,9 @@ const DockCommand = memo(function DockCommand({
       </motion.button>
     </Tooltip>
   );
-});
+}
 
-export const DockCommandBar = memo(function DockCommandBar({
+export function DockCommandBar({
   activeItem,
   contextCommands = [],
   hasBanner = false,
@@ -99,4 +98,4 @@ export const DockCommandBar = memo(function DockCommandBar({
       </AnimatePresence>
     </div>
   );
-});
+}

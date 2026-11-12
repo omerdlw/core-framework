@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { buildBannerRegistration } from "../lib/banner";
 import type { DockBannerInput } from "../types";
 import { useDockRegistration } from "./use-dock-registration";
@@ -24,17 +22,15 @@ export function useDockBanner(
   const repeat = options?.repeat;
   const targetPath = options?.path;
 
-  const config = useMemo(
-    () =>
-      buildBannerRegistration(banner, {
-        opacity,
-        path: targetPath,
-        position,
-        repeat,
-        size,
-      }),
-    [banner, position, size, opacity, repeat, targetPath],
-  );
+  // The registry compares the config by content, so a new object per render
+  // is not a change.
+  const config = buildBannerRegistration(banner, {
+    opacity,
+    path: targetPath,
+    position,
+    repeat,
+    size,
+  });
 
   useDockRegistration(config, options);
 }

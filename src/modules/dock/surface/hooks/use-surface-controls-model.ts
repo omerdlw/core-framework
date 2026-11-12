@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, useSyncExternalStore } from "react";
+import { use, useSyncExternalStore } from "react";
 
 import { DOCK_SURFACE_PHASE } from "../../constants";
 import type { DockItem } from "../../types";
@@ -26,15 +26,11 @@ export function useDockSurfaceControlsModel({
     : true;
   const actionStore = use(SurfaceExtensionsContext)?.headerActions ?? null;
   const surfaceId = activeItem?.surfaceId || "active";
-  const subscribeAction = useCallback(
-    (onStoreChange: () => void) =>
-      actionStore ? actionStore.subscribe(onStoreChange) : () => {},
-    [actionStore],
-  );
-  const getActionSnapshot = useCallback(
-    () => (actionStore ? actionStore.getAction(surfaceId) : null),
-    [actionStore, surfaceId],
-  );
+  // Compiled: the compiler keeps subscribeAction stable while the store is.
+  const subscribeAction = (onStoreChange: () => void) =>
+    actionStore ? actionStore.subscribe(onStoreChange) : () => {};
+  const getActionSnapshot = () =>
+    actionStore ? actionStore.getAction(surfaceId) : null;
   const dynamicAction = useSyncExternalStore(
     subscribeAction,
     getActionSnapshot,

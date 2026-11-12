@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useClickOutside, useIsFullscreenStateActive } from "@/react/hooks";
 
@@ -58,10 +58,13 @@ export function useDockModel() {
   const isNotificationVisible = useDockNotificationVisible();
   const dockRef = useRef<HTMLDivElement>(null);
   const { portalTarget, stackWidth } = useDockViewport(activeItem);
-  const clearHoverState = useCallback(() => {
+  // Compiled: the compiler keeps this and handleOutsideDismiss stable while
+  // their inputs are. The effects below clear hover state inline instead of
+  // depending on it.
+  const clearHoverState = () => {
     setIsStackHovered(false);
     setIsHovered(false);
-  }, [setIsHovered]);
+  };
   const isSurfaceClosing =
     activeItem?.surfacePhase === DOCK_SURFACE_PHASE.COLLAPSING_BODY ||
     activeItem?.surfacePhase === DOCK_SURFACE_PHASE.RESTORING_HEADER;
@@ -104,12 +107,12 @@ export function useDockModel() {
     });
   }
   const surfaceResizeDistance = stackSize.resizeDistance;
-  const handleOutsideDismiss = useCallback(() => {
+  const handleOutsideDismiss = () => {
     const outcome = dismissSurfaceFromOutside(activeItem);
     if (outcome === OUTSIDE_DISMISS_HANDLED) return;
     if (isOverlayActive) return;
     setExpanded(false);
-  }, [activeItem, isOverlayActive, setExpanded]);
+  };
   useDockKeyboard({
     expanded,
     focusedIndex,
@@ -122,17 +125,19 @@ export function useDockModel() {
   useClickOutside(dockRef, handleOutsideDismiss);
   useEffect(() => {
     queueMicrotask(() => {
-      clearHoverState();
+      setIsStackHovered(false);
+      setIsHovered(false);
       setFocusedIndex(expanded ? activeIndex : NO_FOCUSED_INDEX);
     });
-  }, [activeIndex, clearHoverState, expanded]);
+  }, [activeIndex, expanded, setIsHovered]);
   useEffect(() => {
     if (!isFullscreenStateActive) return;
     queueMicrotask(() => {
       setExpanded(false);
-      clearHoverState();
+      setIsStackHovered(false);
+      setIsHovered(false);
     });
-  }, [clearHoverState, isFullscreenStateActive, setExpanded]);
+  }, [isFullscreenStateActive, setExpanded, setIsHovered]);
   const isNotFound = Boolean(isNotFoundItem(activeItem));
   const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
   const statusStyle =
@@ -158,15 +163,11 @@ export function useDockModel() {
     statusStyle,
   });
   const dockMotion = useDockMotion();
-  const dockStackTransition = useMemo(
-    () =>
-      getDockStackTransition(dockMotion, {
-        expanded,
-        resizeDistance: surfaceResizeDistance,
-        surfacePhase: activeItem?.surfacePhase ?? null,
-      }),
-    [activeItem?.surfacePhase, dockMotion, expanded, surfaceResizeDistance],
-  );
+  const dockStackTransition = getDockStackTransition(dockMotion, {
+    expanded,
+    resizeDistance: surfaceResizeDistance,
+    surfacePhase: activeItem?.surfacePhase ?? null,
+  });
 
   return {
     activeItem,

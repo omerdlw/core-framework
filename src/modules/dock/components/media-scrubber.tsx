@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -10,7 +9,7 @@ import { useDockMediaScrubberModel } from "../hooks/use-media-scrubber-model";
 import { formatMediaTime } from "../lib/helpers";
 import { useDockMotion } from "../motion";
 
-export const DockMediaScrubber = memo(function DockMediaScrubber({
+export function DockMediaScrubber({
   className = "",
   showTimeOnHover = true,
 }: {
@@ -81,4 +80,4 @@ export const DockMediaScrubber = memo(function DockMediaScrubber({
       </AnimatePresence>
     </div>
   );
-});
+}

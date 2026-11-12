@@ -15,6 +15,7 @@ export function useDockTheme() {
 /** Returns a function that resolves class names for dock action buttons. */
 export function useDockActionClass() {
   const { slots } = useDockTheme();
+  // stable identity: part of the public hook contract
   return useCallback(
     (options?: Parameters<typeof resolveDockActionClass>[1]) =>
       resolveDockActionClass(slots, options),

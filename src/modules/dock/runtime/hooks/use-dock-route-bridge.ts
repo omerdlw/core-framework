@@ -1,7 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useLayoutEffect,
+  useState,
+} from "react";
 
 import type {
   DockActions,
@@ -15,38 +20,55 @@ const EMPTY_ROUTE_STATE: DockRouteSnapshot = Object.freeze({
   pathname: "",
 });
 
+type DockRouter = ReturnType<typeof useRouter>;
+
+function createRouteBridge(
+  initialRouter: DockRouter,
+  setRouteState: Dispatch<SetStateAction<DockRouteSnapshot>>,
+) {
+  let router = initialRouter;
+  let navigator: DockActions["navigate"] | null = null;
+
+  const navigate: DockActions["navigate"] = async (href, options) => {
+    if (navigator) return navigator(href, options);
+    if (!href) return false;
+    router.push(href);
+    return true;
+  };
+
+  const viewBridge: DockViewBridge = {
+    publishRoute: (snapshot) =>
+      setRouteState((current) =>
+        current.activeItem === snapshot.activeItem &&
+        current.locationKey === snapshot.locationKey &&
+        current.pathname === snapshot.pathname
+          ? current
+          : snapshot,
+      ),
+    setNavigator: (next) => {
+      navigator = next;
+    },
+  };
+
+  return {
+    navigate,
+    setRouter: (next: DockRouter) => {
+      router = next;
+    },
+    viewBridge,
+  };
+}
+
 export function useDockRouteBridge() {
   const router = useRouter();
   const [routeState, setRouteState] =
     useState<DockRouteSnapshot>(EMPTY_ROUTE_STATE);
-  const navigatorRef = useRef<DockActions["navigate"] | null>(null);
-
-  const navigate = useCallback<DockActions["navigate"]>(
-    async (href, options) => {
-      if (navigatorRef.current) return navigatorRef.current(href, options);
-      if (!href) return false;
-      router.push(href);
-      return true;
-    },
-    [router],
+  const [{ navigate, setRouter, viewBridge }] = useState(() =>
+    createRouteBridge(router, setRouteState),
   );
-
-  const viewBridge = useMemo<DockViewBridge>(
-    () => ({
-      publishRoute: (snapshot) =>
-        setRouteState((current) =>
-          current.activeItem === snapshot.activeItem &&
-          current.locationKey === snapshot.locationKey &&
-          current.pathname === snapshot.pathname
-            ? current
-            : snapshot,
-        ),
-      setNavigator: (next) => {
-        navigatorRef.current = next;
-      },
-    }),
-    [],
-  );
+  useLayoutEffect(() => {
+    setRouter(router);
+  }, [router, setRouter]);
 
   return { navigate, routeState, viewBridge };
 }

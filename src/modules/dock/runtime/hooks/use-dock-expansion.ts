@@ -1,25 +1,24 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
-export function useDockExpansion() {
-  const [expanded, setExpandedState] = useState(false);
-
-  const setExpanded = useCallback(
-    (nextValue: boolean | ((prev: boolean) => boolean)) =>
+function createExpansionActions(
+  setExpandedState: Dispatch<SetStateAction<boolean>>,
+) {
+  return {
+    collapse: () => setExpandedState(false),
+    expand: () => setExpandedState(true),
+    setExpanded: (nextValue: boolean | ((prev: boolean) => boolean)) =>
       setExpandedState((prev) =>
         Boolean(typeof nextValue === "function" ? nextValue(prev) : nextValue),
       ),
-    [],
-  );
-  const collapse = useCallback(() => setExpandedState(false), []);
-  const expand = useCallback(() => setExpandedState(true), []);
-  const toggle = useCallback(() => setExpandedState((prev) => !prev), []);
+    toggle: () => setExpandedState((prev) => !prev),
+  };
+}
 
-  const actions = useMemo(
-    () => ({ collapse, expand, setExpanded, toggle }),
-    [collapse, expand, setExpanded, toggle],
-  );
+export function useDockExpansion() {
+  const [expanded, setExpandedState] = useState(false);
+  const [actions] = useState(() => createExpansionActions(setExpandedState));
 
   return { actions, expanded };
 }

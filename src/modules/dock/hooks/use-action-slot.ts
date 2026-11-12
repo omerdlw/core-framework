@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { useDockHasMedia } from "../context";
 import {
   type DockActionSlot,
@@ -23,38 +21,23 @@ export function useActionSlot(
   const showsSurface = isSurfaceLayerShown({ isSurface, surfacePhase });
   const hasMedia = useDockHasMedia();
 
-  return useMemo(() => {
-    if (isLoading || (isOverlay && !isStatus) || showsSurface) return null;
-    if (isStatus) {
-      return action && isRenderableAction(action)
-        ? { kind: "action", action }
-        : null;
-    }
-    if (isTop && hasMedia && ownsPathname(path, pathname)) {
-      return { kind: "media" };
-    }
-    if (!isTop && !isOverlay) return null;
-
-    if (
-      !shouldRenderInlineAction(
-        { action, isLoading, isOverlay, path },
-        pathname,
-      )
-    ) {
-      return null;
-    }
+  if (isLoading || (isOverlay && !isStatus) || showsSurface) return null;
+  if (isStatus) {
     return action && isRenderableAction(action)
       ? { kind: "action", action }
       : null;
-  }, [
-    action,
-    isLoading,
-    isOverlay,
-    isStatus,
-    showsSurface,
-    isTop,
-    hasMedia,
-    path,
-    pathname,
-  ]);
+  }
+  if (isTop && hasMedia && ownsPathname(path, pathname)) {
+    return { kind: "media" };
+  }
+  if (!isTop && !isOverlay) return null;
+
+  if (
+    !shouldRenderInlineAction({ action, isLoading, isOverlay, path }, pathname)
+  ) {
+    return null;
+  }
+  return action && isRenderableAction(action)
+    ? { kind: "action", action }
+    : null;
 }

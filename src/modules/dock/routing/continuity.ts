@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { type Dispatch, useEffect, useReducer, useState } from "react";
 
 import {
   DOCK_CONTINUITY_EVENTS,
@@ -8,7 +8,9 @@ import {
   DOCK_SURFACE_RETURN_MAX_ENTRIES,
 } from "../constants";
 import type {
+  DockContinuityAction,
   DockContinuityRememberOptions,
+  DockContinuityState,
   DockReturnHandoffInput,
 } from "../types";
 import { restoreContinuityView } from "./lib/restore";
@@ -21,28 +23,44 @@ import {
   resolveDockReturnHandoffs,
 } from "./model/continuity";
 
-/**
- * Remembers scroll position, focus and snapshots per path, and hands results
- * back to a route a surface flow returns to. Internal to the dock provider.
- */
-export function useDockContinuity({
-  maxEntries = DOCK_CONTINUITY_MAX_ENTRIES,
-}: {
-  maxEntries?: number;
-} = {}) {
-  const [state, dispatch] = useReducer(
-    dockContinuityReducer,
-    undefined,
-    createDockContinuityState,
-  );
-  const stateRef = useRef(state);
+function createContinuityActions(
+  dispatch: Dispatch<DockContinuityAction>,
+  initial: { maxEntries: number; state: DockContinuityState },
+) {
+  let { maxEntries, state } = initial;
 
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  const actions = {
+    clear: () => dispatch({ type: DOCK_CONTINUITY_EVENTS.CLEAR }),
+    consumeReturn: (pathname: string, handoffId: string | null = null) => {
+      const handoffs = resolveDockReturnHandoffs(state, pathname);
+      const handoff = handoffId
+        ? handoffs.find((entry) => entry.id === handoffId) || null
+        : handoffs[0] || null;
+      if (!handoff) return null;
 
-  const remember = useCallback(
-    (pathname: string, options: DockContinuityRememberOptions = {}) => {
+      dispatch({
+        handoffId: handoff.id,
+        type: DOCK_CONTINUITY_EVENTS.CONSUME_RETURN,
+      });
+      return handoff;
+    },
+    deliverReturn: (pathname: string, input: DockReturnHandoffInput = {}) => {
+      const handoff = createDockReturnHandoff({ pathname, ...input });
+      if (!handoff) return null;
+      dispatch({
+        handoff,
+        maxEntries: DOCK_SURFACE_RETURN_MAX_ENTRIES,
+        type: DOCK_CONTINUITY_EVENTS.DELIVER_RETURN,
+      });
+      return handoff;
+    },
+    get: (pathname: string) => resolveDockContinuityEntry(state, pathname),
+    getReturns: (pathname: string) =>
+      resolveDockReturnHandoffs(state, pathname),
+    remember: (
+      pathname: string,
+      options: DockContinuityRememberOptions = {},
+    ) => {
       const entry = createDockContinuityEntry({
         pathname,
         scrollY:
@@ -58,102 +76,62 @@ export function useDockContinuity({
       });
       return entry;
     },
-    [maxEntries],
-  );
-
-  const remove = useCallback(
-    (pathname: string) =>
+    remove: (pathname: string) =>
       dispatch({ path: pathname, type: DOCK_CONTINUITY_EVENTS.REMOVE }),
-    [],
-  );
-  const clear = useCallback(
-    () => dispatch({ type: DOCK_CONTINUITY_EVENTS.CLEAR }),
-    [],
-  );
-  const get = useCallback(
-    (pathname: string) =>
-      resolveDockContinuityEntry(stateRef.current, pathname),
-    [],
-  );
-
-  const deliverReturn = useCallback(
-    (pathname: string, input: DockReturnHandoffInput = {}) => {
-      const handoff = createDockReturnHandoff({ pathname, ...input });
-      if (!handoff) return null;
-      dispatch({
-        handoff,
-        maxEntries: DOCK_SURFACE_RETURN_MAX_ENTRIES,
-        type: DOCK_CONTINUITY_EVENTS.DELIVER_RETURN,
-      });
-      return handoff;
-    },
-    [],
-  );
-
-  const getReturns = useCallback(
-    (pathname: string) => resolveDockReturnHandoffs(stateRef.current, pathname),
-    [],
-  );
-
-  const consumeReturn = useCallback(
-    (pathname: string, handoffId: string | null = null) => {
-      const handoffs = resolveDockReturnHandoffs(stateRef.current, pathname);
-      const handoff = handoffId
-        ? handoffs.find((entry) => entry.id === handoffId) || null
-        : handoffs[0] || null;
-      if (!handoff) return null;
-
-      dispatch({
-        handoffId: handoff.id,
-        type: DOCK_CONTINUITY_EVENTS.CONSUME_RETURN,
-      });
-      return handoff;
-    },
-    [],
-  );
-
-  const restore = useCallback(
-    (
+    restore: (
       pathname: string,
       {
         focusKey = null,
         restoreScroll = true,
       }: { focusKey?: string | null; restoreScroll?: boolean } = {},
     ) => {
-      const entry = resolveDockContinuityEntry(stateRef.current, pathname);
+      const entry = resolveDockContinuityEntry(state, pathname);
       if (typeof window === "undefined") return entry;
 
       restoreContinuityView(entry, focusKey, restoreScroll);
 
       return entry;
     },
-    [],
+  };
+
+  return {
+    actions,
+    sync: (next: { maxEntries: number; state: DockContinuityState }) => {
+      ({ maxEntries, state } = next);
+    },
+  };
+}
+
+/** The continuity actions; built once per provider, so their identity is stable. */
+export type DockContinuityActions = ReturnType<
+  typeof createContinuityActions
+>["actions"];
+
+/**
+ * Remembers scroll position, focus and snapshots per path, and hands results
+ * back to a route a surface flow returns to. Internal to the dock provider.
+ */
+export function useDockContinuity({
+  maxEntries = DOCK_CONTINUITY_MAX_ENTRIES,
+}: {
+  maxEntries?: number;
+} = {}) {
+  const [state, dispatch] = useReducer(
+    dockContinuityReducer,
+    undefined,
+    createDockContinuityState,
+  );
+  const [{ actions, sync }] = useState(() =>
+    createContinuityActions(dispatch, { maxEntries, state }),
   );
 
-  return useMemo(
-    () => ({
-      clear,
-      consumeReturn,
-      deliverReturn,
-      entries: state.entries,
-      get,
-      getReturns,
-      remember,
-      remove,
-      restore,
-      returnHandoffs: state.returnHandoffs,
-    }),
-    [
-      clear,
-      consumeReturn,
-      deliverReturn,
-      get,
-      getReturns,
-      remember,
-      remove,
-      restore,
-      state.entries,
-      state.returnHandoffs,
-    ],
-  );
+  useEffect(() => {
+    sync({ maxEntries, state });
+  }, [maxEntries, state, sync]);
+
+  return {
+    actions,
+    entries: state.entries,
+    returnHandoffs: state.returnHandoffs,
+  };
 }

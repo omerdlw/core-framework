@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -34,7 +33,7 @@ function resolveIconAriaLabel(
 }
 
 /** Header row of a dock card: icon, title, description and the command bar. */
-export const DockCardHeader = memo(function DockCardHeader({
+export function DockCardHeader({
   item: propItem,
   link,
   activeItem = null,
@@ -141,4 +140,4 @@ export const DockCardHeader = memo(function DockCardHeader({
       </div>
     </div>
   );
-});
+}

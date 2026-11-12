@@ -14,6 +14,8 @@ export function useDockHudViewModel({
   pathname?: string | null;
 }) {
   const previousPathRef = useRef(pathname);
+  // stable identity: part of the public hook contract
+  // (HUD components receive it as onDismiss)
   const dismiss = useCallback(() => {
     hud?.onDismiss?.();
     if (hud?.id) clearHud?.(hud.id);

@@ -128,6 +128,7 @@ export function defineHud(
 export function useHud(hudDefinition: DockHudDefinition | null = null) {
   const { clearHud, setHud } = useDockActions();
 
+  // stable identity: part of the public hook contract
   return useMemo((): UseHudReturn => {
     if (!hudDefinition) {
       return { clearHud, setHud };

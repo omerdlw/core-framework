@@ -6,7 +6,6 @@ import {
   type ComponentType,
   createElement,
   isValidElement,
-  memo,
   type ReactElement,
   type ReactNode,
 } from "react";
@@ -23,7 +22,7 @@ import { useDockSurfaceControlsModel } from "../../surface/hooks/use-surface-con
 import type { DockItem } from "../../types";
 import { applyControlRadius, getControlRadiusClass } from "./header-button";
 
-export const DockSurfaceControls = memo(function DockSurfaceControls({
+export function DockSurfaceControls({
   activeItem = null,
   hasExtensions = false,
   onClose = null,
@@ -195,4 +194,4 @@ export const DockSurfaceControls = memo(function DockSurfaceControls({
       )}
     </AnimatePresence>
   );
-});
+}

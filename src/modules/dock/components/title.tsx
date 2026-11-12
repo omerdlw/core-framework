@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -11,11 +10,7 @@ import { useDockMotion } from "../motion";
 import type { DockTitleProps } from "../types";
 
 /** Primary title text in a dock card, with an optional enter/exit animation. */
-export const DockTitle = memo(function DockTitle({
-  text,
-  style,
-  animated = true,
-}: DockTitleProps) {
+export function DockTitle({ text, style, animated = true }: DockTitleProps) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
   const { className, inlineStyle } = splitStyle(style);
@@ -53,4 +48,4 @@ export const DockTitle = memo(function DockTitle({
       </AnimatePresence>
     </div>
   );
-});
+}

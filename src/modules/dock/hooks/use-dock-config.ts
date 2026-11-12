@@ -28,11 +28,12 @@ export function useDockConfig(
   configOrTitle?: string | Record<string, unknown> | null,
   options?: Record<string, unknown>,
 ) {
-  const normalizedConfig = useMemo(() => {
-    if (!configOrTitle) return null;
-    if (typeof configOrTitle === "string") return { title: configOrTitle };
-    return configOrTitle;
-  }, [configOrTitle]);
+  // The registry compares the config by content, so a new `{ title }` per
+  // render is not a change.
+  const normalizedConfig =
+    typeof configOrTitle === "string"
+      ? { title: configOrTitle }
+      : configOrTitle || null;
 
   useDockRegistration(normalizedConfig, options);
 
@@ -44,6 +45,7 @@ export function useDockConfig(
     shallowEqual,
   );
 
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       activeItem: state.activeItem,

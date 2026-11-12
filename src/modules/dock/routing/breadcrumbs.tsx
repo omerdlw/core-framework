@@ -1,14 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, type ReactNode, useEffect, useState } from "react";
 
 import { normalizePath } from "@/foundation/utils";
 import { useRequiredContext } from "@/react/hooks";
@@ -169,39 +162,34 @@ export function BreadcrumbProvider({
 }) {
   const [overrides, setOverrides] = useState<BreadcrumbOverrides>({});
 
-  const registerOverride = useCallback(
-    (path: string, overrideConfig: BreadcrumbOverride) => {
-      if (!path || !overrideConfig) return;
-      const normalizedPath = formatPath(path);
+  // Compiled: the compiler keeps both actions stable and rebuilds the value
+  // only when config or overrides change.
+  const registerOverride = (
+    path: string,
+    overrideConfig: BreadcrumbOverride,
+  ) => {
+    if (!path || !overrideConfig) return;
+    const normalizedPath = formatPath(path);
 
-      setOverrides((currentOverrides) =>
-        withBreadcrumbOverride(
-          currentOverrides,
-          normalizedPath,
-          overrideConfig,
-        ),
-      );
-    },
-    [],
-  );
+    setOverrides((currentOverrides) =>
+      withBreadcrumbOverride(currentOverrides, normalizedPath, overrideConfig),
+    );
+  };
 
-  const unregisterOverride = useCallback((path: string) => {
+  const unregisterOverride = (path: string) => {
     if (!path) return;
     const normalizedPath = formatPath(path);
 
     setOverrides((currentOverrides) =>
       withoutBreadcrumbOverride(currentOverrides, normalizedPath),
     );
-  }, []);
+  };
 
-  const value = useMemo<BreadcrumbContextValue>(
-    () => ({
-      actions: { registerOverride, unregisterOverride },
-      config: config || EMPTY_BREADCRUMB_CONFIG,
-      overrides,
-    }),
-    [config, overrides, registerOverride, unregisterOverride],
-  );
+  const value: BreadcrumbContextValue = {
+    actions: { registerOverride, unregisterOverride },
+    config: config || EMPTY_BREADCRUMB_CONFIG,
+    overrides,
+  };
 
   return <BreadcrumbContext value={value}>{children}</BreadcrumbContext>;
 }
@@ -223,9 +211,10 @@ export function useDockBreadcrumbs() {
     "BreadcrumbProvider",
   );
 
-  const breadcrumbs = useMemo(
-    () => resolveRouteBreadcrumbs(pathname || "", overrides, config || {}),
-    [config, pathname, overrides],
+  const breadcrumbs = resolveRouteBreadcrumbs(
+    pathname || "",
+    overrides,
+    config || {},
   );
 
   const len = breadcrumbs.length;
@@ -233,10 +222,10 @@ export function useDockBreadcrumbs() {
   const parent = len > 1 ? breadcrumbs[len - 2] : null;
   const canGoBack = len > 1;
 
-  const goBack = useCallback(() => {
+  const goBack = () => {
     if (parent?.path) router.push(parent.path);
     else router.back();
-  }, [parent, router]);
+  };
 
   return { breadcrumbs, canGoBack, current, goBack, parent };
 }

@@ -1,7 +1,5 @@
 "use client";
 
-import { memo } from "react";
-
 import { cn } from "@/foundation/recipes/cn";
 
 import { useDockTheme } from "../../hooks/use-dock-theme";
@@ -45,7 +43,7 @@ function ExtensionPill({
   );
 }
 
-export const DockSurfaceExtensionsBar = memo(function DockSurfaceExtensionsBar({
+export function DockSurfaceExtensionsBar({
   activeItem,
 }: {
   activeItem?: DockItem | null;
@@ -116,4 +114,4 @@ export const DockSurfaceExtensionsBar = memo(function DockSurfaceExtensionsBar({
       </div>
     </div>
   );
-});
+}

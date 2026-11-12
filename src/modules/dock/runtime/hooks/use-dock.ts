@@ -58,8 +58,7 @@ export function useDock() {
   const isSurfaceActive = Boolean(activeItem?.isSurface);
   const activeItemHasAction = Boolean(activeItem?.action);
 
-  const clearHoverState = useCallback(() => setIsHovered(false), []);
-
+  // stable identity: part of the public hook contract
   const setExpanded = useCallback(
     (nextValue: boolean | ((prev: boolean) => boolean)) => {
       const resolvedValue =
@@ -78,14 +77,15 @@ export function useDock() {
     }
     if (wasSurfaceActiveRef.current) {
       wasSurfaceActiveRef.current = false;
-      clearHoverState();
+      setIsHovered(false);
     }
-  }, [clearHoverState, isSurfaceActive]);
+  }, [isSurfaceActive]);
 
   useEffect(() => {
     if (isSurfaceActive && isExpanded) setExpandedState(false);
   }, [isExpanded, isSurfaceActive, setExpandedState]);
 
+  // stable identity: part of the public hook contract
   const navigate = useCallback(
     async (href: string, options?: DockNavigateOptions) => {
       if (!href) return false;
@@ -94,18 +94,18 @@ export function useDock() {
       if (isUnguarded) {
         setExpanded(false);
         setSearchQuery("");
-        clearHoverState();
+        setIsHovered(false);
       }
       const didNavigate = await navigationPromise;
       if (!didNavigate) return didNavigate;
       if (!isUnguarded) {
         setExpanded(false);
         setSearchQuery("");
-        clearHoverState();
+        setIsHovered(false);
       }
       return didNavigate;
     },
-    [clearHoverState, guards, navigateWithGuards, setExpanded, setSearchQuery],
+    [guards, navigateWithGuards, setExpanded, setSearchQuery],
   );
 
   const { displayItems, activeIndex: layoutActiveIndex } = useDockLayout({

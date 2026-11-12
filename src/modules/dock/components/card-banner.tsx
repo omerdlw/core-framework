@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -11,7 +10,7 @@ import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
 import type { DockCardBannerProps } from "../types";
 
 /** Background banner image layer for a dock card. */
-export const DockCardBanner = memo(function DockCardBanner({
+export function DockCardBanner({
   banner,
   bannerUrl,
   bannerPosition,
@@ -89,4 +88,4 @@ export const DockCardBanner = memo(function DockCardBanner({
       />
     </motion.div>
   );
-});
+}

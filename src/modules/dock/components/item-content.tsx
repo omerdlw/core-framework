@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo, useMemo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -13,7 +12,7 @@ import type { StandardItemContentProps } from "../types";
 import { DockCardHeader } from "./card-header";
 import { DockHudView } from "./hud-view";
 
-export const LoadingItemContent = memo(function LoadingItemContent() {
+export function LoadingItemContent() {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
   return (
@@ -27,7 +26,7 @@ export const LoadingItemContent = memo(function LoadingItemContent() {
       </div>
     </div>
   );
-});
+}
 
 export function StandardItemContent({
   item: propItem,
@@ -46,13 +45,10 @@ export function StandardItemContent({
   pathname,
 }: StandardItemContentProps) {
   const dockMotion = useDockMotion();
-  const actionVariants = useMemo(
-    () => ({
-      ...dockMotion.variants.textCrossfade,
-      dismissed: dockMotion.variants.actionDismiss.exit,
-    }),
-    [dockMotion],
-  );
+  const actionVariants = {
+    ...dockMotion.variants.textCrossfade,
+    dismissed: dockMotion.variants.actionDismiss.exit,
+  };
   const {
     item,
     isPlaying,
