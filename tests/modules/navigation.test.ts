@@ -6,7 +6,7 @@ import { navigationTestState } from "../support/next-navigation.mjs";
 import { render } from "../support/render.ts";
 import { ModuleHost } from "../../src/core/kernel/index.ts";
 import { navigationModule } from "../../src/modules/navigation/module.tsx";
-import { createNavigator } from "../../src/modules/navigation/navigator.ts";
+import { createNavigator } from "../../src/core/navigation/navigator.ts";
 import {
   watchHistory,
   watchIntent,
@@ -15,7 +15,7 @@ import {
   configureNavigation,
   getNavigationSettings,
   mergeNavigationSettings,
-} from "../../src/modules/navigation/settings.ts";
+} from "../../src/core/navigation/settings.ts";
 import {
   useArrival,
   useDeparture,
@@ -29,17 +29,17 @@ import { INERT_NAVIGATION_ACTIONS } from "../../src/modules/navigation/context.t
 import {
   NAVIGATION_EVENTS,
   NAVIGATION_REASON,
-} from "../../src/modules/navigation/constants.ts";
+} from "../../src/core/navigation/constants.ts";
 import {
   isSameLocation,
   locationKeyOf,
   pathOf,
-} from "../../src/modules/navigation/utils.ts";
+} from "../../src/core/navigation/utils.ts";
 import { DockProvider } from "../../src/modules/dock/provider.tsx";
 import { useDockNavigation } from "../../src/modules/dock/routing/navigation.ts";
 import { createDockScheduler } from "../../src/modules/dock/helpers.ts";
 
-declare module "../../src/modules/navigation/types.ts" {
+declare module "../../src/core/navigation/types.ts" {
   interface NavigationPayload {
     grade?: string | null;
     palette?: string;
@@ -97,6 +97,37 @@ const deferred = () => {
   const promise = new Promise<void>((done) => (resolve = done));
   return { promise, resolve };
 };
+
+test("navigation public surface is unchanged", async () => {
+  const surface = await import("../../src/modules/navigation/index.ts");
+  assert.deepEqual(Object.keys(surface).sort(), [
+    "INERT_NAVIGATION_ACTIONS",
+    "NAVIGATION_EVENTS",
+    "NAVIGATION_PHASE",
+    "NAVIGATION_REASON",
+    "NAVIGATION_SOURCE",
+    "NAVIGATION_STATUS",
+    "NavigationContext",
+    "NavigationProvider",
+    "configureNavigation",
+    "createNavigator",
+    "getNavigationSettings",
+    "isSafeInternalHref",
+    "locationKeyOf",
+    "navigationModule",
+    "pathOf",
+    "useArrival",
+    "useDeparture",
+    "useNavigation",
+    "useNavigationHold",
+    "useNavigationIntent",
+    "useNavigationPayload",
+    "useNavigationState",
+    "useOptionalNavigation",
+    "watchHistory",
+    "watchIntent",
+  ]);
+});
 
 describe("navigation utils", () => {
   test("location keys keep search and hash and drop the trailing slash", () => {

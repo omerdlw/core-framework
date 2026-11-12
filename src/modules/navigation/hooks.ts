@@ -12,7 +12,7 @@ import {
   NOOP_NAVIGATION_STORE,
   NavigationContext,
 } from "./context";
-import { tripDestination } from "./state";
+import { tripDestination } from "@/core/navigation/state";
 import type {
   NavigationActions,
   NavigationHold,
@@ -22,8 +22,8 @@ import type {
   NavigationPayloadValue,
   NavigationState,
   NavigationTrip,
-} from "./types";
-import { isSamePathname } from "./utils";
+} from "@/core/navigation/types";
+import { isSamePathname } from "@/core/navigation/utils";
 
 export function useNavigation(): NavigationActions {
   return useRequiredContext(

@@ -19,7 +19,11 @@ import {
   type RegistryMetadata,
 } from "@/core/kernel";
 import { useModuleTheme } from "@/react/theme";
-import { type DockItem, type DockState, useOptionalDockState } from "../dock";
+import {
+  type DockItem,
+  type DockState,
+  useOptionalDockState,
+} from "@/modules/dock";
 import { contextMenuTheme } from "./constants";
 import { ContextMenuContext } from "./context";
 import {

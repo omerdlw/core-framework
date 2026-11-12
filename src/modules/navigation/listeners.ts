@@ -3,14 +3,14 @@ import {
   NAVIGATION_PREFETCH_ATTRIBUTE,
   NAVIGATION_REASON,
   NAVIGATION_SOURCE,
-} from "./constants";
-import type { NavigationSettings, Navigator } from "./types";
+} from "@/core/navigation/constants";
+import type { NavigationSettings, Navigator } from "@/core/navigation/types";
 import {
   internalLinkOf,
   isSameLocation,
   isSamePathname,
   readWindowLocation,
-} from "./utils";
+} from "@/core/navigation/utils";
 
 export function watchIntent(
   navigator: Pick<Navigator, "prefetch">,

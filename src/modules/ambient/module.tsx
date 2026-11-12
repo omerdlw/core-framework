@@ -6,7 +6,7 @@ import {
   type PageConfig,
   type PageModuleApi,
 } from "@/core/kernel";
-import { useOptionalBackgroundState } from "../background";
+import { useOptionalBackgroundState } from "@/modules/background";
 import { AmbientContext, AmbientProvider } from "./context";
 import { useAmbientTheme } from "./hooks";
 import type {

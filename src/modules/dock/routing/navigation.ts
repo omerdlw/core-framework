@@ -33,15 +33,15 @@ import {
 } from "../context";
 import { blurActiveElement } from "../dom";
 import { openDockGuardConfirmation } from "./guards";
-import { createNavigator } from "../../navigation/navigator";
-import { NAVIGATION_STATUS } from "../../navigation/constants";
+import { createNavigator } from "@/core/navigation/navigator";
+import { NAVIGATION_STATUS } from "@/core/navigation/constants";
 import type {
   NavigationActions,
   NavigationBlock,
   NavigationRouter,
   NavigationState,
   Navigator,
-} from "../../navigation/types";
+} from "@/core/navigation/types";
 import { report } from "@/foundation/utils";
 
 function getRoutePolicyOverrides(

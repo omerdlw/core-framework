@@ -9,14 +9,14 @@ import {
   useOptionalMediaState,
   type MediaActions,
   type MediaState,
-} from "../media";
+} from "@/modules/media";
 import {
   useOptionalLoadingActions,
   useOptionalLoadingState,
   type LoadingActions,
   type LoadingStateWithPage,
-} from "../loading";
-import { useNotificationVisible } from "../notification";
+} from "@/modules/loading";
+import { useNotificationVisible } from "@/modules/notification";
 import {
   type DockActions,
   type DockContextValue,

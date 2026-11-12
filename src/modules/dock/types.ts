@@ -1,4 +1,4 @@
-import type { NavigationTrip } from "../navigation/types";
+import type { NavigationTrip } from "@/core/navigation/types";
 import type { createScheduler } from "@/foundation/utils";
 import { type ExternalStore } from "@/foundation/utils";
 import {

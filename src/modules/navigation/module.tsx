@@ -2,7 +2,7 @@
 
 import { defineModule } from "@/core/kernel";
 import { NavigationContext, NavigationProvider } from "./context";
-import type { NavigationTrip } from "./types";
+import type { NavigationTrip } from "@/core/navigation/types";
 
 export const navigationModule = defineModule({
   id: "navigation",

@@ -6,17 +6,17 @@ import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
 import { watchHistory, watchIntent } from "./listeners";
-import { createNavigator } from "./navigator";
-import { getNavigationSettings } from "./settings";
-import { createNavigationState } from "./state";
+import { createNavigator } from "@/core/navigation/navigator";
+import { getNavigationSettings } from "@/core/navigation/settings";
+import { createNavigationState } from "@/core/navigation/state";
 import type {
   NavigationActions,
   NavigationResult,
   NavigationRouter,
   NavigationRuntime,
   NavigationState,
-} from "./types";
-import { readWindowLocation } from "./utils";
+} from "@/core/navigation/types";
+import { readWindowLocation } from "@/core/navigation/utils";
 
 export const NavigationContext =
   getOrCreateGlobalContext<NavigationRuntime | null>("NavigationContext", null);
