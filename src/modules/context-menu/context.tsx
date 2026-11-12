@@ -29,6 +29,9 @@ import {
   type ContextMenuTrigger,
 } from "./types";
 
+/**
+ * React context holding the context menu store and actions.
+ */
 export const ContextMenuContext =
   getOrCreateGlobalContext<ContextMenuProviderValue | null>(
     "ContextMenuContext",
@@ -39,7 +42,31 @@ function selectIsOpen(state: ContextMenuState): boolean {
   return state.isOpen;
 }
 
-export function ContextMenuProvider({ children }: { children?: ReactNode }) {
+interface ContextMenuProviderProps {
+  children?: ReactNode;
+}
+
+/** Builds the menu context for a menu opened from a bound element's event. */
+function createTriggerContext(
+  event: ContextMenuTrigger,
+  point: ContextMenuContextValue["point"],
+  pathname: string,
+  payload: unknown,
+): ContextMenuContextValue {
+  return {
+    currentTarget: event.currentTarget ?? null,
+    event,
+    pathname,
+    payload,
+    point,
+    target: (event.target as Element) ?? null,
+  };
+}
+
+/**
+ * Provides the context menu store and actions to its children.
+ */
+export function ContextMenuProvider({ children }: ContextMenuProviderProps) {
   const pathname = usePathname();
   const [store] = useState(() =>
     createStore<ContextMenuState>(createInitialMenuState(), {
@@ -78,14 +105,12 @@ export function ContextMenuProvider({ children }: { children?: ReactNode }) {
           x: Number(event.clientX ?? 0),
           y: Number(event.clientY ?? 0),
         };
-        const context: ContextMenuContextValue = {
-          currentTarget: event.currentTarget ?? null,
+        const context = createTriggerContext(
           event,
-          pathname: pathnameRef.current || "",
-          payload,
           point,
-          target: (event.target as Element) ?? null,
-        };
+          pathnameRef.current || "",
+          payload,
+        );
 
         const prepared = prepareMenu(config, context, event);
         if (!prepared) return;

@@ -8,7 +8,11 @@ import {
   type PageModuleApi,
 } from "@/core/kernel";
 
-import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
+import {
+  CURRENT_PAGE_KEY,
+  GLOBAL_MENU_KEY,
+  REGISTRY_CLEANUP_DELAY_MS,
+} from "./constants";
 import { ContextMenuContext, ContextMenuProvider } from "./context";
 import { useContextMenu, useContextMenuActions } from "./hooks";
 import { ContextMenuGlobal } from "./overlay";
@@ -40,6 +44,9 @@ function useContextMenuPage(
   );
 }
 
+/**
+ * Module definition that provides the right-click context menu.
+ */
 export const contextMenuModule = defineModule({
   id: "contextMenu",
   context: ContextMenuContext,
@@ -47,7 +54,7 @@ export const contextMenuModule = defineModule({
   uses: ["dock"],
   Overlay: ContextMenuGlobal,
   registry: {
-    cleanupDelayMs: 600,
+    cleanupDelayMs: REGISTRY_CLEANUP_DELAY_MS,
     keyPolicy: "route",
     lifecycle: "immediate",
     reservedKeys: [CURRENT_PAGE_KEY, GLOBAL_MENU_KEY],
@@ -70,6 +77,9 @@ declare module "@omerdlw/base-framework/kernel" {
   }
 }
 
+/**
+ * Creates a reusable context menu definition whose `use` hook registers it.
+ */
 export function defineContextMenu(
   definition: Partial<ContextMenuConfig> = {},
 ): ContextMenuDefinition {

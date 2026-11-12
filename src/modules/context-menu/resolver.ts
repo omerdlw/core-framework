@@ -1,6 +1,16 @@
 import { isObject, toArray } from "@/foundation/utils";
 
-import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
+import {
+  CURRENT_PAGE_KEY,
+  CURRENT_PAGE_SCORE,
+  DEFAULT_ROUTE_SCORE,
+  EXACT_ROUTE_SCORE,
+  GLOBAL_MENU_KEY,
+  GLOBAL_MENU_SCORE,
+  MAX_TARGET_SCORE,
+  PRIORITY_WEIGHT,
+  ROUTE_WEIGHT,
+} from "./constants";
 import { resolveAsBoolean, resolveMenuItems, safeInvoke } from "./items";
 import {
   type ContextMenuCandidate,
@@ -104,7 +114,9 @@ function getTargetScore(
       }
     } catch {}
   }
-  return minDepth === Infinity ? null : Math.max(0, 100 - minDepth);
+  return minDepth === Infinity
+    ? null
+    : Math.max(0, MAX_TARGET_SCORE - minDepth);
 }
 
 function getRouteScore(
@@ -118,11 +130,11 @@ function getRouteScore(
     toArray(config.paths).includes(pathname) ||
     registryKey === pathname
   ) {
-    return 100;
+    return EXACT_ROUTE_SCORE;
   }
-  if (registryKey === CURRENT_PAGE_KEY) return 70;
-  if (registryKey === GLOBAL_MENU_KEY) return 40;
-  return 10;
+  if (registryKey === CURRENT_PAGE_KEY) return CURRENT_PAGE_SCORE;
+  if (registryKey === GLOBAL_MENU_KEY) return GLOBAL_MENU_SCORE;
+  return DEFAULT_ROUTE_SCORE;
 }
 
 function buildMenuContext(
@@ -199,6 +211,48 @@ function passesWhen(
   }
 }
 
+/**
+ * Builds a candidate's context and items and scores it against the event, or
+ * returns null when the candidate does not apply.
+ */
+function matchCandidate(
+  { config, order, registryKey }: ContextMenuCandidate,
+  event: MouseEvent,
+  pathname: string | undefined,
+  targetElement: Element | null,
+): ContextMenuResolvedMatch | null {
+  if (!isPathAllowed(config, registryKey, pathname)) return null;
+
+  const context = buildMenuContext(config, event, pathname, targetElement);
+  if (!resolveAsBoolean(config.enabled, context, true)) return null;
+  if (
+    !passesWhen(config, event, {
+      context,
+      pathname: pathname || "",
+      target: targetElement,
+    })
+  ) {
+    return null;
+  }
+
+  const items = resolveMenuItems(config, context);
+  if (!items.length) return null;
+
+  const targetScore = getTargetScore(config, targetElement);
+  if (targetScore === null) return null;
+
+  const priority = Number(config.priority);
+  const score =
+    (Number.isFinite(priority) ? priority : 0) * PRIORITY_WEIGHT +
+    getRouteScore(config, registryKey, pathname) * ROUTE_WEIGHT +
+    targetScore;
+  return { config, context, items, order, score };
+}
+
+/**
+ * Picks the registered menu that best matches a context-menu event, or null
+ * when none applies. Ranked by priority, then route, then target distance.
+ */
 export function resolveContextMenu(
   registryMenus: Record<string, unknown> | null | undefined,
   pathname: string | undefined,
@@ -207,42 +261,17 @@ export function resolveContextMenu(
   const targetElement = resolveEventTarget(event);
   let winner: ContextMenuResolvedMatch | null = null;
 
-  for (const { config, order, registryKey } of normalizeMenuCandidates(
-    registryMenus,
-  )) {
-    if (!isPathAllowed(config, registryKey, pathname)) continue;
-
-    const context = buildMenuContext(config, event, pathname, targetElement);
-    if (!resolveAsBoolean(config.enabled, context, true)) continue;
-    if (
-      !passesWhen(config, event, {
-        context,
-        pathname: pathname || "",
-        target: targetElement,
-      })
-    ) {
-      continue;
-    }
-
-    const items = resolveMenuItems(config, context);
-    if (!items.length) continue;
-
-    const targetScore = getTargetScore(config, targetElement);
-    if (targetScore === null) continue;
-
-    const priority = Number(config.priority);
-    const score =
-      (Number.isFinite(priority) ? priority : 0) * 10000 +
-      getRouteScore(config, registryKey, pathname) * 100 +
-      targetScore;
-
-    if (!winner || score > winner.score) {
-      winner = { config, context, items, order, score };
-    }
+  for (const candidate of normalizeMenuCandidates(registryMenus)) {
+    const match = matchCandidate(candidate, event, pathname, targetElement);
+    if (match && (!winner || match.score > winner.score)) winner = match;
   }
   return winner;
 }
 
+/**
+ * Runs a menu's `onOpen` hook and resolves its items. Returns null when the
+ * hook cancels the menu or no items remain.
+ */
 export function prepareMenu(
   config: ContextMenuConfig,
   context: ContextMenuContextValue,

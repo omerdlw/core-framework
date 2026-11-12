@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { isImageIconSource } from "@/foundation/utils";
 import { Icon } from "@/react/ui/components/icon";
 
+import { HEADER_ICON_SIZE, ITEM_ICON_SIZE } from "./constants";
 import { joinClassNames } from "./dom";
 import {
   useContextMenu,
@@ -25,13 +26,19 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
+interface ContextMenuHeaderIconProps {
+  classes: ContextMenuClasses;
+  icon: ContextMenuIcon;
+}
+
+/**
+ * Icon of the menu header: an image when the icon is an image source, otherwise
+ * an icon name or a custom node.
+ */
 export function ContextMenuHeaderIcon({
   classes,
   icon,
-}: {
-  classes: ContextMenuClasses;
-  icon: ContextMenuIcon;
-}) {
+}: ContextMenuHeaderIconProps) {
   const iconClassName = classes.headerIcon;
 
   if (typeof icon === "string" && isImageIconSource(icon)) {
@@ -44,18 +51,24 @@ export function ContextMenuHeaderIcon({
   }
   return (
     <div className={iconClassName}>
-      {typeof icon === "string" ? <Icon icon={icon} size={20} /> : icon}
+      {typeof icon === "string" ? (
+        <Icon icon={icon} size={HEADER_ICON_SIZE} />
+      ) : (
+        icon
+      )}
     </div>
   );
 }
 
-export function ContextMenuHeader({
-  classes,
-  header,
-}: {
+interface ContextMenuHeaderProps {
   classes: ContextMenuClasses;
   header: ContextMenuResolvedHeader | null;
-}) {
+}
+
+/**
+ * Header of the menu showing an icon, eyebrow, title and description.
+ */
+export function ContextMenuHeader({ classes, header }: ContextMenuHeaderProps) {
   if (!header) return null;
 
   return (
@@ -78,6 +91,18 @@ export function ContextMenuHeader({
   );
 }
 
+interface ContextMenuItemProps {
+  classes: ContextMenuClasses;
+  isActive: boolean;
+  item: ContextMenuResolvedItem;
+  onHover: () => void;
+  onSelect: (item: ContextMenuResolvedItem, event: React.MouseEvent) => void;
+  setButtonRef: (node: HTMLButtonElement | null) => void;
+}
+
+/**
+ * One row of the menu: an action button or a separator.
+ */
 export function ContextMenuItem({
   classes,
   isActive,
@@ -85,14 +110,7 @@ export function ContextMenuItem({
   onHover,
   onSelect,
   setButtonRef,
-}: {
-  classes: ContextMenuClasses;
-  isActive: boolean;
-  item: ContextMenuResolvedItem;
-  onHover: () => void;
-  onSelect: (item: ContextMenuResolvedItem, event: React.MouseEvent) => void;
-  setButtonRef: (node: HTMLButtonElement | null) => void;
-}) {
+}: ContextMenuItemProps) {
   const menuMotion = useContextMenuMotion();
   if (item.type === "separator") {
     return <div className={classes.separator} role="separator" />;
@@ -103,6 +121,16 @@ export function ContextMenuItem({
     classes.itemIcon,
     item.itemIconClassName,
   );
+  const itemIcon =
+    typeof item.icon === "string" ? (
+      <Icon
+        icon={item.icon}
+        className={itemIconClassName}
+        size={ITEM_ICON_SIZE}
+      />
+    ) : (
+      item.icon
+    );
 
   return (
     <motion.button
@@ -118,12 +146,7 @@ export function ContextMenuItem({
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
     >
-      {item.icon &&
-        (typeof item.icon === "string" ? (
-          <Icon icon={item.icon} className={itemIconClassName} size={18} />
-        ) : (
-          item.icon
-        ))}
+      {item.icon && itemIcon}
       <span className={classes.itemLabel}>{item.label}</span>
       {item.shortcut && (
         <span className={classes.itemShortcut}>{item.shortcut}</span>
@@ -137,19 +160,21 @@ const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
   point: { x: 0, y: 0 },
 });
 
+interface ContextMenuContentProps {
+  config: ContextMenuConfig;
+  items: ContextMenuResolvedItem[];
+  menuContext: ContextMenuContextValue;
+  onClose: () => void;
+  position: ContextMenuPosition;
+}
+
 export function ContextMenuContent({
   config,
   items,
   menuContext,
   onClose,
   position,
-}: {
-  config: ContextMenuConfig;
-  items: ContextMenuResolvedItem[];
-  menuContext: ContextMenuContextValue;
-  onClose: () => void;
-  position: ContextMenuPosition;
-}) {
+}: ContextMenuContentProps) {
   const {
     menuRef,
     itemRefs,
@@ -235,6 +260,9 @@ export function ContextMenuContent({
 
 const emptySubscribe = () => () => {};
 
+/**
+ * Renders the open menu in a portal on the document body.
+ */
 export function ContextMenuRenderer() {
   const { closeMenu, config, context, isOpen, items, position } =
     useContextMenu();
@@ -267,6 +295,10 @@ export function ContextMenuRenderer() {
   );
 }
 
+/**
+ * Overlay that listens for right-clicks and renders the matching menu. The
+ * module mounts it automatically.
+ */
 export function ContextMenuGlobal() {
   useContextMenuListener();
   return <ContextMenuRenderer />;

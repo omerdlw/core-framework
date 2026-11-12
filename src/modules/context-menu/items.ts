@@ -11,6 +11,9 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
+/**
+ * Plain text of a React node.
+ */
 export function extractNodeText(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number" || typeof value === "boolean") {
@@ -30,6 +33,10 @@ export function extractNodeText(value: unknown): string {
   return "";
 }
 
+/**
+ * Reads a boolean that may be a function of the context; a throwing function
+ * counts as false.
+ */
 export function resolveAsBoolean(
   value: unknown,
   context?: unknown,
@@ -48,6 +55,10 @@ export function resolveAsBoolean(
   return Boolean(value);
 }
 
+/**
+ * Reads a value that may be a function of the context, with a fallback for
+ * undefined or errors.
+ */
 export function resolveAsValue<T = unknown>(
   value: unknown,
   context?: unknown,
@@ -64,6 +75,10 @@ export function resolveAsValue<T = unknown>(
   return value === undefined ? (fallback as T) : (value as T);
 }
 
+/**
+ * Calls a handler, reporting errors instead of throwing, including rejected
+ * promises.
+ */
 export function safeInvoke<T = unknown>(
   handler: unknown,
   ...args: unknown[]
@@ -84,6 +99,9 @@ export function safeInvoke<T = unknown>(
   }
 }
 
+/**
+ * Builds the page metadata for the menu header from the active dock item.
+ */
 export function resolveContextMenuPageMeta(
   dockItem: unknown,
   pathname = "",
@@ -119,6 +137,21 @@ export function resolveContextMenuPageMeta(
   };
 }
 
+/** A label counts only when it is a non-blank string or number. */
+function resolveLabel(
+  item: ContextMenuItem,
+  context: ContextMenuContextValue,
+): string | null {
+  const label = resolveAsValue(item.label, context, "");
+  if (
+    (typeof label !== "string" && typeof label !== "number") ||
+    !String(label).trim()
+  ) {
+    return null;
+  }
+  return String(label);
+}
+
 function resolveItem(
   item: ContextMenuItem | "separator" | null | undefined,
   index: number,
@@ -139,13 +172,8 @@ function resolveItem(
     return null;
   }
 
-  const label = resolveAsValue(item.label, context, "");
-  if (
-    (typeof label !== "string" && typeof label !== "number") ||
-    !String(label).trim()
-  ) {
-    return null;
-  }
+  const label = resolveLabel(item, context);
+  if (label === null) return null;
 
   const handler = item.onSelect ?? item.onClick ?? null;
   const shortcut = resolveAsValue(item.shortcut, context, null);
@@ -160,7 +188,7 @@ function resolveItem(
     itemIconClassName:
       resolveAsValue(item.itemIconClassName, context, "") || "",
     key: item.key || `item-${index}`,
-    label: String(label),
+    label,
     onClick: handler,
     onSelect: handler,
     shortcut: typeof shortcut === "string" ? shortcut : null,
@@ -168,6 +196,9 @@ function resolveItem(
   };
 }
 
+/**
+ * Resolves a config's items, dropping hidden ones and stray separators.
+ */
 export function resolveMenuItems(
   config: ContextMenuConfig | null | undefined,
   context: ContextMenuContextValue,
@@ -192,6 +223,20 @@ export function resolveMenuItems(
   return items;
 }
 
+/** The configured header wins; otherwise the page header is used. */
+function pickHeaderSource(
+  configured: unknown,
+  page: unknown,
+): Record<string, unknown> | null {
+  if (isObject(configured)) return configured;
+  if (isObject(page)) return page;
+  return null;
+}
+
+/**
+ * Resolves a menu's header from its config or the page, or null when there is
+ * none.
+ */
 export function resolveMenuHeader(
   config: ContextMenuConfig | null | undefined,
   context: ContextMenuContextValue,
@@ -199,11 +244,7 @@ export function resolveMenuHeader(
   if (config?.header === false || config?.showPageHeader === false) return null;
 
   const configured = resolveAsValue(config?.header, context, null);
-  const source = isObject(configured)
-    ? configured
-    : isObject(context.page)
-      ? context.page
-      : null;
+  const source = pickHeaderSource(configured, context.page);
   if (!source) return null;
 
   const title = resolveAsValue(source.title, context, null);

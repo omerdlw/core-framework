@@ -53,6 +53,9 @@ import type {
   ContextMenuThemeSlot,
 } from "./types";
 
+/**
+ * Registers a context menu config for the current page.
+ */
 export function useContextMenuRegistration(
   config: ContextMenuPageConfig | null | undefined,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -60,6 +63,10 @@ export function useContextMenuRegistration(
   useModuleRegistration("contextMenu", config, options);
 }
 
+/**
+ * Reads the menu state and actions; passing a config also registers it and
+ * binds it by default.
+ */
 export function useContextMenu(
   config?: Partial<ContextMenuConfig> | null,
   options?: RegistryMetadata & { enabled?: boolean },
@@ -86,6 +93,9 @@ export function useContextMenu(
   }, [config, ctx]);
 }
 
+/**
+ * Returns the menu actions without subscribing to state changes.
+ */
 export function useContextMenuActions(): ContextMenuActions {
   return useRequiredContext(
     ContextMenuContext,
@@ -94,6 +104,9 @@ export function useContextMenuActions(): ContextMenuActions {
   ).actions;
 }
 
+/**
+ * Subscribes to the menu state.
+ */
 export function useContextMenuState(): ContextMenuState {
   const { store } = useRequiredContext(
     ContextMenuContext,
@@ -103,11 +116,37 @@ export function useContextMenuState(): ContextMenuState {
   return useStore(store);
 }
 
+/** Appends a menu's own class names to the theme's class for each slot. */
+function mergeSlotClasses(
+  slots: Record<ContextMenuThemeSlot, string>,
+  overrides?: ContextMenuClassNames | null,
+): Record<ContextMenuThemeSlot, string> {
+  const extra = overrides ?? {};
+  const merged = { ...slots };
+  for (const slot of Object.keys(merged) as ContextMenuThemeSlot[]) {
+    merged[slot] = joinClassNames(slots[slot], extra[slot]);
+  }
+  return merged;
+}
+
+/** Inputs of useContextMenuContentModel. */
+interface ContextMenuContentModelOptions {
+  config: ContextMenuConfig;
+  items: ContextMenuResolvedItem[];
+  menuContext: ContextMenuContextValue;
+  onClose: () => void;
+  position: ContextMenuPosition;
+}
+
 function selectDockPageCard(dock: DockState): DockItem | null {
   const card = dock.activeItem;
   return card && !card.isSurface ? card : null;
 }
 
+/**
+ * Opens the best matching registered menu on right-click. Used by
+ * ContextMenuGlobal.
+ */
 export function useContextMenuListener(): void {
   const menus = useRegistryEntries<"contextMenu", ContextMenuConfig>(
     "contextMenu",
@@ -146,6 +185,10 @@ export function useContextMenuListener(): void {
   }, [dockCard, menus, openMenu, pathname]);
 }
 
+/**
+ * Closes the menu on outside clicks and Escape, and blocks page scrolling while
+ * it is open.
+ */
 export function useMenuDismissal(
   menuRef: RefObject<HTMLElement | null>,
   onClose: () => void,
@@ -180,30 +223,23 @@ export function useMenuDismissal(
   }, [menuRef, onClose]);
 }
 
+/**
+ * State, refs and keyboard handling for the open menu's content.
+ */
 export function useContextMenuContentModel({
   config,
   items,
   menuContext,
   onClose,
   position,
-}: {
-  config: ContextMenuConfig;
-  items: ContextMenuResolvedItem[];
-  menuContext: ContextMenuContextValue;
-  onClose: () => void;
-  position: ContextMenuPosition;
-}) {
+}: ContextMenuContentModelOptions) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const theme = useTheme(contextMenuTheme);
-  const classes = useMemo(() => {
-    const overrides: ContextMenuClassNames = config.classNames ?? {};
-    const merged = { ...theme.slots } as Record<ContextMenuThemeSlot, string>;
-    for (const slot of Object.keys(merged) as ContextMenuThemeSlot[]) {
-      merged[slot] = joinClassNames(theme.slots[slot], overrides[slot]);
-    }
-    return merged;
-  }, [config.classNames, theme.slots]);
+  const classes = useMemo(
+    () => mergeSlotClasses(theme.slots, config.classNames),
+    [config.classNames, theme.slots],
+  );
   const header = useMemo(
     () => resolveMenuHeader(config, menuContext),
     [config, menuContext],

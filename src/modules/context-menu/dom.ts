@@ -4,6 +4,9 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
+/**
+ * Joins the truthy class names with spaces.
+ */
 export function joinClassNames(
   ...classes: (string | boolean | null | undefined)[]
 ): string {
@@ -21,10 +24,16 @@ const SCROLL_LOCK_KEYS = new Set([
   "Spacebar",
 ]);
 
+/**
+ * Whether a key would scroll the page.
+ */
 export function isScrollLockKey(event: { key: string }): boolean {
   return SCROLL_LOCK_KEYS.has(event.key);
 }
 
+/**
+ * Moves the menu to a position, keeping it inside the viewport.
+ */
 export function positionMenu(
   menuElement: HTMLElement | null,
   position?: ContextMenuPosition | null,
@@ -41,6 +50,10 @@ export function positionMenu(
   menuElement.style.top = `${Math.round(Math.max(MENU_SCREEN_MARGIN, y))}px`;
 }
 
+/**
+ * Next enabled action index, wrapping around, or the current index when none is
+ * enabled.
+ */
 export function getNextActiveIndex(
   items: ContextMenuResolvedItem[],
   current: number,

@@ -3,6 +3,9 @@ import { isBrowser, toFiniteNumber } from "@/foundation/utils";
 import { CONTEXT_MENU_VISIBILITY_EVENT, INITIAL_POSITION } from "./constants";
 import { type ContextMenuOpenInput, type ContextMenuState } from "./types";
 
+/**
+ * The closed menu state.
+ */
 export function createInitialMenuState(): ContextMenuState {
   return {
     position: INITIAL_POSITION,
@@ -13,6 +16,9 @@ export function createInitialMenuState(): ContextMenuState {
   };
 }
 
+/**
+ * Builds the open state from an openMenu input, or null when it has no config.
+ */
 export function resolveNextOpenState({
   config,
   context,
@@ -32,6 +38,9 @@ export function resolveNextOpenState({
   };
 }
 
+/**
+ * Fires the window event that tells others whether the menu is open.
+ */
 export function emitContextMenuVisibility(isOpen: boolean): void {
   if (!isBrowser) return;
   window.dispatchEvent(
