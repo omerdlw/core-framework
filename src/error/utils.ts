@@ -72,7 +72,7 @@ export function fingerprint(
       : "";
 
   const errObj = error as { message?: string; name?: string } | null;
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; a thrown non-Error object stringifies to "[object Object]" as before (behaviour kept in 6.0 restructure)
   const errorMessage = (errObj?.message || String(error || "")).slice(0, 100);
   const errorName = errObj?.name || "UnknownError";
   const route = context.route || "";
@@ -116,7 +116,7 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message.trim();
 
   const errObj = error as { message?: string; toString?: () => string };
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; the last fallback stringifies an object without message/toString to "[object Object]" as before (behaviour kept in 6.0 restructure)
   return String(errObj?.message || errObj?.toString?.() || error).trim();
 }
 

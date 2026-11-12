@@ -293,7 +293,7 @@ function resolveEntryValueFor(
 
   if (activeRecords.length === 0) return undefined;
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- definition.merge is called unbound as merge(values); the registry-definition contract is a plain function that must not rely on this (pre-existing unbound call)
   const merge = definitions.get(type)?.merge;
   if (merge) {
     const sortedRecords = [...activeRecords].sort(compareRecords);

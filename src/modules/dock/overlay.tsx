@@ -245,7 +245,7 @@ export const DockCommandBar = memo(function DockCommandBar({
       <AnimatePresence mode="popLayout" onExitComplete={handleExitComplete}>
         {actions.map((action, index) => (
           <motion.div
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- value is a primitive or string-like label at runtime
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- action.icon is a ReactNode; an element icon without action.key stringifies to "[object Object]" and yields a non-unique key (pre-existing)
             key={`${currentPath}-${action.key || action.icon || `dock-action-${index}`}`}
             variants={dockMotion.variants.commandBar}
             style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
@@ -404,7 +404,6 @@ const DockIconOverlay = memo(function DockIconOverlay({
   const content = isImageIconSource(icon) ? (
     <span
       className={theme.slots.iconOverlayImage}
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- value is a primitive or string-like label at runtime
       style={{ backgroundImage: `url(${icon})` }}
     />
   ) : (

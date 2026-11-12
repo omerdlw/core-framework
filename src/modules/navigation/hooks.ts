@@ -62,7 +62,7 @@ export function useNavigationHold(
   hold: NavigationHold | false | null | undefined,
   { history = true }: NavigationHoldOptions = {},
 ): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { hold: register } = useOptionalNavigation();
   const latest = useLatest(hold);
   const enabled = Boolean(hold);
@@ -82,7 +82,7 @@ export function useNavigationPayload<K extends NavigationPayloadKey>(
   key: K,
   value: NavigationPayloadValue<K>,
 ): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { provide } = useOptionalNavigation();
   const latest = useLatest(value);
   useEffect(
@@ -98,7 +98,7 @@ export function useNavigationPayload<K extends NavigationPayloadKey>(
 }
 
 export function useNavigationIntent(listener: NavigationIntentListener): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { onIntent } = useOptionalNavigation();
   const latest = useLatest(listener);
   useEffect(
@@ -118,7 +118,7 @@ export function useDeparture(): NavigationTrip | null {
 export function useArrival(pathname?: string): NavigationTrip | null {
   const routePathname = usePathname();
   const target = pathname ?? routePathname;
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
   const { arrival } = useOptionalNavigation();
   return useNavigationState(() => arrival(target));
 }

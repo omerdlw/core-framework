@@ -90,7 +90,7 @@ function collectModuleRegistrations(
   context: RegistryApplyContext,
 ): ModuleRegistration[] {
   const definition = coreModule.registry;
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- page.entries is called unbound as toEntries(payload, context); the module contract is a plain function that must not rely on this (pre-existing unbound call)
   const toEntries = coreModule.page?.entries;
   if (!definition || !toEntries || slice == null || slice === false) return [];
 

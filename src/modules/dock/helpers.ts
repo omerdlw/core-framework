@@ -78,7 +78,7 @@ export function toSearchableText(value: unknown): string {
 }
 
 export function normalizeUpper(value: unknown): string {
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 6.0 restructure)
   return String(value || "")
     .trim()
     .toUpperCase();

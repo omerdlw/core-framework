@@ -233,14 +233,14 @@ export function DockProvider({
       ...expansionActions,
       ...hudActions,
       ...surfaceActions,
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- createDockGuardRegistry builds clear as a closure over its own state and never uses this
       clearDockGuards: guards.clear,
       clearPreparedRouteReset,
       continuity: continuityActions,
       navigate,
       operations: operationActions,
       prepareRouteReset,
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- implementation is a closure that never reads this
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- createDockGuardRegistry builds register as a closure over its own state and never uses this
       registerGuard: guards.register,
       setDockHeight,
       setSearchQuery,

@@ -1,6 +1,6 @@
 export function trimToNull(value: unknown): string | null {
   if (value === null || value === undefined) return null;
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value is a primitive or string-like label at runtime
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 6.0 restructure)
   const trimmed = String(value).trim();
   return trimmed.length > 0 ? trimmed : null;
 }
@@ -17,7 +17,7 @@ export function normalizePath(path: unknown): string {
   return stripTrailingSlash(trimmed);
 }
 
-export function isImageIconSource(icon: unknown): boolean {
+export function isImageIconSource(icon: unknown): icon is string {
   return (
     typeof icon === "string" &&
     (icon.startsWith("http://") ||
