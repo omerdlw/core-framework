@@ -10,7 +10,7 @@ Before installing `@omerdlw/base-framework`, verify your environment:
 
 - **Node.js:** `v20.0.0` or higher (Node 22 recommended)
 - **Framework:** Next.js `15.0.0` or `16.0.0+` (App Router)
-- **React:** React `19.0.0+` & React DOM `19.0.0+`
+- **React:** React `19.2.0+` & React DOM `19.2.0+`
 - **Styling:** Tailwind CSS v4
 
 ---

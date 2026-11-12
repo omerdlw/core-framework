@@ -79,7 +79,7 @@ const theme = useTheme(dockTheme);   // → { slots, styles }
 | `defineTheme(spec, { slots, styles? })` | Type-checked: every slot must be present in `slots`; `styles` is optional and partial.                                                                                         |
 | `ThemeProvider({ themes })`             | Builds an `id → config` map.                                                                                                                                                   |
 | `useTheme(spec)`                        | Returns `{ slots, styles }` (empty `styles` default). **Throws** `Theme "<id>" is missing. Add its theme file to src/config/ and list it in src/config/index.ts.` when absent. |
-| `@omerdlw/base-framework/theme`         | Re-exports `ThemeProvider`, `defineTheme`, `defineThemeSpec` and `useTheme` (named `useModuleTheme`) for module authors.                                                       |
+| `@omerdlw/base-framework/theme`         | Re-exports `ThemeProvider`, `defineTheme`, `defineThemeSpec` and `useTheme` for module authors.                                                                                |
 
 Theme files in this repo: `ambient`, `background`, `context-menu`, `controls`, `dock`, `loading`, `modal`, `notification` (module themes), and `error` (core theme). See [theming.md](./theming.md) for full customization details.
 
@@ -123,7 +123,6 @@ Who listens to what: the dock turns `APP_ERROR` / critical `API_ERROR` into stat
 | `useRequiredContext(ctx, hookName, providerName)`                            | `use(ctx)` or throw `"<hook> must be used within <Provider>"`.                                                                                                                       |
 | `useStore(store, selector?, isEqual?)`                                       | Subscribe to an `ExternalStore` slice with `useSyncExternalStore`; re-renders only when `isEqual(prev, next)` is false (default `Object.is`). Pass `shallowEqual` for object slices. |
 | `useClickOutside(ref, cb)`                                                   | `pointerdown` outside `ref.current` → `cb(event)`.                                                                                                                                   |
-| `useIsomorphicLayoutEffect`                                                  | `useLayoutEffect` in the browser, `useEffect` on the server.                                                                                                                         |
 | `useGlobalEvent(event \| event[] \| null, cb, { debounceMs?, throttleMs? })` | Subscribes to one or multiple global events for the component lifetime with optional debounce or throttle timing. Fresh callback reference maintained without effect restarts.       |
 | `useIsFullscreenStateActive()`                                               | Reactively subscribes to global fullscreen state presence (used by `dock` and `loading` to yield when active).                                                                       |
 

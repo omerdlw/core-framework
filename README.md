@@ -59,7 +59,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 npm install @omerdlw/base-framework motion
 ```
 
-Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.0.0`, `react-dom >= 19.0.0`, `motion >= 12.0.0`).
+Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.2.0`, `react-dom >= 19.2.0`, `motion >= 12.0.0`).
 
 ---
 
