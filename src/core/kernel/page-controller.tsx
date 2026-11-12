@@ -10,8 +10,8 @@ import {
   useState,
   useSyncExternalStore,
   type ReactNode,
+  useLayoutEffect,
 } from "react";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import { getOrCreateGlobalContext } from "@/react/context";
 import { useRegistry, useShallowStable } from "./hooks";
 import { selectModuleSlice, useInstalledModules } from "./installed";
@@ -238,7 +238,7 @@ export function usePage(
 
   const controllerRef = useRef<PageController | null>(controller);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     controllerRef.current = controller;
     scope.publish(controller);
     controllerStore.notify();

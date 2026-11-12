@@ -1,8 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useIsomorphicLayoutEffect } from "@/react/hooks";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { applyRegistryConfig } from "./handlers";
 import { createModulePayload, useInstalledModules } from "./installed";
 import { useRegistryActions } from "./provider";
@@ -90,7 +89,7 @@ function useAppliedRegistryConfig(
     payload: PageConfig | null;
   } | null>(null);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     const previous = appliedRef.current;
     if (
       previous &&
@@ -128,7 +127,7 @@ function useAppliedRegistryConfig(
     };
   });
 
-  useIsomorphicLayoutEffect(
+  useLayoutEffect(
     () => () => {
       appliedRef.current?.cleanup();
       appliedRef.current = null;
