@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import ts from "typescript";
+import { ENTRIES } from "../../scripts/entries.mjs";
 
 const SRC_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -18,33 +19,16 @@ const CANDIDATE_SUFFIXES = [
   "/index.js",
 ];
 
-// Public subpath -> source location, mirroring tsconfig.json#paths.
-const PUBLIC_SOURCES = {
-  kernel: "core/kernel",
-  result: "foundation/result",
-  events: "foundation/events",
-  theme: "react/theme",
-  utils: "foundation/utils",
-  hooks: "react/hooks",
-  error: "core/error",
-  provider: "core/provider",
-  design: "react/ui",
-  "design/recipes": "foundation/recipes",
-  "ambient/server": "modules/ambient/server",
-  "ambient/worker": "modules/ambient/worker",
-};
-const MODULE_NAMES = new Set([
-  "dock",
-  "modal",
-  "notification",
-  "ambient",
-  "background",
-  "context-menu",
-  "controls",
-  "loading",
-  "media",
-  "navigation",
-]);
+// Public subpath -> source file, derived from scripts/entries.mjs.
+const PUBLIC_SOURCES = new Map(
+  ENTRIES.map((entry) => [
+    entry.subpath,
+    path.resolve(SRC_ROOT, "..", entry.source),
+  ]),
+);
+// BASE_FRAMEWORK_TARGET=dist leaves package imports to Node's own
+// resolution (self-reference through package.json#exports).
+const USE_DIST = process.env.BASE_FRAMEWORK_TARGET === "dist";
 
 function resolveFile(basePath) {
   for (const suffix of CANDIDATE_SUFFIXES) {
@@ -93,14 +77,20 @@ registerHooks({
     }
 
     let basePath = null;
-    if (specifier === "@omerdlw/base-framework") {
-      basePath = path.join(SRC_ROOT, "index");
-    } else if (specifier.startsWith("@omerdlw/base-framework/")) {
-      const subpath = specifier.slice("@omerdlw/base-framework/".length);
-      const target =
-        PUBLIC_SOURCES[subpath] ??
-        (MODULE_NAMES.has(subpath) ? `modules/${subpath}` : subpath);
-      basePath = path.join(SRC_ROOT, target);
+    if (
+      !USE_DIST &&
+      (specifier === "@omerdlw/base-framework" ||
+        specifier.startsWith("@omerdlw/base-framework/"))
+    ) {
+      const subpath =
+        specifier === "@omerdlw/base-framework"
+          ? "."
+          : `./${specifier.slice("@omerdlw/base-framework/".length)}`;
+      const source = PUBLIC_SOURCES.get(subpath);
+      if (!source) {
+        throw new Error(`"${specifier}" is not a public entry point.`);
+      }
+      return { url: pathToFileURL(source).href, shortCircuit: true };
     } else if (specifier.startsWith("@/")) {
       basePath = path.join(SRC_ROOT, specifier.slice(2));
     } else if (

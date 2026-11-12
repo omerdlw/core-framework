@@ -1,4 +1,13 @@
 import { defineConfig, type Options } from "tsup";
+import { ENTRIES } from "./scripts/entries.mjs";
+
+const entryMap = (client: boolean) =>
+  Object.fromEntries(
+    ENTRIES.filter((entry) => entry.client === client).map((entry) => [
+      entry.out,
+      entry.source,
+    ]),
+  );
 
 const shared: Options = {
   format: ["esm"],
@@ -27,65 +36,19 @@ const shared: Options = {
 export default defineConfig([
   {
     ...shared,
-    entry: {
-      result: "src/foundation/result/index.ts",
-      events: "src/foundation/events/index.ts",
-      "utils/index": "src/foundation/utils/index.ts",
-      "design/recipes": "src/foundation/recipes/index.ts",
-      "modules/ambient/server/index": "src/modules/ambient/server/index.ts",
-      "modules/ambient/worker/index": "src/modules/ambient/worker/index.ts",
-    },
+    entry: entryMap(false),
   },
   {
     ...shared,
     banner: {
       js: '"use client";',
     },
-    entry: {
-      index: "src/index.ts",
-      "kernel/index": "src/core/kernel/index.ts",
-      theme: "src/react/theme/index.tsx",
-      "hooks/index": "src/react/hooks/index.ts",
-      "error/index": "src/core/error/index.ts",
-      provider: "src/core/provider/index.tsx",
-      "design/index": "src/react/ui/index.ts",
-      "modules/index": "src/modules/index.ts",
-      "modules/dock/index": "src/modules/dock/index.ts",
-      "modules/modal/index": "src/modules/modal/index.ts",
-      "modules/notification/index": "src/modules/notification/index.ts",
-      "modules/ambient/index": "src/modules/ambient/index.ts",
-      "modules/background/index": "src/modules/background/index.ts",
-      "modules/context-menu/index": "src/modules/context-menu/index.ts",
-      "modules/controls/index": "src/modules/controls/index.ts",
-      "modules/loading/index": "src/modules/loading/index.ts",
-      "modules/media/index": "src/modules/media/index.ts",
-      "modules/navigation/index": "src/modules/navigation/index.ts",
-    },
+    entry: entryMap(true),
     async onSuccess() {
       const fs = await import("node:fs");
       const path = await import("node:path");
-      const clientFiles = [
-        "dist/index.js",
-        "dist/kernel/index.js",
-        "dist/theme.js",
-        "dist/hooks/index.js",
-        "dist/error/index.js",
-        "dist/provider.js",
-        "dist/design/index.js",
-        "dist/modules/index.js",
-        "dist/modules/dock/index.js",
-        "dist/modules/modal/index.js",
-        "dist/modules/notification/index.js",
-        "dist/modules/ambient/index.js",
-        "dist/modules/background/index.js",
-        "dist/modules/context-menu/index.js",
-        "dist/modules/controls/index.js",
-        "dist/modules/loading/index.js",
-        "dist/modules/media/index.js",
-        "dist/modules/navigation/index.js",
-      ];
-      for (const rel of clientFiles) {
-        const full = path.resolve(rel);
+      for (const entry of ENTRIES.filter((e) => e.client)) {
+        const full = path.resolve(`dist/${entry.out}.js`);
         if (fs.existsSync(full)) {
           const content = fs.readFileSync(full, "utf8");
           if (!content.startsWith('"use client";')) {

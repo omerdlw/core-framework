@@ -1,10 +1,5 @@
 import { createElement as h } from "react";
-import {
-  Button,
-  Select,
-  Switch,
-  defineUi,
-} from "@omerdlw/base-framework/design";
+import { Button, Select, Switch, defineUi } from "@omerdlw/base-framework/ui";
 
 const ui = defineUi({
   parts: {
@@ -20,7 +15,7 @@ const ui = defineUi({
   },
 });
 
-declare module "@omerdlw/base-framework/design/recipes" {
+declare module "@omerdlw/base-framework/recipes" {
   interface UiRegister {
     ui: typeof ui;
   }

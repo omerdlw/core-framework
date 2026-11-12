@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { ENTRIES, buildExports } from "./entries.mjs";
 
 const files = [];
 const walk = (dir) => {
@@ -78,6 +79,18 @@ function visit(node) {
 files.forEach((file) => {
   if (!index.has(file)) visit(file);
 });
+
+const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+if (JSON.stringify(pkg.exports) !== JSON.stringify(buildExports())) {
+  problems.push(
+    "package.json#exports differs from scripts/entries.mjs. Run `npm run sync-exports`.",
+  );
+}
+for (const entry of ENTRIES) {
+  if (!fileSet.has(entry.source)) {
+    problems.push(`${entry.subpath}: entry source ${entry.source} is missing.`);
+  }
+}
 
 const modulesDir = "src/modules";
 if (fs.existsSync(modulesDir)) {

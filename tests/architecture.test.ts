@@ -80,4 +80,51 @@ describe("package architecture boundaries", () => {
     });
     assert.ok(result.includes("Architecture check passed"), result);
   });
+  test("package exports match scripts/entries.mjs", () => {
+    execSync("node scripts/sync-exports.mjs --check", { encoding: "utf8" });
+  });
+
+  test("every non-client entry source is in foundation/ or an ambient server/worker entry", async () => {
+    const { ENTRIES } = await import("../scripts/entries.mjs");
+    for (const entry of ENTRIES.filter((e: { client: boolean }) => !e.client)) {
+      assert.ok(
+        entry.source.startsWith("src/foundation/") ||
+          /^src\/modules\/ambient\/(server|worker)\//.test(entry.source),
+        `${entry.subpath} is server-safe but lives in ${entry.source}`,
+      );
+    }
+  });
+
+  test("exports has exactly the 6.0 subpaths", () => {
+    const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+    assert.deepEqual(
+      Object.keys(pkg.exports).sort(),
+      [
+        ".",
+        "./result",
+        "./events",
+        "./utils",
+        "./recipes",
+        "./hooks",
+        "./theme",
+        "./ui",
+        "./kernel",
+        "./error",
+        "./provider",
+        "./modules",
+        "./ambient",
+        "./ambient/server",
+        "./ambient/worker",
+        "./background",
+        "./context-menu",
+        "./controls",
+        "./dock",
+        "./loading",
+        "./media",
+        "./modal",
+        "./navigation",
+        "./notification",
+      ].sort(),
+    );
+  });
 });

@@ -2,16 +2,15 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { ENTRIES } from "../../scripts/entries.mjs";
 
 const PKG = "@omerdlw/base-framework";
-const SERVER_SAFE_ENTRIES = [
-  "result.js",
-  "events.js",
-  "design/recipes.js",
-  "utils/index.js",
-  "modules/ambient/server/index.js",
-  "modules/ambient/worker/index.js",
-];
+const SERVER_SAFE_ENTRIES = ENTRIES.filter((entry) => !entry.client).map(
+  (entry) => `${entry.out}.js`,
+);
+const CLIENT_ENTRIES = ENTRIES.filter((entry) => entry.client).map(
+  (entry) => `${entry.out}.js`,
+);
 
 if (!fs.existsSync(path.resolve("dist/index.js"))) {
   throw new Error("dist/ is missing. Run `npm run build` first.");
@@ -48,8 +47,8 @@ describe("dist bundle", () => {
 
   test("a module and its context are the same object from the barrel and its subpath", async () => {
     const barrel = await import(`${PKG}/modules`);
-    const dock = await import(`${PKG}/modules/dock`);
-    const loading = await import(`${PKG}/modules/loading`);
+    const dock = await import(`${PKG}/dock`);
+    const loading = await import(`${PKG}/loading`);
 
     assert.equal(barrel.dockModule, dock.dockModule);
     assert.equal(barrel.loadingModule.context, loading.LoadingContext);
@@ -57,7 +56,7 @@ describe("dist bundle", () => {
 
   test("the navigation module, its context and settings are shared across entries", async () => {
     const barrel = await import(`${PKG}/modules`);
-    const navigation = await import(`${PKG}/modules/navigation`);
+    const navigation = await import(`${PKG}/navigation`);
     const short = await import(`${PKG}/navigation`);
 
     assert.equal(barrel.navigationModule, navigation.navigationModule);
@@ -128,23 +127,32 @@ describe("dist bundle", () => {
     assert.deepEqual(offenders, []);
   });
 
-  test('"use client" heads every client entry and no server-safe entry', () => {
-    const head = (file: string) =>
-      fs.readFileSync(path.join("dist", file), "utf8").slice(0, 13);
-    const client = [
-      "index.js",
-      "kernel/index.js",
-      "provider.js",
-      "error/index.js",
-      "modules/dock/index.js",
-    ];
-
-    for (const file of SERVER_SAFE_ENTRIES)
-      assert.notEqual(head(file), '"use client";', file);
-    for (const file of client) assert.equal(head(file), '"use client";', file);
+  test("a package import resolves into dist", () => {
+    assert.ok(
+      import.meta.resolve(`${PKG}/kernel`).includes("/dist/"),
+      "package import did not resolve into dist/",
+    );
   });
 
-  test("server-safe entries never reach React, Next or motion", () => {
+  test("every exports types path exists", () => {
+    const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+    for (const [subpath, target] of Object.entries<{ types: string }>(
+      pkg.exports,
+    )) {
+      assert.ok(fs.existsSync(path.resolve(target.types)), subpath);
+    }
+  });
+
+  test('"use client" heads every client entry', () => {
+    for (const file of CLIENT_ENTRIES)
+      assert.equal(
+        fs.readFileSync(path.join("dist", file), "utf8").slice(0, 13),
+        '"use client";',
+        file,
+      );
+  });
+
+  test("server-safe entries and their chunks carry no use client and no react import", () => {
     for (const entry of SERVER_SAFE_ENTRIES) {
       const bare = new Set<string>();
       const seen = new Set<string>();
@@ -154,6 +162,7 @@ describe("dist bundle", () => {
         if (seen.has(file)) continue;
         seen.add(file);
         const source = fs.readFileSync(file, "utf8");
+        assert.notEqual(source.slice(0, 13), '"use client";', file);
         for (const [, specifier] of source.matchAll(
           /(?:import|export)\b[^'"]*?['"]([^'"]+)['"]/g,
         )) {
