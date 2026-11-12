@@ -41,6 +41,7 @@ function useModalPage(
     sliceRef.current = slice;
   }, [slice]);
 
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

@@ -56,6 +56,7 @@ export function useModalRegistryEntries(): {
   get: (type: string) => ModalComponent | undefined;
 } {
   const entries = useRegistryEntries<"modal", ModalComponent>("modal");
+  // stable identity: part of the public hook contract
   return useMemo(() => ({ get: (type: string) => entries[type] }), [entries]);
 }
 
@@ -91,6 +92,7 @@ export function useModal(
   const actions = useModalActions();
   const state = useModalState();
 
+  // stable identity: part of the public hook contract
   return useMemo(() => {
     if (!modalInput) return { ...actions, ...state };
 
@@ -138,14 +140,10 @@ export function useModalLayerModel({
   stackIndex: number;
 }) {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const activePosition = useMemo(
-    () =>
-      resolveActivePosition(
-        entry.position,
-        entry.responsivePosition,
-        isMobileViewport,
-      ),
-    [entry.position, entry.responsivePosition, isMobileViewport],
+  const activePosition = resolveActivePosition(
+    entry.position,
+    entry.responsivePosition,
+    isMobileViewport,
   );
   const ActiveModalComponent = entry.component || registry.get(entry.modalType);
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
@@ -181,6 +179,8 @@ export function useModalContainerModel() {
 export function useModalModel() {
   const { modalStack = [], isOpen, closeModal } = useModal();
   const registry = useModalRegistryEntries();
+  // stable identity: part of the public hook contract
+  // (also a dep of the exit-settling layout effect below)
   const visibleModalStack = useMemo(
     () =>
       modalStack.filter((entry: ModalEntry) =>
