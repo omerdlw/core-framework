@@ -1,8 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { type KeyboardEvent, type MouseEvent } from "react";
-import { type CSSProperties } from "react";
+import { type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/foundation/recipes/cn";
@@ -12,6 +11,15 @@ import { NotificationListener, useNotificationContainerModel } from "./hooks";
 import { NOTIFICATION_COMPOSITOR_STYLE, useNotificationMotion } from "./motion";
 import { type NotificationEntry } from "./types";
 
+interface ToastProps {
+  className: string;
+  entry: NotificationEntry;
+  messageClassName: string;
+  onDismiss: () => void;
+  polite?: boolean;
+  style?: CSSProperties;
+}
+
 function Toast({
   className,
   entry,
@@ -19,14 +27,7 @@ function Toast({
   onDismiss,
   polite,
   style,
-}: {
-  className: string;
-  entry: NotificationEntry;
-  messageClassName: string;
-  onDismiss: () => void;
-  polite?: boolean;
-  style?: CSSProperties;
-}) {
+}: ToastProps) {
   const toastMotion = useNotificationMotion();
   return (
     <motion.div
@@ -63,7 +64,7 @@ export function NotificationContainer() {
     useNotificationContainerModel();
   if (!isHydrated) return null;
   const dockElement = document.getElementById(DOCK_STACK_ELEMENT_ID);
-  const toast = (className: string, polite?: boolean) => (
+  const renderToast = (className: string, polite?: boolean) => (
     <AnimatePresence mode="wait">
       {activeEntry && (
         <Toast
@@ -80,7 +81,7 @@ export function NotificationContainer() {
   );
   if (dockElement) {
     return createPortal(
-      toast(cn(theme.slots.toast, theme.slots.toastDocked), true),
+      renderToast(cn(theme.slots.toast, theme.slots.toastDocked), true),
       dockElement,
     );
   }
@@ -91,7 +92,7 @@ export function NotificationContainer() {
       className={theme.slots.layer}
       style={theme.styles.layer}
     >
-      {toast(theme.slots.toast)}
+      {renderToast(theme.slots.toast)}
     </div>,
     document.body,
   );

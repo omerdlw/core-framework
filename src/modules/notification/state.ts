@@ -3,7 +3,7 @@ import { type ReactNode } from "react";
 import { isResult } from "@/foundation/result";
 import { isObject, toUserMessage } from "@/foundation/utils";
 
-import { TOAST_DURATIONS } from "./constants";
+import { MESSAGE_ID_LENGTH, TOAST_DURATIONS } from "./constants";
 import {
   type NotificationData,
   type NotificationEntry,
@@ -12,11 +12,18 @@ import {
   type ToastPromiseMessages,
 } from "./types";
 
+/**
+ * Trims a text message and removes trailing periods and spaces; other values
+ * pass through.
+ */
 export function normalizeFeedbackText<T = unknown>(value: T): T {
   if (typeof value !== "string") return value;
   return value.trim().replace(/[.\s]+$/, "") as T;
 }
 
+/**
+ * The most recent notification, or null.
+ */
 export function getActiveNotification(
   notifications: Record<string, NotificationEntry>,
 ): NotificationEntry | null {
@@ -27,12 +34,19 @@ export function getActiveNotification(
   return active;
 }
 
+/**
+ * Turns a duration or options into an options object.
+ */
 export function normalizeToastOptions(
   options?: ToastOptionsInput,
 ): NotificationOptions {
   return typeof options === "number" ? { duration: options } : options || {};
 }
 
+/**
+ * Converts a duration to milliseconds, or null for "never dismiss". Undefined
+ * means the default.
+ */
 export function normalizeDuration(value: unknown): number | null {
   if (value === null) return null;
   if (value === undefined) return TOAST_DURATIONS.DEFAULT;
@@ -40,6 +54,9 @@ export function normalizeDuration(value: unknown): number | null {
   return Number.isFinite(duration) && duration > 0 ? duration : null;
 }
 
+/**
+ * Normalizes toast options, using a default duration when none is set.
+ */
 export function withDefaultDuration(
   duration: number,
   options?: ToastOptionsInput,
@@ -52,6 +69,9 @@ export function withDefaultDuration(
   };
 }
 
+/**
+ * Whether a value is a notification data object rather than a plain message.
+ */
 export function isNotificationDataObject(
   value: unknown,
 ): value is NotificationData {
@@ -65,6 +85,10 @@ export function resolveMessage<A>(
   return typeof message === "function" ? message(arg) : message;
 }
 
+/**
+ * Picks the success or error message for a settled value, falling back to a
+ * message derived from the error.
+ */
 export function getOutcomeMessage<T, E>(
   value: unknown,
   messages: ToastPromiseMessages<T, E>,
@@ -76,6 +100,19 @@ export function getOutcomeMessage<T, E>(
         toUserMessage(value.error);
 }
 
+const isEmptyMessage = (message: ReactNode) =>
+  message === null || message === undefined || message === "";
+
+/** Text messages identify themselves, so repeating one replaces it. */
+function deriveNotificationId(message: ReactNode, fallbackId?: string): string {
+  if (typeof message === "string") return message.slice(0, MESSAGE_ID_LENGTH);
+  return fallbackId || `notification-${Date.now()}`;
+}
+
+/**
+ * Builds a notification entry and its auto-dismiss duration from a message or
+ * data object. Returns null when the message is empty.
+ */
 export function createNotificationEntry(
   messageOrData: ReactNode | NotificationData,
   options?: ToastOptionsInput,
@@ -87,20 +124,12 @@ export function createNotificationEntry(
     : { ...normalizedOptions, message: messageOrData };
 
   const normalizedMessage = normalizeFeedbackText(payload.message);
-  if (
-    normalizedMessage === null ||
-    normalizedMessage === undefined ||
-    normalizedMessage === ""
-  ) {
-    return null;
-  }
+  if (isEmptyMessage(normalizedMessage)) return null;
 
   const id =
     payload.dedupeKey ||
     payload.id ||
-    (typeof normalizedMessage === "string"
-      ? normalizedMessage.slice(0, 64)
-      : fallbackId || `notification-${Date.now()}`);
+    deriveNotificationId(normalizedMessage, fallbackId);
 
   const entry: NotificationEntry = {
     dedupeKey: payload.dedupeKey,

@@ -33,6 +33,9 @@ function useNotificationPage(
   );
 }
 
+/**
+ * Module definition that shows toast notifications.
+ */
 export const notificationModule = defineModule({
   id: "notification",
   context: NotificationContext,

@@ -3,6 +3,10 @@ import { type ReactNode } from "react";
 
 import { type ExternalStore } from "@/foundation/utils";
 
+/**
+ * A notification as passed to showNotification: a message plus optional id,
+ * dedupe key and duration.
+ */
 export interface NotificationData {
   dedupeKey?: string;
   duration?: number | null;
@@ -11,25 +15,43 @@ export interface NotificationData {
   timestamp?: number;
 }
 
+/**
+ * A notification held in state, with its id and creation time.
+ */
 export interface NotificationEntry extends NotificationData {
   id: string;
   message: ReactNode;
   timestamp: number;
 }
 
+/**
+ * Observable state: the notifications currently shown, by id.
+ */
 export interface NotificationState {
   notifications: Record<string, NotificationEntry>;
 }
 
+/**
+ * Options for one notification: id, dedupe key and duration.
+ */
 export interface NotificationOptions {
   dedupeKey?: string;
   duration?: number | null;
   id?: string;
 }
 
+/**
+ * Options for one toast.
+ */
 export type ToastOptions = NotificationOptions;
+/**
+ * Toast options, or just a duration in milliseconds.
+ */
 export type ToastOptionsInput = number | NotificationOptions;
 
+/**
+ * Functions that show and dismiss notifications.
+ */
 export interface NotificationActions {
   dismissAllNotifications: () => void;
   dismissNotification: (id: string) => void;
@@ -39,16 +61,25 @@ export interface NotificationActions {
   ) => string | null;
 }
 
+/**
+ * Props of NotificationProvider.
+ */
 export interface NotificationProviderProps {
   children?: ReactNode;
 }
 
+/**
+ * Messages shown while a promise is loading, succeeds or fails.
+ */
 export interface ToastPromiseMessages<T = unknown, E = unknown> {
   error?: ReactNode | ((error: E) => ReactNode);
   loading?: ReactNode;
   success?: ReactNode | ((data: T) => ReactNode);
 }
 
+/**
+ * Callable toast API: show a toast, dismiss it, or report a promise or result.
+ */
 export interface ToastController {
   (message: ReactNode, options?: ToastOptionsInput): string | null;
   dismiss: (id?: string) => void;
@@ -65,21 +96,36 @@ export interface ToastController {
   ) => Promise<T>;
 }
 
+/**
+ * Value held by NotificationContext: a store and its actions.
+ */
 export interface NotificationContextValue {
   actions: NotificationActions;
   store: ExternalStore<NotificationState>;
 }
 
+/**
+ * The `notification` page setting: the default toast duration.
+ */
 export type NotificationPageConfig = number | { duration?: number | null };
 
+/**
+ * The notification API available on a page controller.
+ */
 export interface NotificationPageApi {
   toast: ToastController;
   set: (notification: NotificationPageConfig) => void;
 }
 
+/**
+ * Theme slots of the notification layer.
+ */
 export type NotificationThemeSlot =
   "layer" | "toast" | "toastDocked" | "toastMessage";
 
+/**
+ * Motion variants and transition of a toast.
+ */
 export interface NotificationMotion {
   toast: Variants;
   transition: Transition;

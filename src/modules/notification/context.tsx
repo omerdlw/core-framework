@@ -23,21 +23,29 @@ import {
   type ToastOptionsInput,
 } from "./types";
 
+/**
+ * React context holding the notification store and actions.
+ */
 export const NotificationContext =
   getOrCreateGlobalContext<NotificationContextValue | null>(
     "NotificationContext",
     null,
   );
 
+/**
+ * Store with an empty state; used outside a NotificationProvider.
+ */
 export const NOOP_NOTIFICATION_STORE = createStore<NotificationState>(
   INITIAL_NOTIFICATION_STATE,
 );
 
 let notificationIdCounter = 0;
 
-export const NotificationProvider = ({
-  children,
-}: NotificationProviderProps) => {
+/**
+ * Provides notification state and actions. Showing a notification replaces the
+ * current one and dismisses it after its duration.
+ */
+export function NotificationProvider({ children }: NotificationProviderProps) {
   const [store] = useState(() =>
     createStore<NotificationState>(INITIAL_NOTIFICATION_STATE, {
       freezeSnapshots: false,
@@ -124,4 +132,4 @@ export const NotificationProvider = ({
   );
 
   return <NotificationContext value={value}>{children}</NotificationContext>;
-};
+}

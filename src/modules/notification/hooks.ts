@@ -37,6 +37,9 @@ import {
 
 let toastPromiseIdCounter = 0;
 
+/**
+ * Returns the notification actions without subscribing to state changes.
+ */
 export function useNotificationActions(): NotificationActions {
   return useRequiredContext(
     NotificationContext,
@@ -45,6 +48,9 @@ export function useNotificationActions(): NotificationActions {
   ).actions;
 }
 
+/**
+ * Subscribes to the notification state.
+ */
 export function useNotificationState(): NotificationState {
   const { store } = useRequiredContext(
     NotificationContext,
@@ -54,12 +60,19 @@ export function useNotificationState(): NotificationState {
   return useStore(store);
 }
 
+/**
+ * Returns the notification state together with its actions.
+ */
 export function useNotification(): NotificationState & NotificationActions {
   const actions = useNotificationActions();
   const state = useNotificationState();
   return useMemo(() => ({ ...actions, ...state }), [actions, state]);
 }
 
+/**
+ * Like useNotificationState, but returns an empty state outside a
+ * NotificationProvider. Accepts a selector.
+ */
 export function useOptionalNotificationState(): NotificationState;
 export function useOptionalNotificationState<T>(
   selector: (state: NotificationState) => T,
@@ -77,54 +90,43 @@ export function useOptionalNotificationState<T = NotificationState>(
   );
 }
 
+/**
+ * Like useNotificationActions, but returns inert actions outside a
+ * NotificationProvider.
+ */
 export function useOptionalNotificationActions(): NotificationActions {
   const ctx = use(NotificationContext);
   return ctx?.actions ?? INERT_NOTIFICATION_ACTIONS;
 }
 
+/**
+ * Whether any notification is currently shown.
+ */
 export function useNotificationVisible(): boolean {
   return useOptionalNotificationState(
     ({ notifications }) => Object.keys(notifications).length > 0,
   );
 }
 
-export function useToast(defaultDuration?: number | null): ToastController {
-  const { dismissAllNotifications, dismissNotification, showNotification } =
-    useNotificationActions();
+interface ToastPromiseDeps {
+  dismiss: (id?: string) => void;
+  showNotification: NotificationActions["showNotification"];
+  triggerToast: (
+    message: ReactNode,
+    options?: ToastOptionsInput,
+  ) => string | null;
+}
 
-  const resolvedDefaultDuration = defaultDuration ?? TOAST_DURATIONS.DEFAULT;
-
-  const triggerToast = useCallback(
-    (message: ReactNode, options?: ToastOptionsInput): string | null =>
-      showNotification(
-        message,
-        withDefaultDuration(resolvedDefaultDuration, options),
-      ),
-    [resolvedDefaultDuration, showNotification],
-  );
-
-  const dismiss = useCallback(
-    (id?: string) => {
-      if (id) dismissNotification(id);
-      else dismissAllNotifications();
-    },
-    [dismissAllNotifications, dismissNotification],
-  );
-
-  const fromResult = useCallback(
-    <T = unknown, E = unknown, R = unknown>(
-      result: R,
-      messages: ToastPromiseMessages<T, E> = {},
-      options?: ToastOptionsInput,
-    ) => {
-      const message = getOutcomeMessage(result, messages);
-      if (message) triggerToast(message, options);
-      return result;
-    },
-    [triggerToast],
-  );
-
-  const promise = useCallback(
+/**
+ * Builds `toast.promise`: shows a loading toast, then replaces it with the
+ * outcome message once the promise settles.
+ */
+function useToastPromise({
+  dismiss,
+  showNotification,
+  triggerToast,
+}: ToastPromiseDeps): ToastController["promise"] {
+  return useCallback(
     async <T = unknown, E = unknown>(
       promiseOrFn: Promise<T> | (() => Promise<T>),
       messages: ToastPromiseMessages<T, E> = {},
@@ -162,6 +164,49 @@ export function useToast(defaultDuration?: number | null): ToastController {
     },
     [dismiss, showNotification, triggerToast],
   );
+}
+
+/**
+ * Returns the toast API. `defaultDuration` sets how long toasts last unless a
+ * call overrides it.
+ */
+export function useToast(defaultDuration?: number | null): ToastController {
+  const { dismissAllNotifications, dismissNotification, showNotification } =
+    useNotificationActions();
+
+  const resolvedDefaultDuration = defaultDuration ?? TOAST_DURATIONS.DEFAULT;
+
+  const triggerToast = useCallback(
+    (message: ReactNode, options?: ToastOptionsInput): string | null =>
+      showNotification(
+        message,
+        withDefaultDuration(resolvedDefaultDuration, options),
+      ),
+    [resolvedDefaultDuration, showNotification],
+  );
+
+  const dismiss = useCallback(
+    (id?: string) => {
+      if (id) dismissNotification(id);
+      else dismissAllNotifications();
+    },
+    [dismissAllNotifications, dismissNotification],
+  );
+
+  const fromResult = useCallback(
+    <T = unknown, E = unknown, R = unknown>(
+      result: R,
+      messages: ToastPromiseMessages<T, E> = {},
+      options?: ToastOptionsInput,
+    ) => {
+      const message = getOutcomeMessage(result, messages);
+      if (message) triggerToast(message, options);
+      return result;
+    },
+    [triggerToast],
+  );
+
+  const promise = useToastPromise({ dismiss, showNotification, triggerToast });
 
   return useMemo<ToastController>(
     () =>
@@ -176,33 +221,36 @@ export function useToast(defaultDuration?: number | null): ToastController {
 
 const emptySubscribe = () => () => {};
 
+interface NotifyRequest {
+  message?: string;
+  notify?: boolean;
+}
+
+/**
+ * Shows notifications for framework events: unauthorized responses and errors
+ * or state changes that ask to notify.
+ */
 export function NotificationListener(): null {
   const { showNotification } = useNotificationActions();
+  const showRequested = (data?: NotifyRequest) => {
+    if (!data?.notify || !data.message) return;
+    showNotification(data.message);
+  };
 
   useGlobalEvent(EVENT_TYPES.API_UNAUTHORIZED, (data?: { source?: string }) => {
     if (data?.source && data.source !== "app") return;
     showNotification(SESSION_EXPIRED_MESSAGE);
   });
 
-  useGlobalEvent(
-    EVENT_TYPES.APP_ERROR,
-    (data?: { message?: string; notify?: boolean }) => {
-      if (!data?.notify || !data.message) return;
-      showNotification(data.message);
-    },
-  );
-
-  useGlobalEvent(
-    EVENT_TYPES.STATE_CHANGE,
-    (data?: { message?: string; notify?: boolean }) => {
-      if (!data?.notify || !data.message) return;
-      showNotification(data.message);
-    },
-  );
+  useGlobalEvent(EVENT_TYPES.APP_ERROR, showRequested);
+  useGlobalEvent(EVENT_TYPES.STATE_CHANGE, showRequested);
 
   return null;
 }
 
+/**
+ * Active notification, hydration flag and theme for the notification container.
+ */
 export function useNotificationContainerModel() {
   const { notifications } = useNotificationState();
   const { dismissNotification } = useNotificationActions();
