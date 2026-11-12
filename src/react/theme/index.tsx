@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { MotionConfig, useReducedMotion } from "motion/react";
-import { getOrCreateGlobalContext } from "@/core/kernel";
+import { getOrCreateGlobalContext } from "@/react/context";
 import {
   defineMotion,
   retimeModuleMotion,

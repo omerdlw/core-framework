@@ -1,7 +1,7 @@
 "use client";
 
 import { createElement, useContext, useMemo, type ReactNode } from "react";
-import { getOrCreateGlobalContext } from "@/core/kernel";
+import { getOrCreateGlobalContext } from "@/react/context";
 import { useMotionTokens } from "@/react/theme";
 import { retimeModuleMotion } from "@/foundation/utils/tempo";
 import {
