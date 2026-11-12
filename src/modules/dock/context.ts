@@ -1,9 +1,9 @@
 "use client";
 
 import { useContext, type ComponentType } from "react";
-import { useRequiredContext, useStore } from "@/hooks";
-import { getOrCreateGlobalContext } from "@/kernel";
-import { createStore, shallowEqual } from "@/utils";
+import { useRequiredContext, useStore } from "@/react/hooks";
+import { getOrCreateGlobalContext } from "@/core/kernel";
+import { createStore, shallowEqual } from "@/foundation/utils";
 import {
   useOptionalMediaActions,
   useOptionalMediaState,

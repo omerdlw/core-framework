@@ -7,10 +7,10 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { EVENT_TYPES } from "@/events";
-import { useGlobalEvent, useRequiredContext, useStore } from "@/hooks";
-import { useModuleTheme } from "@/theme";
-import { toUserMessage } from "@/utils";
+import { EVENT_TYPES } from "@/foundation/events";
+import { useGlobalEvent, useRequiredContext, useStore } from "@/react/hooks";
+import { useModuleTheme } from "@/react/theme";
+import { toUserMessage } from "@/foundation/utils";
 import {
   INERT_NOTIFICATION_ACTIONS,
   SESSION_EXPIRED_MESSAGE,

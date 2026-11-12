@@ -13,12 +13,12 @@ import {
   type ReactPortal,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "@/design/cn";
-import { isImageIconSource } from "@/utils";
-import { Button } from "@/design/components/button";
-import { Icon, Icon as Iconify } from "@/design/components/icon";
-import { Spinner } from "@/design/components/loader";
-import { Tooltip } from "@/design/components/tooltip";
+import { cn } from "@/foundation/recipes/cn";
+import { isImageIconSource } from "@/foundation/utils";
+import { Button } from "@/react/ui/components/button";
+import { Icon, Icon as Iconify } from "@/react/ui/components/icon";
+import { Spinner } from "@/react/ui/components/loader";
+import { Tooltip } from "@/react/ui/components/tooltip";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";

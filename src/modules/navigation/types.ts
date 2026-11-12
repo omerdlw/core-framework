@@ -1,4 +1,4 @@
-import type { ExternalStore } from "@/utils";
+import type { ExternalStore } from "@/foundation/utils";
 
 export interface NavigationPayload {}
 

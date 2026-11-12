@@ -63,8 +63,8 @@ import {
 import { normalizeSurfaceExtension } from "./helpers";
 import { useDockFocusTrap } from "../dom";
 import { getDockPhaseMotion, useDockMotion } from "../motion";
-import { report } from "@/utils";
-import { useIsomorphicLayoutEffect } from "@/hooks";
+import { report } from "@/foundation/utils";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
 
 export function useSurfaceFlows({
   closeSurface,

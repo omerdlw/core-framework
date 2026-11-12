@@ -1,5 +1,5 @@
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
-import type { ModuleRuntime } from "@/kernel";
+import type { ModuleRuntime } from "@/core/kernel";
 
 export type AmbientThemeSlot = "transition";
 

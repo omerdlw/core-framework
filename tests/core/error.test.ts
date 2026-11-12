@@ -27,13 +27,16 @@ import {
   GlobalError,
   ModuleError,
 } from "../../src/core/error/boundary.tsx";
-import { EVENT_TYPES, globalEvents } from "../../src/core/events.ts";
+import {
+  EVENT_TYPES,
+  globalEvents,
+} from "../../src/foundation/events/index.ts";
 import { errorThemeConfig } from "../support/themes.ts";
 import {
   USER_MESSAGES,
   report,
   setReportSink,
-} from "../../src/core/utils/index.ts";
+} from "../../src/foundation/utils/index.ts";
 import { GlobalErrorListener } from "../../src/core/error/listener.ts";
 
 describe("error utils", () => {

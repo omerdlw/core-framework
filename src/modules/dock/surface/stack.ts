@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/hooks";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import {
   type DockScheduledTaskId,
   type DockScheduler,
@@ -44,7 +44,7 @@ import {
 } from "./machine";
 import { useSurfaceFlows, useSurfaceLifecycleEffects } from "./hooks";
 import { useDockSurfaceTimings } from "../motion";
-import { report } from "@/utils";
+import { report } from "@/foundation/utils";
 
 export function useSurfaceStack({
   onSurfaceFlowSettled = null,

@@ -1,4 +1,4 @@
-import { useModuleMotion } from "@/theme";
+import { useModuleMotion } from "@/react/theme";
 import { modalTheme } from "./constants";
 import { type ModalPosition, type ModalPositionMotion } from "./types";
 

@@ -6,7 +6,7 @@ import {
   useIsomorphicLayoutEffect,
   useRequiredContext,
   useStore,
-} from "@/hooks";
+} from "@/react/hooks";
 import {
   INERT_NAVIGATION_ACTIONS,
   NOOP_NAVIGATION_STORE,

@@ -1,4 +1,4 @@
-import { normalizePath } from "@/utils";
+import { normalizePath } from "@/foundation/utils";
 
 export function isSafeInternalHref(value: unknown): boolean {
   const href = typeof value === "string" ? value.trim() : "";

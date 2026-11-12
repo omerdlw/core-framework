@@ -53,8 +53,11 @@ import {
   subscribeToApiErrorStatusEvents,
   subscribeToApplicationErrorStatusEvents,
 } from "../../src/modules/dock/status/events.tsx";
-import { EVENT_TYPES, globalEvents } from "../../src/core/events.ts";
-import { USER_MESSAGES } from "../../src/core/utils/index.ts";
+import {
+  EVENT_TYPES,
+  globalEvents,
+} from "../../src/foundation/events/index.ts";
+import { USER_MESSAGES } from "../../src/foundation/utils/index.ts";
 
 import { createElement as hh } from "react";
 import {

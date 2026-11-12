@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { RegistryMetadata } from "@/kernel";
-import type { ExternalStore } from "@/utils";
+import type { RegistryMetadata } from "@/core/kernel";
+import type { ExternalStore } from "@/foundation/utils";
 
 export type MediaKind = "audio" | "video";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
-import { normalizePath } from "@/utils";
+import { normalizePath } from "@/foundation/utils";
 import {
   DOCK_CONTINUITY_EVENTS,
   DOCK_CONTINUITY_MAX_ENTRIES,

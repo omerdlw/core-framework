@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { createStore } from "@/utils";
-import { getOrCreateGlobalContext } from "@/kernel";
+import { createStore } from "@/foundation/utils";
+import { getOrCreateGlobalContext } from "@/core/kernel";
 import type {
   AmbientProviderProps,
   AmbientProviderValue,

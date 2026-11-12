@@ -1,4 +1,4 @@
-import { normalizePath } from "@/utils";
+import { normalizePath } from "@/foundation/utils";
 
 export function isSamePath(left: unknown, right: unknown): boolean {
   const normalizedLeft = normalizePath(left);

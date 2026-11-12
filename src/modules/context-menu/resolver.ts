@@ -1,4 +1,4 @@
-import { isObject, toArray } from "@/utils";
+import { isObject, toArray } from "@/foundation/utils";
 import { CURRENT_PAGE_KEY, GLOBAL_MENU_KEY } from "./constants";
 import { resolveMenuItems, resolveAsBoolean, safeInvoke } from "./items";
 import {

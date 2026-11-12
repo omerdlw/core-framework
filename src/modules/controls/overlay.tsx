@@ -8,8 +8,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { useRegistryEntries } from "@/kernel";
-import { useModuleTheme } from "@/theme";
+import { useRegistryEntries } from "@/core/kernel";
+import { useModuleTheme } from "@/react/theme";
 import { controlsTheme } from "./constants";
 import { resolveControlsPairs } from "./entries";
 import { useControlsLayout } from "./hooks";

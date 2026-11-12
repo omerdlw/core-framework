@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { act, createElement as h } from "react";
 import { navigationTestState } from "../support/next-navigation.mjs";
 import { render } from "../support/render.ts";
-import { ModuleHost } from "../../src/kernel/index.ts";
+import { ModuleHost } from "../../src/core/kernel/index.ts";
 import { navigationModule } from "../../src/modules/navigation/module.tsx";
 import { createNavigator } from "../../src/modules/navigation/navigator.ts";
 import {
@@ -729,7 +729,8 @@ describe("navigation module", () => {
       useDockGuard({ when: true, message: "Unsaved" });
       return null;
     }
-    const { globalEvents } = await import("../../src/events.ts");
+    const { globalEvents } =
+      await import("../../src/foundation/events/index.ts");
     const off = globalEvents.subscribe("DOCK_GUARD", (payload: any) => {
       if (!payload?.clear) guardSeen = payload;
     });

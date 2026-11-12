@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
-import { errorTheme } from "../../src/error/theme.ts";
+import { errorTheme } from "../../src/core/error/theme.ts";
 import { loadingTheme } from "../../src/modules/loading/constants.ts";
-import { defineTheme, ThemeProvider } from "../../src/theme.tsx";
+import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 
 export const errorThemeConfig = defineTheme(errorTheme, {
   slots: {

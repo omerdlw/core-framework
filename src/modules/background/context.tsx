@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useIsomorphicLayoutEffect, useStore } from "@/hooks";
-import { getOrCreateGlobalContext, useRegistryValue } from "@/kernel";
+import { useIsomorphicLayoutEffect, useStore } from "@/react/hooks";
+import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { useOptionalMediaActions } from "../media";
-import { createStore } from "@/utils";
+import { createStore } from "@/foundation/utils";
 import { BACKGROUND_MEDIA_ID, BACKGROUND_REGISTRY_KEY } from "./constants";
 import {
   computeBackgroundState,

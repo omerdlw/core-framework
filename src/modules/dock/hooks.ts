@@ -2,10 +2,10 @@
 
 import { use, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { useStore } from "@/hooks";
-import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
-import { createStore, shallowEqual } from "@/utils";
-import { useModuleTheme } from "@/theme";
+import { useStore } from "@/react/hooks";
+import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
+import { createStore, shallowEqual } from "@/foundation/utils";
+import { useModuleTheme } from "@/react/theme";
 import { dockTheme } from "./constants";
 import {
   DockContext,

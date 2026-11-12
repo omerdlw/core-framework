@@ -12,13 +12,13 @@ import {
   type RefObject,
 } from "react";
 import { usePathname } from "next/navigation";
-import { useRequiredContext, useStore } from "@/hooks";
+import { useRequiredContext, useStore } from "@/react/hooks";
 import {
   useModuleRegistration,
   useRegistryEntries,
   type RegistryMetadata,
-} from "@/kernel";
-import { useModuleTheme } from "@/theme";
+} from "@/core/kernel";
+import { useModuleTheme } from "@/react/theme";
 import { type DockItem, type DockState, useOptionalDockState } from "../dock";
 import { contextMenuTheme } from "./constants";
 import { ContextMenuContext } from "./context";

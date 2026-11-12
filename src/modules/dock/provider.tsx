@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { createStore } from "@/utils";
+import { createStore } from "@/foundation/utils";
 import { DockContext } from "./context";
 import { useDockRouteReset } from "./dom";
 import { BreadcrumbProvider } from "./routing/breadcrumbs";

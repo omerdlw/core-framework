@@ -1,5 +1,5 @@
-import { globalEvents } from "@/events";
-import { createStore, report } from "@/utils";
+import { globalEvents } from "@/foundation/events";
+import { createStore, report } from "@/foundation/utils";
 import {
   NAVIGATION_EVENTS,
   NAVIGATION_PHASE,

@@ -1,8 +1,8 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/design/cn";
-import { Spinner } from "@/design/components/loader";
+import { cn } from "@/foundation/recipes/cn";
+import { Spinner } from "@/react/ui/components/loader";
 import { applyVideoPlaybackState } from "../playback";
 import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "./parse";
 import { useYouTubeIframePlayer } from "./iframe";

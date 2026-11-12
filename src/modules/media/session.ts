@@ -1,4 +1,4 @@
-import { shallowEqual } from "@/utils";
+import { shallowEqual } from "@/foundation/utils";
 import { DEFAULT_MEDIA_STATE } from "./constants";
 import {
   type MediaEntry,

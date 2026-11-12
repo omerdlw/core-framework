@@ -19,7 +19,44 @@
     "paths": {
       "@/*": ["./src/*"],
       "@omerdlw/base-framework": ["./src/index.ts"],
-      "@omerdlw/base-framework/*": ["./src/*"]
+      "@omerdlw/base-framework/kernel": ["./src/core/kernel/index.ts"],
+      "@omerdlw/base-framework/result": ["./src/foundation/result/index.ts"],
+      "@omerdlw/base-framework/events": ["./src/foundation/events/index.ts"],
+      "@omerdlw/base-framework/theme": ["./src/react/theme/index.tsx"],
+      "@omerdlw/base-framework/utils": ["./src/foundation/utils/index.ts"],
+      "@omerdlw/base-framework/hooks": ["./src/react/hooks/index.ts"],
+      "@omerdlw/base-framework/error": ["./src/core/error/index.ts"],
+      "@omerdlw/base-framework/provider": ["./src/core/provider/index.tsx"],
+      "@omerdlw/base-framework/design": ["./src/react/ui/index.ts"],
+      "@omerdlw/base-framework/design/recipes": [
+        "./src/foundation/recipes/index.ts"
+      ],
+      "@omerdlw/base-framework/modules": ["./src/modules/index.ts"],
+      "@omerdlw/base-framework/ambient/server": [
+        "./src/modules/ambient/server/index.ts"
+      ],
+      "@omerdlw/base-framework/ambient/worker": [
+        "./src/modules/ambient/worker/index.ts"
+      ],
+      "@omerdlw/base-framework/dock": ["./src/modules/dock/index.ts"],
+      "@omerdlw/base-framework/modal": ["./src/modules/modal/index.ts"],
+      "@omerdlw/base-framework/notification": [
+        "./src/modules/notification/index.ts"
+      ],
+      "@omerdlw/base-framework/ambient": ["./src/modules/ambient/index.ts"],
+      "@omerdlw/base-framework/background": [
+        "./src/modules/background/index.ts"
+      ],
+      "@omerdlw/base-framework/context-menu": [
+        "./src/modules/context-menu/index.ts"
+      ],
+      "@omerdlw/base-framework/controls": ["./src/modules/controls/index.ts"],
+      "@omerdlw/base-framework/loading": ["./src/modules/loading/index.ts"],
+      "@omerdlw/base-framework/media": ["./src/modules/media/index.ts"],
+      "@omerdlw/base-framework/navigation": [
+        "./src/modules/navigation/index.ts"
+      ],
+      "@omerdlw/base-framework/modules/*": ["./src/modules/*/index.ts"]
     }
   },
   "include": ["src/**/*"]

@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useIsomorphicLayoutEffect } from "@/hooks";
-import { getOrCreateGlobalContext } from "@/kernel";
-import { createStore } from "@/utils";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import { getOrCreateGlobalContext } from "@/core/kernel";
+import { createStore } from "@/foundation/utils";
 import { watchHistory, watchIntent } from "./listeners";
 import { createNavigator } from "./navigator";
 import { getNavigationSettings } from "./settings";

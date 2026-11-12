@@ -1,4 +1,4 @@
-import { normalizePath } from "@/utils";
+import { normalizePath } from "@/foundation/utils";
 import { isInlineActionPathMatch, isPathPrefix, isSamePath } from "../paths";
 import { type DockItem } from "../types";
 

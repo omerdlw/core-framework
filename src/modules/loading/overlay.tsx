@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@/design/components/loader";
+import { Spinner } from "@/react/ui/components/loader";
 import { useLoadingOverlayModel } from "./hooks";
 
 export function LoadingOverlay() {

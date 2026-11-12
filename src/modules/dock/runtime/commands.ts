@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { toArray } from "@/utils";
+import { toArray } from "@/foundation/utils";
 import {
   type DockActionDescriptor,
   type DockActionDefinition,

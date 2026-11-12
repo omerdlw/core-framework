@@ -1,5 +1,5 @@
 import { isValidElement } from "react";
-import { isPlainObject } from "@/utils";
+import { isPlainObject } from "@/foundation/utils";
 import { isValidComponentType } from "../helpers";
 import { isSafeInternalHref } from "../paths";
 import {

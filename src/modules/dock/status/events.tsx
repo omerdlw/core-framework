@@ -1,8 +1,8 @@
 "use client";
 
 import { type ComponentType } from "react";
-import { EVENT_TYPES, globalEvents } from "@/events";
-import { toUserMessage } from "@/utils";
+import { EVENT_TYPES, globalEvents } from "@/foundation/events";
+import { toUserMessage } from "@/foundation/utils";
 import { type QueuedApiError, type ScheduleStatusClearOptions } from "../types";
 import {
   API_ERROR_BATCH_DELAY,

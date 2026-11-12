@@ -24,9 +24,9 @@ import {
   usePageController,
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
-import { createStore } from "../../src/core/utils/store.ts";
+import { createStore } from "../../src/foundation/utils/store.ts";
 import { loadingModule } from "../../src/modules/loading/module.tsx";
-import { ThemeProvider } from "../../src/theme.tsx";
+import { ThemeProvider } from "../../src/react/theme/index.tsx";
 import {
   ambientThemeConfig,
   loadingThemeConfig,
@@ -389,7 +389,7 @@ describe("module host", () => {
         return null;
       }
       function Reader() {
-        store.value = useRegistryValue("notes", "a") as any;
+        store.value = useRegistryValue<any>("notes", "a");
         return null;
       }
       const view = await render(
@@ -1200,11 +1200,11 @@ describe("registry cleanup", () => {
         { dock: { title: "Page" } },
         createApplyContext(store),
       );
-      assert.equal((store.getSnapshot("dock", "/page") as any).title, "Page");
+      assert.equal(store.getSnapshot<any>("dock", "/page").title, "Page");
 
       cleanup();
       mock.timers.tick(599);
-      assert.equal((store.getSnapshot("dock", "/page") as any).title, "Page");
+      assert.equal(store.getSnapshot<any>("dock", "/page").title, "Page");
       mock.timers.tick(1);
       assert.equal(store.getSnapshot("dock", "/page"), undefined);
     });
@@ -1218,10 +1218,7 @@ describe("registry cleanup", () => {
       mock.timers.tick(300);
       applyRegistryConfig({ dock: { title: "Page again" } }, context);
       mock.timers.tick(1_000);
-      assert.equal(
-        (store.getSnapshot("dock", "/page") as any).title,
-        "Page again",
-      );
+      assert.equal(store.getSnapshot<any>("dock", "/page").title, "Page again");
     });
 
     test("immediate lifecycle (background default) removes synchronously", () => {
@@ -1289,7 +1286,7 @@ describe("registry cleanup", () => {
         createApplyContext(store, { instanceId: "b" }),
       );
       cleanupA();
-      assert.equal((store.getSnapshot("modal", "shared") as any)(), "b");
+      assert.equal(store.getSnapshot<any>("modal", "shared")(), "b");
     });
   });
 
@@ -1304,8 +1301,8 @@ describe("registry cleanup", () => {
         { dock: { title: "B", path: "/explicit" } },
         createApplyContext(store, { instanceId: "p2", pathname: "/b" }),
       );
-      assert.equal((store.getSnapshot("dock", "/a") as any).title, "A");
-      assert.equal((store.getSnapshot("dock", "/explicit") as any).title, "B");
+      assert.equal(store.getSnapshot<any>("dock", "/a").title, "A");
+      assert.equal(store.getSnapshot<any>("dock", "/explicit").title, "B");
       assert.equal(store.getSnapshot("dock", "/b"), undefined);
     });
 
@@ -1315,7 +1312,7 @@ describe("registry cleanup", () => {
         { dock: { title: "A" }, loading: { isLoading: true } },
         createApplyContext(store),
       );
-      assert.equal((store.getSnapshot("dock", "/page") as any).isLoading, true);
+      assert.equal(store.getSnapshot<any>("dock", "/page").isLoading, true);
     });
 
     test("invalid dock config is not registered", (t) => {

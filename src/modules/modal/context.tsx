@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { getOrCreateGlobalContext } from "@/kernel";
-import { createStore, report, type ExternalStore } from "@/utils";
+import { getOrCreateGlobalContext } from "@/core/kernel";
+import { createStore, report, type ExternalStore } from "@/foundation/utils";
 import { MODAL_CHROME } from "./constants";
 import {
   type ModalActions,

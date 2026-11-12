@@ -7,7 +7,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { isPlainObject } from "@/utils";
+import { isPlainObject } from "@/foundation/utils";
 import {
   DOCK_SURFACE_RENDER_MODE,
   DOCK_SURFACE_FLOW_STATUS,

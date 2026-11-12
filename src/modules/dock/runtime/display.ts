@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState, use, type ComponentType } from "react";
-import { useRegistryEntries } from "@/kernel";
+import { useRegistryEntries } from "@/core/kernel";
 import {
   normalizePath,
   shallowEqual as areShallowCollectionsEqual,
-} from "@/utils";
+} from "@/foundation/utils";
 import { usePathname } from "next/navigation";
 import { toSearchableText } from "../helpers";
 import { isPathPrefix, isSamePath } from "../paths";
 import { resolveActiveIndex } from "./pipeline";
-import { useModuleTheme } from "@/theme";
+import { useModuleTheme } from "@/react/theme";
 import {
   DOCK_ATTENTION_KIND,
   DOCK_PENDING_ROUTE_HOLD_MS,

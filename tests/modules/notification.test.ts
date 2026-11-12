@@ -9,13 +9,16 @@ import {
   useNotificationState,
   useToast,
 } from "../../src/modules/notification/hooks.ts";
-import { EVENT_TYPES, globalEvents } from "../../src/core/events.ts";
-import { err, ok } from "../../src/core/result.ts";
+import {
+  EVENT_TYPES,
+  globalEvents,
+} from "../../src/foundation/events/index.ts";
+import { err, ok } from "../../src/foundation/result/index.ts";
 import {
   USER_MESSAGES,
   UserError,
   setReportSink,
-} from "../../src/core/utils/index.ts";
+} from "../../src/foundation/utils/index.ts";
 import {
   getActiveNotification,
   isNotificationDataObject,

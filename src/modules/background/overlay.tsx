@@ -8,11 +8,15 @@ import {
   useRef,
   type CSSProperties,
 } from "react";
-import { cn } from "@/design/cn";
-import { report } from "@/utils";
+import { cn } from "@/foundation/recipes/cn";
+import { report } from "@/foundation/utils";
 import { AnimatePresence, motion } from "motion/react";
-import { retime } from "@/utils/tempo";
-import { useModuleTheme, useMotionTokens, type ResolvedTheme } from "@/theme";
+import { retime } from "@/foundation/utils/tempo";
+import {
+  useModuleTheme,
+  useMotionTokens,
+  type ResolvedTheme,
+} from "@/react/theme";
 import { backgroundTheme } from "./constants";
 import {
   DEFAULT_COLOR,

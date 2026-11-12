@@ -1,6 +1,6 @@
 import type { NavigationTrip } from "../navigation/types";
-import type { createScheduler } from "@/utils";
-import { type ExternalStore } from "@/utils";
+import type { createScheduler } from "@/foundation/utils";
+import { type ExternalStore } from "@/foundation/utils";
 import {
   type ComponentType,
   type ReactNode,
@@ -14,8 +14,8 @@ import {
   type Transition,
   type Variants,
 } from "motion/react";
-import { type RegistryMetadata } from "@/kernel";
-import { type ResolvedTheme } from "@/theme";
+import { type RegistryMetadata } from "@/core/kernel";
+import { type ResolvedTheme } from "@/react/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dock components accept arbitrary component props
 export type DockComponent = ComponentType<any>;

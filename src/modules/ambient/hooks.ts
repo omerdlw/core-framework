@@ -1,9 +1,9 @@
 "use client";
 
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { useRequiredContext, useStore } from "@/hooks";
-import { shallowEqual } from "@/utils";
-import { useModuleTheme } from "@/theme";
+import { useRequiredContext, useStore } from "@/react/hooks";
+import { shallowEqual } from "@/foundation/utils";
+import { useModuleTheme } from "@/react/theme";
 import { ambientTheme } from "./constants";
 import { getAmbientSettings } from "./settings";
 import { AmbientContext } from "./context";

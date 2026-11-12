@@ -13,7 +13,7 @@ import {
   shallowEqual as areShallowCollectionsEqual,
   isObject,
   toArray,
-} from "@/utils";
+} from "@/foundation/utils";
 import {
   type DockOperation,
   type DockHudDescriptor,

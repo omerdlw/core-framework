@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/hooks";
-import { getOrCreateGlobalContext, useRegistryValue } from "@/kernel";
-import { createStore } from "@/utils";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
+import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
+import { createStore } from "@/foundation/utils";
 import {
   DEFAULT_LOADING_STATE,
   DEFAULT_LOADING_STATE_WITH_PAGE,

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
-import { type ResolvedTheme } from "@/theme";
-import { type ModuleRuntime, type RegistryMetadata } from "@/kernel";
+import { type ResolvedTheme } from "@/react/theme";
+import { type ModuleRuntime, type RegistryMetadata } from "@/core/kernel";
 
 export interface LoadingState {
   isLoading: boolean;

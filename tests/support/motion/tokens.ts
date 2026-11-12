@@ -1,4 +1,4 @@
-import { defineMotion } from "../../../src/utils/tempo.ts";
+import { defineMotion } from "../../../src/foundation/utils/tempo.ts";
 
 export const motion = defineMotion({
   tempo: 1,

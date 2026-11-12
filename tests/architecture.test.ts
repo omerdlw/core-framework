@@ -22,9 +22,9 @@ describe("package architecture boundaries", () => {
     }
   }
 
-  test("src/design must not import from @/modules", () => {
+  test("src/react/ui must not import from @/modules", () => {
     scanDir(
-      path.resolve("src/design"),
+      path.resolve("src/react/ui"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
         assert.ok(
@@ -57,13 +57,13 @@ describe("package architecture boundaries", () => {
         if (next) visit(next);
       }
     };
-    visit(path.resolve("src/design/recipes.ts"));
+    visit(path.resolve("src/foundation/recipes/index.ts"));
     assert.ok(seen.size > 3);
   });
 
-  test("src/kernel must not import from @/modules", () => {
+  test("src/core/kernel must not import from @/modules", () => {
     scanDir(
-      path.resolve("src/kernel"),
+      path.resolve("src/core/kernel"),
       (file) => /\.(ts|tsx)$/.test(file),
       (fullPath, content) => {
         assert.ok(

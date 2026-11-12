@@ -8,8 +8,8 @@ import {
   defineMotion,
   retime,
   retimeModuleMotion,
-} from "../../src/utils/tempo.ts";
-import { cssTransition } from "../../src/utils/transform.ts";
+} from "../../src/foundation/utils/tempo.ts";
+import { cssTransition } from "../../src/foundation/utils/transform.ts";
 
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 import {
@@ -20,9 +20,9 @@ import {
   useModuleMotion,
   useMotionTokens,
   useOptionalModuleMotion,
-} from "../../src/theme.tsx";
-import { CoreProvider } from "../../src/provider.tsx";
-import { defineModule } from "../../src/kernel/index.ts";
+} from "../../src/react/theme/index.tsx";
+import { CoreProvider } from "../../src/core/provider/index.tsx";
+import { defineModule } from "../../src/core/kernel/index.ts";
 import { notificationTheme } from "../../src/modules/notification/constants.ts";
 import { NotificationProvider } from "../../src/modules/notification/context.tsx";
 import { useToast } from "../../src/modules/notification/hooks.ts";

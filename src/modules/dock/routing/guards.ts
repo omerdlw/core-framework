@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
-import { globalEvents } from "@/events";
+import { globalEvents } from "@/foundation/events";
 import { DOCK_EVENTS } from "../constants";
 import { DockContext } from "../context";
 import {
@@ -12,7 +12,7 @@ import {
   type DockGuardRegistry,
   type DockRoutePolicy,
 } from "../types";
-import { report } from "@/utils";
+import { report } from "@/foundation/utils";
 
 export function createDockGuardRegistry(): DockGuardRegistry {
   const guards = new Map<number, DockGuard>();

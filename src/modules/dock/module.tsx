@@ -1,7 +1,7 @@
 "use client";
 
 import { isValidElement, useMemo, useRef, type ReactNode } from "react";
-import { useIsomorphicLayoutEffect } from "@/hooks";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import {
   defineModule,
   type ModulePageContext,
@@ -9,8 +9,8 @@ import {
   type PageRegistration,
   type ValidationResult,
   type PageModuleApi,
-} from "@/kernel";
-import { isObject, isPlainObject } from "@/utils";
+} from "@/core/kernel";
+import { isObject, isPlainObject } from "@/foundation/utils";
 import { createInlineSurfaceEntry } from "./surface/definition";
 import {
   type DockActions,

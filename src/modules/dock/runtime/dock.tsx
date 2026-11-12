@@ -14,8 +14,8 @@ import {
   useClickOutside,
   useIsFullscreenStateActive,
   useIsomorphicLayoutEffect,
-} from "@/hooks";
-import { normalizePath, shallowEqual } from "@/utils";
+} from "@/react/hooks";
+import { normalizePath, shallowEqual } from "@/foundation/utils";
 import {
   DOCK_ATTENTION_KIND,
   DOCK_OPERATION_EVENTS,
@@ -65,7 +65,7 @@ import {
 import { useDockBreadcrumbs } from "../routing/breadcrumbs";
 import { useIsSurfaceExtensionsVisible } from "../surface/hooks";
 import { getDockStackTransition, useDockMotion } from "../motion";
-import { report } from "@/utils";
+import { report } from "@/foundation/utils";
 
 export function useDockLayout({
   dockItems,

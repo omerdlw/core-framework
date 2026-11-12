@@ -7,7 +7,7 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { useIsomorphicLayoutEffect } from "@/hooks";
+import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import {
   DOCK_CARD_LAYOUT,
   DOCK_HEIGHT_BUFFER,

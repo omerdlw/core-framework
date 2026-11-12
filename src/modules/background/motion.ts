@@ -1,6 +1,6 @@
 import { type Transition } from "motion/react";
-import { cssEasing } from "@/utils";
-import { useModuleMotion } from "@/theme";
+import { cssEasing } from "@/foundation/utils";
+import { useModuleMotion } from "@/react/theme";
 import { backgroundTheme } from "./constants";
 import { type BackgroundAnimationConfig, type BackgroundMotion } from "./types";
 

@@ -1,4 +1,4 @@
-import { isPlainObject } from "@/utils";
+import { isPlainObject } from "@/foundation/utils";
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { resolveComponentType, resolveRenderableContent } from "../helpers";
 import { normalizeExtensions } from "./definition";

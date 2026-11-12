@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { useIsomorphicLayoutEffect, useStore } from "@/hooks";
-import { getOrCreateGlobalContext } from "@/kernel";
+import { useIsomorphicLayoutEffect, useStore } from "@/react/hooks";
+import { getOrCreateGlobalContext } from "@/core/kernel";
 
-import { createStore } from "@/utils";
+import { createStore } from "@/foundation/utils";
 import { prepareMenu } from "./resolver";
 import {
   createInitialMenuState,

@@ -4,8 +4,8 @@ import {
   type Transition,
   type Variants,
 } from "motion/react";
-import { type ExternalStore } from "@/utils";
-import { type RegistryMetadata } from "@/kernel";
+import { type ExternalStore } from "@/foundation/utils";
+import { type RegistryMetadata } from "@/core/kernel";
 
 export interface ContextMenuTrigger {
   clientX?: number;

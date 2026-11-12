@@ -1,8 +1,8 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo } from "react";
-import { getOrCreateGlobalContext } from "@/kernel";
-import { createStore } from "@/utils";
+import { getOrCreateGlobalContext } from "@/core/kernel";
+import { createStore } from "@/foundation/utils";
 import {
   type NormalizedSurfaceExtension,
   type DockSlotContent,

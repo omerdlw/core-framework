@@ -18,6 +18,34 @@ const CANDIDATE_SUFFIXES = [
   "/index.js",
 ];
 
+// Public subpath -> source location, mirroring tsconfig.json#paths.
+const PUBLIC_SOURCES = {
+  kernel: "core/kernel",
+  result: "foundation/result",
+  events: "foundation/events",
+  theme: "react/theme",
+  utils: "foundation/utils",
+  hooks: "react/hooks",
+  error: "core/error",
+  provider: "core/provider",
+  design: "react/ui",
+  "design/recipes": "foundation/recipes",
+  "ambient/server": "modules/ambient/server",
+  "ambient/worker": "modules/ambient/worker",
+};
+const MODULE_NAMES = new Set([
+  "dock",
+  "modal",
+  "notification",
+  "ambient",
+  "background",
+  "context-menu",
+  "controls",
+  "loading",
+  "media",
+  "navigation",
+]);
+
 function resolveFile(basePath) {
   for (const suffix of CANDIDATE_SUFFIXES) {
     const candidate = basePath + suffix;
@@ -68,12 +96,11 @@ registerHooks({
     if (specifier === "@omerdlw/base-framework") {
       basePath = path.join(SRC_ROOT, "index");
     } else if (specifier.startsWith("@omerdlw/base-framework/")) {
-      basePath = path.join(
-        SRC_ROOT,
-        specifier.slice("@omerdlw/base-framework/".length),
-      );
-    } else if (specifier.startsWith("@/core/")) {
-      basePath = path.join(SRC_ROOT, specifier.slice(7));
+      const subpath = specifier.slice("@omerdlw/base-framework/".length);
+      const target =
+        PUBLIC_SOURCES[subpath] ??
+        (MODULE_NAMES.has(subpath) ? `modules/${subpath}` : subpath);
+      basePath = path.join(SRC_ROOT, target);
     } else if (specifier.startsWith("@/")) {
       basePath = path.join(SRC_ROOT, specifier.slice(2));
     } else if (
@@ -87,7 +114,6 @@ registerHooks({
     }
 
     if (basePath) {
-      basePath = basePath.replace(/([/\\])src[/\\]core([/\\])/, "$1src$2");
       const file = resolveFile(basePath);
       if (file) {
         return { url: pathToFileURL(file).href, shortCircuit: true };

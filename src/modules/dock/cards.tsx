@@ -14,10 +14,10 @@ import React, {
   type UIEvent,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/design/cn";
-import { isObject, toArray, clamp } from "@/utils";
-import { useGlobalEvent } from "@/hooks";
-import { useModule } from "@/kernel";
+import { cn } from "@/foundation/recipes/cn";
+import { isObject, toArray, clamp } from "@/foundation/utils";
+import { useGlobalEvent } from "@/react/hooks";
+import { useModule } from "@/core/kernel";
 import {
   useMotionValue,
   useSpring,

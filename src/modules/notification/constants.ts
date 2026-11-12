@@ -1,5 +1,5 @@
-import { USER_MESSAGES } from "@/utils";
-import { defineThemeSpec } from "@/theme";
+import { USER_MESSAGES } from "@/foundation/utils";
+import { defineThemeSpec } from "@/react/theme";
 import {
   type NotificationActions,
   type NotificationState,

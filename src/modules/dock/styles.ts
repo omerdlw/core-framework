@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
-import { cn } from "@/design/cn";
-import { isObject as isObjectLike, trimToNull } from "@/utils";
+import { cn } from "@/foundation/recipes/cn";
+import { isObject as isObjectLike, trimToNull } from "@/foundation/utils";
 import { DOCK_STYLE_SECTIONS } from "./constants";
 import {
   type DockItemCardPropsOptions,

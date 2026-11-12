@@ -9,8 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { normalizePath } from "@/utils";
-import { useRequiredContext } from "@/hooks";
+import { normalizePath } from "@/foundation/utils";
+import { useRequiredContext } from "@/react/hooks";
 import { formatSlugTitle } from "./navigation";
 import {
   type BreadcrumbConfig,

@@ -25,7 +25,7 @@ import {
 import { normalizeSurfaceFlowSnapshot } from "./helpers";
 import { createDockScheduler } from "../helpers";
 import { DOCK_SURFACE_PHASE, DOCK_LIFECYCLE } from "../constants";
-import { report } from "@/utils";
+import { report } from "@/foundation/utils";
 
 export interface SurfaceRecord {
   entry: SurfaceStackEntry;

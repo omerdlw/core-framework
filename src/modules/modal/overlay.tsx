@@ -2,11 +2,11 @@
 
 import { createElement, type ReactNode } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import { Button } from "@/design/components/button";
-import { Icon } from "@/design/components/icon";
-import { cn } from "@/design/cn";
+import { Button } from "@/react/ui/components/button";
+import { Icon } from "@/react/ui/components/icon";
+import { cn } from "@/foundation/recipes/cn";
 import { createPortal } from "react-dom";
-import { ModuleBoundary } from "@/kernel";
+import { ModuleBoundary } from "@/core/kernel";
 import { MODAL_POSITIONS } from "./constants";
 import {
   MODAL_COMPOSITOR_STYLE,
@@ -34,7 +34,7 @@ import {
   useModalLayerModel,
   useModalModel,
 } from "./hooks";
-import { type ResolvedTheme } from "@/theme";
+import { type ResolvedTheme } from "@/react/theme";
 
 type Theme = ResolvedTheme<ModalThemeSlot>;
 

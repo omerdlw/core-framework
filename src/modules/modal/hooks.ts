@@ -8,14 +8,14 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useRequiredContext, useStore } from "@/hooks";
+import { useRequiredContext, useStore } from "@/react/hooks";
 import {
   useModuleRegistration,
   useRegistryEntries,
   type RegistryMetadata,
-} from "@/kernel";
-import { acquireGlobalScrollLock } from "@/utils";
-import { useModuleTheme } from "@/theme";
+} from "@/core/kernel";
+import { acquireGlobalScrollLock } from "@/foundation/utils";
+import { useModuleTheme } from "@/react/theme";
 import {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,

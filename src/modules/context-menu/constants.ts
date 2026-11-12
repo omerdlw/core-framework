@@ -1,4 +1,4 @@
-import { defineThemeSpec } from "@/theme";
+import { defineThemeSpec } from "@/react/theme";
 import {
   type ContextMenuMotion,
   type ContextMenuPosition,

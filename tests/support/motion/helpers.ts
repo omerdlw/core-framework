@@ -1,4 +1,4 @@
-import { gpuTransform } from "../../../src/utils/transform.ts";
+import { gpuTransform } from "../../../src/foundation/utils/transform.ts";
 
 export const REDUCED_MOTION_TRANSITION = Object.freeze({
   duration: 0.08,

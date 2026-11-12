@@ -7,8 +7,11 @@ import {
   ambientThemeConfig,
   primitivesThemeConfig,
 } from "../support/themes.ts";
-import { defineMotion, retimeModuleMotion } from "../../src/utils/tempo.ts";
-import { defineTheme, ThemeProvider } from "../../src/theme.tsx";
+import {
+  defineMotion,
+  retimeModuleMotion,
+} from "../../src/foundation/utils/tempo.ts";
+import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 import {
   dockTheme,
   DOCK_SURFACE_PHASE,

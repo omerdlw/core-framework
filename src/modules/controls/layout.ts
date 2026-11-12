@@ -1,4 +1,4 @@
-import { clamp } from "@/utils";
+import { clamp } from "@/foundation/utils";
 import {
   CONTROLS_DOCK_ELEMENT_ID,
   CONTROLS_DOCK_GAP,

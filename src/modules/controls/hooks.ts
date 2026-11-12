@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useModuleRegistration, type RegistryMetadata } from "@/kernel";
+import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
 import {
   type ControlEntry,
   type ControlsLayout,

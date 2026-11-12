@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { defineModule, type PageModuleApi } from "@/kernel";
+import { defineModule, type PageModuleApi } from "@/core/kernel";
 import { MEDIA_REGISTRY_KEY } from "./constants";
 import { MediaContext, MediaProvider } from "./context";
 import { useMediaActions } from "./hooks";

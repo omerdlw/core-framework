@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { defineModule, type PageModuleApi } from "@/kernel";
+import { defineModule, type PageModuleApi } from "@/core/kernel";
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import { BackgroundContext, BackgroundProvider } from "./context";
 import { useBackground, useBackgroundActions } from "./hooks";

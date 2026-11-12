@@ -3,7 +3,7 @@ import {
   createScheduler,
   isObject as isObjectLike,
   type CoreSchedulerOptions,
-} from "@/utils";
+} from "@/foundation/utils";
 import { type DockComponent, type DockHudDescriptor } from "./types";
 
 export function toObject(value: unknown): Record<string, unknown> {

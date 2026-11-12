@@ -1,6 +1,6 @@
 "use client";
 
-import { normalizePath } from "@/utils";
+import { normalizePath } from "@/foundation/utils";
 import {
   useCallback,
   useEffect,
@@ -10,10 +10,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useRequiredContext, useStore } from "@/hooks";
-import { useModule } from "@/kernel";
-import { shallowEqual } from "@/utils";
-import { globalEvents } from "@/events";
+import { useRequiredContext, useStore } from "@/react/hooks";
+import { useModule } from "@/core/kernel";
+import { shallowEqual } from "@/foundation/utils";
+import { globalEvents } from "@/foundation/events";
 import { isSafeInternalHref, isSamePath, getDockLocationKey } from "../paths";
 import type { PrefetchingRouter, RoutePrefetchState } from "../types";
 import {
@@ -42,7 +42,7 @@ import type {
   NavigationState,
   Navigator,
 } from "../../navigation/types";
-import { report } from "@/utils";
+import { report } from "@/foundation/utils";
 
 function getRoutePolicyOverrides(
   item: DockItem | null | undefined,

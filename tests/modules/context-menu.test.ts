@@ -1,7 +1,7 @@
 import "../support/dom.ts";
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { setReportSink } from "../../src/core/utils/index.ts";
+import { setReportSink } from "../../src/foundation/utils/index.ts";
 
 import { createElement as h } from "react";
 import {

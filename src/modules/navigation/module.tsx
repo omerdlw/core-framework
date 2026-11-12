@@ -1,6 +1,6 @@
 "use client";
 
-import { defineModule } from "@/kernel";
+import { defineModule } from "@/core/kernel";
 import { NavigationContext, NavigationProvider } from "./context";
 import type { NavigationTrip } from "./types";
 

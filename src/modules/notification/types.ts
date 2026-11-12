@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type Transition, type Variants } from "motion/react";
-import { type ExternalStore } from "@/utils";
+import { type ExternalStore } from "@/foundation/utils";
 
 export interface NotificationData {
   dedupeKey?: string;
