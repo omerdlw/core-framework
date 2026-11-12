@@ -13,6 +13,9 @@ import type {
 import { useUi } from "../provider";
 import { Loader } from "./loader";
 
+/**
+ * A button, or a link when `href` is set, with an optional busy state.
+ */
 export function Button({
   children,
   className,

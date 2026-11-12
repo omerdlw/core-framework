@@ -5,6 +5,9 @@ import type { InputProps, TextareaProps } from "@/react/ui/types";
 
 import { useUi } from "../provider";
 
+/**
+ * A text input styled by the UI definition.
+ */
 export function Input({ className, ref, type = "text", ...props }: InputProps) {
   const { parts } = useUi();
   const [variants, rest] = splitVariants(props, parts.input.field);
@@ -18,6 +21,9 @@ export function Input({ className, ref, type = "text", ...props }: InputProps) {
   );
 }
 
+/**
+ * A textarea styled by the UI definition.
+ */
 export function Textarea({
   className,
   maxHeight,

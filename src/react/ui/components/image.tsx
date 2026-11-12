@@ -9,6 +9,9 @@ import type { ImageProps } from "@/react/ui/types";
 import { useUi } from "../provider";
 import { watchDistance } from "../utils";
 
+/**
+ * An image with loading and failure states and an optional fallback node.
+ */
 export function Image({
   alt = "",
   className,
@@ -39,6 +42,10 @@ export function Image({
   const [hasFailed, setHasFailed] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
   const corsRefused = refused !== null && refused === resolvedSrc;
+
+  const fillsFrame =
+    layout !== "intrinsic" &&
+    ((fill ?? (!props.width && !props.height)) || undefined);
 
   const waiting = Boolean(resolvedSrc) && !hasLoaded && !hasFailed;
   useEffect(() => {
@@ -98,10 +105,7 @@ export function Image({
         onDragStart={(event) => event.preventDefault()}
         className={parts.image.picture({ ...variants, className })}
         crossOrigin={corsRefused ? undefined : crossOrigin}
-        data-fill={
-          layout !== "intrinsic" &&
-          ((fill ?? (!props.width && !props.height)) || undefined)
-        }
+        data-fill={fillsFrame}
         data-state={hasLoaded ? "loaded" : "loading"}
         onLoad={handleLoad}
         onError={handleError}

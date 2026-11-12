@@ -8,6 +8,11 @@ import { useUi } from "../provider";
 import { initialsOf } from "../utils";
 import { Image } from "./image";
 
+const DEFAULT_ALT = "Avatar";
+
+/**
+ * A round image with an initials fallback when the image is missing or fails.
+ */
 export function Avatar({
   alt,
   children,
@@ -38,7 +43,7 @@ export function Avatar({
       {src && src !== failedSrc ? (
         <Image
           src={src}
-          alt={alt || name || "Avatar"}
+          alt={alt || name || DEFAULT_ALT}
           onError={() => setFailedSrc(src)}
           className={parts.avatar.image({ className: classNames?.image })}
         />

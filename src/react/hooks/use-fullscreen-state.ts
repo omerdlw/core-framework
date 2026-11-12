@@ -8,6 +8,12 @@ const activeFullscreenStateIds = new Set<string>();
 const ACTIVE_FULLSCREEN_ROOT_SELECTOR =
   '[data-fullscreen-state-root="true"][data-affect-global-state="true"]';
 
+const OBSERVED_ATTRIBUTES = [
+  "data-fullscreen-state",
+  "data-fullscreen-state-root",
+  "data-affect-global-state",
+];
+
 let domObserver: MutationObserver | null = null;
 let lastSnapshot = false;
 
@@ -47,11 +53,7 @@ function ensureDomObserver(): void {
     attributes: true,
     childList: true,
     subtree: true,
-    attributeFilter: [
-      "data-fullscreen-state",
-      "data-fullscreen-state-root",
-      "data-affect-global-state",
-    ],
+    attributeFilter: OBSERVED_ATTRIBUTES,
   });
 }
 
@@ -89,6 +91,9 @@ export function unregisterFullscreenState(id: string): void {
   emitIfSnapshotChanged();
 }
 
+/**
+ * True while any fullscreen-state root that affects global state is on the page.
+ */
 export function useIsFullscreenStateActive(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

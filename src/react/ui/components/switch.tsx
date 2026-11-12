@@ -5,6 +5,9 @@ import type { SwitchProps } from "@/react/ui/types";
 
 import { useUi } from "../provider";
 
+/**
+ * A two-state toggle.
+ */
 export function Switch({
   checked = false,
   className,

@@ -7,6 +7,9 @@ import { useUi } from "../provider";
 import { Icon } from "./icon";
 import { Loader } from "./loader";
 
+/**
+ * The box and check mark of a checkbox, for use in custom rows.
+ */
 export function CheckboxIndicator({
   className,
   icon,
@@ -19,20 +22,22 @@ export function CheckboxIndicator({
     parts.checkbox.box,
   );
   const glyph = icon ?? icons.check;
+  const glyphNode = glyph ? (
+    <Icon className={parts.checkbox.glyph(variants)} icon={glyph} />
+  ) : null;
   return (
     <span
       aria-hidden="true"
       className={parts.checkbox.box({ ...variants, className })}
     >
-      {pending ? (
-        <Loader />
-      ) : glyph ? (
-        <Icon className={parts.checkbox.glyph(variants)} icon={glyph} />
-      ) : null}
+      {pending ? <Loader /> : glyphNode}
     </span>
   );
 }
 
+/**
+ * A checkbox button that reports changes through `onCheckedChange`.
+ */
 export function Checkbox({
   checked,
   children,

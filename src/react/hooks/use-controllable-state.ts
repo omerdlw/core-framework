@@ -4,6 +4,10 @@ import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { type UseControllableStateOptions } from "./types";
 
+/**
+ * State that is controlled when `value` is given and uncontrolled otherwise.
+ * Returns the current value and a setter that also calls `onChange`.
+ */
 export function useControllableState<T>({
   defaultValue,
   onChange,

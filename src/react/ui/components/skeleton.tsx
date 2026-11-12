@@ -4,6 +4,9 @@ import type { SkeletonBlockProps, SkeletonLinesProps } from "@/react/ui/types";
 
 import { useUi } from "../provider";
 
+/**
+ * A placeholder block shown while content loads.
+ */
 export function SkeletonBlock({
   className,
   style,
@@ -19,6 +22,9 @@ export function SkeletonBlock({
   );
 }
 
+/**
+ * Placeholder text lines of the given widths.
+ */
 export function SkeletonLines({
   className,
   height,

@@ -4,6 +4,9 @@ import { useCallback, useRef, useSyncExternalStore } from "react";
 
 import { type ExternalStore } from "@/foundation/utils";
 
+/**
+ * Subscribes a component to an external store, optionally to a selected slice with a custom equality check.
+ */
 export function useStore<TState, TSlice = TState>(
   store: ExternalStore<TState>,
   selector: (state: TState) => TSlice = (state: TState) =>

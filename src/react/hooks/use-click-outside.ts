@@ -2,6 +2,9 @@
 
 import { type RefObject, useCallback, useEffect } from "react";
 
+/**
+ * Calls `callback` when a pointer press lands outside the referenced element.
+ */
 export function useClickOutside<T extends HTMLElement = HTMLElement>(
   ref: RefObject<T | null> | null | undefined,
   callback?: (event: PointerEvent) => void,

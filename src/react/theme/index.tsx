@@ -11,6 +11,9 @@ import {
 } from "@/foundation/utils/tempo";
 import { getOrCreateGlobalContext } from "@/react/context";
 
+/**
+ * A theme's identity and, through its type parameters, its slot names and motion shape.
+ */
 export interface ThemeSpec<S extends string = string, M = never> {
   readonly id: string;
   readonly _slots?: S;
@@ -22,36 +25,53 @@ interface ThemeVisuals<S extends string> {
   styles?: Readonly<Partial<Record<S, CSSProperties>>>;
 }
 
+/**
+ * The slot classes, styles and (when the spec has motion) motion of a theme.
+ */
 export type ThemeConfig<S extends string, M = never> = ThemeVisuals<S> &
   ([M] extends [never] ? { motion?: undefined } : { motion: M });
 
+/**
+ * The slot classes and styles a component receives from `useTheme`.
+ */
 export interface ResolvedTheme<S extends string> {
   readonly slots: Readonly<Record<S, string>>;
   readonly styles: Readonly<Partial<Record<S, CSSProperties>>>;
 }
 
+/**
+ * A theme id paired with its configuration, as passed to `ThemeProvider`.
+ */
 export interface ThemeEntry {
   readonly id: string;
   readonly config: ThemeVisuals<string> & { motion?: unknown };
 }
 
+/**
+ * Declares a theme's identity with its slot names and optional motion type.
+ */
 export function defineThemeSpec<S extends string, M = never>(
   id: string,
 ): ThemeSpec<S, M> {
   return Object.freeze({ id });
 }
 
+/**
+ * Binds a configuration to a theme spec.
+ */
 export function defineTheme<S extends string, M = never>(
   spec: ThemeSpec<S, M>,
   config: ThemeConfig<NoInfer<S>, NoInfer<M>>,
 ): ThemeEntry {
-  return { id: spec.id, config: config };
+  return { id: spec.id, config };
 }
 
 const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
 const ThemeContext = getOrCreateGlobalContext<
   ReadonlyMap<string, ThemeEntry["config"]>
 >("ThemeContext", EMPTY);
+
+const NEUTRAL_TEMPO = 1;
 
 interface MotionState extends MotionClock {
   readonly tokens: MotionTokens;
@@ -60,7 +80,7 @@ interface MotionState extends MotionClock {
 const DEFAULT_MOTION = defineMotion({});
 const NO_MOTION_PROVIDER: MotionState = Object.freeze({
   reduced: false,
-  tempo: 1,
+  tempo: NEUTRAL_TEMPO,
   tokens: DEFAULT_MOTION,
 });
 const MotionContext = getOrCreateGlobalContext<MotionState>(
@@ -68,13 +88,12 @@ const MotionContext = getOrCreateGlobalContext<MotionState>(
   NO_MOTION_PROVIDER,
 );
 
-function MotionProvider({
-  children,
-  tokens,
-}: {
+interface MotionProviderProps {
   children?: ReactNode;
   tokens: MotionTokens;
-}) {
+}
+
+function MotionProvider({ children, tokens }: MotionProviderProps) {
   const prefersReduced = useReducedMotion() === true;
   const reduced =
     tokens.reducedMotion === "always" ||
@@ -92,25 +111,30 @@ function MotionProvider({
   return <MotionContext value={state}>{children}</MotionContext>;
 }
 
+interface ThemeProviderProps {
+  children?: ReactNode;
+  motion?: MotionTokens;
+  themes: readonly ThemeEntry[];
+}
+
+/**
+ * Provides themes, and motion tokens when given, to the tree below it.
+ */
 export function ThemeProvider({
   children,
   motion,
   themes,
-}: {
-  children?: ReactNode;
-  motion?: MotionTokens;
-  themes: readonly ThemeEntry[];
-}) {
+}: ThemeProviderProps) {
   const configs = new Map(themes.map((entry) => [entry.id, entry.config]));
-  const inherited = use(MotionContext) !== NO_MOTION_PROVIDER;
-  const content =
-    motion || !inherited ? (
-      <MotionProvider tokens={motion ?? DEFAULT_MOTION}>
-        {children}
-      </MotionProvider>
-    ) : (
-      children
-    );
+  const inheritsMotion = use(MotionContext) !== NO_MOTION_PROVIDER;
+  const providesMotion = Boolean(motion) || !inheritsMotion;
+  const content = providesMotion ? (
+    <MotionProvider tokens={motion ?? DEFAULT_MOTION}>
+      {children}
+    </MotionProvider>
+  ) : (
+    children
+  );
   return <ThemeContext value={configs}>{content}</ThemeContext>;
 }
 
@@ -120,6 +144,9 @@ function missingTheme(id: string): Error {
   );
 }
 
+/**
+ * Returns the slot classes and styles configured for a theme spec.
+ */
 export function useTheme<S extends string>(
   spec: ThemeSpec<S, unknown>,
 ): ResolvedTheme<S> {
@@ -131,6 +158,9 @@ export function useTheme<S extends string>(
   };
 }
 
+/**
+ * Returns the current motion tokens plus whether motion is reduced.
+ */
 export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
   readonly reduced: boolean;
 } {
@@ -143,6 +173,9 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
 
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();
 
+/**
+ * Returns a theme's motion, retimed to the current tempo; throws if it has none.
+ */
 export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
   const config = use(ThemeContext).get(spec.id);
   const state = use(MotionContext);
@@ -155,6 +188,9 @@ export function useModuleMotion<M>(spec: ThemeSpec<string, M>): M {
   return resolveModuleMotion(state, config.motion) as M;
 }
 
+/**
+ * Like `useModuleMotion`, but returns null when the theme has no motion.
+ */
 export function useOptionalModuleMotion<M>(
   spec: ThemeSpec<string, M>,
 ): M | null {
@@ -176,7 +212,14 @@ function resolveModuleMotion(state: MotionState, motion: object): unknown {
   return byConfig.get(motion);
 }
 
-export function ModuleMotionConfig({ children }: { children?: ReactNode }) {
+interface ModuleMotionConfigProps {
+  children?: ReactNode;
+}
+
+/**
+ * Applies the motion tokens' reduced-motion policy to motion components below it.
+ */
+export function ModuleMotionConfig({ children }: ModuleMotionConfigProps) {
   const { tokens } = use(MotionContext);
   return (
     <MotionConfig reducedMotion={tokens.reducedMotion}>{children}</MotionConfig>

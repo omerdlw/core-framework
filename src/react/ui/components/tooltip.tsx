@@ -6,6 +6,9 @@ import type { TooltipProps } from "@/react/ui/types";
 
 import { useUi } from "../provider";
 
+/**
+ * Shows a text label next to its trigger on hover or focus.
+ */
 export function Tooltip({
   children,
   className,
@@ -54,4 +57,7 @@ export function Tooltip({
   );
 }
 
+/**
+ * Provides shared tooltip timing to the tooltips below it.
+ */
 export const TooltipProvider = TooltipPrimitive.Provider;

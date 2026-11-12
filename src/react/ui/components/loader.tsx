@@ -5,7 +5,12 @@ import type { LoaderProps, SpinnerProps } from "@/react/ui/types";
 import { useUi } from "../provider";
 import { Icon } from "./icon";
 
-function Dots({ color, size }: { color?: string; size?: number }) {
+interface DotsProps {
+  color?: string;
+  size?: number;
+}
+
+function Dots({ color, size }: DotsProps) {
   const { parts } = useUi();
   return (
     <span
@@ -23,6 +28,9 @@ function Dots({ color, size }: { color?: string; size?: number }) {
   );
 }
 
+/**
+ * An animated status indicator; with children it overlays them while loading.
+ */
 export function Loader({ children, className, color, size }: LoaderProps) {
   const { labels, parts } = useUi();
   const over = Boolean(children);
@@ -46,6 +54,9 @@ export function Loader({ children, className, color, size }: LoaderProps) {
   );
 }
 
+/**
+ * A spinning icon status indicator.
+ */
 export function Spinner({ className, icon, size }: SpinnerProps) {
   const { icons, labels, parts } = useUi();
   const glyph = icon ?? icons.spinner;

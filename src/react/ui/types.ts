@@ -19,8 +19,14 @@ import type {
   PartsProps,
 } from "@/foundation/recipes/define";
 
+/**
+ * Any `data-*` attribute.
+ */
 export type DataAttributes = Record<`data-${string}`, string | undefined>;
 
+/**
+ * Props of `Avatar`.
+ */
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   alt?: string;
   classNames?: PartClassNames<"avatar">;
@@ -31,38 +37,62 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   src?: string | null;
 }
 
+/**
+ * Variant props of the button.
+ */
 export type ButtonVariants = PartProps<"button", "root">;
 
+/**
+ * Props shared by the button and link forms of `Button`.
+ */
 export interface ButtonBaseProps extends ButtonVariants {
   children?: ReactNode;
   className?: string;
   loading?: boolean;
 }
 
+/**
+ * Props of `Button` rendered as a `<button>`.
+ */
 export type ButtonElementProps = ButtonBaseProps &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> & {
     href?: undefined;
     ref?: Ref<HTMLButtonElement>;
   };
 
+/**
+ * Props of `Button` rendered as a link (when `href` is set).
+ */
 export type ButtonLinkProps = ButtonBaseProps &
   Omit<ComponentProps<typeof NextLink>, "className" | "href" | "ref"> & {
     href: string;
     ref?: Ref<HTMLAnchorElement>;
   };
 
+/**
+ * Props of `Button`.
+ */
 export type ButtonProps = ButtonElementProps | ButtonLinkProps;
 
+/**
+ * Whether a track can scroll further in each horizontal direction.
+ */
 export interface ScrollState {
   left: boolean;
   right: boolean;
 }
 
+/**
+ * Custom scroll animation for a carousel; may return a function that stops it.
+ */
 export type CarouselGlide = (
   track: HTMLElement,
   target: number,
 ) => (() => void) | void;
 
+/**
+ * What a custom `renderSlide` receives for each slide.
+ */
 export interface CarouselSlideProps {
   children: ReactNode;
   className: string;
@@ -70,6 +100,9 @@ export interface CarouselSlideProps {
   slideKey: string | number;
 }
 
+/**
+ * Props of `Carousel`.
+ */
 export interface CarouselProps {
   children: ReactNode;
   arrowClassName?: string;
@@ -85,8 +118,14 @@ export interface CarouselProps {
   trackProps?: HTMLAttributes<HTMLDivElement> & DataAttributes;
 }
 
+/**
+ * Variant props of the checkbox box.
+ */
 export type CheckboxVariants = PartProps<"checkbox", "box">;
 
+/**
+ * Props of `CheckboxIndicator`.
+ */
 export interface CheckboxIndicatorProps extends Omit<
   CheckboxVariants,
   "checked"
@@ -97,6 +136,9 @@ export interface CheckboxIndicatorProps extends Omit<
   pending?: boolean;
 }
 
+/**
+ * Props of `Checkbox`.
+ */
 export interface CheckboxProps
   extends
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
@@ -107,6 +149,9 @@ export interface CheckboxProps
   ref?: Ref<HTMLButtonElement>;
 }
 
+/**
+ * Props of `Icon`.
+ */
 export interface IconProps extends Omit<
   ComponentProps<typeof IconifyIcon>,
   "icon" | "size"
@@ -119,8 +164,14 @@ export interface IconProps extends Omit<
   onClick?: () => void;
 }
 
+/**
+ * Variant props of the image.
+ */
 export type ImageVariants = PartProps<"image", "picture">;
 
+/**
+ * Props of `Image`.
+ */
 export interface ImageProps
   extends Omit<ComponentPropsWithoutRef<"img">, "src" | "alt">, ImageVariants {
   alt?: string;
@@ -131,6 +182,9 @@ export interface ImageProps
   wrapperClassName?: string;
 }
 
+/**
+ * The measured position and size of a sliding pill.
+ */
 export interface PillBox {
   height?: number;
   width: number;
@@ -138,6 +192,9 @@ export interface PillBox {
   y?: number;
 }
 
+/**
+ * Shared hover and focus state of a `HighlightGroup`.
+ */
 export interface Tracker {
   active: string | null;
   focus: (key: string | null) => void;
@@ -145,13 +202,22 @@ export interface Tracker {
   id: string;
 }
 
+/**
+ * Variant props of the input field.
+ */
 export type InputVariants = PartProps<"input", "field">;
 
+/**
+ * Props of `Input`.
+ */
 export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "size">, InputVariants {
   ref?: Ref<HTMLInputElement>;
 }
 
+/**
+ * Props of `Textarea`.
+ */
 export interface TextareaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement>, InputVariants {
   maxHeight?: number;
@@ -159,6 +225,9 @@ export interface TextareaProps
   ref?: Ref<HTMLTextAreaElement>;
 }
 
+/**
+ * Props of `Loader`.
+ */
 export interface LoaderProps {
   children?: ReactNode;
   className?: string;
@@ -166,14 +235,23 @@ export interface LoaderProps {
   size?: number;
 }
 
+/**
+ * Props of `Spinner`.
+ */
 export interface SpinnerProps {
   className?: string;
   icon?: string;
   size?: number;
 }
 
+/**
+ * Per-part class names of the loader.
+ */
 export type LoaderClassNames = PartClassNames<"loader">;
 
+/**
+ * One option of a `SegmentedControl`.
+ */
 export interface SegmentedItem<K extends string> {
   count?: number;
   icon?: string;
@@ -182,11 +260,17 @@ export interface SegmentedItem<K extends string> {
   disabled?: boolean;
 }
 
+/**
+ * Variant props of the segmented control.
+ */
 export type SegmentedControlVariants = Omit<
   PartsProps<"segmented", "root" | "segment" | "pill">,
   "active"
 >;
 
+/**
+ * Props of `SegmentedControl`.
+ */
 export interface SegmentedControlProps<
   K extends string,
 > extends SegmentedControlVariants {
@@ -199,6 +283,9 @@ export interface SegmentedControlProps<
   iconSize?: number;
 }
 
+/**
+ * One option of a `Select`.
+ */
 export interface SelectOption<T extends string = string> {
   description?: ReactNode;
   disabled?: boolean;
@@ -207,13 +294,22 @@ export interface SelectOption<T extends string = string> {
   value: T;
 }
 
+/**
+ * Per-part class names of the select.
+ */
 export type SelectClassNames = PartClassNames<"select"> & { content?: string };
 
+/**
+ * Variant props of the select.
+ */
 export type SelectVariants = PartsProps<
   "select",
   "trigger" | "menu" | "option"
 >;
 
+/**
+ * Props of `Select`.
+ */
 export interface SelectProps<T extends string = string> extends SelectVariants {
   ariaLabel?: string;
   className?: string;
@@ -232,6 +328,9 @@ export interface SelectProps<T extends string = string> extends SelectVariants {
   value?: T;
 }
 
+/**
+ * The measured position of a select's trigger, used to place its menu.
+ */
 export interface Anchor {
   edge: number;
   left: number;
@@ -240,21 +339,36 @@ export interface Anchor {
   width: number;
 }
 
+/**
+ * Variant props of the skeleton block.
+ */
 export type SkeletonVariants = PartProps<"skeleton", "block">;
 
+/**
+ * Props of `SkeletonBlock`.
+ */
 export interface SkeletonBlockProps extends SkeletonVariants {
   className?: string;
   style?: CSSProperties;
 }
 
+/**
+ * Props of `SkeletonLines`.
+ */
 export interface SkeletonLinesProps {
   className?: string;
   height?: string;
   widths: readonly string[];
 }
 
+/**
+ * Variant props of the switch.
+ */
 export type SwitchVariants = PartsProps<"switch", "track" | "thumb">;
 
+/**
+ * Props of `Switch`.
+ */
 export interface SwitchProps
   extends
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
@@ -265,6 +379,9 @@ export interface SwitchProps
   ref?: Ref<HTMLButtonElement>;
 }
 
+/**
+ * Props of `Tooltip`.
+ */
 export interface TooltipProps {
   children: ReactNode;
   className?: string;

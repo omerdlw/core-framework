@@ -16,13 +16,18 @@ import type { PillBox, Tracker } from "@/react/ui/types";
 import { useUi, useUiMotion } from "../provider";
 import { HIGHLIGHT_STYLE, INSTANT, PILL_BOX_STYLE, PILL_STYLE } from "../utils";
 
+interface SlidingHighlightProps {
+  className?: string;
+  layoutId: string;
+}
+
+/**
+ * A highlight that slides between items that share its layout id.
+ */
 export function SlidingHighlight({
   className,
   layoutId,
-}: {
-  className?: string;
-  layoutId: string;
-}) {
+}: SlidingHighlightProps) {
   const { parts } = useUi();
   const { follow, reduced } = useUiMotion();
   return (
@@ -36,18 +41,21 @@ export function SlidingHighlight({
   );
 }
 
-export function SlidingPill({
-  box,
-  className,
-}: {
+interface SlidingPillProps {
   box: PillBox;
   className: string;
-}) {
+}
+
+/**
+ * A pill that slides to a measured box.
+ */
+export function SlidingPill({ box, className }: SlidingPillProps) {
   const { follow, reduced } = useUiMotion();
+  const isSingleLine = box.height === undefined;
   return (
     <motion.span
       animate={
-        box.height === undefined
+        isSingleLine
           ? { width: box.width, x: box.x }
           : { height: box.height, width: box.width, x: box.x, y: box.y }
       }
@@ -55,7 +63,7 @@ export function SlidingPill({
       className={className}
       data-pill=""
       initial={false}
-      style={box.height === undefined ? PILL_STYLE : PILL_BOX_STYLE}
+      style={isSingleLine ? PILL_STYLE : PILL_BOX_STYLE}
       transition={reduced ? INSTANT : (follow ?? INSTANT)}
     />
   );
@@ -63,13 +71,15 @@ export function SlidingPill({
 
 const HighlightContext = createContext<Tracker | null>(null);
 
-export function HighlightGroup({
-  children,
-  className,
-}: {
+interface HighlightGroupProps {
   children: ReactNode;
   className?: string;
-}) {
+}
+
+/**
+ * Groups items so one hover or focus highlight slides between them.
+ */
+export function HighlightGroup({ children, className }: HighlightGroupProps) {
   const id = useId();
   const [hovered, setHovered] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
@@ -94,6 +104,9 @@ export function HighlightGroup({
   );
 }
 
+/**
+ * Returns the highlight node and event props for one item of a `HighlightGroup`.
+ */
 export function useHighlight(key: string, className?: string) {
   const tracker = use(HighlightContext);
   return {
@@ -114,6 +127,9 @@ export function useHighlight(key: string, className?: string) {
   };
 }
 
+/**
+ * Event props that clear the hover highlight when entering a non-item area.
+ */
 export function useHighlightReset() {
   const tracker = use(HighlightContext);
   return { onPointerEnter: () => tracker?.hover(null) };

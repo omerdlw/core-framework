@@ -31,6 +31,54 @@ const defaultSlide = ({ children, className }: CarouselSlideProps) => (
   <div className={className}>{children}</div>
 );
 
+// Ask for more content once fewer than this many viewport widths remain.
+const NEAR_END_VIEWPORTS = 2;
+const SIDES = ["left", "right"] as const;
+
+type Side = (typeof SIDES)[number];
+
+interface CarouselArrowProps {
+  arrowClassName?: string;
+  classNames: CarouselProps["classNames"] & object;
+  onClick: (direction: -1 | 1) => void;
+  side: Side;
+  visible: boolean;
+}
+
+function CarouselArrow({
+  arrowClassName,
+  classNames,
+  onClick,
+  side,
+  visible,
+}: CarouselArrowProps) {
+  const { icons, labels, parts } = useUi();
+  const icon = side === "left" ? icons.previous : icons.next;
+  return (
+    <Button
+      aria-hidden={!visible}
+      aria-label={side === "left" ? labels.previous : labels.next}
+      className={parts.carousel.arrow({
+        side,
+        visible,
+        className: [classNames.arrow, arrowClassName],
+      })}
+      onClick={() => onClick(side === "left" ? -1 : 1)}
+      tabIndex={visible ? 0 : -1}
+    >
+      {icon ? (
+        <Icon
+          className={parts.carousel.icon({ className: classNames.icon })}
+          icon={icon}
+        />
+      ) : null}
+    </Button>
+  );
+}
+
+/**
+ * A horizontally scrolling row of slides with arrows, drag scrolling and an end callback.
+ */
 export function Carousel({
   arrowClassName,
   children,
@@ -45,7 +93,7 @@ export function Carousel({
   renderSlide = defaultSlide,
   trackProps,
 }: CarouselProps) {
-  const { icons, labels, parts } = useUi();
+  const { parts } = useUi();
   const motionTokens = useUiMotion();
   const track = useRef<HTMLDivElement>(null);
   const stopGlide = useRef<(() => void) | null>(null);
@@ -63,11 +111,10 @@ export function Carousel({
   const sync = useCallback(() => {
     const el = track.current;
     if (!el) return;
-    if (
+    const isNearEnd =
       el.clientWidth > 0 &&
-      el.scrollLeft + el.clientWidth * 2 >= el.scrollWidth
-    )
-      nearEnd.current?.();
+      el.scrollLeft + el.clientWidth * NEAR_END_VIEWPORTS >= el.scrollWidth;
+    if (isNearEnd) nearEnd.current?.();
     const next = readScroll(el);
     setScroll((previous) =>
       previous.left === next.left && previous.right === next.right
@@ -162,34 +209,24 @@ export function Carousel({
         })}
       </div>
 
-      {(["left", "right"] as const).map((side) => {
-        const visible = side === "left" ? left : right;
-        return (
-          <Button
-            aria-hidden={!visible}
-            aria-label={side === "left" ? labels.previous : labels.next}
-            className={parts.carousel.arrow({
-              side,
-              visible,
-              className: [classNames.arrow, arrowClassName],
-            })}
-            key={side}
-            onClick={() => scrollBy(side === "left" ? -1 : 1)}
-            tabIndex={visible ? 0 : -1}
-          >
-            {(side === "left" ? icons.previous : icons.next) ? (
-              <Icon
-                className={parts.carousel.icon({ className: classNames.icon })}
-                icon={(side === "left" ? icons.previous : icons.next)!}
-              />
-            ) : null}
-          </Button>
-        );
-      })}
+      {SIDES.map((side) => (
+        <CarouselArrow
+          arrowClassName={arrowClassName}
+          classNames={classNames}
+          key={side}
+          onClick={scrollBy}
+          side={side}
+          visible={side === "left" ? left : right}
+        />
+      ))}
     </div>
   );
 }
 
-function SlideSlot({ children }: { children: ReactNode }) {
+interface SlideSlotProps {
+  children: ReactNode;
+}
+
+function SlideSlot({ children }: SlideSlotProps) {
   return children;
 }

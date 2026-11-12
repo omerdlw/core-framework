@@ -8,6 +8,9 @@ import {
 
 import type { PillBox, ScrollState } from "./types";
 
+/**
+ * Up to two uppercase initials for a name, or "?" when there is none.
+ */
 export function initialsOf(name?: string): string {
   const parts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
   if (parts.length === 0) return "?";
@@ -21,8 +24,17 @@ export const DRAG_THRESHOLD = 5;
 
 export const SCROLL_STEP = 0.8;
 
+// Within this fraction of the track width from either end, a glide snaps to the end.
+const END_SNAP_RATIO = 0.25;
+
+/**
+ * Default selector for the element inside a carousel slide that the clip follows.
+ */
 export const FRAME_SELECTOR = "[data-carousel-frame]";
 
+/**
+ * Whether a horizontal track can scroll further left and right.
+ */
 export function readScroll(track: HTMLElement): ScrollState {
   return {
     left: track.scrollLeft > EDGE_TOLERANCE,
@@ -31,6 +43,9 @@ export function readScroll(track: HTMLElement): ScrollState {
   };
 }
 
+/**
+ * The scrollLeft a carousel should glide to for one step in a direction, snapping to slide edges.
+ */
 export function glideTarget(track: HTMLElement, direction: -1 | 1): number {
   const max = track.scrollWidth - track.clientWidth;
   const wanted = track.scrollLeft + track.clientWidth * SCROLL_STEP * direction;
@@ -43,40 +58,47 @@ export function glideTarget(track: HTMLElement, direction: -1 | 1): number {
   let target = edges.reduce((best, edge) =>
     Math.abs(edge - wanted) < Math.abs(best - wanted) ? edge : best,
   );
-  if (direction === 1 && target <= track.scrollLeft + EDGE_TOLERANCE)
-    target =
-      edges.find((edge) => edge > track.scrollLeft + EDGE_TOLERANCE) ?? max;
-  if (direction === -1 && target >= track.scrollLeft - EDGE_TOLERANCE)
-    target =
-      [...edges]
-        .reverse()
-        .find((edge) => edge < track.scrollLeft - EDGE_TOLERANCE) ?? 0;
-  if (direction === 1 && max - target < track.clientWidth * 0.25) target = max;
-  if (direction === -1 && target < track.clientWidth * 0.25) target = 0;
+  const snapDistance = track.clientWidth * END_SNAP_RATIO;
+  if (direction === 1) {
+    // Never settle on the edge already in view; move to the next one.
+    if (target <= track.scrollLeft + EDGE_TOLERANCE) {
+      target =
+        edges.find((edge) => edge > track.scrollLeft + EDGE_TOLERANCE) ?? max;
+    }
+    if (max - target < snapDistance) target = max;
+  } else {
+    if (target >= track.scrollLeft - EDGE_TOLERANCE) {
+      target =
+        [...edges]
+          .reverse()
+          .find((edge) => edge < track.scrollLeft - EDGE_TOLERANCE) ?? 0;
+    }
+    if (target < snapDistance) target = 0;
+  }
   return target;
 }
 
-export function rackClip(
-  track: HTMLElement,
-  selector = FRAME_SELECTOR,
-): string | null {
-  const frame = track.querySelector<HTMLElement>(selector);
-  if (!frame) return null;
-  const radius = Number.parseFloat(getComputedStyle(frame).borderTopLeftRadius);
-  if (!(radius > 0)) return null;
-  const width = track.offsetWidth;
-  const height = track.offsetHeight;
+/** Distance from the top of `track` to the top of `frame`, through offset parents. */
+function offsetTopWithin(frame: HTMLElement, track: HTMLElement): number {
   let offset = 0;
   for (
     let node: HTMLElement | null = frame;
     node && node !== track;
     node = node.offsetParent as HTMLElement | null
-  )
+  ) {
     offset += node.offsetTop;
-  const top = Math.max(0, offset);
-  const bottom = Math.min(height, offset + frame.offsetHeight);
-  const r = Math.min(radius, (bottom - top) / 2, width / 2);
-  if (!(r > 0) || width === 0) return null;
+  }
+  return offset;
+}
+
+/** SVG path that cuts the track to the frame's rounded band, so rounded corners clip the whole rack. */
+function clipPathFor(
+  width: number,
+  height: number,
+  top: number,
+  bottom: number,
+  r: number,
+): string {
   const arc = (x: number, y: number) => `A${r} ${r} 0 0 1 ${x} ${y}`;
   return `path("${[
     `M0 0H${width}V${top}L${width - r} ${top}`,
@@ -91,7 +113,31 @@ export function rackClip(
   ].join("")}")`;
 }
 
-export function useDragScroll(ref: RefObject<HTMLElement | null>) {
+/**
+ * A CSS clip-path that rounds the corners of a carousel frame inside its track, or null when not needed.
+ */
+export function rackClip(
+  track: HTMLElement,
+  selector = FRAME_SELECTOR,
+): string | null {
+  const frame = track.querySelector<HTMLElement>(selector);
+  if (!frame) return null;
+  const radius = Number.parseFloat(getComputedStyle(frame).borderTopLeftRadius);
+  if (!(radius > 0)) return null;
+  const width = track.offsetWidth;
+  const height = track.offsetHeight;
+  const offset = offsetTopWithin(frame, track);
+  const top = Math.max(0, offset);
+  const bottom = Math.min(height, offset + frame.offsetHeight);
+  const r = Math.min(radius, (bottom - top) / 2, width / 2);
+  if (!(r > 0) || width === 0) return null;
+  return clipPathFor(width, height, top, bottom, r);
+}
+
+/**
+ * Lets a mouse drag scroll the referenced horizontal track, suppressing the click that ends a drag.
+ */
+export function useDragScroll(ref: RefObject<HTMLElement | null>): void {
   useEffect(() => {
     const track = ref.current;
     if (!track) return;
@@ -142,7 +188,9 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>) {
 
 let farSight: IntersectionObserver | null = null;
 
-export function watchDistance(frame: HTMLElement) {
+const FAR_ROOT_MARGIN = "50% 25%";
+
+export function watchDistance(frame: HTMLElement): () => void {
   if (typeof IntersectionObserver === "undefined") {
     frame.removeAttribute("data-far");
     return () => {};
@@ -152,7 +200,7 @@ export function watchDistance(frame: HTMLElement) {
       for (const entry of entries)
         entry.target.toggleAttribute("data-far", !entry.isIntersecting);
     },
-    { rootMargin: "50% 25%" },
+    { rootMargin: FAR_ROOT_MARGIN },
   );
   farSight.observe(frame);
   return () => farSight?.unobserve(frame);
@@ -174,6 +222,27 @@ export const PILL_STYLE = {
 
 export const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
 
+function measureBox(chosen: HTMLElement, wrapping: boolean): PillBox {
+  return wrapping
+    ? {
+        height: chosen.offsetHeight,
+        width: chosen.offsetWidth,
+        x: chosen.offsetLeft,
+        y: chosen.offsetTop,
+      }
+    : { width: chosen.offsetWidth, x: chosen.offsetLeft };
+}
+
+function sameBox(a: PillBox, b: PillBox): boolean {
+  return (
+    a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height
+  );
+}
+
+/**
+ * Measures the element matching `selector` inside a list so a pill can slide to it.
+ * Remeasures when `key` changes.
+ */
 export function useSlidingPill<T extends HTMLElement>(
   selector: string,
   key: unknown,
@@ -188,23 +257,8 @@ export function useSlidingPill<T extends HTMLElement>(
     const measure = () => {
       const chosen = list.querySelector<HTMLElement>(selector);
       if (!chosen) return;
-      const next: PillBox = wrapping
-        ? {
-            height: chosen.offsetHeight,
-            width: chosen.offsetWidth,
-            x: chosen.offsetLeft,
-            y: chosen.offsetTop,
-          }
-        : { width: chosen.offsetWidth, x: chosen.offsetLeft };
-      setBox((prev) =>
-        prev &&
-        prev.x === next.x &&
-        prev.y === next.y &&
-        prev.width === next.width &&
-        prev.height === next.height
-          ? prev
-          : next,
-      );
+      const next = measureBox(chosen, wrapping);
+      setBox((prev) => (prev && sameBox(prev, next) ? prev : next));
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;

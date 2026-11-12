@@ -1,5 +1,6 @@
 import { type Context, createContext } from "react";
 
+/** One context per name across duplicate bundled copies of the package, shared through `globalThis`. */
 export function getOrCreateGlobalContext<T>(
   name: string,
   defaultValue: T,

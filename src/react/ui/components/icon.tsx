@@ -4,6 +4,9 @@ import { Icon as IconifyIcon } from "@iconify-icon/react";
 
 import type { IconProps } from "@/react/ui/types";
 
+/**
+ * Renders an icon by name or data.
+ */
 export function Icon({
   className,
   color,
