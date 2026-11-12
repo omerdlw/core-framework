@@ -98,21 +98,42 @@ export function usePendingRouteHold(
   );
 }
 
-export function resolveActiveItem({
-  rawItems,
-  dockItems,
-  pathname,
-  isNotFoundPage,
-  surfaceState,
-  statusState,
-  hasMedia,
-  toggleMedia,
-  mediaAction,
-  actionStackClass,
-  surfaceActions,
-  attention,
-  baseActiveItem: resolvedBaseActiveItem,
-}: {
+/**
+ * Applies the item the dock is currently paying attention to (surface,
+ * status, HUD or operation). Returns `undefined` when nothing has attention
+ * and the item should be resolved normally.
+ */
+function applyAttentionToItem(
+  baseActiveItem: DockItem,
+  attention: DockAttention,
+  surfaceState: SurfaceState,
+  statusState: DockStatusDescriptor | null,
+  surfaceActions: SurfaceViewModelOptions,
+): DockItem | null | undefined {
+  switch (attention?.kind) {
+    case DOCK_ATTENTION_KIND.SURFACE:
+      return applySurfaceToDockItem(
+        baseActiveItem,
+        surfaceState.activeSurfaceEntry,
+        {
+          ...surfaceActions,
+          surfacePhase: surfaceState.surfacePhase,
+          surfaceStack: surfaceState.surfaceStack,
+        },
+      );
+    case DOCK_ATTENTION_KIND.STATUS:
+      return statusState
+        ? applyStatusOverlay(baseActiveItem, statusState)
+        : undefined;
+    case DOCK_ATTENTION_KIND.HUD:
+    case DOCK_ATTENTION_KIND.OPERATION:
+      return baseActiveItem;
+    default:
+      return undefined;
+  }
+}
+
+interface ResolveActiveItemOptions {
   rawItems: DockItem[];
   dockItems: DockItem[];
   pathname: string;
@@ -127,7 +148,27 @@ export function resolveActiveItem({
   isPageLoading: boolean;
   attention: DockAttention;
   baseActiveItem?: DockItem | null;
-}): DockItem | null {
+}
+
+/**
+ * Resolves the item the dock shows: the base route item with the surface,
+ * status or media action that currently has attention applied on top.
+ */
+export function resolveActiveItem({
+  rawItems,
+  dockItems,
+  pathname,
+  isNotFoundPage,
+  surfaceState,
+  statusState,
+  hasMedia,
+  toggleMedia,
+  mediaAction,
+  actionStackClass,
+  surfaceActions,
+  attention,
+  baseActiveItem: resolvedBaseActiveItem,
+}: ResolveActiveItemOptions): DockItem | null {
   const baseActiveItem =
     resolvedBaseActiveItem !== undefined
       ? resolvedBaseActiveItem
@@ -139,25 +180,14 @@ export function resolveActiveItem({
         }).item;
   if (!baseActiveItem) return null;
 
-  if (attention?.kind === DOCK_ATTENTION_KIND.SURFACE)
-    return applySurfaceToDockItem(
-      baseActiveItem,
-      surfaceState.activeSurfaceEntry,
-      {
-        ...surfaceActions,
-        surfacePhase: surfaceState.surfacePhase,
-        surfaceStack: surfaceState.surfaceStack,
-      },
-    );
-  if (attention?.kind === DOCK_ATTENTION_KIND.STATUS && statusState?.isOverlay)
-    return applyStatusOverlay(baseActiveItem, statusState);
-  if (
-    attention?.kind === DOCK_ATTENTION_KIND.HUD ||
-    attention?.kind === DOCK_ATTENTION_KIND.OPERATION
-  )
-    return baseActiveItem;
-  if (attention?.kind === DOCK_ATTENTION_KIND.STATUS && statusState)
-    return applyStatusOverlay(baseActiveItem, statusState);
+  const attentionItem = applyAttentionToItem(
+    baseActiveItem,
+    attention,
+    surfaceState,
+    statusState,
+    surfaceActions,
+  );
+  if (attentionItem !== undefined) return attentionItem;
 
   const itemWithMediaAction = applyMediaAction(
     baseActiveItem,

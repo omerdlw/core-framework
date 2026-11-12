@@ -4,9 +4,15 @@ import { toSearchableText } from "../../lib/element-helpers";
 import { isPathPrefix, isSamePath } from "../../model/paths";
 import type { DockItem } from "../../types";
 
+const NOT_FOUND_PATH = "not-found";
+const NOT_FOUND_TYPE = "NOT_FOUND";
+
+/** True for the dock item that represents the not-found page. */
 export function isNotFoundItem(item: DockItem | null | undefined): boolean {
   return (
-    item?.isNotFound || item?.path === "not-found" || item?.type === "NOT_FOUND"
+    item?.isNotFound ||
+    item?.path === NOT_FOUND_PATH ||
+    item?.type === NOT_FOUND_TYPE
   );
 }
 
@@ -46,7 +52,7 @@ export function buildDockItems({
   isNotFoundPage: boolean;
 }): DockItem[] {
   const baseItems = isNotFoundPage
-    ? rawItems.filter((item) => item.path === "/" || isNotFoundItem(item))
+    ? rawItems.filter((item) => item.path === ROOT_PATH || isNotFoundItem(item))
     : rawItems;
   const flattenedItems = flattenDockItems(baseItems);
   if (expanded && searchQuery)
@@ -59,6 +65,57 @@ export interface DockBaseMatch {
   isFallback: boolean;
 }
 
+const ROOT_PATH = "/";
+const NO_PREFIX_LENGTH = -1;
+
+function findItemByPath(items: DockItem[], normalizedPathname: string) {
+  return items.find(
+    (item) =>
+      isSamePath(item.path, normalizedPathname) ||
+      (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
+  );
+}
+
+function findLongestPrefixItem(
+  rawItems: DockItem[],
+  normalizedPathname: string,
+): DockItem | null {
+  let prefixMatchedRawItem: DockItem | null = null;
+  let longestPrefixLength = NO_PREFIX_LENGTH;
+  for (let i = 0; i < rawItems.length; i++) {
+    const candidatePath = normalizePath(rawItems[i]?.path);
+    if (
+      candidatePath.length > longestPrefixLength &&
+      isPathPrefix(candidatePath, normalizedPathname)
+    ) {
+      prefixMatchedRawItem = rawItems[i];
+      longestPrefixLength = candidatePath.length;
+    }
+  }
+  return prefixMatchedRawItem;
+}
+
+function resolvePrefixMatch(
+  prefixMatchedRawItem: DockItem,
+  dockItems: DockItem[],
+): DockBaseMatch {
+  const item =
+    dockItems.find(
+      (entry) =>
+        isSamePath(entry?.path, prefixMatchedRawItem.path) ||
+        (entry?.name && entry.name === prefixMatchedRawItem.name),
+    ) || prefixMatchedRawItem;
+  return {
+    item,
+    isFallback: normalizePath(prefixMatchedRawItem.path) === ROOT_PATH,
+  };
+}
+
+/**
+ * Finds the dock item for a pathname: selected data source, exact match,
+ * then the longest path prefix. `isFallback` marks a match that is only the
+ * root or first item.
+ */
 export function resolveBaseActiveItemMatch({
   rawItems,
   dockItems,
@@ -84,45 +141,18 @@ export function resolveBaseActiveItemMatch({
   if (isNotFoundPage)
     return matched(rawItems.find(isNotFoundItem) || rawItems[0] || null);
 
-  const matchInDock = dockItems.find(
-    (item) =>
-      isSamePath(item.path, normalizedPathname) ||
-      (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
-  );
+  const matchInDock = findItemByPath(dockItems, normalizedPathname);
   if (matchInDock) return matched(matchInDock);
 
-  const matchInRaw = rawItems.find(
-    (item) =>
-      isSamePath(item.path, normalizedPathname) ||
-      (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
-  );
+  const matchInRaw = findItemByPath(rawItems, normalizedPathname);
   if (matchInRaw) return matched(matchInRaw);
 
-  let prefixMatchedRawItem: DockItem | null = null;
-  let longestPrefixLength = -1;
-  for (let i = 0; i < rawItems.length; i++) {
-    const candidatePath = normalizePath(rawItems[i]?.path);
-    if (
-      candidatePath.length > longestPrefixLength &&
-      isPathPrefix(candidatePath, normalizedPathname)
-    ) {
-      prefixMatchedRawItem = rawItems[i];
-      longestPrefixLength = candidatePath.length;
-    }
-  }
-
-  if (prefixMatchedRawItem) {
-    const item =
-      dockItems.find(
-        (entry) =>
-          isSamePath(entry?.path, prefixMatchedRawItem?.path) ||
-          (entry?.name && entry.name === prefixMatchedRawItem?.name),
-      ) || prefixMatchedRawItem;
-    return {
-      item,
-      isFallback: normalizePath(prefixMatchedRawItem.path) === "/",
-    };
-  }
+  const prefixMatchedRawItem = findLongestPrefixItem(
+    rawItems,
+    normalizedPathname,
+  );
+  if (prefixMatchedRawItem)
+    return resolvePrefixMatch(prefixMatchedRawItem, dockItems);
   return { item: rawItems[0] || null, isFallback: true };
 }
 

@@ -13,6 +13,9 @@ import type {
 } from "../types";
 
 export type DockCommandEntry = DockActionDescriptor & { key: string };
+const ON_CLICK_FIELD = "onClick";
+const DEFAULT_ACTION_KEY = "dock-action";
+
 type DockCommandEntries = Record<string, DockCommandEntry>;
 type DockCommandInput =
   DockActionDescriptor | DockActionDescriptor[] | null | undefined;
@@ -28,6 +31,25 @@ function createCommandEntries(commands: DockCommandInput): DockCommandEntries {
     entries[key] = { key, ...command };
   }
   return entries;
+}
+
+/**
+ * Compares the fields named by `fieldsOf`. `onClick` handlers are compared by
+ * type only, so a re-created inline handler does not count as a change.
+ */
+function haveSameCommandFields(
+  left: Partial<DockCommandEntry>,
+  right: Partial<DockCommandEntry>,
+  fieldsOf: Partial<DockCommandEntry>,
+): boolean {
+  for (const field of Object.keys(fieldsOf) as (keyof DockCommandEntry)[]) {
+    if (field === ON_CLICK_FIELD) {
+      if (typeof left[field] !== typeof right[field]) return false;
+    } else if (left[field] !== right[field]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function areCommandEntriesEqual(
@@ -46,16 +68,8 @@ function areCommandEntriesEqual(
 
     if (!currentEntry || !nextEntry) return false;
 
-    for (const entryKey of Object.keys(
-      nextEntry,
-    ) as (keyof DockCommandEntry)[]) {
-      if (entryKey === "onClick") {
-        if (typeof currentEntry[entryKey] !== typeof nextEntry[entryKey])
-          return false;
-      } else if (currentEntry[entryKey] !== nextEntry[entryKey]) {
-        return false;
-      }
-    }
+    if (!haveSameCommandFields(currentEntry, nextEntry, nextEntry))
+      return false;
   }
 
   return true;
@@ -69,22 +83,7 @@ function registerDockCommand(
   const existing = currentEntries[key];
 
   if (existing) {
-    let isSame = true;
-    for (const entryKey of Object.keys(
-      command,
-    ) as (keyof DockActionDescriptor)[]) {
-      if (entryKey === "onClick") {
-        if (typeof command[entryKey] !== typeof existing[entryKey]) {
-          isSame = false;
-          break;
-        }
-      } else if (existing[entryKey] !== command[entryKey]) {
-        isSame = false;
-        break;
-      }
-    }
-
-    if (isSame) {
+    if (haveSameCommandFields(existing, command, command)) {
       if (command.onClick && existing.onClick !== command.onClick) {
         return {
           ...currentEntries,
@@ -162,6 +161,10 @@ export function useDockCommandRegistry() {
   return { actions, contextActions: contextCommands };
 }
 
+/**
+ * Registers the given actions as dock context actions while the component is
+ * mounted and removes the ones that are no longer passed.
+ */
 export function useDockContextActions(
   actions: Partial<DockActionDescriptor> | Partial<DockActionDescriptor>[],
 ) {
@@ -191,15 +194,13 @@ export function useDockContextActions(
   }, [unregisterContextAction]);
 }
 
-export function defineDockAction(
-  definition: DefineDockActionOptions = {},
-): DockActionDefinition {
+function resolveActionSettings(definition: DefineDockActionOptions) {
   const {
     badge = null,
     className = null,
     disabled = false,
     icon = null,
-    key = "dock-action",
+    key = DEFAULT_ACTION_KEY,
     onClick = null,
     order = 0,
     tone = null,
@@ -208,6 +209,32 @@ export function defineDockAction(
     ...extraConfig
   } = definition;
 
+  return {
+    badge,
+    className,
+    disabled,
+    extraConfig,
+    icon,
+    key,
+    onClick,
+    order,
+    tone,
+    tooltip,
+    visible,
+  };
+}
+
+/**
+ * Defines a reusable dock action. `create` builds the descriptor (a function
+ * argument is treated as the click handler) and `use()` registers it as a
+ * context action while the calling component is mounted.
+ */
+export function defineDockAction(
+  definition: DefineDockActionOptions = {},
+): DockActionDefinition {
+  const settings = resolveActionSettings(definition);
+  const { extraConfig, key } = settings;
+
   const createAction = (
     overrides: DockActionOverrides = {},
   ): DockActionDescriptor => {
@@ -215,15 +242,15 @@ export function defineDockAction(
       typeof overrides === "function" ? { onClick: overrides } : overrides;
     return {
       key,
-      icon,
-      tooltip,
-      order,
-      disabled,
-      visible,
-      badge,
-      className,
-      tone,
-      onClick,
+      icon: settings.icon,
+      tooltip: settings.tooltip,
+      order: settings.order,
+      disabled: settings.disabled,
+      visible: settings.visible,
+      badge: settings.badge,
+      className: settings.className,
+      tone: settings.tone,
+      onClick: settings.onClick,
       ...extraConfig,
       ...resolvedOverrides,
     };
@@ -232,16 +259,16 @@ export function defineDockAction(
   return Object.freeze({
     bind: createAction,
     config: {
-      badge,
-      className,
-      disabled,
-      icon,
+      badge: settings.badge,
+      className: settings.className,
+      disabled: settings.disabled,
+      icon: settings.icon,
       key,
-      onClick,
-      order,
-      tone,
-      tooltip,
-      visible,
+      onClick: settings.onClick,
+      order: settings.order,
+      tone: settings.tone,
+      tooltip: settings.tooltip,
+      visible: settings.visible,
       ...extraConfig,
     },
     create: createAction,

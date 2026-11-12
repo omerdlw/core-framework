@@ -13,6 +13,10 @@ import type { DockNavigateOptions } from "../../types";
 import { useDockDisplay } from "../display";
 import { useDockLayout } from "./use-dock-layout";
 
+/**
+ * Main dock hook: the resolved dock items, active item, expansion and search
+ * state, and a guarded `navigate`. Used by the dock UI and custom docks.
+ */
 export function useDock() {
   const {
     closeSurface,

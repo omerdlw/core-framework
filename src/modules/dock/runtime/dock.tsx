@@ -19,7 +19,14 @@ import { useDockBreadcrumbs } from "../routing/breadcrumbs";
 import { useDockViewConnection } from "../routing/navigation";
 import { useIsSurfaceExtensionsVisible } from "../surface/hooks/use-surface-extensions";
 import { useDock } from "./hooks/use-dock";
-import { getIsItemActive, getItemKey } from "./pipeline";
+import {
+  createDockCardProps,
+  dismissSurfaceFromOutside,
+  NO_FOCUSED_INDEX,
+  OUTSIDE_DISMISS_HANDLED,
+  resolveDockContentKey,
+} from "./model/cards";
+import { isNotFoundItem } from "./model/items";
 
 export function useDockModel() {
   const {
@@ -47,7 +54,7 @@ export function useDockModel() {
   );
   const { clearHud } = useDockActions();
   const [isStackHovered, setIsStackHovered] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [focusedIndex, setFocusedIndex] = useState(NO_FOCUSED_INDEX);
   const isNotificationVisible = useDockNotificationVisible();
   const dockRef = useRef<HTMLDivElement>(null);
   const { portalTarget, stackWidth } = useDockViewport(activeItem);
@@ -73,11 +80,7 @@ export function useDockModel() {
   const isBreadcrumbsCardVisible = scene.companion === "breadcrumbs";
   const isSubCardVisible = scene.isCompanionVisible;
   const isExtensionsVisible = useIsSurfaceExtensionsVisible(activeItem);
-  const contentKey = activeItem?.isSurface
-    ? `surface:${activeItem.surfaceId ?? activeItem.path ?? "active"}`
-    : isHudActive
-      ? `hud:${hud?.id || "active"}`
-      : `route:${activeItem?.path || activeItem?.name || "default"}`;
+  const contentKey = resolveDockContentKey(activeItem, isHudActive, hud);
   const { containerHeight, handleContentHeightChange } =
     useDockHeightController({
       contentKey,
@@ -102,17 +105,8 @@ export function useDockModel() {
   }
   const surfaceResizeDistance = stackSize.resizeDistance;
   const handleOutsideDismiss = useCallback(() => {
-    if (activeItem?.isSurface) {
-      if (activeItem.dismissible === false) return;
-      if (typeof activeItem.closeAllSurfaces === "function") {
-        activeItem.closeAllSurfaces();
-        return;
-      }
-      if (typeof activeItem.closeSurface === "function") {
-        activeItem.closeSurface();
-        return;
-      }
-    }
+    const outcome = dismissSurfaceFromOutside(activeItem);
+    if (outcome === OUTSIDE_DISMISS_HANDLED) return;
     if (isOverlayActive) return;
     setExpanded(false);
   }, [activeItem, isOverlayActive, setExpanded]);
@@ -129,7 +123,7 @@ export function useDockModel() {
   useEffect(() => {
     queueMicrotask(() => {
       clearHoverState();
-      setFocusedIndex(expanded ? activeIndex : -1);
+      setFocusedIndex(expanded ? activeIndex : NO_FOCUSED_INDEX);
     });
   }, [activeIndex, clearHoverState, expanded]);
   useEffect(() => {
@@ -139,81 +133,29 @@ export function useDockModel() {
       clearHoverState();
     });
   }, [clearHoverState, isFullscreenStateActive, setExpanded]);
-  const isNotFound = Boolean(
-    activeItem?.isNotFound ||
-    activeItem?.path === "not-found" ||
-    activeItem?.type === "NOT_FOUND",
-  );
+  const isNotFound = Boolean(isNotFoundItem(activeItem));
   const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
   const statusStyle =
     isStatusActive && !isNotFound ? activeItem?.style || null : null;
-  const visibleDockItems = dockItems;
-  const positionedDockItems = visibleDockItems
-    .map((item, index) => ({
-      item,
-      key: getItemKey(item, index),
-      position: index,
-    }))
-    .sort((left, right) => left.key.localeCompare(right.key));
-  const dockCardProps = positionedDockItems.map(({ item, key, position }) => {
-    const isTop = position === 0;
-    const isActive = getIsItemActive(item, activeItem);
-    const canTopCardPreview = !isStatusActive;
-
-    const handleMouseEnter = () => {
-      if (expanded) setFocusedIndex(position);
-      if (!isTop || !canTopCardPreview) return;
-      setIsStackHovered(true);
-      setIsHovered(true);
-    };
-
-    const handleMouseLeave = () => {
-      if (expanded) setFocusedIndex(-1);
-      if (!isTop || !canTopCardPreview) return;
-      setIsStackHovered(false);
-      setIsHovered(false);
-    };
-
-    const handleClick = () => {
-      if (item.isOverlay || isStatusActive || item.isStatus) return;
-      if (!expanded) {
-        clearHoverState();
-        setExpanded(true);
-        return;
-      }
-      const targetPath = item.targetPath || item.path;
-      if (targetPath)
-        void navigate(targetPath, {
-          item,
-        });
-    };
-
-    return {
-      key,
-      item,
-      link: item,
-      activeItem,
-      expanded,
-      position,
-      isTop,
-      isActive,
-      isStackHovered,
-      hasExtensions: isExtensionsVisible,
-      isSurfaceActive: Boolean(
-        activeItem?.isSurface &&
-        activeItem?.surfacePhase !== DOCK_SURFACE_PHASE.RESTORING_HEADER,
-      ),
-      statusStyle,
-      isStatusActive,
-      isHudActive,
-      hud,
-      clearHud,
-      contextCommands: contextActions,
-      onMouseEnter: handleMouseEnter,
-      onMouseLeave: handleMouseLeave,
-      onClick: handleClick,
-      onContentHeightChange: isTop ? handleContentHeightChange : null,
-    };
+  const dockCardProps = createDockCardProps({
+    activeItem,
+    clearHud,
+    clearHoverState,
+    contextActions,
+    dockItems,
+    expanded,
+    handleContentHeightChange,
+    hud,
+    isExtensionsVisible,
+    isHudActive,
+    isStackHovered,
+    isStatusActive,
+    navigate,
+    setExpanded,
+    setFocusedIndex,
+    setIsHovered,
+    setIsStackHovered,
+    statusStyle,
   });
   const dockMotion = useDockMotion();
   const dockStackTransition = useMemo(
