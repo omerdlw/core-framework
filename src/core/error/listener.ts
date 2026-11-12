@@ -9,6 +9,10 @@ import { ERROR_LISTENER_CONFIG } from "./constants";
 import { getErrorReporter } from "./reporter";
 import { getErrorMessage, shouldIgnoreError } from "./utils";
 
+/**
+ * Listens for uncaught window errors and unhandled rejections, then reports
+ * them and emits an app error event (throttled and de-duplicated).
+ */
 export function GlobalErrorListener(): null {
   const lastError = useRef<number>(0);
   const count = useRef<number>(0);

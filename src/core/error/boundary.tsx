@@ -21,6 +21,11 @@ import type {
 } from "./types";
 import { createErrorContext } from "./utils";
 
+const ERROR_ICON = "solar:danger-circle-bold";
+const ERROR_ICON_SIZE = 30;
+const RETRY_LABEL = "Try again";
+
+// Button's own prop types do not expose the plain button props used here.
 const ActionButton = Button as React.ComponentType<{
   children?: ReactNode;
   className?: string;
@@ -28,22 +33,24 @@ const ActionButton = Button as React.ComponentType<{
   type?: "button" | "submit" | "reset";
 }>;
 
-function DefaultErrorFallback({
-  error,
-  message,
-  resetError,
-}: {
+interface DefaultErrorFallbackProps {
   error: Error | null;
   message?: string;
   resetError: () => void;
   title?: string;
-}) {
+}
+
+function DefaultErrorFallback({
+  error,
+  message,
+  resetError,
+}: DefaultErrorFallbackProps) {
   const theme = useTheme(errorTheme);
 
   return (
     <div className={theme.slots.screen}>
       <div className={theme.slots.icon}>
-        <Icon icon={"solar:danger-circle-bold"} size={30} />
+        <Icon icon={ERROR_ICON} size={ERROR_ICON_SIZE} />
       </div>
       <h3 className={theme.slots.title}>
         {message ||
@@ -54,12 +61,16 @@ function DefaultErrorFallback({
         onClick={resetError}
         type="button"
       >
-        Try again
+        {RETRY_LABEL}
       </ActionButton>
     </div>
   );
 }
 
+/**
+ * Base React error boundary: catches render errors, reports them, and renders a
+ * fallback until reset.
+ */
 export class ErrorBoundaryCore extends React.Component<
   ErrorBoundaryCoreProps,
   ErrorBoundaryCoreState
@@ -158,6 +169,9 @@ export class ErrorBoundaryCore extends React.Component<
   }
 }
 
+/**
+ * Application-wide error boundary that resets when the route changes.
+ */
 export function GlobalError({ children, fallback, onReset }: GlobalErrorProps) {
   const pathname = usePathname();
 
@@ -175,6 +189,9 @@ export function GlobalError({ children, fallback, onReset }: GlobalErrorProps) {
   );
 }
 
+/**
+ * Error boundary scoped to a single module, labelled with its name.
+ */
 export function ModuleError({
   children,
   fallback,
@@ -195,6 +212,9 @@ export function ModuleError({
   );
 }
 
+/**
+ * Inline error boundary for a single component or section.
+ */
 export function ComponentError({
   children,
   fallback,

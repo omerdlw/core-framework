@@ -13,6 +13,9 @@ import {
 } from "@/core/kernel";
 import { ModuleMotionConfig } from "@/react/theme";
 
+const DEFAULT_TOOLTIP_DELAY = 300;
+const DEFAULT_TOOLTIP_SKIP_DELAY = 150;
+
 interface CoreTooltipConfig {
   delayDuration?: number;
   skipDelayDuration?: number;
@@ -24,13 +27,12 @@ interface CoreProviderSlots {
   overlays?: ReactNode;
 }
 
-function ModuleBoundary({
-  children,
-  name,
-}: {
+interface ModuleBoundaryProps {
   children?: ReactNode;
   name?: string;
-}): JSX.Element {
+}
+
+function ModuleBoundary({ children, name }: ModuleBoundaryProps): JSX.Element {
   return (
     <ModuleError name={name}>
       <ModuleMotionConfig>{children}</ModuleMotionConfig>
@@ -38,6 +40,23 @@ function ModuleBoundary({
   );
 }
 
+function resolveTooltipConfig(
+  tooltip: boolean | CoreTooltipConfig,
+): CoreTooltipConfig | null {
+  if (tooltip === false) return null;
+
+  const custom = typeof tooltip === "object" ? tooltip : {};
+
+  return {
+    delayDuration: custom.delayDuration || DEFAULT_TOOLTIP_DELAY,
+    skipDelayDuration: custom.skipDelayDuration || DEFAULT_TOOLTIP_SKIP_DELAY,
+  };
+}
+
+/**
+ * Props for {@link CoreProvider}: the modules to host, extra providers and
+ * registry entries, content slots and tooltip configuration.
+ */
 export interface CoreProviderProps {
   children: ReactNode;
   modules: readonly AnyCoreModule[];
@@ -48,6 +67,10 @@ export interface CoreProviderProps {
   tooltip?: boolean | CoreTooltipConfig;
 }
 
+/**
+ * Root provider that mounts the global error boundary, tooltips, the module
+ * host and any extra providers around the application.
+ */
 export function CoreProvider({
   children,
   modules,
@@ -57,18 +80,7 @@ export function CoreProvider({
   slots,
   tooltip = true,
 }: CoreProviderProps): JSX.Element {
-  const tooltipConfig = useMemo(
-    () =>
-      tooltip === false
-        ? null
-        : {
-            delayDuration:
-              (typeof tooltip === "object" && tooltip.delayDuration) || 300,
-            skipDelayDuration:
-              (typeof tooltip === "object" && tooltip.skipDelayDuration) || 150,
-          },
-    [tooltip],
-  );
+  const tooltipConfig = useMemo(() => resolveTooltipConfig(tooltip), [tooltip]);
 
   const providerPipeline = useMemo<readonly ProviderEntry[]>(
     () => [

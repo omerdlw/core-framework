@@ -1,3 +1,6 @@
+/**
+ * Default user-facing copy for the global, module and component error screens.
+ */
 export const ERROR_MESSAGES = Object.freeze({
   GLOBAL_TITLE: "Something went wrong",
   GLOBAL_MSG: "We ran into an unexpected problem. Please try again",
@@ -8,10 +11,22 @@ export const ERROR_MESSAGES = Object.freeze({
   FALLBACK_MSG: "This section couldn't be loaded. Please try again",
 } as const);
 
+/**
+ * Maximum number of distinct context keys an error reporter keeps.
+ */
 export const MAX_CONTEXT = 10;
+/**
+ * Maximum number of recent error fingerprints kept for de-duplication.
+ */
 export const MAX_FINGERPRINTS = 100;
+/**
+ * Default de-duplication window for repeated errors, in milliseconds.
+ */
 export const DEFAULT_DEDUPE_WINDOW = 60000;
 
+/**
+ * Limits and ignore patterns used by the global error listener.
+ */
 export const ERROR_LISTENER_CONFIG = Object.freeze({
   maxErrors: 10,
   throttle: 2000,

@@ -82,10 +82,21 @@ class ErrorReporter {
     this.ensureDefaultHandlers();
 
     const context = { ...this.context, ...extraContext };
-    let report = createReport(error, { context, tags: { ...this.tags } });
-    const dedupeKey = report.fingerprint;
+    const report = createReport(error, { context, tags: { ...this.tags } });
 
-    if (this.seen.has(dedupeKey)) return;
+    if (!this.remember(report.fingerprint)) return;
+
+    const outgoing = this.transform(report);
+    if (!outgoing) return;
+
+    this.dispatch(outgoing);
+
+    return outgoing;
+  }
+
+  /** Records a fingerprint for the dedupe window; false when already seen. */
+  private remember(dedupeKey: string): boolean {
+    if (this.seen.has(dedupeKey)) return false;
 
     if (this.seen.size >= MAX_FINGERPRINTS) {
       const first = this.seen.keys().next().value;
@@ -95,21 +106,26 @@ class ErrorReporter {
     this.seen.add(dedupeKey);
     setTimeout(() => this.seen.delete(dedupeKey), this.dedupeWindow);
 
-    if (typeof this.beforeSend === "function") {
-      try {
-        const transformed = this.beforeSend(report);
-        if (!transformed) return;
-        report = transformed;
-      } catch {}
-    }
+    return true;
+  }
 
+  /** Runs beforeSend; a throwing hook leaves the report unchanged. */
+  private transform(report: ErrorReport): ErrorReport | null {
+    if (typeof this.beforeSend !== "function") return report;
+
+    try {
+      return this.beforeSend(report);
+    } catch {
+      return report;
+    }
+  }
+
+  private dispatch(report: ErrorReport): void {
     this.handlers.forEach((handler) => {
       try {
         handler.handle(report);
       } catch {}
     });
-
-    return report;
   }
 
   captureMessage(
@@ -143,12 +159,20 @@ type GlobalWithReporter = typeof globalThis & {
 
 const _global = globalThis as GlobalWithReporter;
 
+/**
+ * Returns the shared error reporter, creating it with the given options on
+ * first use.
+ */
 export function getErrorReporter(
   options: ErrorReporterOptions = {},
 ): ErrorReporter {
   return (_global[GLOBAL_REPORTER_KEY] ??= new ErrorReporter(options));
 }
 
+/**
+ * Creates a reporter handler that logs errors to the console outside
+ * production.
+ */
 export function createConsoleHandler(): ErrorReporterHandler {
   return {
     name: "console",
@@ -163,44 +187,58 @@ export function createConsoleHandler(): ErrorReporterHandler {
   };
 }
 
-export function createSentryHandler(Sentry: unknown): ErrorReporterHandler {
-  const sentryObj = Sentry as {
-    captureException?: (err: Error) => void;
-    withScope?: (cb: (scope: SentryScope) => void) => void;
-  } | null;
+interface SentryApi {
+  captureException: (err: Error) => void;
+  withScope: (cb: (scope: SentryScope) => void) => void;
+}
 
-  if (
-    !sentryObj ||
-    typeof sentryObj.captureException !== "function" ||
-    typeof sentryObj.withScope !== "function"
-  ) {
-    return createConsoleHandler();
+function isSentryApi(value: unknown): value is SentryApi {
+  const candidate = value as Partial<SentryApi> | null;
+  return (
+    !!candidate &&
+    typeof candidate.captureException === "function" &&
+    typeof candidate.withScope === "function"
+  );
+}
+
+function applyReportToScope(scope: SentryScope, report: ErrorReport): void {
+  if (report.fingerprint) scope.setFingerprint([report.fingerprint]);
+  if (report.user) scope.setUser(report.user);
+
+  if (report.tags && typeof report.tags === "object") {
+    Object.entries(report.tags).forEach(([key, value]) =>
+      scope.setTag(key, String(value)),
+    );
   }
+
+  if (report.environment) scope.setContext("environment", report.environment);
+  if (report.context) scope.setContext("custom", report.context);
+  if (report.componentStack)
+    scope.setExtra("componentStack", report.componentStack);
+}
+
+function toSentryError(report: ErrorReport): Error {
+  const error = new Error(report.error.message);
+  error.name = report.error.name || "Error";
+  error.stack = report.error.stack || undefined;
+  return error;
+}
+
+/**
+ * Creates a reporter handler that forwards errors to Sentry, falling back to
+ * the console handler when Sentry is unusable.
+ */
+export function createSentryHandler(Sentry: unknown): ErrorReporterHandler {
+  // The argument is untyped on purpose (window.Sentry or a user-supplied
+  // client); isSentryApi narrows it before use.
+  if (!isSentryApi(Sentry)) return createConsoleHandler();
 
   return {
     name: "sentry",
     handle(report: ErrorReport) {
-      sentryObj.withScope!((scope: SentryScope) => {
-        if (report.fingerprint) scope.setFingerprint([report.fingerprint]);
-        if (report.user) scope.setUser(report.user);
-
-        if (report.tags && typeof report.tags === "object") {
-          Object.entries(report.tags).forEach(([key, value]) =>
-            scope.setTag(key, String(value)),
-          );
-        }
-
-        if (report.environment)
-          scope.setContext("environment", report.environment);
-        if (report.context) scope.setContext("custom", report.context);
-        if (report.componentStack)
-          scope.setExtra("componentStack", report.componentStack);
-
-        const error = new Error(report.error.message);
-        error.name = report.error.name || "Error";
-        error.stack = report.error.stack || undefined;
-
-        sentryObj.captureException!(error);
+      Sentry.withScope((scope: SentryScope) => {
+        applyReportToScope(scope, report);
+        Sentry.captureException(toSentryError(report));
       });
     },
   };

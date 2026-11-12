@@ -1,5 +1,8 @@
 import type { ErrorInfo, ReactNode } from "react";
 
+/**
+ * Metadata describing where and when an error boundary caught an error.
+ */
 export interface ErrorContextData {
   [key: string]: unknown;
   componentStack: string | null;
@@ -11,6 +14,9 @@ export interface ErrorContextData {
   variant: string;
 }
 
+/**
+ * Snapshot of the browser environment attached to an error report.
+ */
 export interface BrowserEnvironment {
   [key: string]: unknown;
   language: string | null;
@@ -21,6 +27,9 @@ export interface BrowserEnvironment {
   userAgent: string | null;
 }
 
+/**
+ * A normalized error report passed to error reporter handlers.
+ */
 export interface ErrorReport {
   componentStack: string | null;
   context: Record<string, unknown>;
@@ -36,11 +45,17 @@ export interface ErrorReport {
   user?: unknown;
 }
 
+/**
+ * A named sink that receives error reports, such as the console or Sentry.
+ */
 export interface ErrorReporterHandler {
   name: string;
   handle: (report: ErrorReport) => void;
 }
 
+/**
+ * Options for the error reporter: sampling, de-duplication and a pre-send hook.
+ */
 export interface ErrorReporterOptions {
   beforeSend?: ((report: ErrorReport) => ErrorReport | null) | null;
   deduplicateWindow?: number;
@@ -48,11 +63,18 @@ export interface ErrorReporterOptions {
   sampleRate?: number;
 }
 
+/**
+ * Render function for a custom error fallback; receives the error and a reset
+ * callback.
+ */
 export type ErrorFallbackRender = (props: {
   error: Error | null;
   resetError: () => void;
 }) => ReactNode;
 
+/**
+ * Props for ErrorBoundaryCore, the base error boundary.
+ */
 export interface ErrorBoundaryCoreProps {
   children?: ReactNode;
   fallback?: ReactNode | ErrorFallbackRender;
@@ -70,6 +92,9 @@ export interface ErrorBoundaryCoreProps {
   variant?: "default" | "full" | "module" | "inline" | string;
 }
 
+/**
+ * Internal state of ErrorBoundaryCore.
+ */
 export interface ErrorBoundaryCoreState {
   error: Error | null;
   errorInfo: ErrorInfo | null;
@@ -77,12 +102,18 @@ export interface ErrorBoundaryCoreState {
   lastResetKey?: unknown;
 }
 
+/**
+ * Props for GlobalError.
+ */
 export interface GlobalErrorProps {
   children?: ReactNode;
   fallback?: ReactNode | ErrorFallbackRender;
   onReset?: () => void;
 }
 
+/**
+ * Props for ModuleError.
+ */
 export interface ModuleErrorProps {
   children?: ReactNode;
   fallback?: ReactNode | ErrorFallbackRender;
@@ -90,6 +121,9 @@ export interface ModuleErrorProps {
   onReset?: () => void;
 }
 
+/**
+ * Props for ComponentError.
+ */
 export interface ComponentErrorProps {
   children?: ReactNode;
   fallback?: ReactNode | ErrorFallbackRender;
@@ -97,6 +131,9 @@ export interface ComponentErrorProps {
   onReset?: () => void;
 }
 
+/**
+ * The subset of the Sentry scope API the Sentry handler uses.
+ */
 export interface SentryScope {
   setContext: (name: string, context: Record<string, unknown>) => void;
   setExtra: (key: string, extra: unknown) => void;
