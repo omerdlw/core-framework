@@ -17,7 +17,7 @@ import {
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";
 import { applyStatusOverlay } from "../status/model";
-import { applyMediaAction } from "../hooks/apply-media-action";
+import { applyMediaAction } from "../components/media-action";
 import type {
   DockAttention,
   DockItem,

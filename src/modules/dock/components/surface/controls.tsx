@@ -13,7 +13,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
-import { DockSurfaceHeaderRadiusContext } from "../../surface/hooks/use-surface-header-button-model";
+import { DockSurfaceHeaderRadiusContext } from "../../surface/context";
 import { useDockSurfaceControlsModel } from "../../surface/hooks/use-surface-controls-model";
 import { getDockLayoutTransition, useDockMotion } from "../../motion";
 import type { DockItem } from "../../types";

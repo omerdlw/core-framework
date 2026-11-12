@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useCallback, useEffect, useMemo } from "react";
+import { use, useCallback, useEffect, useMemo, createContext } from "react";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
 import type {
-  NormalizedSurfaceExtension,
   DockSlotContent,
+  NormalizedSurfaceExtension,
   SurfaceId,
+  SurfaceFlowContextValue,
 } from "../types";
 import { normalizeSurfaceExtension } from "./helpers";
 
@@ -234,3 +235,11 @@ export class SurfaceExtensionsStore {
     this.notify();
   };
 }
+
+export const SurfaceFlowContext = createContext<SurfaceFlowContextValue | null>(
+  null,
+);
+
+export const DockSurfaceHeaderRadiusContext = createContext<string | null>(
+  null,
+);

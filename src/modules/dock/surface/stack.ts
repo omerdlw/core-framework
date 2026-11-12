@@ -20,7 +20,7 @@ import type {
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { focusDockElement, shouldRestoreDockFocus } from "../lib/dom";
 import { createDockScheduler } from "../lib/helpers";
-import { isValidComponentType } from "../hooks/element-helpers";
+import { isValidComponentType } from "../lib/element-helpers";
 import { createSurfaceEntryDefinition, createSurfaceError } from "./definition";
 import { IS_BROWSER, getSurfaceUrlValue, syncSurfaceUrl } from "./model/url";
 import {

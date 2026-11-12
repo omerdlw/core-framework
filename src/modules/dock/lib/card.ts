@@ -1,3 +1,4 @@
+import type { SyntheticEvent } from "react";
 import { isInlineActionPathMatch } from "../model/paths";
 import type { DockItem, DockSlotContent } from "../types";
 import { DOCK_SURFACE_PHASE } from "../constants";
@@ -15,6 +16,15 @@ export function isSurfaceLayerShown(
     item?.isSurface && !PAGE_FACING_SURFACE_PHASES.has(item.surfacePhase ?? ""),
   );
 }
+
+export const stopAndPrevent = (event: SyntheticEvent) => {
+  event.stopPropagation();
+  event.preventDefault();
+};
+
+export const stopPropagationOnly = (event: SyntheticEvent) => {
+  event.stopPropagation();
+};
 
 export function shouldShowMediaIcon({
   isActive,

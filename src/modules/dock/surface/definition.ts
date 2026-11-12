@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy } from "react";
+import { lazy, useCallback, useMemo } from "react";
 import { DOCK_SURFACE_FLOW_STATUS } from "../constants";
 import {
   createSurfaceReturnHandshake,
@@ -11,6 +11,7 @@ import type {
   BoundSurfaceFactory,
   DefineStepSurfaceOptions,
   DockComponentProps,
+  GeneralSurfaceHandle,
   NormalizedSurfaceDefinition,
   OpenSurfaceOptions,
   SurfaceBuilderDefinition,
@@ -22,10 +23,14 @@ import type {
   SurfaceFlowSession,
   SurfaceHandle,
   SurfaceInput,
+  SurfaceOpenFn,
   SurfaceResult,
+  SurfaceStep,
+  UseSurfaceInput,
 } from "../types";
-import { normalizeSurfaceDefinition } from "./hooks/normalize";
-import { useSurface } from "./hooks/use-surface";
+import { useDockActions, useDockSelector } from "../context";
+import { EMPTY_SURFACE_STACK } from "./model/records";
+import { normalizeSurfaceDefinition } from "./model/normalize";
 
 export function createSurfaceEntryDefinition(
   input: SurfaceInput | unknown,
@@ -136,6 +141,83 @@ export function createInlineSurfaceEntry(
   );
 }
 
+export function useSurface(
+  surfaceDefinition?: UseSurfaceInput | null,
+): SurfaceHandle | GeneralSurfaceHandle {
+  const { closeAllSurfaces, closeSurface, openSurface } = useDockActions();
+  const rawSurfaceStack: GeneralSurfaceHandle["surfaceStack"] = useDockSelector(
+    (s) => s.surfaceStack,
+  );
+  const surfaceStack = rawSurfaceStack || EMPTY_SURFACE_STACK;
+
+  const specificSurface = useMemo((): SurfaceHandle | null => {
+    if (!surfaceDefinition) return null;
+
+    const targetComponent =
+      typeof surfaceDefinition === "string"
+        ? null
+        : typeof surfaceDefinition === "function"
+          ? surfaceDefinition.component || surfaceDefinition
+          : surfaceDefinition.component || null;
+
+    const matchingEntry =
+      surfaceStack.find(
+        (entry) => targetComponent && entry.component === targetComponent,
+      ) ?? null;
+    const isThisSurfaceOpen = Boolean(matchingEntry);
+
+    const open: SurfaceOpenFn = (props, overrides) => {
+      const entry: SurfaceDescriptor =
+        typeof surfaceDefinition === "function"
+          ? surfaceDefinition(props, overrides)
+          : typeof surfaceDefinition === "string"
+            ? { id: surfaceDefinition, props, ...overrides }
+            : {
+                ...surfaceDefinition,
+                props: { ...(surfaceDefinition.props || {}), ...props },
+                ...overrides,
+              };
+      return openSurface(entry);
+    };
+
+    const close = (res?: SurfaceResult) =>
+      closeSurface(res, matchingEntry?.id ?? null);
+    const result = [
+      open,
+      {
+        close,
+        closeAll: closeAllSurfaces,
+        isOpen: isThisSurfaceOpen,
+        surfaceStack,
+      },
+    ] as SurfaceHandle;
+    result.open = open;
+    result.close = close;
+    result.closeAll = closeAllSurfaces;
+    result.isOpen = isThisSurfaceOpen;
+    result.surfaceStack = surfaceStack;
+    return result;
+  }, [
+    closeAllSurfaces,
+    closeSurface,
+    openSurface,
+    surfaceDefinition,
+    surfaceStack,
+  ]);
+
+  const generalSurface = useMemo(
+    (): GeneralSurfaceHandle => ({
+      closeAllSurfaces,
+      closeSurface,
+      openSurface,
+      surfaceStack,
+    }),
+    [closeAllSurfaces, closeSurface, openSurface, surfaceStack],
+  );
+
+  return surfaceDefinition ? specificSurface! : generalSurface;
+}
+
 export function defineSurface(
   definition: SurfaceBuilderDefinition = {},
 ): BoundSurfaceFactory {
@@ -198,6 +280,57 @@ export function defineStepSurface(definition: DefineStepSurfaceOptions = {}) {
   };
 
   return stepSurfaceFactory;
+}
+
+export function useSurfaceStep() {
+  const { closeSurface, goToStep, popStep, pushStep } = useDockActions();
+  const surfaceStack =
+    useDockSelector((s) => s.surfaceStack) || EMPTY_SURFACE_STACK;
+  const activeEntry = surfaceStack[surfaceStack.length - 1] || null;
+  const steps: SurfaceStep[] = Array.isArray(activeEntry?.steps)
+    ? activeEntry.steps
+    : [];
+  const stepIndex = Number(activeEntry?.currentStepIndex || 0);
+  const stepsTotal = steps.length;
+  const currentStep = steps[stepIndex] || null;
+  const isFirst = stepIndex <= 0;
+  const isLast = stepsTotal > 0 && stepIndex >= stepsTotal - 1;
+
+  const next = useCallback(() => {
+    if (!isLast) goToStep(stepIndex + 1);
+  }, [goToStep, isLast, stepIndex]);
+
+  const prev = useCallback(() => {
+    if (!isFirst) popStep();
+  }, [isFirst, popStep]);
+
+  const goTo = useCallback(
+    (idx: number) => {
+      goToStep(idx);
+    },
+    [goToStep],
+  );
+
+  const push = useCallback(
+    (step: SurfaceStep) => {
+      pushStep(step);
+    },
+    [pushStep],
+  );
+
+  return {
+    close: closeSurface,
+    currentStep,
+    goTo,
+    isFirst,
+    isLast,
+    next,
+    prev,
+    push,
+    stepIndex,
+    steps,
+    stepsTotal,
+  };
 }
 
 export function createSurfaceError(

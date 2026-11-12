@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import type { DockHudDescriptor } from "../types";
-import { isValidComponentType } from "../hooks/element-helpers";
+import { isValidComponentType } from "../lib/element-helpers";
 import { DOCK_HUD_RENDER_MODE } from "../constants";
 import { useDockHudViewModel } from "../hooks/use-hud-view-model";
 

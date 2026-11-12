@@ -1,34 +1,14 @@
 "use client";
 
-import {
-  type ReactNode,
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import type {
-  SurfaceFlowContextValue,
   SurfaceFlowDefinitionInput,
   SurfaceFlowState,
   SurfaceResult,
 } from "../../types";
 import { DOCK_SURFACE_FLOW_STATUS } from "../../constants";
 import { createSurfaceError, createSurfaceFlowDefinition } from "../definition";
-
-const SurfaceFlowContext = createContext<SurfaceFlowContextValue | null>(null);
-
-export function SurfaceFlowProvider({
-  children,
-  value,
-}: {
-  children?: ReactNode;
-  value: SurfaceFlowContextValue;
-}) {
-  return <SurfaceFlowContext value={value}>{children}</SurfaceFlowContext>;
-}
+import { SurfaceFlowContext } from "../context";
 
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);

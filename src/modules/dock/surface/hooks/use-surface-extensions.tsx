@@ -7,35 +7,12 @@ import {
   useCallback,
   useId,
   useMemo,
-  useState,
   useSyncExternalStore,
 } from "react";
 import { useIsomorphicLayoutEffect } from "@/react/hooks";
 import type { DockComponentProps, DockItem } from "../../types";
 import { DOCK_SURFACE_PHASE } from "../../constants";
-import {
-  SurfaceExtensionsContext,
-  SurfaceExtensionsStore,
-  SurfaceHeaderActionStore,
-  useSurfaceId,
-} from "../context";
-
-export function SurfaceExtensionsProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [value] = useState(() => ({
-    extensions: new SurfaceExtensionsStore(),
-    headerActions: new SurfaceHeaderActionStore(),
-  }));
-
-  return (
-    <SurfaceExtensionsContext value={value}>
-      {children}
-    </SurfaceExtensionsContext>
-  );
-}
+import { SurfaceExtensionsContext, useSurfaceId } from "../context";
 
 export function useDockSurfaceExtension({
   align = "left",

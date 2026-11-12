@@ -11,7 +11,7 @@ import {
   useDockMotion,
 } from "../motion";
 import type { BreadcrumbItem } from "../types";
-import { stopPropagationOnly } from "../hooks/use-standard-item-content-model";
+import { stopPropagationOnly } from "../lib/card";
 import { useDockTheme } from "../hooks/use-dock-theme";
 import { useDockBreadcrumbsCardModel } from "../routing/breadcrumbs";
 

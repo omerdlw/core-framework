@@ -13,6 +13,7 @@ import type {
   SurfaceStackEntry,
   SurfaceState,
   SurfaceUrlState,
+  GeneralSurfaceHandle,
 } from "../../types";
 import { normalizeSurfaceFlowSnapshot } from "../helpers";
 import { DOCK_LIFECYCLE, DOCK_SURFACE_PHASE } from "../../constants";
@@ -243,3 +244,5 @@ export function createSurfaceLifecycleState(): SurfaceLifecycleState {
     surfaceLifecycle: DOCK_LIFECYCLE.IDLE,
   };
 }
+
+export const EMPTY_SURFACE_STACK: GeneralSurfaceHandle["surfaceStack"] = [];

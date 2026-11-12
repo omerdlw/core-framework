@@ -2,16 +2,16 @@ export type * from "./types";
 export { Dock } from "./components/dock";
 export { DockProvider } from "./provider";
 export { dockModule } from "./module";
-export { defineHud, useHud } from "./hooks/use-hud";
+export { defineHud, useHud } from "./hud";
 export {
   createInlineSurfaceEntry,
   createSurfaceEntryDefinition,
   createSurfaceFlowBuilder,
   defineStepSurface,
   defineSurface,
+  useSurface,
+  useSurfaceStep,
 } from "./surface/definition";
-export { useSurface } from "./surface/hooks/use-surface";
-export { useSurfaceStep } from "./surface/hooks/use-surface-step";
 export { defineBreadcrumb } from "./routing/breadcrumbs";
 export { defineDockAction } from "./runtime/commands";
 export { useSurfaceFlow } from "./surface/hooks/use-surface-flow";
@@ -46,7 +46,7 @@ export { useDockDimensions } from "./hooks/use-dock-dimensions";
 export { useDockRegistration } from "./hooks/use-dock-registration";
 export { useSurfaceReturn } from "./hooks/use-surface-return";
 export { useDockContextActions } from "./runtime/commands";
-export { useDockHud } from "./hooks/use-hud";
+export { useDockHud } from "./hud";
 export { useDock } from "./runtime/hooks/use-dock";
 export { createDockGuardRegistry, useDockGuard } from "./routing/guards";
 export { ErrorActions, GuardActions } from "./components/status-actions";

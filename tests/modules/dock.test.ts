@@ -100,7 +100,7 @@ import {
   resolveComponentType,
   resolveRenderableContent,
   toSearchableText,
-} from "../../src/modules/dock/hooks/element-helpers.ts";
+} from "../../src/modules/dock/lib/element-helpers.ts";
 import { toObject } from "../../src/modules/dock/lib/helpers.ts";
 
 import {
@@ -112,7 +112,7 @@ import {
   createSurfaceFlowSession,
   updateSurfaceFlowSession,
 } from "../../src/modules/dock/surface/definition.ts";
-import { normalizeExtensions } from "../../src/modules/dock/surface/hooks/normalize.ts";
+import { normalizeExtensions } from "../../src/modules/dock/surface/model/normalize.ts";
 
 import {
   applyStatusOverlay,

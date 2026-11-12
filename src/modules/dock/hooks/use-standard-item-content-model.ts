@@ -3,16 +3,7 @@
 import { type SyntheticEvent, useCallback } from "react";
 import type { StandardItemContentProps } from "../types";
 import { useDockMedia, useDockMediaActions } from "../context";
-import { shouldShowMediaIcon } from "../lib/card";
-
-export const stopAndPrevent = (event: SyntheticEvent) => {
-  event.stopPropagation();
-  event.preventDefault();
-};
-
-export const stopPropagationOnly = (event: SyntheticEvent) => {
-  event.stopPropagation();
-};
+import { shouldShowMediaIcon, stopAndPrevent } from "../lib/card";
 
 export function useStandardItemContentModel({
   item: propItem,

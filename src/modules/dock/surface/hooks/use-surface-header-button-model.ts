@@ -1,11 +1,8 @@
 "use client";
 
-import { type ReactNode, createContext, use } from "react";
+import { type ReactNode, use } from "react";
 import type { DockIconSource } from "../../types";
-
-export const DockSurfaceHeaderRadiusContext = createContext<string | null>(
-  null,
-);
+import { DockSurfaceHeaderRadiusContext } from "../context";
 
 export function useDockSurfaceHeaderButtonModel(_props: {
   children?: ReactNode;

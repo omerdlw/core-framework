@@ -9,7 +9,7 @@ import {
   DOCK_OPERATION_STATUS,
 } from "../../constants";
 import type { DockOperationInput } from "../../types";
-import { createDockOperationHud } from "../../hooks/hud-definition";
+import { createDockOperationHud } from "../../model/hud-definition";
 import {
   createDockOperation,
   createDockOperationState,

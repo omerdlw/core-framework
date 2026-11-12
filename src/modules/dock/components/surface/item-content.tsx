@@ -3,9 +3,9 @@
 import { Suspense } from "react";
 import { Spinner } from "@/react/ui/components/loader";
 import type { DockItem, DockItemSurfaceFields } from "../../types";
-import { stopPropagationOnly } from "../../hooks/use-standard-item-content-model";
+import { stopPropagationOnly } from "../../lib/card";
 import { useDockTheme } from "../../hooks/use-dock-theme";
-import { isValidComponentType } from "../../hooks/element-helpers";
+import { isValidComponentType } from "../../lib/element-helpers";
 import { DockSurfaceShell } from "./shell";
 
 function DockSurfaceLoader() {

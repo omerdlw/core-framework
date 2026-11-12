@@ -1,5 +1,3 @@
-"use client";
-
 import { type ReactNode, isValidElement } from "react";
 import { isObject } from "@/foundation/utils";
 import type { DockHudDescriptor, DockOperation } from "../types";
@@ -12,8 +10,8 @@ import {
   isHudDescriptor,
   resolveComponentType,
   resolveRenderableContent,
-} from "./element-helpers";
-import { normalizeAutoDismiss, normalizePriority } from "../model/hud";
+} from "../lib/element-helpers";
+import { normalizeAutoDismiss, normalizePriority } from "./hud";
 
 export function createHudDefinition(
   input: unknown,

@@ -1,5 +1,3 @@
-"use client";
-
 import { type ReactNode, isValidElement, lazy } from "react";
 import { isPlainObject } from "@/foundation/utils";
 import { DOCK_SURFACE_RENDER_MODE } from "../../constants";
@@ -7,7 +5,7 @@ import {
   isValidComponentType,
   resolveComponentType,
   resolveRenderableContent,
-} from "../../hooks/element-helpers";
+} from "../../lib/element-helpers";
 import { isSurfaceDescriptor, normalizeSurfaceExtension } from "../helpers";
 import type {
   DockComponentProps,

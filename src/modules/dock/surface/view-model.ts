@@ -3,8 +3,8 @@ import { DOCK_SURFACE_PHASE } from "../constants";
 import {
   resolveComponentType,
   resolveRenderableContent,
-} from "../hooks/element-helpers";
-import { normalizeExtensions } from "./hooks/normalize";
+} from "../lib/element-helpers";
+import { normalizeExtensions } from "./model/normalize";
 import type {
   ActiveSurfaceStep,
   DockItem,

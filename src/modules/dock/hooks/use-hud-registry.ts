@@ -12,7 +12,7 @@ import {
 import {
   createHudDefinition,
   createSelectionModeState,
-} from "./hud-definition";
+} from "../model/hud-definition";
 
 export function useDockHudRegistry() {
   const [selectionModeState, setSelectionModeState] =

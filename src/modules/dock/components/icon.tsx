@@ -11,7 +11,7 @@ import type {
   DockIconProps,
   DockIconSource,
 } from "../types";
-import { stopAndPrevent } from "../hooks/use-standard-item-content-model";
+import { stopAndPrevent } from "../lib/card";
 import { getImageIconStyle, splitStyle } from "../lib/styles";
 import { useDockTheme } from "../hooks/use-dock-theme";
 

@@ -1,5 +1,5 @@
 import { normalizePath } from "@/foundation/utils";
-import { toSearchableText } from "../../hooks/element-helpers";
+import { toSearchableText } from "../../lib/element-helpers";
 import { isPathPrefix, isSamePath } from "../../model/paths";
 import type { DockItem } from "../../types";
 

@@ -9,11 +9,11 @@ import type {
   DockHudOverrides,
   DockHudTrigger,
   UseHudReturn,
-} from "../types";
-import { DOCK_HUD_PRIORITY } from "../constants";
-import { useDockActions } from "../context";
-import { areHudDefinitionsEqual } from "../model/hud";
-import { createHudDefinition } from "./hud-definition";
+} from "./types";
+import { DOCK_HUD_PRIORITY } from "./constants";
+import { useDockActions } from "./context";
+import { areHudDefinitionsEqual } from "./model/hud";
+import { createHudDefinition } from "./model/hud-definition";
 
 export function useDockHud(descriptor: DockHudDescriptor) {
   const { setHud, clearHud } = useDockActions();
