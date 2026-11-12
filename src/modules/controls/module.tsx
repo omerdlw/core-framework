@@ -27,6 +27,7 @@ function useControlsPage(
   _slice: PageControlEntry[] | null,
   page: PageModuleApi,
 ): ControlsPageApi {
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       set: (controls: ControlsPageConfig | null) => page.set({ controls }),

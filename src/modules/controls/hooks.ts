@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
 
@@ -96,6 +96,23 @@ export function useControlsRegistration(
   useModuleRegistration("controls", config, options);
 }
 
+function resolveControlEntries(
+  config:
+    DefineControlsOptions | ControlEntry | ControlEntry[] | null | undefined,
+  path: string,
+): ControlEntry | ControlEntry[] | null {
+  if (!config) return null;
+  if (Array.isArray(config) || "side" in config) return config;
+  const { defaultProps = {}, left, right, ...page } = config;
+  const resolved = normalizePageControls({
+    ...page,
+    left: resolveSlot(left, defaultProps),
+    path,
+    right: resolveSlot(right, defaultProps),
+  });
+  return resolved?.length ? resolved : null;
+}
+
 /**
  * Registers controls from a definition or entries and returns the rail layout.
  */
@@ -107,19 +124,6 @@ export function useControls(
   const definitionPath = config && "path" in config ? config.path : undefined;
   const path = options?.path || definitionPath || pathname;
 
-  const entries = useMemo(() => {
-    if (!config) return null;
-    if (Array.isArray(config) || "side" in config) return config;
-    const { defaultProps = {}, left, right, ...page } = config;
-    const resolved = normalizePageControls({
-      ...page,
-      left: resolveSlot(left, defaultProps),
-      path,
-      right: resolveSlot(right, defaultProps),
-    });
-    return resolved?.length ? resolved : null;
-  }, [config, path]);
-
-  useControlsRegistration(entries, options);
+  useControlsRegistration(resolveControlEntries(config, path), options);
   return useControlsLayout();
 }

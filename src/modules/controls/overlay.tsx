@@ -1,12 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  type CSSProperties,
-  Fragment,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import { type CSSProperties, Fragment, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 import { useRegistryEntries } from "@/core/kernel";
@@ -31,10 +26,7 @@ export function useControlsModel() {
   const layout = useControlsLayout();
   const pathname = usePathname();
   const entries = useRegistryEntries<"controls", ControlEntry>("controls");
-  const { left, right } = useMemo(
-    () => resolveControlsPairs(entries, pathname),
-    [entries, pathname],
-  );
+  const { left, right } = resolveControlsPairs(entries, pathname);
 
   const theme = useTheme(controlsTheme);
 
