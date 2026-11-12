@@ -9,6 +9,7 @@ export const DOCK_STYLE_SECTIONS = Object.freeze([
   "description",
 ] as const);
 
+/** Names of the global events the dock listens to and emits. */
 export const DOCK_EVENTS = Object.freeze({
   NAVIGATE_START: "DOCK_NAVIGATE_START",
   NAVIGATE_END: "DOCK_NAVIGATE_END",
@@ -20,17 +21,20 @@ export const DOCK_EVENTS = Object.freeze({
   STATUS_CLEAR: "DOCK_STATUS_CLEAR",
 } as const);
 
+/** How a HUD is rendered: as a component or as plain content. */
 export const DOCK_HUD_RENDER_MODE = Object.freeze({
   COMPONENT: "component",
   NODE: "node",
 } as const);
 
+/** Visual variants a HUD can use. */
 export const DOCK_HUD_VARIANT = Object.freeze({
   EXPANDED: "expanded",
   PROGRESS: "progress",
   CUSTOM: "custom",
 } as const);
 
+/** Priority levels that decide which HUD wins when several are active. */
 export const DOCK_HUD_PRIORITY = Object.freeze({
   TASK_PROGRESS: 30,
   CONTEXTUAL: 10,
@@ -177,4 +181,5 @@ export const API_ERROR_BATCH_DELAY = 300;
 export const DOCK_HEIGHT_BUFFER = 16;
 export const HEIGHT_EPSILON = 0.5;
 
+/** Theme spec for the dock; register slots and motion against it. */
 export const dockTheme = defineThemeSpec<DockThemeSlot, DockMotion>("dock");

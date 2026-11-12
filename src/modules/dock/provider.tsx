@@ -17,6 +17,7 @@ import { useDockRouteReset } from "./hooks/use-dock-route-reset";
 import { useDockHudRegistry } from "./hooks/use-hud-registry";
 import { createDockScheduler } from "./lib/helpers";
 import { isSamePath } from "./model/paths";
+import { resolveSurfaceFlowReturn } from "./model/surface-return";
 import { BreadcrumbProvider } from "./routing/breadcrumbs";
 import { useDockContinuity } from "./routing/continuity";
 import { createDockGuardRegistry } from "./routing/guards";
@@ -38,6 +39,13 @@ import type {
   SurfaceReturnHandshake,
 } from "./types";
 
+function normalizeDockHeight(nextHeight: number): number {
+  return Number.isFinite(Number(nextHeight))
+    ? Math.max(0, Number(nextHeight))
+    : 0;
+}
+
+/** Owns dock state and actions and provides them, with surfaces and breadcrumbs, to its children. */
 export function DockProvider({
   breadcrumbConfig = null,
   children,
@@ -75,9 +83,7 @@ export function DockProvider({
   const [guards] = useState(createDockGuardRegistry);
 
   const setDockHeight = useCallback((nextHeight: number) => {
-    const height = Number.isFinite(Number(nextHeight))
-      ? Math.max(0, Number(nextHeight))
-      : 0;
+    const height = normalizeDockHeight(nextHeight);
     if (dockHeightRef.current === height) return;
     dockHeightRef.current = height;
     setRawDockHeight(height);
@@ -104,27 +110,14 @@ export function DockProvider({
       flow: SurfaceFlowSession;
       result: SurfaceResult;
     }) => {
-      const result = rawResult as {
-        data?: unknown;
-        reason?: string;
-        success?: boolean;
-      } | null;
-      const handshake = flow?.returnHandshake;
-      const isCompleted = result?.success === true;
-      const isDockCancellation = ["browser-back", "dock", "unmount"].includes(
-        result?.reason ?? "",
-      );
-      if (
-        !handshake?.pathname ||
-        isDockCancellation ||
-        (!isCompleted && !handshake.returnOnCancel)
-      )
-        return false;
+      const flowReturn = resolveSurfaceFlowReturn(flow, rawResult);
+      if (!flowReturn) return false;
+      const { data, handshake, status } = flowReturn;
 
       const handoff = dockContinuity.deliverReturn(handshake.pathname, {
-        data: result?.data ?? null,
+        data,
         flowId: flow.flowId,
-        status: isCompleted ? "completed" : "cancelled",
+        status,
       });
       if (!handoff) return false;
 

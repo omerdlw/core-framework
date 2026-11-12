@@ -32,6 +32,7 @@ export const DockContext = getOrCreateGlobalContext<DockContextValue | null>(
   null,
 );
 
+/** Subscribes to the whole dock state. Must be used under `DockProvider`. */
 export function useDockState(): DockState {
   const { store } = useRequiredContext(
     DockContext,
@@ -41,6 +42,7 @@ export function useDockState(): DockState {
   return useStore(store);
 }
 
+/** Subscribes to a slice of the dock state; re-renders only when the slice changes. */
 export function useDockSelector<T>(
   selector: (state: DockState) => T,
   isEqual: (a: T, b: T) => boolean = Object.is,
@@ -53,11 +55,13 @@ export function useDockSelector<T>(
   return useStore(store, selector, isEqual);
 }
 
+/** Returns the dock actions. Must be used under `DockProvider`. */
 export function useDockActions(): DockActions {
   return useRequiredContext(DockContext, "useDockActions", "DockProvider")
     .actions;
 }
 
+/** Current dock height plus a bottom padding style that reserves room for it. */
 export function useDockHeight() {
   const dockHeight = useDockSelector((state) => state.dockHeight);
   return { dockHeight, padding: { paddingBottom: `${dockHeight}px` } };
@@ -89,6 +93,7 @@ export const EMPTY_DOCK_STATE: DockState = Object.freeze({
 
 const NOOP_DOCK_STORE = createStore<DockState>(EMPTY_DOCK_STATE);
 
+/** Like `useDockState` (or a selector), but returns an empty state outside `DockProvider`. */
 export function useOptionalDockState(): DockState;
 export function useOptionalDockState<T>(
   selector: (state: DockState) => T,
@@ -106,6 +111,7 @@ export function useOptionalDockState<T = DockState>(
   );
 }
 
+/** Returns the dock actions, or null outside `DockProvider`. */
 export function useOptionalDockActions(): DockActions | null {
   const ctx = use(DockContext);
   return ctx?.actions ?? null;

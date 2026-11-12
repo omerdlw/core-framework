@@ -18,6 +18,7 @@ function staggerDelay(
   return Math.min(cap, base * Math.pow(Math.max(0, index), exponent));
 }
 
+/** Returns the dock motion tokens (transitions, variants and deck settings) from the active theme. */
 export function useDockMotion(): DockMotion {
   return useModuleMotion(dockTheme);
 }

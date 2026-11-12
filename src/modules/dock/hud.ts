@@ -16,11 +16,48 @@ import type {
   UseHudReturn,
 } from "./types";
 
+const DEFAULT_HUD_ID = "hud";
+
+/** Shows a HUD while the calling component is mounted and the descriptor is active. */
 export function useDockHud(descriptor: DockHudDescriptor) {
   const { setHud, clearHud } = useDockActions();
   return useDockHudLifecycle({ clearHud, descriptor, setHud });
 }
 
+type DescriptorFactory = (
+  props?: DockComponentProps,
+  overrides?: DockHudOverrides,
+) => DockHudDescriptor;
+
+function showHud(
+  createDescriptor: DescriptorFactory,
+  setHudFn: (descriptor: DockHudDescriptor) => void,
+  props: DockComponentProps,
+  overrides: DockHudOverrides,
+) {
+  const descriptor = createDescriptor(props, overrides);
+  if (typeof setHudFn === "function") {
+    setHudFn(descriptor);
+  }
+  return {
+    dismiss: (clearHudFn: (id?: string) => void) => {
+      if (typeof clearHudFn === "function") {
+        clearHudFn(descriptor.id);
+      }
+    },
+    id: descriptor.id,
+    update: (nextProps: DockComponentProps = {}) => {
+      if (typeof setHudFn === "function") {
+        setHudFn(createDescriptor({ ...props, ...nextProps }, overrides));
+      }
+    },
+  };
+}
+
+/**
+ * Defines a reusable HUD with default props, priority and dismissal rules.
+ * The returned handle can show, hide and update it from anywhere.
+ */
 export function defineHud(
   definition: DefineHudOptions = {},
 ): DockHudDefinition {
@@ -30,7 +67,7 @@ export function defineHud(
     defaultProps = {},
     dismissOnEscape = true,
     dismissOnNavigate = true,
-    id = "hud",
+    id = DEFAULT_HUD_ID,
     priority = DOCK_HUD_PRIORITY.DEFAULT,
     ...extraConfig
   } = definition;
@@ -75,25 +112,7 @@ export function defineHud(
       setHudFn: (descriptor: DockHudDescriptor) => void,
       props: DockComponentProps = {},
       overrides: DockHudOverrides = {},
-    ) => {
-      const descriptor = createDescriptor(props, overrides);
-      if (typeof setHudFn === "function") {
-        setHudFn(descriptor);
-      }
-      return {
-        dismiss: (clearHudFn: (id?: string) => void) => {
-          if (typeof clearHudFn === "function") {
-            clearHudFn(descriptor.id);
-          }
-        },
-        id: descriptor.id,
-        update: (nextProps: DockComponentProps = {}) => {
-          if (typeof setHudFn === "function") {
-            setHudFn(createDescriptor({ ...props, ...nextProps }, overrides));
-          }
-        },
-      };
-    },
+    ) => showHud(createDescriptor, setHudFn, props, overrides),
     use: function useDefinedHud(
       props: DockComponentProps = {},
       overrides: DockHudOverrides = {},
@@ -107,6 +126,7 @@ export function defineHud(
   });
 }
 
+/** Returns functions to show and hide a defined HUD, or the raw HUD actions without one. */
 export function useHud(hudDefinition: DockHudDefinition | null = null) {
   const { clearHud, setHud } = useDockActions();
 
@@ -141,6 +161,7 @@ export function useHud(hudDefinition: DockHudDefinition | null = null) {
   }, [clearHud, hudDefinition, setHud]);
 }
 
+/** Keeps a HUD descriptor registered with the dock for the lifetime of the caller. */
 export function useDockHudLifecycle({
   clearHud,
   descriptor,
