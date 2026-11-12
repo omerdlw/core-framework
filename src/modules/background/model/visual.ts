@@ -3,7 +3,7 @@ import {
   type BackgroundMediaStyle,
   type FadeEdges,
   type VideoOptions,
-} from "./types";
+} from "../types";
 
 const objectFit = (value: string): CSSProperties => ({
   objectFit: value as CSSProperties["objectFit"],

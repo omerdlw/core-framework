@@ -1,4 +1,4 @@
-import type { YouTubeProxyController, YouTubeUrlConfig } from "../types";
+import type { YouTubeProxyController, YouTubeUrlConfig } from "../../types";
 
 const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
 

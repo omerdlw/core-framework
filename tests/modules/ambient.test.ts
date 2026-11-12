@@ -170,3 +170,45 @@ describe("ambient page", () => {
     });
   });
 });
+
+test("ambient public surface is unchanged", async () => {
+  const surface = await import("../../src/modules/ambient/index.ts");
+  assert.deepEqual(Object.keys(surface).sort(), [
+    "AMBIENT_ANALYSIS_VERSION",
+    "AMBIENT_REGIONS",
+    "AMBIENT_ROLES",
+    "AMBIENT_TONES",
+    "AmbientContext",
+    "AmbientProvider",
+    "DEFAULT_ANALYSIS",
+    "DEFAULT_CSS_VAR_NAMES",
+    "DEFAULT_LINGER_MS",
+    "ambientModule",
+    "ambientTheme",
+    "analyzeAmbientPixels",
+    "applyScopedCssVariables",
+    "configureAmbient",
+    "contrastRatio",
+    "defineAmbient",
+    "extractPaletteFromImage",
+    "findContentBounds",
+    "formatOklch",
+    "getAmbientSettings",
+    "getCachedAmbientPalette",
+    "maxChroma",
+    "normalizeColorMap",
+    "onColorFor",
+    "paletteVarMap",
+    "primeAmbientPalette",
+    "resolveAmbientVarMap",
+    "resolveCssVarNames",
+    "resolvePageAmbientTheme",
+    "resolveTargetElement",
+    "skinLikeness",
+    "srgbToOklab",
+    "toneOf",
+    "useAmbient",
+    "useAmbientColor",
+    "useAmbientTheme",
+  ]);
+});

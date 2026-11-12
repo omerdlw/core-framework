@@ -11,12 +11,12 @@ import {
   computeBackgroundState,
   normalizeBackgroundInput,
   resolveBackgroundState,
-} from "./state";
+} from "./model/state";
 import {
   syncVideoLoopDirect,
   syncVideoMutedDirect,
   triggerVideoPlaybackDirect,
-} from "./playback";
+} from "./model/playback";
 import {
   type BackgroundActions,
   type BackgroundContextValue,

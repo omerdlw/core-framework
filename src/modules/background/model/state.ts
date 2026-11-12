@@ -3,13 +3,13 @@ import {
   type BackgroundState,
   type BackgroundStateComputed,
   type ScopedOverride,
-} from "./types";
+} from "../types";
 import {
   extractYouTubeVideoId,
   getYouTubeThumbnailUrl,
   isDirectVideoUrl,
   isYouTubeUrl,
-} from "./youtube/parse";
+} from "../youtube/lib/parse";
 
 export const DEFAULT_BACKGROUND: BackgroundState = Object.freeze({
   animation: null,

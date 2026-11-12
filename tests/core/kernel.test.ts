@@ -2060,3 +2060,33 @@ describe("registry store", () => {
     });
   });
 });
+
+test("kernel public surface is unchanged", async () => {
+  const surface = await import("../../src/core/kernel/index.ts");
+  assert.deepEqual(Object.keys(surface).sort(), [
+    "Compose",
+    "ModuleBoundary",
+    "ModuleHost",
+    "PageControllerProvider",
+    "REGISTRY_SOURCES",
+    "RegistryProvider",
+    "applyRegistryConfig",
+    "createModuleRegistryDefinitions",
+    "createRegistryApplyContext",
+    "createRegistryOperations",
+    "createRegistryStore",
+    "defineModule",
+    "definePeer",
+    "getOrCreateGlobalContext",
+    "hasOwnProperty",
+    "sortModules",
+    "useIsModuleInstalled",
+    "useModule",
+    "useModuleRegistration",
+    "useModuleState",
+    "usePage",
+    "usePageController",
+    "useRegistryEntries",
+    "useRegistryValue",
+  ]);
+});

@@ -14,7 +14,7 @@ import {
   isDirectVideoUrl,
   isYouTubeUrl,
   parseYouTubeUrlConfig,
-} from "../../src/modules/background/youtube/parse.ts";
+} from "../../src/modules/background/youtube/lib/parse.ts";
 
 import {
   mergeBackgroundState,
@@ -543,7 +543,7 @@ describe("background utils", () => {
   describe("gradient and fade mask generation", () => {
     test("generateBaseGradient creates direction-aware linear gradient", async () => {
       const { generateBaseGradient } =
-        await import("../../src/modules/background/visual.ts");
+        await import("../../src/modules/background/model/visual.ts");
       const leftGrad = generateBaseGradient("left", "#111");
       assert.ok(leftGrad.startsWith("linear-gradient(to right, #111 0%"));
 
@@ -553,7 +553,7 @@ describe("background utils", () => {
 
     test("generateEdgeGradient creates softened edge gradients", async () => {
       const { generateEdgeGradient } =
-        await import("../../src/modules/background/visual.ts");
+        await import("../../src/modules/background/model/visual.ts");
       const leftGrad = generateEdgeGradient("left", "#000");
       assert.ok(
         leftGrad.startsWith(
@@ -571,7 +571,7 @@ describe("background utils", () => {
 
     test("generateSmoothstepStops creates smooth perceptual transitions", async () => {
       const { generateSmoothstepStops } =
-        await import("../../src/modules/background/visual.ts");
+        await import("../../src/modules/background/model/visual.ts");
       const inStops = generateSmoothstepStops(25, "in", "black");
       assert.equal(inStops.length, 7);
       assert.equal(inStops[0], "transparent 0.0%");
@@ -584,7 +584,7 @@ describe("background utils", () => {
 
     test("getEdgeFadeMask returns undefined when disabled and linear-gradient when enabled", async () => {
       const { getEdgeFadeMask } =
-        await import("../../src/modules/background/visual.ts");
+        await import("../../src/modules/background/model/visual.ts");
       assert.equal(
         getEdgeFadeMask({ leftPercent: 0, rightPercent: 0 }),
         undefined,
@@ -600,7 +600,7 @@ describe("background utils", () => {
 
     test("resolveGradientSettings resolves numeric, string, object, and boolean inputs", async () => {
       const { resolveGradientSettings } =
-        await import("../../src/modules/background/visual.ts");
+        await import("../../src/modules/background/model/visual.ts");
       const disabled = resolveGradientSettings({ fadeEdges: false });
       assert.equal(disabled.enabled, false);
       assert.equal(disabled.leftPercent, 0);
@@ -627,4 +627,51 @@ describe("background utils", () => {
       assert.ok(fromSliders.leftOpacity > 0);
     });
   });
+});
+
+test("background public surface is unchanged", async () => {
+  const surface = await import("../../src/modules/background/index.ts");
+  assert.deepEqual(Object.keys(surface).sort(), [
+    "BACKGROUND_MEDIA_ID",
+    "BACKGROUND_REGISTRY_KEY",
+    "BG_TOKEN_TO_OBJECT_STYLE",
+    "BackgroundContext",
+    "BackgroundOverlay",
+    "BackgroundProvider",
+    "DEFAULT_BACKGROUND",
+    "DEFAULT_BACKGROUND_COMPUTED",
+    "DEFAULT_COLOR",
+    "INERT_BACKGROUND_ACTIONS",
+    "OBJECT_FITS",
+    "YouTubeBackgroundPlayer",
+    "applyVideoPlaybackState",
+    "backgroundModule",
+    "backgroundTheme",
+    "computeBackgroundState",
+    "defineBackground",
+    "extractYouTubeVideoId",
+    "generateBaseGradient",
+    "generateEdgeGradient",
+    "getEdgeFadeMask",
+    "getYouTubeStreamUrl",
+    "getYouTubeThumbnailUrl",
+    "isDirectVideoUrl",
+    "isYouTubeUrl",
+    "mergeBackgroundState",
+    "normalizeBackgroundInput",
+    "parseYouTubeUrlConfig",
+    "resolveBackgroundState",
+    "resolveVideoClassNames",
+    "resolveVideoOptions",
+    "selectPageBackground",
+    "syncVideoLoopDirect",
+    "syncVideoMutedDirect",
+    "triggerVideoPlaybackDirect",
+    "useBackground",
+    "useBackgroundActions",
+    "useBackgroundRegistration",
+    "useBackgroundState",
+    "useOptionalBackgroundActions",
+    "useOptionalBackgroundState",
+  ]);
 });

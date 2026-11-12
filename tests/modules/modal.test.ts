@@ -344,3 +344,46 @@ describe("modal focus management", () => {
     assert.equal(other.defaultPrevented, false);
   });
 });
+
+test("modal public surface is unchanged", async () => {
+  const surface = await import("../../src/modules/modal/index.ts");
+  assert.deepEqual(Object.keys(surface).sort(), [
+    "INITIAL_MODAL_STATE",
+    "MODAL_BREAKPOINTS",
+    "MODAL_CHROME",
+    "MODAL_POSITIONS",
+    "Modal",
+    "ModalContainer",
+    "ModalContext",
+    "ModalProvider",
+    "SMOOTH_SCROLL_LOCK_EVENT",
+    "createModalState",
+    "defineModal",
+    "dispatchSmoothScrollLock",
+    "getFocusableElements",
+    "getModalIdentity",
+    "getModalLabel",
+    "getModalLayout",
+    "getModalPosition",
+    "getViewportIsMobile",
+    "hasHeightConstraint",
+    "hasSlotContent",
+    "isHeaderConfig",
+    "isSidePosition",
+    "isVerticalEdgePosition",
+    "modalModule",
+    "modalTheme",
+    "normalizePosition",
+    "resolveActivePosition",
+    "resolveHeaderActions",
+    "trapFocus",
+    "useModal",
+    "useModalActions",
+    "useModalContainerModel",
+    "useModalLayerModel",
+    "useModalModel",
+    "useModalRegistration",
+    "useModalRegistryEntries",
+    "useModalState",
+  ]);
+});

@@ -5,7 +5,10 @@ import { useRequiredContext, useStore } from "@/react/hooks";
 import { useModuleRegistration, type RegistryMetadata } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
 import { BackgroundContext } from "./context";
-import { DEFAULT_BACKGROUND_COMPUTED, INERT_BACKGROUND_ACTIONS } from "./state";
+import {
+  DEFAULT_BACKGROUND_COMPUTED,
+  INERT_BACKGROUND_ACTIONS,
+} from "./model/state";
 import type {
   BackgroundActions,
   BackgroundPageConfig,
