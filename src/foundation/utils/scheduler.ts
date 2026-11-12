@@ -12,21 +12,35 @@ function getDefaultSchedulerNow(): number {
     : Date.now();
 }
 
+type ScheduledTaskKind = "timer" | "frame";
+
+/**
+ * A read-only view of one pending scheduler task.
+ */
 export interface ScheduledTaskSnapshot {
   readonly createdAt: number;
   readonly dueAt: number;
   readonly id: number;
-  readonly kind: "timer" | "frame";
+  readonly kind: ScheduledTaskKind;
   readonly label: string;
 }
 
+/**
+ * A read-only view of all pending scheduler tasks.
+ */
 export interface SchedulerSnapshot {
   readonly pendingCount: number;
   readonly tasks: readonly ScheduledTaskSnapshot[];
 }
 
+/**
+ * The native handle returned by a timer or animation frame request.
+ */
 export type ScheduleHandle = ReturnType<typeof setTimeout> | number;
 
+/**
+ * Overrides for timers, frames and the clock, mainly for tests and non-DOM hosts.
+ */
 export interface CoreSchedulerOptions {
   cancelFrame?: (id: ScheduleHandle) => void;
   clearTimer?: (id: ScheduleHandle) => void;
@@ -36,33 +50,67 @@ export interface CoreSchedulerOptions {
   scheduleTimer?: (cb: () => void, delayMs?: number) => ScheduleHandle;
 }
 
+interface TaskRecord {
+  cancel: (id: ScheduleHandle) => void;
+  createdAt: number;
+  dueAt: number;
+  id: number;
+  kind: ScheduledTaskKind;
+  label: string;
+  nativeId: ScheduleHandle;
+}
+
+const DEFAULT_TASK_LABEL = "scheduled-task";
+
+function createDefaultCancelFrame(): (id: ScheduleHandle) => void {
+  return typeof window !== "undefined" &&
+    typeof window.cancelAnimationFrame === "function"
+    ? (id) => window.cancelAnimationFrame(id as number)
+    : (id) => clearTimeout(id);
+}
+
+function createDefaultRequestFrame(): (
+  cb: (time: number) => void,
+) => ScheduleHandle {
+  return typeof window !== "undefined" &&
+    typeof window.requestAnimationFrame === "function"
+    ? (cb) => window.requestAnimationFrame(cb)
+    : (cb) => setTimeout(cb, DEFAULT_SCHEDULER_FRAME_MS);
+}
+
+function toTaskSnapshot(task: TaskRecord): ScheduledTaskSnapshot {
+  return {
+    createdAt: task.createdAt,
+    dueAt: task.dueAt,
+    id: task.id,
+    kind: task.kind,
+    label: task.label,
+  };
+}
+
+/** Cancels the native handle; a throwing canceller is reported, not rethrown. */
+function cancelNative(task: TaskRecord): void {
+  try {
+    task.cancel(task.nativeId);
+  } catch (error) {
+    report("Scheduler cancellation", error, "warn");
+  }
+}
+
+/**
+ * Creates a scheduler that tracks timers and animation frames so they can be
+ * inspected, subscribed to and cancelled together.
+ */
 export function createScheduler({
-  cancelFrame = typeof window !== "undefined" &&
-  typeof window.cancelAnimationFrame === "function"
-    ? (id: ScheduleHandle) => window.cancelAnimationFrame(id as number)
-    : (id: ScheduleHandle) => clearTimeout(id),
+  cancelFrame = createDefaultCancelFrame(),
   clearTimer = (id: ScheduleHandle) => clearTimeout(id),
-  defaultLabel = "scheduled-task",
+  defaultLabel = DEFAULT_TASK_LABEL,
   now = getDefaultSchedulerNow,
-  requestFrame = typeof window !== "undefined" &&
-  typeof window.requestAnimationFrame === "function"
-    ? (cb: FrameRequestCallback) => window.requestAnimationFrame(cb)
-    : (cb: FrameRequestCallback) => setTimeout(cb, DEFAULT_SCHEDULER_FRAME_MS),
+  requestFrame = createDefaultRequestFrame(),
   scheduleTimer = (cb: () => void, delayMs?: number) => setTimeout(cb, delayMs),
 }: CoreSchedulerOptions = {}) {
   const listeners = new Set<() => void>();
-  const tasks = new Map<
-    number,
-    {
-      cancel: (id: ScheduleHandle) => void;
-      createdAt: number;
-      dueAt: number;
-      id: number;
-      kind: "timer" | "frame";
-      label: string;
-      nativeId: ScheduleHandle;
-    }
-  >();
+  const tasks = new Map<number, TaskRecord>();
   let nextTaskId = 0;
   let snapshot: SchedulerSnapshot = {
     pendingCount: 0,
@@ -70,20 +118,9 @@ export function createScheduler({
   };
 
   const publish = () => {
-    const currentTasks: ScheduledTaskSnapshot[] = [];
-    for (const task of tasks.values()) {
-      currentTasks.push({
-        createdAt: task.createdAt,
-        dueAt: task.dueAt,
-        id: task.id,
-        kind: task.kind,
-        label: task.label,
-      });
-    }
-
     snapshot = {
       pendingCount: tasks.size,
-      tasks: currentTasks,
+      tasks: Array.from(tasks.values(), toTaskSnapshot),
     };
 
     for (const listener of listeners) {
@@ -96,7 +133,7 @@ export function createScheduler({
   };
 
   const scheduleInternal = (
-    kind: "timer" | "frame",
+    kind: ScheduledTaskKind,
     callback: (timestamp: number) => void,
     delayMs: number,
     options: { label?: string } = {},
@@ -142,11 +179,7 @@ export function createScheduler({
     if (!task) return false;
 
     tasks.delete(taskId);
-    try {
-      task.cancel(task.nativeId);
-    } catch (error) {
-      report("Scheduler cancellation", error, "warn");
-    }
+    cancelNative(task);
 
     publish();
     return true;
@@ -160,11 +193,7 @@ export function createScheduler({
       const taskIds: number[] = [];
       for (const [taskId, task] of tasks) {
         taskIds.push(taskId);
-        try {
-          task.cancel(task.nativeId);
-        } catch (error) {
-          report("Scheduler cancellation", error, "warn");
-        }
+        cancelNative(task);
       }
 
       tasks.clear();

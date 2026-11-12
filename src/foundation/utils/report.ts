@@ -1,5 +1,11 @@
+/**
+ * Severity passed to the report sink.
+ */
 export type ReportLevel = "error" | "warn";
 
+/**
+ * Receives errors the framework reports instead of logging them itself.
+ */
 export type ReportSink = (
   scope: string,
   error: unknown,
@@ -13,6 +19,10 @@ type GlobalWithSink = typeof globalThis & {
 
 const _global = globalThis as GlobalWithSink;
 
+/**
+ * Reports a non-fatal error to the installed sink, or to the console
+ * outside production browsers.
+ */
 export function report(
   scope: string,
   error: unknown,
@@ -32,6 +42,9 @@ export function report(
   console[level](`[${scope}]`, error);
 }
 
+/**
+ * Installs the global report sink and returns a function that removes it.
+ */
 export function setReportSink(next: ReportSink): () => void {
   _global[GLOBAL_SINK_KEY] = next;
   return () => {

@@ -1,4 +1,7 @@
 import { report } from "./report";
+/**
+ * A minimal store compatible with `useSyncExternalStore`.
+ */
 export interface ExternalStore<TState = unknown> {
   readonly getSnapshot: () => TState;
   readonly publish: (
@@ -25,17 +28,16 @@ function freezeStoreSnapshot<TState>(state: TState): TState {
     seen.add(value);
 
     const prototype: unknown = Object.getPrototypeOf(value);
-    if (
+    const isPlainContainer =
       Array.isArray(value) ||
       prototype === Object.prototype ||
-      prototype === null
-    ) {
+      prototype === null;
+    if (isPlainContainer) {
       for (const key of Reflect.ownKeys(value)) {
         const descriptor = Object.getOwnPropertyDescriptor(value, key);
-        if (descriptor && "value" in descriptor && descriptor.value !== null) {
-          if (typeof descriptor.value === "object")
-            freeze(descriptor.value as object);
-        }
+        if (!descriptor || !("value" in descriptor)) continue;
+        const child: unknown = descriptor.value;
+        if (child !== null && typeof child === "object") freeze(child);
       }
     }
 
@@ -46,10 +48,27 @@ function freezeStoreSnapshot<TState>(state: TState): TState {
   return state;
 }
 
+/**
+ * Options for `createStore`.
+ */
 export interface CreateStoreOptions {
   freezeSnapshots?: boolean;
 }
 
+function notifyListeners(listeners: ReadonlySet<() => void>): void {
+  for (const listener of listeners) {
+    try {
+      listener();
+    } catch (error) {
+      report("CoreStore subscriber", error, "warn");
+    }
+  }
+}
+
+/**
+ * Creates an external store. Snapshots are deep-frozen outside production
+ * unless `freezeSnapshots` is false.
+ */
 export function createStore<TState = Record<string, unknown>>(
   initialState: TState,
   { freezeSnapshots = true }: CreateStoreOptions = {},
@@ -69,14 +88,7 @@ export function createStore<TState = Record<string, unknown>>(
         : nextStateOrUpdater;
     if (Object.is(snapshot, nextState)) return false;
     snapshot = prepare(nextState);
-
-    for (const listener of listeners) {
-      try {
-        listener();
-      } catch (error) {
-        report("CoreStore subscriber", error, "warn");
-      }
-    }
+    notifyListeners(listeners);
     return true;
   };
 

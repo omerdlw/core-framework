@@ -2,6 +2,9 @@ import type { Recipe } from "./recipe";
 
 const names = new WeakMap<object, readonly string[]>();
 
+/**
+ * Lists the variant names a recipe accepts.
+ */
 export function variantNames(recipe: Recipe): readonly string[] {
   const def = recipe.def;
   let list = names.get(def);
@@ -12,6 +15,9 @@ export function variantNames(recipe: Recipe): readonly string[] {
   return list;
 }
 
+/**
+ * Separates the variant props of the given recipes from the remaining props.
+ */
 export function splitVariants<P extends Record<string, unknown>>(
   props: P,
   ...recipes: Recipe[]

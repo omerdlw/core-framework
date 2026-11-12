@@ -1,5 +1,8 @@
 import { type ClassValue, clsx } from "clsx";
 
+/**
+ * Anything `clsx` accepts as a class value.
+ */
 export type Classes =
   | string
   | number
@@ -10,12 +13,18 @@ export type Classes =
   | readonly Classes[]
   | Readonly<Record<string, unknown>>;
 
+/**
+ * Variant names mapped to their values and the classes each applies.
+ */
 export type VariantMap = Readonly<
   Record<string, Readonly<Record<string, Classes>>>
 >;
 
 type ValueOf<K> = K extends "true" | "false" ? boolean | K : K;
 
+/**
+ * The props a recipe accepts to pick a value for each variant.
+ */
 export type SelectionOf<V> = {
   -readonly [K in keyof V]?: ValueOf<keyof V[K] & string> | null;
 };
@@ -25,11 +34,17 @@ type CompoundMatch<V> = {
     ValueOf<keyof V[K] & string> | readonly ValueOf<keyof V[K] & string>[];
 };
 
+/**
+ * Classes applied only when several variant values match together.
+ */
 export type CompoundVariant<V> = CompoundMatch<V> & {
   readonly class?: Classes;
   readonly className?: Classes;
 };
 
+/**
+ * The declarative description of a recipe: base classes, variants, compounds and defaults.
+ */
 export interface RecipeDef<V extends VariantMap = VariantMap> {
   readonly base?: Classes;
   readonly variants?: V;
@@ -37,6 +52,9 @@ export interface RecipeDef<V extends VariantMap = VariantMap> {
   readonly defaultVariants?: SelectionOf<V>;
 }
 
+/**
+ * A partial recipe definition that extends, or with `reset` replaces, a default one.
+ */
 export interface RecipeOverride<V extends VariantMap = VariantMap> {
   readonly reset?: boolean;
   readonly base?: Classes;
@@ -67,6 +85,9 @@ export type MergedVariants<D, O> = O extends { readonly reset: true }
   ? VariantsOf<O>
   : Union<VariantsOf<D>, VariantsOf<O>>;
 
+/**
+ * A compiled recipe: call it with variant props to get a class string.
+ */
 export interface Recipe<V = VariantMap> {
   (
     props?: SelectionOf<V> & {
@@ -77,6 +98,9 @@ export interface Recipe<V = VariantMap> {
   readonly def: RecipeDef;
 }
 
+/**
+ * The variant props accepted by a recipe type.
+ */
 export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
 
 const key = (value: unknown): string | null =>
@@ -99,6 +123,9 @@ function matches(
   return true;
 }
 
+/**
+ * Resolves a recipe definition and props to the ordered class list before merging.
+ */
 export function resolveRecipe(
   def: RecipeDef,
   props: Record<string, unknown> = {},
@@ -123,6 +150,9 @@ export function resolveRecipe(
   return out;
 }
 
+/**
+ * Combines a default recipe definition with an override.
+ */
 export function extendRecipe(
   base: RecipeDef,
   override: RecipeOverride | undefined,
@@ -158,12 +188,18 @@ export function extendRecipe(
   };
 }
 
+/**
+ * Declares a recipe definition with its variant types inferred.
+ */
 export function defineRecipe<const V extends VariantMap = {}>(
   def: RecipeDef<V>,
 ): RecipeDef<V> {
   return def;
 }
 
+/**
+ * Turns a recipe definition into a callable recipe using the given class merger.
+ */
 export function compileRecipe<V>(
   def: RecipeDef,
   merge: (...inputs: ClassValue[]) => string,
@@ -174,4 +210,7 @@ export function compileRecipe<V>(
   return recipe;
 }
 
+/**
+ * Joins class values without Tailwind conflict resolution.
+ */
 export const joinClasses = (...inputs: Classes[]): string => clsx(inputs);

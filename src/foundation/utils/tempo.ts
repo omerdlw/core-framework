@@ -1,7 +1,18 @@
+import { isPlainObject } from "./object";
+
+/**
+ * A cubic-bezier easing as four control values.
+ */
 export type MotionEase = readonly [number, number, number, number];
 
+/**
+ * How reduced-motion preference is applied: follow the user, always, or never.
+ */
 export type ReducedMotionPolicy = "user" | "always" | "never";
 
+/**
+ * Spring transition settings.
+ */
 export interface MotionSpring {
   readonly type?: "spring";
   readonly stiffness?: number;
@@ -11,6 +22,9 @@ export interface MotionSpring {
   readonly visualDuration?: number;
 }
 
+/**
+ * Motion tokens as written by the app: tempo, policy, durations, easings and springs.
+ */
 export interface MotionTokensInput {
   readonly tempo?: number;
   readonly reducedMotion?: ReducedMotionPolicy;
@@ -20,6 +34,9 @@ export interface MotionTokensInput {
   readonly still?: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * Motion tokens with `tempo` and `reducedMotion` resolved to concrete values.
+ */
 export type MotionTokens<T extends MotionTokensInput = MotionTokensInput> =
   Readonly<
     Omit<T, "tempo" | "reducedMotion"> & {
@@ -28,10 +45,15 @@ export type MotionTokens<T extends MotionTokensInput = MotionTokensInput> =
     }
   >;
 
+const NEUTRAL_TEMPO = 1;
+
+/**
+ * Validates and freezes motion tokens, applying defaults for tempo and policy.
+ */
 export function defineMotion<T extends MotionTokensInput>(
   tokens: T,
 ): MotionTokens<T> {
-  const tempo = tokens.tempo ?? 1;
+  const tempo = tokens.tempo ?? NEUTRAL_TEMPO;
   if (!Number.isFinite(tempo) || tempo <= 0) {
     throw new Error(`Motion tempo must be a positive number, got ${tempo}.`);
   }
@@ -42,6 +64,9 @@ export function defineMotion<T extends MotionTokensInput>(
   });
 }
 
+/**
+ * The tempo and reduced-motion state used to retime transitions.
+ */
 export interface MotionClock {
   readonly tempo: number;
   readonly reduced: boolean;
@@ -64,12 +89,6 @@ const stillOf = (clock: MotionClock): Record<string, unknown> =>
 
 type Plain = Record<string, unknown>;
 
-function isPlainObject(value: unknown): value is Plain {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
 function isSpring(value: Plain): boolean {
   return (
     value.type === "spring" ||
@@ -91,6 +110,8 @@ function retimeTransition(value: Plain, clock: MotionClock): Plain {
   for (const [key, entry] of Object.entries(value)) {
     next[key] = isPlainObject(entry) ? retimeNode(entry, clock) : entry;
   }
+  // Durations scale with tempo; spring stiffness and damping scale inversely
+  // (squared and linear) so the spring settles in proportionally less time.
   for (const key of TIME_KEYS) {
     if (typeof value[key] === "number") next[key] = value[key] * tempo;
   }
@@ -115,8 +136,12 @@ function retimeNode(value: unknown, clock: MotionClock): unknown {
   return next;
 }
 
+/**
+ * Scales every transition inside a value by the clock's tempo, or replaces
+ * them with the still transition when motion is reduced.
+ */
 export function retime<T>(value: T, clock: MotionClock): T {
-  if (clock.tempo === 1 && !clock.reduced) return value;
+  if (clock.tempo === NEUTRAL_TEMPO && !clock.reduced) return value;
   return retimeNode(value, clock) as T;
 }
 
@@ -134,8 +159,12 @@ function retimeSeconds(value: unknown, clock: MotionClock): unknown {
   return next;
 }
 
+/**
+ * Like `retime`, for a module motion object whose `timings` entry is in
+ * plain seconds.
+ */
 export function retimeModuleMotion<M>(motion: M, clock: MotionClock): M {
-  if (clock.tempo === 1 && !clock.reduced) return motion;
+  if (clock.tempo === NEUTRAL_TEMPO && !clock.reduced) return motion;
   if (!isPlainObject(motion)) return retime(motion, clock);
   const next: Plain = {};
   for (const [key, entry] of Object.entries(motion)) {

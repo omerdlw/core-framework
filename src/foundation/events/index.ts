@@ -1,6 +1,12 @@
 import { report } from "@/foundation/utils/report";
+/**
+ * A function that receives an event payload.
+ */
 export type EventListener<T = unknown> = (payload: T) => void;
 
+/**
+ * Names of the events the framework itself emits.
+ */
 export const EVENT_TYPES = Object.freeze({
   API_UNAUTHORIZED: "API_UNAUTHORIZED",
   STATE_CHANGE: "STATE_CHANGE",
@@ -8,6 +14,9 @@ export const EVENT_TYPES = Object.freeze({
   APP_ERROR: "APP_ERROR",
 } as const);
 
+/**
+ * Payload types of the framework events, keyed by event name.
+ */
 export interface FrameworkEventMap {
   [EVENT_TYPES.API_UNAUTHORIZED]: {
     error?: unknown;
@@ -36,6 +45,12 @@ export interface FrameworkEventMap {
   };
 }
 
+const DEFAULT_DEBOUNCE_MS = 100;
+
+/**
+ * A small typed publish/subscribe emitter. A throwing listener is reported and
+ * does not stop the others.
+ */
 export class EventEmitter<TEvents extends object = FrameworkEventMap> {
   private events = new Map<string, Set<EventListener<never>>>();
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -85,7 +100,11 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
     waitMs?: number,
   ): void;
   emitDebounced<T = unknown>(event: string, payload?: T, waitMs?: number): void;
-  emitDebounced(event: string, payload?: unknown, waitMs = 100): void {
+  emitDebounced(
+    event: string,
+    payload?: unknown,
+    waitMs = DEFAULT_DEBOUNCE_MS,
+  ): void {
     const existing = this.debounceTimers.get(event);
     if (existing) clearTimeout(existing);
 
@@ -137,6 +156,9 @@ type GlobalWithEvents = typeof globalThis & {
 };
 
 const _global = globalThis as GlobalWithEvents;
+/**
+ * The shared emitter used by the framework, one per runtime.
+ */
 export const globalEvents: EventEmitter<FrameworkEventMap> =
   _global[GLOBAL_EVENTS_KEY] ??
   (_global[GLOBAL_EVENTS_KEY] = new EventEmitter<FrameworkEventMap>());

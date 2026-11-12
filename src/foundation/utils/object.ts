@@ -1,7 +1,13 @@
+/**
+ * True for non-null, non-array objects.
+ */
 export function isObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+/**
+ * True for objects created by `{}` or `Object.create(null)`.
+ */
 export function isPlainObject(
   value: unknown,
 ): value is Record<string, unknown> {
@@ -10,6 +16,9 @@ export function isPlainObject(
   return proto === Object.prototype || proto === null;
 }
 
+/**
+ * Compares two values by identity, then by their own enumerable keys.
+ */
 export function shallowEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (
@@ -41,6 +50,9 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
   return true;
 }
 
+/**
+ * Wraps a single value in an array; nullish input gives an empty array.
+ */
 export function toArray<T>(value: T | T[] | null | undefined): T[] {
   if (value === null || value === undefined) return [];
   return Array.isArray(value) ? value : [value];

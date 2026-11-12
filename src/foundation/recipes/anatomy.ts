@@ -6,6 +6,9 @@ const flag = { false: "", true: "" } as const;
 
 const layout = { fill: "", intrinsic: "" } as const;
 
+/**
+ * The built-in component parts and their variants that `defineUi` can restyle.
+ */
 export const ANATOMY = {
   button: {
     root: defineRecipe({ variants: { intent: {} } }),
@@ -75,4 +78,7 @@ export const ANATOMY = {
   highlight: { fill: part() },
 } as const;
 
+/**
+ * Type of `ANATOMY`.
+ */
 export type Anatomy = typeof ANATOMY;

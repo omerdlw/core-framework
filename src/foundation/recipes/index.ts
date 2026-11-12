@@ -35,4 +35,7 @@ export { cn, createCn, type MergeVocabulary } from "./cn";
 export { ANATOMY, type Anatomy } from "./anatomy";
 export { splitVariants, variantNames } from "./split";
 
+/**
+ * Augment this interface with `{ ui: typeof yourUi }` to type components with your own UI definition.
+ */
 export interface UiRegister {}

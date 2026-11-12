@@ -16,12 +16,21 @@ import {
 
 type Ease = readonly [number, number, number, number];
 
+/**
+ * A motion transition object.
+ */
 export type UiTransition = Readonly<Record<string, unknown>>;
 
+/**
+ * Named motion variants, each a transition or a function of a custom index.
+ */
 export type UiVariants = Readonly<
   Record<string, UiTransition | ((custom: number) => UiTransition)>
 >;
 
+/**
+ * Motion settings that components read from the UI definition.
+ */
 export interface UiMotion {
   readonly follow?: UiTransition;
   readonly menu?: UiVariants;
@@ -29,6 +38,9 @@ export interface UiMotion {
   readonly glide?: { readonly duration: number; readonly ease: Ease };
 }
 
+/**
+ * Icon names that components use for built-in glyphs.
+ */
 export interface UiIcons {
   readonly check?: string;
   readonly selected?: string;
@@ -38,6 +50,9 @@ export interface UiIcons {
   readonly spinner?: string;
 }
 
+/**
+ * Default texts used by components.
+ */
 export interface UiLabels {
   readonly loading: string;
   readonly placeholder: string;
@@ -46,6 +61,9 @@ export interface UiLabels {
   readonly next: string;
 }
 
+/**
+ * The labels used when the UI definition does not override them.
+ */
 export const DEFAULT_LABELS: UiLabels = {
   loading: "Loading",
   placeholder: "Select an option...",
@@ -57,6 +75,9 @@ export const DEFAULT_LABELS: UiLabels = {
 type Parts = Readonly<Record<string, unknown>>;
 type Registry = Readonly<Record<string, Parts>>;
 
+/**
+ * Per-component, per-part recipe overrides.
+ */
 export type UiPartOverrides<D extends Registry = Anatomy> = {
   readonly [C in keyof D]?: {
     readonly [P in keyof D[C]]?: RecipeOverride<VariantsOf<D[C][P]>>;
@@ -68,6 +89,9 @@ export type UiPartOverrides<D extends Registry = Anatomy> = {
   >
 >;
 
+/**
+ * Input of `defineUi`: part overrides, merge vocabulary, motion, icons and labels.
+ */
 export interface UiConfig {
   readonly parts?: UiPartOverrides;
   readonly merge?: MergeVocabulary;
@@ -94,6 +118,9 @@ type PartsOverride<O, C> = O extends { readonly parts?: infer X }
     : {}
   : {};
 
+/**
+ * The compiled recipes of every component part, including app-defined ones.
+ */
 export type UiParts<O = {}> = {
   readonly [
     C in
@@ -107,6 +134,9 @@ export type UiParts<O = {}> = {
     : MergedParts<{}, PartsOverride<O, C>>;
 };
 
+/**
+ * A compiled UI definition: part recipes, class joiner, motion, icons and labels.
+ */
 export interface Ui<O = {}> {
   readonly parts: UiParts<O>;
   readonly cn: (...inputs: ClassValue[]) => string;
@@ -116,11 +146,28 @@ export interface Ui<O = {}> {
   readonly config: UiConfig;
 }
 
+type CompiledParts = Record<string, Recipe>;
+
+function compileComponent(
+  defaults: Parts,
+  own: Record<string, RecipeOverride>,
+  cn: (...inputs: ClassValue[]) => string,
+): CompiledParts {
+  const parts: CompiledParts = {};
+  for (const part of new Set([...Object.keys(defaults), ...Object.keys(own)])) {
+    const def = defaults[part]
+      ? extendRecipe(defaults[part], own[part])
+      : (own[part] as RecipeDef);
+    parts[part] = compileRecipe(def, cn);
+  }
+  return parts;
+}
+
 function compileParts(
   config: UiConfig,
   cn: (...inputs: ClassValue[]) => string,
-): Record<string, Record<string, Recipe>> {
-  const out: Record<string, Record<string, Recipe>> = {};
+): Record<string, CompiledParts> {
+  const out: Record<string, CompiledParts> = {};
   const overrides = (config.parts ?? {}) as Record<
     string,
     Record<string, RecipeOverride> | undefined
@@ -129,22 +176,14 @@ function compileParts(
   for (const component of names) {
     // ANATOMY is a literal table, indexed here by component name.
     const defaults = (ANATOMY as unknown as Registry)[component] ?? {};
-    const own = overrides[component] ?? {};
-    const parts: Record<string, Recipe> = {};
-    for (const part of new Set([
-      ...Object.keys(defaults),
-      ...Object.keys(own),
-    ])) {
-      const def = defaults[part]
-        ? extendRecipe(defaults[part], own[part])
-        : (own[part] as RecipeDef);
-      parts[part] = compileRecipe(def, cn);
-    }
-    out[component] = parts;
+    out[component] = compileComponent(defaults, overrides[component] ?? {}, cn);
   }
   return out;
 }
 
+/**
+ * Compiles a UI definition from the built-in anatomy and the given overrides.
+ */
 export function defineUi<const O extends UiConfig = {}>(config?: O): Ui<O> {
   const own = (config ?? {}) as UiConfig;
   const cn = createCn(own.merge);
@@ -159,14 +198,23 @@ export function defineUi<const O extends UiConfig = {}>(config?: O): Ui<O> {
   });
 }
 
+/**
+ * The UI definition used when the app does not provide one.
+ */
 export const defaultUi = defineUi();
 
+/**
+ * The app's UI definition type, taken from the `UiRegister` augmentation.
+ */
 export type RegisteredUi = UiRegister extends { ui: infer U }
   ? U
   : typeof defaultUi;
 
 type RegisteredParts = RegisteredUi extends { parts: infer P } ? P : never;
 
+/**
+ * The variant props of one part of one component.
+ */
 export type PartProps<
   C extends keyof RegisteredParts,
   P extends keyof RegisteredParts[C],
@@ -181,12 +229,18 @@ export type PartProps<
       }
     : never;
 
+/**
+ * Extra class names keyed by part name for one component.
+ */
 export type PartClassNames<C extends keyof RegisteredParts> = {
   readonly [P in keyof RegisteredParts[C]]?: string;
 };
 
 type Choices<T, K> = K extends keyof T ? NonNullable<T[K]> : never;
 
+/**
+ * The combined variant props of several parts of one component.
+ */
 export type PartsProps<
   C extends keyof RegisteredParts,
   P extends keyof RegisteredParts[C],
