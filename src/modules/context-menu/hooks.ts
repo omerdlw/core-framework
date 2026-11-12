@@ -78,19 +78,17 @@ export function useContextMenu(
     "ContextMenuProvider",
   );
   const state = useStore(store);
-  const ctx = useMemo<ContextMenuContextApi>(
-    () => ({ ...state, ...actions }),
-    [actions, state],
-  );
 
-  return useMemo(() => {
+  // stable identity: part of the public hook contract
+  return useMemo<ContextMenuContextApi>(() => {
+    const ctx = { ...state, ...actions };
     if (!config) return ctx;
     return {
       ...ctx,
       bind: (payload?: unknown, configOverride?: Partial<ContextMenuConfig>) =>
-        ctx.bind(payload, { ...config, ...configOverride }),
+        actions.bind(payload, { ...config, ...configOverride }),
     };
-  }, [config, ctx]);
+  }, [actions, config, state]);
 }
 
 /**
@@ -236,10 +234,12 @@ export function useContextMenuContentModel({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const theme = useTheme(contextMenuTheme);
+  // stable identity: part of the public hook contract
   const classes = useMemo(
     () => mergeSlotClasses(theme.slots, config.classNames),
     [config.classNames, theme.slots],
   );
+  // stable identity: part of the public hook contract
   const header = useMemo(
     () => resolveMenuHeader(config, menuContext),
     [config, menuContext],
@@ -260,6 +260,7 @@ export function useContextMenuContentModel({
     target?.focus({ preventScroll: true });
   }, [activeIndex]);
   useMenuDismissal(menuRef, onClose);
+  // stable identity: part of the public hook contract
   const handleItemSelect = useCallback(
     (
       item: ContextMenuResolvedItem,

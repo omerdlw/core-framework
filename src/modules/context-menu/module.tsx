@@ -34,6 +34,7 @@ function useContextMenuPage(
   page: PageModuleApi,
 ): ContextMenuPageApi {
   const actions = useContextMenuActions();
+  // stable identity: part of the public hook contract
   return useMemo(
     () => ({
       ...actions,

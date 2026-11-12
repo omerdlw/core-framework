@@ -1,14 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  type ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useState } from "react";
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
@@ -63,74 +56,77 @@ function createTriggerContext(
   };
 }
 
+interface ContextMenuInstance {
+  /** Keeps the pathname a bound element's menu reports up to date. */
+  setPathname: (pathname: string) => void;
+  value: ContextMenuProviderValue;
+}
+
+/** Builds the menu store and its actions. */
+function createContextMenu(): ContextMenuInstance {
+  let pathname = "";
+  const store = createStore<ContextMenuState>(createInitialMenuState(), {
+    freezeSnapshots: false,
+  });
+
+  const openMenu: ContextMenuActions["openMenu"] = (input) => {
+    const nextState = resolveNextOpenState(input);
+    if (nextState) store.publish(nextState);
+  };
+
+  const closeMenu = () => {
+    const current = store.getSnapshot();
+    if (!current.isOpen) return;
+    store.publish(createInitialMenuState());
+    safeInvoke(current.config?.onClose, current.context);
+  };
+
+  const bind: ContextMenuActions["bind"] = (payload, configOverride) => ({
+    onContextMenu: (event: ContextMenuTrigger) => {
+      const config = configOverride || store.getSnapshot().config;
+      if (!config) return;
+
+      event.preventDefault?.();
+      event.stopPropagation?.();
+
+      const point = {
+        x: Number(event.clientX ?? 0),
+        y: Number(event.clientY ?? 0),
+      };
+      const context = createTriggerContext(event, point, pathname, payload);
+
+      const prepared = prepareMenu(config, context, event);
+      if (!prepared) return;
+
+      openMenu({
+        config,
+        context: prepared.context,
+        items: prepared.items,
+        position: point,
+      });
+    },
+  });
+
+  const actions: ContextMenuActions = { bind, closeMenu, openMenu };
+  return {
+    setPathname: (next) => {
+      pathname = next;
+    },
+    value: { actions, store },
+  };
+}
+
 /**
  * Provides the context menu store and actions to its children.
  */
 export function ContextMenuProvider({ children }: ContextMenuProviderProps) {
   const pathname = usePathname();
-  const [store] = useState(() =>
-    createStore<ContextMenuState>(createInitialMenuState(), {
-      freezeSnapshots: false,
-    }),
-  );
-  const isOpen = useStore(store, selectIsOpen);
-
-  const pathnameRef = useRef(pathname);
+  const [{ setPathname, value: contextValue }] = useState(createContextMenu);
   useLayoutEffect(() => {
-    pathnameRef.current = pathname;
-  }, [pathname]);
+    setPathname(pathname || "");
+  }, [pathname, setPathname]);
 
-  const actions = useMemo<ContextMenuActions>(() => {
-    const openMenu: ContextMenuActions["openMenu"] = (input) => {
-      const nextState = resolveNextOpenState(input);
-      if (nextState) store.publish(nextState);
-    };
-
-    const closeMenu = () => {
-      const current = store.getSnapshot();
-      if (!current.isOpen) return;
-      store.publish(createInitialMenuState());
-      safeInvoke(current.config?.onClose, current.context);
-    };
-
-    const bind: ContextMenuActions["bind"] = (payload, configOverride) => ({
-      onContextMenu: (event: ContextMenuTrigger) => {
-        const config = configOverride || store.getSnapshot().config;
-        if (!config) return;
-
-        event.preventDefault?.();
-        event.stopPropagation?.();
-
-        const point = {
-          x: Number(event.clientX ?? 0),
-          y: Number(event.clientY ?? 0),
-        };
-        const context = createTriggerContext(
-          event,
-          point,
-          pathnameRef.current || "",
-          payload,
-        );
-
-        const prepared = prepareMenu(config, context, event);
-        if (!prepared) return;
-
-        openMenu({
-          config,
-          context: prepared.context,
-          items: prepared.items,
-          position: point,
-        });
-      },
-    });
-
-    return { bind, closeMenu, openMenu };
-  }, [store]);
-
-  const contextValue = useMemo<ContextMenuProviderValue>(
-    () => ({ actions, store }),
-    [actions, store],
-  );
+  const isOpen = useStore(contextValue.store, selectIsOpen);
 
   useEffect(() => emitContextMenuVisibility(isOpen), [isOpen]);
 
