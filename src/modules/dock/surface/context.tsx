@@ -3,10 +3,10 @@
 import { use, useCallback, useEffect, useMemo } from "react";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
-import {
-  type NormalizedSurfaceExtension,
-  type DockSlotContent,
-  type SurfaceId,
+import type {
+  NormalizedSurfaceExtension,
+  DockSlotContent,
+  SurfaceId,
 } from "../types";
 import { normalizeSurfaceExtension } from "./helpers";
 

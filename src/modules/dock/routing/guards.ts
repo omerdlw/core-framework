@@ -4,13 +4,13 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { globalEvents } from "@/foundation/events";
 import { DOCK_EVENTS } from "../constants";
 import { DockContext } from "../context";
-import {
-  type DockGuard,
-  type GuardCheckResult,
-  type UseDockGuardOptions,
-  type DockActions,
-  type DockGuardRegistry,
-  type DockRoutePolicy,
+import type {
+  DockGuard,
+  GuardCheckResult,
+  UseDockGuardOptions,
+  DockActions,
+  DockGuardRegistry,
+  DockRoutePolicy,
 } from "../types";
 import { report } from "@/foundation/utils";
 

@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { toArray } from "@/foundation/utils";
-import {
-  type DockActionDescriptor,
-  type DockActionDefinition,
-  type DockActionOverrides,
-  type DefineDockActionOptions,
+import type {
+  DockActionDescriptor,
+  DockActionDefinition,
+  DockActionOverrides,
+  DefineDockActionOptions,
 } from "../types";
 import { useDockActions } from "../context";
 

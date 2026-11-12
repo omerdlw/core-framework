@@ -11,33 +11,29 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { createStore } from "@/foundation/utils";
 import { DockContext } from "./context";
-import { useDockRouteReset } from "./dom";
+import { useDockRouteReset } from "./hooks/use-dock-route-reset";
 import { BreadcrumbProvider } from "./routing/breadcrumbs";
-import { isSamePath } from "./paths";
-import { createDockScheduler } from "./helpers";
+import { isSamePath } from "./model/paths";
+import { createDockScheduler } from "./lib/helpers";
 import { useDockContinuity } from "./routing/continuity";
-import {
-  SurfaceExtensionsProvider,
-  SurfaceFlowProvider,
-} from "./surface/hooks";
+import { SurfaceExtensionsProvider } from "./surface/hooks/use-surface-extensions";
+import { SurfaceFlowProvider } from "./surface/hooks/use-surface-flow";
 import { useSurfaceStack } from "./surface/stack";
-import { useDockHudRegistry } from "./hud";
+import { useDockHudRegistry } from "./hooks/use-hud-registry";
 import { useDockCommandRegistry } from "./runtime/commands";
 import { createDockGuardRegistry } from "./routing/guards";
-import {
-  useDockExpansion,
-  useDockOperationState,
-  useDockRouteBridge,
-} from "./runtime/dock";
-import {
-  type DockActions,
-  type DockContextValue,
-  type DockProviderProps,
-  type DockState,
-  type DockRoutePolicy,
-  type SurfaceFlowSession,
-  type SurfaceResult,
-  type SurfaceReturnHandshake,
+import { useDockExpansion } from "./runtime/hooks/use-dock-expansion";
+import { useDockOperationState } from "./runtime/hooks/use-dock-operation-state";
+import { useDockRouteBridge } from "./runtime/hooks/use-dock-route-bridge";
+import type {
+  DockActions,
+  DockContextValue,
+  DockProviderProps,
+  DockState,
+  DockRoutePolicy,
+  SurfaceFlowSession,
+  SurfaceResult,
+  SurfaceReturnHandshake,
 } from "./types";
 
 export function DockProvider({

@@ -1,0 +1,148 @@
+"use client";
+
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { clamp } from "@/foundation/utils";
+import { useMotionValue, useSpring } from "motion/react";
+import { useDockMedia } from "../context";
+import { useDockMotion } from "../motion";
+
+interface SeekEvent {
+  clientX?: number;
+  touches?: ArrayLike<{ clientX: number }>;
+}
+
+export function useDockMediaScrubberModel(_props: {
+  className?: string;
+  showTimeOnHover?: boolean;
+}) {
+  const { hasMedia, isPlaying, element: videoElement } = useDockMedia();
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hoverTime, setHoverTime] = useState(0);
+  const hoverX = useMotionValue(0);
+  const { scrubberFollow } = useDockMotion().transitions;
+  const smoothHoverX = useSpring(hoverX, scrubberFollow);
+  const scrubberRef = useRef<HTMLDivElement | null>(null);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const rAFRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!videoElement) {
+      if (progressBarRef.current)
+        progressBarRef.current.style.transform = "scaleX(0)";
+      setCurrentTime(0);
+      setDuration(0);
+      return;
+    }
+
+    const publishProgress = () => {
+      const current = Math.max(0, Number(videoElement.currentTime) || 0);
+      const total = Math.max(0, Number(videoElement.duration) || 0);
+      const ratio = total > 0 ? clamp(current / total, 0, 1) : 0;
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${ratio})`;
+      }
+
+      setCurrentTime((prev) =>
+        Math.abs(prev - current) >= 1 ? Math.floor(current) : prev,
+      );
+      setDuration((prev) => (prev === total ? prev : total));
+    };
+
+    const runProgressLoop = () => {
+      publishProgress();
+      rAFRef.current = requestAnimationFrame(runProgressLoop);
+    };
+
+    publishProgress();
+
+    if (isPlaying) {
+      rAFRef.current = requestAnimationFrame(runProgressLoop);
+    } else if (rAFRef.current) {
+      cancelAnimationFrame(rAFRef.current);
+    }
+
+    videoElement.addEventListener("timeupdate", publishProgress);
+    videoElement.addEventListener("durationchange", publishProgress);
+    videoElement.addEventListener("loadedmetadata", publishProgress);
+
+    return () => {
+      if (rAFRef.current !== null) cancelAnimationFrame(rAFRef.current);
+      videoElement.removeEventListener("timeupdate", publishProgress);
+      videoElement.removeEventListener("durationchange", publishProgress);
+      videoElement.removeEventListener("loadedmetadata", publishProgress);
+    };
+  }, [isPlaying, videoElement]);
+  const seekToTime = useCallback(
+    (targetTime: number) => {
+      if (!videoElement || duration <= 0) return;
+      const nextTime = clamp(targetTime, 0, duration);
+      videoElement.currentTime = nextTime;
+      setCurrentTime(Math.floor(nextTime));
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${nextTime / duration})`;
+      }
+    },
+    [duration, videoElement],
+  );
+  const handleSeek = useCallback(
+    (event: SeekEvent) => {
+      if (!videoElement || !scrubberRef.current || !duration) return;
+      const rect = scrubberRef.current.getBoundingClientRect();
+      const clientX = event.clientX ?? event.touches?.[0]?.clientX ?? 0;
+      const offsetX = clamp(clientX - rect.left, 0, rect.width);
+      const percentage = rect.width > 0 ? offsetX / rect.width : 0;
+
+      seekToTime(percentage * duration);
+    },
+    [duration, seekToTime, videoElement],
+  );
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      const keyTargets: Record<string, number> = {
+        ArrowLeft: currentTime - 5,
+        ArrowRight: currentTime + 5,
+        Home: 0,
+        End: duration,
+      };
+      if (!(event.key in keyTargets)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      seekToTime(keyTargets[event.key]);
+    },
+    [currentTime, duration, seekToTime],
+  );
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!scrubberRef.current || !duration) return;
+      const rect = scrubberRef.current.getBoundingClientRect();
+      const clientX = event.clientX ?? 0;
+      const offsetX = clamp(clientX - rect.left, 0, rect.width);
+      const percentage = rect.width > 0 ? offsetX / rect.width : 0;
+
+      hoverX.set(offsetX);
+      setHoverTime(percentage * duration);
+    },
+    [duration, hoverX],
+  );
+
+  return {
+    hasMedia,
+    videoElement,
+    currentTime,
+    duration,
+    isHovered,
+    setIsHovered,
+    hoverTime,
+    smoothHoverX,
+    scrubberRef,
+    progressBarRef,
+    handleSeek,
+    handleKeyDown,
+    handleMouseMove,
+  };
+}

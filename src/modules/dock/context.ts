@@ -17,12 +17,12 @@ import {
   type LoadingStateWithPage,
 } from "@/modules/loading";
 import { useNotificationVisible } from "@/modules/notification";
-import {
-  type DockActions,
-  type DockContextValue,
-  type DockState,
-  type ErrorActionsProps,
-  type GuardActionsProps,
+import type {
+  DockActions,
+  DockContextValue,
+  DockState,
+  ErrorActionsProps,
+  GuardActionsProps,
 } from "./types";
 
 export const DockContext = getOrCreateGlobalContext<DockContextValue | null>(

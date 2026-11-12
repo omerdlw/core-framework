@@ -7,14 +7,14 @@ import {
   DOCK_CONTINUITY_MAX_ENTRIES,
   DOCK_SURFACE_RETURN_MAX_ENTRIES,
 } from "../constants";
-import { isSafeInternalHref } from "../paths";
-import {
-  type DockContinuityAction,
-  type DockContinuityEntry,
-  type DockContinuityRememberOptions,
-  type DockContinuityState,
-  type DockReturnHandoff,
-  type DockReturnHandoffInput,
+import { isSafeInternalHref } from "../model/paths";
+import type {
+  DockContinuityAction,
+  DockContinuityEntry,
+  DockContinuityRememberOptions,
+  DockContinuityState,
+  DockReturnHandoff,
+  DockReturnHandoffInput,
 } from "../types";
 
 function normalizeContinuitySnapshot(

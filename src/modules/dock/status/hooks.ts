@@ -8,10 +8,10 @@ import {
   type ComponentType,
 } from "react";
 import { usePathname } from "next/navigation";
-import {
-  type StatusState,
-  type QueuedApiError,
-  type ScheduleStatusClearOptions,
+import type {
+  StatusState,
+  QueuedApiError,
+  ScheduleStatusClearOptions,
 } from "../types";
 import { STATUS_CLEAR_DURATION } from "../constants";
 import type { StatusSetter, StatusUpdate, TimerRef } from "./model";

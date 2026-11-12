@@ -2,11 +2,11 @@ import { type Transition } from "motion/react";
 import { cssTransition, gpuTransform } from "@/foundation/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/react/theme";
 import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
-import {
-  type DockMotion,
-  type DockSurfacePhaseKey,
-  type DockSurfacePhaseMotion,
-  type DockSurfaceTimings,
+import type {
+  DockMotion,
+  DockSurfacePhaseKey,
+  DockSurfacePhaseMotion,
+  DockSurfaceTimings,
 } from "./types";
 
 function staggerDelay(

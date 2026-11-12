@@ -37,7 +37,7 @@ import {
 } from "../../src/core/navigation/utils.ts";
 import { DockProvider } from "../../src/modules/dock/provider.tsx";
 import { useDockNavigation } from "../../src/modules/dock/routing/navigation.ts";
-import { createDockScheduler } from "../../src/modules/dock/helpers.ts";
+import { createDockScheduler } from "../../src/modules/dock/lib/helpers.ts";
 
 declare module "../../src/core/navigation/types.ts" {
   interface NavigationPayload {

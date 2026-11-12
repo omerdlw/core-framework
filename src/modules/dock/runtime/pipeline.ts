@@ -1,6 +1,10 @@
 import { normalizePath } from "@/foundation/utils";
-import { isInlineActionPathMatch, isPathPrefix, isSamePath } from "../paths";
-import { type DockItem } from "../types";
+import {
+  isInlineActionPathMatch,
+  isPathPrefix,
+  isSamePath,
+} from "../model/paths";
+import type { DockItem } from "../types";
 
 type AncestorAwareItem = DockItem & {
   keepWhenDescendant?:

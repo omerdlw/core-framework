@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, use, type ComponentType } from "react";
+import { type ComponentType, use, useEffect, useMemo, useState } from "react";
 import { useRegistryEntries } from "@/core/kernel";
 import {
-  normalizePath,
   shallowEqual as areShallowCollectionsEqual,
+  normalizePath,
 } from "@/foundation/utils";
 import { usePathname } from "next/navigation";
-import { toSearchableText } from "../helpers";
-import { isPathPrefix, isSamePath } from "../paths";
-import { resolveActiveIndex } from "./pipeline";
 import { useModuleTheme } from "@/react/theme";
+import { resolveActiveIndex } from "./pipeline";
 import {
   DOCK_ATTENTION_KIND,
   DOCK_PENDING_ROUTE_HOLD_MS,
@@ -19,163 +17,32 @@ import {
 import { createInlineSurfaceEntry } from "../surface/definition";
 import { applySurfaceToDockItem } from "../surface/view-model";
 import { applyStatusOverlay } from "../status/model";
-import { applyMediaAction } from "../cards";
-import {
-  type DockAttention,
-  type DockItem,
-  type DockStatusDescriptor,
-  type SurfaceState,
-  type SurfaceViewModelOptions,
+import { applyMediaAction } from "../hooks/apply-media-action";
+import type {
+  DockAttention,
+  DockItem,
+  DockStatusDescriptor,
+  SurfaceState,
+  SurfaceViewModelOptions,
 } from "../types";
 import {
-  useDockHasMedia,
-  useDockMediaActions,
-  useDockLoadingState as useLoadingState,
   DockContext,
   useDockActions,
+  useDockHasMedia,
+  useDockMediaActions,
   useDockSelector,
+  useDockLoadingState as useLoadingState,
 } from "../context";
-import { resolveDockAttention } from "../state";
-import { createDockTopology } from "../routing/navigation";
+import { resolveDockAttention } from "../model/state";
+import { createDockTopology } from "../routing/model/topology";
 import { useDockStatus } from "../status/hooks";
-
-export function isNotFoundItem(item: DockItem | null | undefined): boolean {
-  return (
-    item?.isNotFound || item?.path === "not-found" || item?.type === "NOT_FOUND"
-  );
-}
-
-function flattenDockItems(items: DockItem[]): DockItem[] {
-  return items.map((item) => ({
-    ...item,
-    activeChild: null,
-    children: null,
-    hasActiveChild: false,
-    isExpanded: false,
-    isParent: false,
-  }));
-}
-
-function filterDockItems(items: DockItem[], searchQuery: string): DockItem[] {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-  if (!normalizedQuery) return items;
-  return items.filter(
-    (item) =>
-      toSearchableText(item.name).toLowerCase().includes(normalizedQuery) ||
-      toSearchableText(item.title).toLowerCase().includes(normalizedQuery) ||
-      toSearchableText(item.description)
-        .toLowerCase()
-        .includes(normalizedQuery),
-  );
-}
-
-export function buildDockItems({
-  rawItems,
-  expanded,
-  searchQuery,
-  isNotFoundPage,
-}: {
-  rawItems: DockItem[];
-  expanded?: boolean;
-  searchQuery: string;
-  isNotFoundPage: boolean;
-}): DockItem[] {
-  const baseItems = isNotFoundPage
-    ? rawItems.filter((item) => item.path === "/" || isNotFoundItem(item))
-    : rawItems;
-  const flattenedItems = flattenDockItems(baseItems);
-  if (expanded && searchQuery)
-    return filterDockItems(flattenedItems, searchQuery);
-  return flattenedItems;
-}
-
-export interface DockBaseMatch {
-  item: DockItem | null;
-  isFallback: boolean;
-}
-
-export function resolveBaseActiveItemMatch({
-  rawItems,
-  dockItems,
-  pathname,
-  isNotFoundPage,
-}: {
-  rawItems: DockItem[];
-  dockItems: DockItem[];
-  pathname: string;
-  isNotFoundPage: boolean;
-}): DockBaseMatch {
-  const normalizedPathname = normalizePath(pathname);
-  const matched = (item: DockItem | null): DockBaseMatch => ({
-    item,
-    isFallback: false,
-  });
-
-  const selectedDataSource = dockItems.find(
-    (item) => item.isDataSource && item.isSelected,
-  );
-  if (selectedDataSource) return matched(selectedDataSource);
-
-  if (isNotFoundPage)
-    return matched(rawItems.find(isNotFoundItem) || rawItems[0] || null);
-
-  const matchInDock = dockItems.find(
-    (item) =>
-      isSamePath(item.path, normalizedPathname) ||
-      (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
-  );
-  if (matchInDock) return matched(matchInDock);
-
-  const matchInRaw = rawItems.find(
-    (item) =>
-      isSamePath(item.path, normalizedPathname) ||
-      (item.targetPath && isSamePath(item.targetPath, normalizedPathname)),
-  );
-  if (matchInRaw) return matched(matchInRaw);
-
-  let prefixMatchedRawItem: DockItem | null = null;
-  let longestPrefixLength = -1;
-  for (let i = 0; i < rawItems.length; i++) {
-    const candidatePath = normalizePath(rawItems[i]?.path);
-    if (
-      candidatePath.length > longestPrefixLength &&
-      isPathPrefix(candidatePath, normalizedPathname)
-    ) {
-      prefixMatchedRawItem = rawItems[i];
-      longestPrefixLength = candidatePath.length;
-    }
-  }
-
-  if (prefixMatchedRawItem) {
-    const item =
-      dockItems.find(
-        (entry) =>
-          isSamePath(entry?.path, prefixMatchedRawItem?.path) ||
-          (entry?.name && entry.name === prefixMatchedRawItem?.name),
-      ) || prefixMatchedRawItem;
-    return {
-      item,
-      isFallback: normalizePath(prefixMatchedRawItem.path) === "/",
-    };
-  }
-  return { item: rawItems[0] || null, isFallback: true };
-}
-
-export function selectPendingRouteItem({
-  match,
-  heldItem,
-  pathname,
-  isHolding,
-}: {
-  match: DockBaseMatch;
-  heldItem: DockItem | null;
-  pathname: string;
-  isHolding: boolean;
-}): DockItem | null {
-  if (!match.isFallback || !isHolding || !heldItem) return match.item;
-  if (heldItem.path && isSamePath(heldItem.path, pathname)) return match.item;
-  return heldItem;
-}
+import {
+  type DockBaseMatch,
+  buildDockItems,
+  isNotFoundItem,
+  resolveBaseActiveItemMatch,
+  selectPendingRouteItem,
+} from "./model/items";
 
 export function usePendingRouteHold(
   pathname: string,

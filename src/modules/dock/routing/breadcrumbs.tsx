@@ -11,15 +11,15 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { normalizePath } from "@/foundation/utils";
 import { useRequiredContext } from "@/react/hooks";
-import { formatSlugTitle } from "./navigation";
-import {
-  type BreadcrumbConfig,
-  type BreadcrumbContextValue,
-  type BreadcrumbItem,
-  type BreadcrumbOverride,
-  type DockIconSource,
-  type DefineBreadcrumbOptions,
-  type DockComponentProps,
+import { formatSlugTitle } from "./model/policy";
+import type {
+  BreadcrumbConfig,
+  BreadcrumbContextValue,
+  BreadcrumbItem,
+  BreadcrumbOverride,
+  DockIconSource,
+  DefineBreadcrumbOptions,
+  DockComponentProps,
 } from "../types";
 
 function formatPath(path: string | null): string {

@@ -25,11 +25,11 @@ import {
   getDockStackTransformTransition,
   getDockStackTransition,
 } from "../../src/modules/dock/motion.ts";
-import { getDockItemCardProps } from "../../src/modules/dock/styles.ts";
-import { DockCardBanner } from "../../src/modules/dock/overlay.tsx";
-import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/hooks.tsx";
+import { getDockItemCardProps } from "../../src/modules/dock/lib/styles.ts";
+import { DockCardBanner } from "../../src/modules/dock/components/card-banner.tsx";
+import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/hooks/use-surface-shell-model.ts";
 import { dockMotion } from "../support/motion/dock.ts";
-import type { DockMotion } from "../../src/modules/dock/types.ts";
+import type { DockMotion } from "../../src/modules/dock/types/index.ts";
 
 const PHASE = DOCK_SURFACE_PHASE;
 

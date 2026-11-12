@@ -1,185 +1,31 @@
 "use client";
 
-import {
-  isValidElement,
-  lazy,
-  useCallback,
-  useMemo,
-  type ReactNode,
-} from "react";
-import { isPlainObject } from "@/foundation/utils";
-import {
-  DOCK_SURFACE_RENDER_MODE,
-  DOCK_SURFACE_FLOW_STATUS,
-} from "../constants";
-import {
-  isValidComponentType,
-  resolveComponentType,
-  resolveRenderableContent,
-} from "../helpers";
+import { lazy } from "react";
+import { DOCK_SURFACE_FLOW_STATUS } from "../constants";
 import {
   createSurfaceReturnHandshake,
-  isSurfaceDescriptor,
-  normalizeSurfaceExtension,
   normalizeSurfaceFlowSnapshot,
   resolveSurfaceFlowReturnHandshake,
 } from "./helpers";
-import {
-  type DockComponentProps,
-  type NormalizedSurfaceDefinition,
-  type NormalizedSurfaceExtension,
-  type OpenSurfaceOptions,
-  type SurfaceBuilderDefinition,
-  type SurfaceBuilderFactory,
-  type SurfaceDescriptor,
-  type SurfaceFlowDefinition,
-  type SurfaceFlowDefinitionInput,
-  type SurfaceFlowSession,
-  type SurfaceInput,
-  type SurfaceResult,
-  type SurfaceStep,
-  type BoundSurfaceFactory,
-  type DefineStepSurfaceOptions,
-  type GeneralSurfaceHandle,
-  type SurfaceHandle,
-  type SurfaceFactoryLike,
-  type SurfaceOpenFn,
-  type UseSurfaceInput,
+import type {
+  BoundSurfaceFactory,
+  DefineStepSurfaceOptions,
+  DockComponentProps,
+  NormalizedSurfaceDefinition,
+  OpenSurfaceOptions,
+  SurfaceBuilderDefinition,
+  SurfaceBuilderFactory,
+  SurfaceDescriptor,
+  SurfaceFactoryLike,
+  SurfaceFlowDefinition,
+  SurfaceFlowDefinitionInput,
+  SurfaceFlowSession,
+  SurfaceHandle,
+  SurfaceInput,
+  SurfaceResult,
 } from "../types";
-import { useDockActions, useDockSelector } from "../context";
-
-const isNormalizedExtension = (
-  extension: NormalizedSurfaceExtension | null,
-): extension is NormalizedSurfaceExtension => extension !== null;
-
-export function normalizeExtensions(
-  raw: SurfaceDescriptor["extensions"],
-): NormalizedSurfaceExtension[] {
-  if (!raw) return [];
-  return (Array.isArray(raw) ? raw : [raw])
-    .map(normalizeSurfaceExtension)
-    .filter(isNormalizedExtension);
-}
-
-function normalizeSurfaceDefinition(
-  input: unknown,
-  config: OpenSurfaceOptions = {},
-  {
-    allowPrimitiveContent = false,
-    defaultShowAction = false,
-  }: {
-    allowPrimitiveContent?: boolean;
-    defaultShowAction?: boolean | null;
-  } = {},
-): NormalizedSurfaceDefinition | null {
-  const descriptor: SurfaceDescriptor | null =
-    isSurfaceDescriptor(input) &&
-    (isValidComponentType(input.component) ||
-      typeof input.loader === "function" ||
-      "content" in input ||
-      "node" in input ||
-      "element" in input ||
-      (Array.isArray(input.steps) && input.steps.length > 0))
-      ? input
-      : null;
-  const configuredSteps = descriptor?.steps ?? config?.steps;
-  const steps: SurfaceStep[] | null =
-    Array.isArray(configuredSteps) && configuredSteps.length > 0
-      ? configuredSteps
-      : null;
-  const firstStep: SurfaceStep | null = steps?.[0] ?? null;
-
-  const rawComponent = resolveComponentType(
-    descriptor?.component,
-    descriptor ? null : input,
-    firstStep?.component,
-    firstStep,
-  );
-  const component =
-    rawComponent ??
-    (typeof descriptor?.loader === "function"
-      ? lazy(descriptor.loader)
-      : typeof firstStep?.loader === "function"
-        ? lazy(firstStep.loader)
-        : null);
-  const explicitContent = resolveRenderableContent(
-    descriptor?.content,
-    descriptor?.node,
-    descriptor?.element,
-    firstStep?.content,
-    firstStep?.node,
-    firstStep?.element,
-  );
-  const fallbackContent =
-    !descriptor &&
-    !component &&
-    (isValidElement(input) || (allowPrimitiveContent && input != null))
-      ? (input as ReactNode)
-      : null;
-  const content = explicitContent ?? fallbackContent;
-
-  if (!component && content == null && !steps) return null;
-
-  const directComponentInput = !descriptor && isValidComponentType(input);
-  const extensions = normalizeExtensions(
-    descriptor?.extensions ?? config?.extensions,
-  );
-
-  return {
-    renderMode: component
-      ? DOCK_SURFACE_RENDER_MODE.COMPONENT
-      : DOCK_SURFACE_RENDER_MODE.NODE,
-    component,
-    content: component ? null : (content ?? (input as ReactNode)),
-    props: component
-      ? isPlainObject(descriptor?.props)
-        ? descriptor.props
-        : directComponentInput
-          ? (config as DockComponentProps)
-          : {}
-      : {},
-    action: descriptor?.action ?? config?.action ?? null,
-    showAction:
-      descriptor?.showAction ?? config?.showAction ?? defaultShowAction,
-    dismissible: descriptor?.dismissible ?? config?.dismissible ?? true,
-    onClose: descriptor?.onClose ?? config?.onClose ?? null,
-    icon:
-      descriptor?.icon ??
-      descriptor?.header?.icon ??
-      config?.icon ??
-      config?.header?.icon ??
-      null,
-    title:
-      descriptor?.title ??
-      descriptor?.header?.title ??
-      config?.title ??
-      config?.header?.title ??
-      null,
-    description:
-      descriptor?.description ??
-      descriptor?.header?.description ??
-      config?.description ??
-      config?.header?.description ??
-      null,
-    descriptionMaxLines:
-      descriptor?.descriptionMaxLines ?? config?.descriptionMaxLines ?? 2,
-    trailing: descriptor?.trailing ?? config?.trailing ?? null,
-    headerAction: descriptor?.headerAction ?? config?.headerAction ?? null,
-    closeLabel: descriptor?.closeLabel ?? config?.closeLabel ?? null,
-    width: descriptor?.width ?? config?.width ?? null,
-    allowSwipeDismiss:
-      descriptor?.allowSwipeDismiss ?? config?.allowSwipeDismiss ?? true,
-    skipActionDismiss:
-      descriptor?.skipActionDismiss ?? config?.skipActionDismiss ?? true,
-    steps,
-    currentStepIndex:
-      descriptor?.currentStepIndex ?? config?.currentStepIndex ?? 0,
-    syncWithUrl: descriptor?.syncWithUrl ?? config?.syncWithUrl ?? false,
-    urlKey: descriptor?.urlKey ?? config?.urlKey ?? null,
-    badge: descriptor?.badge ?? config?.badge ?? null,
-    extensions,
-  };
-}
+import { normalizeSurfaceDefinition } from "./hooks/normalize";
+import { useSurface } from "./hooks/use-surface";
 
 export function createSurfaceEntryDefinition(
   input: SurfaceInput | unknown,
@@ -290,85 +136,6 @@ export function createInlineSurfaceEntry(
   );
 }
 
-const EMPTY_SURFACE_STACK: GeneralSurfaceHandle["surfaceStack"] = [];
-
-export function useSurface(
-  surfaceDefinition?: UseSurfaceInput | null,
-): SurfaceHandle | GeneralSurfaceHandle {
-  const { closeAllSurfaces, closeSurface, openSurface } = useDockActions();
-  const rawSurfaceStack: GeneralSurfaceHandle["surfaceStack"] = useDockSelector(
-    (s) => s.surfaceStack,
-  );
-  const surfaceStack = rawSurfaceStack || EMPTY_SURFACE_STACK;
-
-  const specificSurface = useMemo((): SurfaceHandle | null => {
-    if (!surfaceDefinition) return null;
-
-    const targetComponent =
-      typeof surfaceDefinition === "string"
-        ? null
-        : typeof surfaceDefinition === "function"
-          ? surfaceDefinition.component || surfaceDefinition
-          : surfaceDefinition.component || null;
-
-    const matchingEntry =
-      surfaceStack.find(
-        (entry) => targetComponent && entry.component === targetComponent,
-      ) ?? null;
-    const isThisSurfaceOpen = Boolean(matchingEntry);
-
-    const open: SurfaceOpenFn = (props, overrides) => {
-      const entry: SurfaceDescriptor =
-        typeof surfaceDefinition === "function"
-          ? surfaceDefinition(props, overrides)
-          : typeof surfaceDefinition === "string"
-            ? { id: surfaceDefinition, props, ...overrides }
-            : {
-                ...surfaceDefinition,
-                props: { ...(surfaceDefinition.props || {}), ...props },
-                ...overrides,
-              };
-      return openSurface(entry);
-    };
-
-    const close = (res?: SurfaceResult) =>
-      closeSurface(res, matchingEntry?.id ?? null);
-    const result = [
-      open,
-      {
-        close,
-        closeAll: closeAllSurfaces,
-        isOpen: isThisSurfaceOpen,
-        surfaceStack,
-      },
-    ] as SurfaceHandle;
-    result.open = open;
-    result.close = close;
-    result.closeAll = closeAllSurfaces;
-    result.isOpen = isThisSurfaceOpen;
-    result.surfaceStack = surfaceStack;
-    return result;
-  }, [
-    closeAllSurfaces,
-    closeSurface,
-    openSurface,
-    surfaceDefinition,
-    surfaceStack,
-  ]);
-
-  const generalSurface = useMemo(
-    (): GeneralSurfaceHandle => ({
-      closeAllSurfaces,
-      closeSurface,
-      openSurface,
-      surfaceStack,
-    }),
-    [closeAllSurfaces, closeSurface, openSurface, surfaceStack],
-  );
-
-  return surfaceDefinition ? specificSurface! : generalSurface;
-}
-
 export function defineSurface(
   definition: SurfaceBuilderDefinition = {},
 ): BoundSurfaceFactory {
@@ -431,57 +198,6 @@ export function defineStepSurface(definition: DefineStepSurfaceOptions = {}) {
   };
 
   return stepSurfaceFactory;
-}
-
-export function useSurfaceStep() {
-  const { closeSurface, goToStep, popStep, pushStep } = useDockActions();
-  const surfaceStack =
-    useDockSelector((s) => s.surfaceStack) || EMPTY_SURFACE_STACK;
-  const activeEntry = surfaceStack[surfaceStack.length - 1] || null;
-  const steps: SurfaceStep[] = Array.isArray(activeEntry?.steps)
-    ? activeEntry.steps
-    : [];
-  const stepIndex = Number(activeEntry?.currentStepIndex || 0);
-  const stepsTotal = steps.length;
-  const currentStep = steps[stepIndex] || null;
-  const isFirst = stepIndex <= 0;
-  const isLast = stepsTotal > 0 && stepIndex >= stepsTotal - 1;
-
-  const next = useCallback(() => {
-    if (!isLast) goToStep(stepIndex + 1);
-  }, [goToStep, isLast, stepIndex]);
-
-  const prev = useCallback(() => {
-    if (!isFirst) popStep();
-  }, [isFirst, popStep]);
-
-  const goTo = useCallback(
-    (idx: number) => {
-      goToStep(idx);
-    },
-    [goToStep],
-  );
-
-  const push = useCallback(
-    (step: SurfaceStep) => {
-      pushStep(step);
-    },
-    [pushStep],
-  );
-
-  return {
-    close: closeSurface,
-    currentStep,
-    goTo,
-    isFirst,
-    isLast,
-    next,
-    prev,
-    push,
-    stepIndex,
-    steps,
-    stepsTotal,
-  };
 }
 
 export function createSurfaceError(

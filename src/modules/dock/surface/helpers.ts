@@ -1,15 +1,15 @@
 import { isValidElement } from "react";
 import { isPlainObject } from "@/foundation/utils";
-import { isValidComponentType } from "../helpers";
-import { isSafeInternalHref } from "../paths";
-import {
-  type NormalizedSurfaceExtension,
-  type SurfaceDescriptor,
-  type SurfaceExtension,
-  type SurfaceFlowDefinition,
-  type SurfaceFlowReturnInput,
-  type SurfaceReturnHandshake,
-  type SurfaceReturnHandshakeInput,
+import { isValidComponentType } from "../hooks/element-helpers";
+import { isSafeInternalHref } from "../model/paths";
+import type {
+  NormalizedSurfaceExtension,
+  SurfaceDescriptor,
+  SurfaceExtension,
+  SurfaceFlowDefinition,
+  SurfaceFlowReturnInput,
+  SurfaceReturnHandshake,
+  SurfaceReturnHandshakeInput,
 } from "../types";
 
 export function isSurfaceDescriptor(

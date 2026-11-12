@@ -3,13 +3,13 @@
 import { type ComponentType } from "react";
 import { EVENT_TYPES, globalEvents } from "@/foundation/events";
 import { toUserMessage } from "@/foundation/utils";
-import { type QueuedApiError, type ScheduleStatusClearOptions } from "../types";
+import type { QueuedApiError, ScheduleStatusClearOptions } from "../types";
 import {
   API_ERROR_BATCH_DELAY,
   DOCK_EVENTS,
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
-import { normalizeUpper } from "../helpers";
+import { normalizeUpper } from "../lib/helpers";
 import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
 import {
   createErrorStatus,

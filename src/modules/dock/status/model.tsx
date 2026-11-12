@@ -2,16 +2,16 @@
 
 import { type ComponentType } from "react";
 import { Icon } from "@/react/ui/components/icon";
-import {
-  type StatusState,
-  type DockIconSource,
-  type DockSlotContent,
-  type DockStatusDescriptor,
-  type DockStatusTheme,
-  type ErrorActionsProps,
-  type GuardActionsProps,
-  type PersistedOverlayStatus,
-  type DockItem,
+import type {
+  StatusState,
+  DockIconSource,
+  DockSlotContent,
+  DockStatusDescriptor,
+  DockStatusTheme,
+  ErrorActionsProps,
+  GuardActionsProps,
+  PersistedOverlayStatus,
+  DockItem,
 } from "../types";
 import {
   ERROR_STATUS_TYPES,
@@ -19,7 +19,7 @@ import {
   OVERLAY_STATUS_STORAGE_KEY,
 } from "../constants";
 import { statusActionDefaults } from "../context";
-import { normalizeUpper } from "../helpers";
+import { normalizeUpper } from "../lib/helpers";
 
 export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
 

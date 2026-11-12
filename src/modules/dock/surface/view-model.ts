@@ -1,15 +1,18 @@
 import { isPlainObject } from "@/foundation/utils";
 import { DOCK_SURFACE_PHASE } from "../constants";
-import { resolveComponentType, resolveRenderableContent } from "../helpers";
-import { normalizeExtensions } from "./definition";
 import {
-  type ActiveSurfaceStep,
-  type DockItem,
-  type RenderableSurfaceEntry,
-  type SurfaceDescriptor,
-  type SurfaceResult,
-  type SurfaceStep,
-  type SurfaceViewModelOptions,
+  resolveComponentType,
+  resolveRenderableContent,
+} from "../hooks/element-helpers";
+import { normalizeExtensions } from "./hooks/normalize";
+import type {
+  ActiveSurfaceStep,
+  DockItem,
+  RenderableSurfaceEntry,
+  SurfaceDescriptor,
+  SurfaceResult,
+  SurfaceStep,
+  SurfaceViewModelOptions,
 } from "../types";
 
 function resolveSurfaceAction(

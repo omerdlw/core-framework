@@ -12,19 +12,19 @@ import {
   useDockSelector,
   useDockState,
 } from "../../src/modules/dock/index.ts";
-import { useDockConfig } from "../../src/modules/dock/hooks.ts";
+import { useDockConfig } from "../../src/modules/dock/hooks/use-dock-config.ts";
 import {
   createDockScheduler,
   formatMediaTime,
   normalizeUpper,
-} from "../../src/modules/dock/helpers.ts";
+} from "../../src/modules/dock/lib/helpers.ts";
 import {
   getDockLocationKey,
   isPathPrefix,
   isSafeInternalHref,
   isSamePath,
-} from "../../src/modules/dock/paths.ts";
-import { isValidBannerUrl } from "../../src/modules/dock/styles.ts";
+} from "../../src/modules/dock/model/paths.ts";
+import { isValidBannerUrl } from "../../src/modules/dock/lib/styles.ts";
 import {
   PageControllerProvider,
   RegistryProvider,
@@ -36,7 +36,7 @@ import {
   createDockOperationState,
   dockOperationReducer,
   resolveActiveDockOperation,
-} from "../../src/modules/dock/state.ts";
+} from "../../src/modules/dock/model/state.ts";
 import {
   DOCK_OPERATION_EVENTS,
   DOCK_OPERATION_MAX_ENTRIES,
@@ -45,6 +45,8 @@ import {
   SURFACE_TRANSITION_EFFECTS as EFFECT,
   SURFACE_TRANSITION_EVENTS as EVENT,
   createSurfaceTransitionState,
+} from "../../src/modules/dock/surface/model/transition-state.ts";
+import {
   runSurfaceTransition,
   transitionSurface,
 } from "../../src/modules/dock/surface/machine.ts";
@@ -82,24 +84,24 @@ import {
   getLineClampStyle,
   resolveDockActionClass,
   splitStyle,
-} from "../../src/modules/dock/styles.ts";
+} from "../../src/modules/dock/lib/styles.ts";
 import {
   getItemMeasurementKey,
   getRouteMeasurementKey,
-} from "../../src/modules/dock/layout.ts";
+} from "../../src/modules/dock/model/layout.ts";
 import {
   isEditableDockTarget,
   isInteractiveTarget,
   shouldRestoreDockFocus,
-} from "../../src/modules/dock/dom.ts";
+} from "../../src/modules/dock/lib/dom.ts";
 import {
   isHudDescriptor,
   isValidComponentType,
   resolveComponentType,
   resolveRenderableContent,
-  toObject,
   toSearchableText,
-} from "../../src/modules/dock/helpers.ts";
+} from "../../src/modules/dock/hooks/element-helpers.ts";
+import { toObject } from "../../src/modules/dock/lib/helpers.ts";
 
 import {
   createInlineSurfaceEntry,
@@ -108,9 +110,9 @@ import {
   createSurfaceFlowBuilder,
   createSurfaceFlowDefinition,
   createSurfaceFlowSession,
-  normalizeExtensions,
   updateSurfaceFlowSession,
 } from "../../src/modules/dock/surface/definition.ts";
+import { normalizeExtensions } from "../../src/modules/dock/surface/hooks/normalize.ts";
 
 import {
   applyStatusOverlay,
@@ -129,12 +131,14 @@ import { OVERLAY_STATUS_STORAGE_KEY } from "../../src/modules/dock/constants.ts"
 import {
   buildDockItems,
   isNotFoundItem,
-  resolveActiveItem,
   resolveBaseActiveItemMatch,
   selectPendingRouteItem,
+} from "../../src/modules/dock/runtime/model/items.ts";
+import {
+  resolveActiveItem,
   usePendingRouteHold,
 } from "../../src/modules/dock/runtime/display.ts";
-import { useDockLayout } from "../../src/modules/dock/runtime/dock.tsx";
+import { useDockLayout } from "../../src/modules/dock/runtime/hooks/use-dock-layout.ts";
 import {
   DOCK_ATTENTION_KIND,
   DOCK_PENDING_ROUTE_HOLD_MS,
@@ -2449,7 +2453,7 @@ describe("surface card facing the page", () => {
 
   test("the card shows the surface only between the page's leaving and return", async () => {
     const { isSurfaceLayerShown } =
-      await import("../../src/modules/dock/cards.tsx");
+      await import("../../src/modules/dock/lib/card.ts");
     const { DOCK_SURFACE_PHASE } =
       await import("../../src/modules/dock/constants.ts");
     const shows = (surfacePhase: string) =>
@@ -2478,4 +2482,68 @@ describe("surface card facing the page", () => {
     assert.equal(item.action, null);
     assert.equal(item.restingAction, action);
   });
+});
+
+test("dock public surface is unchanged", async () => {
+  const keys = Object.keys(
+    await import("../../src/modules/dock/index.ts"),
+  ).sort();
+  assert.deepEqual(keys, [
+    "DOCK_EVENTS",
+    "DOCK_HUD_PRIORITY",
+    "DOCK_HUD_RENDER_MODE",
+    "DOCK_HUD_VARIANT",
+    "Dock",
+    "DockCardBanner",
+    "DockCardHeader",
+    "DockDescription",
+    "DockIcon",
+    "DockProvider",
+    "DockSurfaceAction",
+    "DockSurfaceExtension",
+    "DockSurfaceHeaderButton",
+    "DockTitle",
+    "ErrorActions",
+    "GuardActions",
+    "createDockGuardRegistry",
+    "createErrorStatus",
+    "createGuardStatus",
+    "createInlineSurfaceEntry",
+    "createSurfaceEntryDefinition",
+    "createSurfaceFlowBuilder",
+    "defineBreadcrumb",
+    "defineDockAction",
+    "defineHud",
+    "defineStepSurface",
+    "defineSurface",
+    "dockModule",
+    "dockTheme",
+    "isValidBannerUrl",
+    "useDock",
+    "useDockActionClass",
+    "useDockActions",
+    "useDockBanner",
+    "useDockConfig",
+    "useDockContextActions",
+    "useDockDimensions",
+    "useDockGuard",
+    "useDockHeight",
+    "useDockHud",
+    "useDockMotion",
+    "useDockRegistration",
+    "useDockSelector",
+    "useDockState",
+    "useDockTheme",
+    "useHud",
+    "useOptionalDockActions",
+    "useOptionalDockState",
+    "useSurface",
+    "useSurfaceAction",
+    "useSurfaceDimensions",
+    "useSurfaceFlow",
+    "useSurfaceHeader",
+    "useSurfaceId",
+    "useSurfaceReturn",
+    "useSurfaceStep",
+  ]);
 });
