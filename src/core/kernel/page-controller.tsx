@@ -221,6 +221,11 @@ function useModuleControllers(
   effectiveConfig: PageConfig,
   pageApi: PageModuleApi,
 ): PageModules {
+  // Each `page.use` is a hook the compiler cannot see; compiled, the loop
+  // below is memoized and the module hooks are skipped on re-render.
+  "use no memo";
+
+  // kept: useModuleControllers is a compiler exception (docs/architecture-and-rules.md)
   // stable identity: part of the public hook contract
   // (page.use receives the same slice until the config changes)
   const moduleSlices = useMemo(
