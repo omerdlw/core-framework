@@ -1,6 +1,5 @@
 "use client";
 
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { type JSX, type ReactNode } from "react";
 
 import { GlobalError, GlobalErrorListener, ModuleError } from "@/core/error";
@@ -12,6 +11,7 @@ import {
   type ProviderEntry,
 } from "@/core/kernel";
 import { ModuleMotionConfig } from "@/react/theme";
+import { TooltipProvider } from "@/react/ui/components/tooltip";
 
 const DEFAULT_TOOLTIP_DELAY = 300;
 const DEFAULT_TOOLTIP_SKIP_DELAY = 150;
@@ -84,9 +84,7 @@ export function CoreProvider({
 
   const providerPipeline: readonly ProviderEntry[] = [
     GlobalError,
-    ...(tooltipConfig
-      ? [[TooltipPrimitive.Provider, tooltipConfig] as const]
-      : []),
+    ...(tooltipConfig ? [[TooltipProvider, tooltipConfig] as const] : []),
     [ModuleHost, { boundary: ModuleBoundary, modules, registryEntries }],
     ...(providers ?? []),
   ];

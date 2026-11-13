@@ -1,7 +1,8 @@
 import "../support/dom.ts";
 
+import { MotionGlobalConfig } from "motion/react";
 import assert from "node:assert/strict";
-import { describe, test } from "node:test";
+import { after, before, describe, test } from "node:test";
 import { act, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -10,8 +11,14 @@ import {
   usePage,
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
-import { SMOOTH_SCROLL_LOCK_EVENT } from "../../src/modules/modal/constants.ts";
-import { useModalState } from "../../src/modules/modal/hooks.ts";
+import {
+  modalTheme,
+  SMOOTH_SCROLL_LOCK_EVENT,
+} from "../../src/modules/modal/constants.ts";
+import {
+  useModalActions,
+  useModalState,
+} from "../../src/modules/modal/hooks.ts";
 import {
   dispatchSmoothScrollLock,
   getFocusableElements,
@@ -37,6 +44,8 @@ import {
   resolveActivePosition,
 } from "../../src/modules/modal/model/layout.ts";
 import { defineModal, modalModule } from "../../src/modules/modal/module.tsx";
+import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
+import { modalMotion } from "../support/motion/modal.ts";
 
 describe("modal page", () => {
   const { Overlay, ...headlessModal } = modalModule;
@@ -388,4 +397,57 @@ test("modal public surface is unchanged", async () => {
     "useModalRegistryEntries",
     "useModalState",
   ]);
+});
+
+describe("modal overlay", () => {
+  before(() => {
+    MotionGlobalConfig.skipAnimations = true;
+  });
+  after(() => {
+    MotionGlobalConfig.skipAnimations = false;
+  });
+
+  test("mounts nothing until the first modal opens, then renders it", async () => {
+    let open: ((modal: unknown) => unknown) | null = null;
+    function Opener() {
+      open = useModalActions().openModal as (modal: unknown) => unknown;
+      return null;
+    }
+    function Dialog() {
+      return h("p", { id: "lazy-dialog" }, "hello");
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () =>
+      root.render(
+        h(
+          ThemeProvider,
+          {
+            themes: [
+              defineTheme(modalTheme, { motion: modalMotion, slots: {} }),
+            ],
+          },
+          h(ModuleHost, { modules: [modalModule] }, h(Opener)),
+        ),
+      ),
+    );
+    const before = document.body.childElementCount;
+    assert.equal(document.getElementById("lazy-dialog") === null, true);
+
+    await act(async () => {
+      void open!(Dialog);
+    });
+    // The overlay chunk resolves asynchronously.
+    for (let tries = 0; tries < 50; tries += 1) {
+      if (document.getElementById("lazy-dialog")) break;
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    }
+    assert.equal(document.getElementById("lazy-dialog") !== null, true);
+    assert.ok(document.body.childElementCount >= before);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
 });

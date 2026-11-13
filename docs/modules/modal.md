@@ -10,7 +10,7 @@
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Import**         | `import { defineModal, useModal, ModalContainer, … } from "@omerdlw/base-framework/modal"`                                                                                                                                          |
 | **Module id**      | `modal` (`modalModule`, in `defaultModules`)                                                                                                                                                                                        |
-| **Renders**        | `Modal` overlay, **lazy-loaded** (`next/dynamic`, `ssr: false`), portalled to `document.body`                                                                                                                                       |
+| **Renders**        | `Modal` overlay, **lazy-loaded** (`React.lazy`, mounted after the first open, chunk preloaded when idle), portalled to `document.body`                                                                                              |
 | **Registry type**  | `modal` — key policy `named`, value kind `component`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
 | **Page slice**     | `usePage({ modal: { key: Component } })` → `page.modules.modal` (`open`, `set`, + actions)                                                                                                                                          |
 | **Peers (`uses`)** | none                                                                                                                                                                                                                                |
@@ -228,5 +228,5 @@ Folder layout ([README §4](./README.md#4-canonical-module-template)), under `sr
 
 ## 10. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/ui` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `next/dynamic`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/ui` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `motion/react`.
 - **Used by:** `src/core/provider.tsx` (installs it), pages and features through `useModal` / `page.modules.modal`.

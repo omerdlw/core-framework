@@ -20,17 +20,16 @@ Before installing `@omerdlw/base-framework`, verify your environment:
 Install `@omerdlw/base-framework` alongside its required peer dependencies:
 
 ```bash
-npm install @omerdlw/base-framework motion @iconify-icon/react @radix-ui/react-tooltip clsx tailwind-merge
+npm install @omerdlw/base-framework motion @iconify-icon/react tailwind-merge
 ```
 
 ### Peer Dependencies Breakdown
 
-| Package                   | Purpose in Base Framework                                                         |
-| :------------------------ | :-------------------------------------------------------------------------------- |
-| `motion` (`>=12.0.0`)     | Hardware GPU-accelerated motion presets (`translate3d`, `scale`, spring physics). |
-| `@iconify-icon/react`     | Unified SVG-free icon rendering via `<Icon icon="solar:..." />`.                  |
-| `@radix-ui/react-tooltip` | Accessible WAI-ARIA tooltip primitives.                                           |
-| `clsx` & `tailwind-merge` | Backing utilities for `cn()` class merging.                                       |
+| Package               | Purpose in Base Framework                                                         |
+| :-------------------- | :-------------------------------------------------------------------------------- |
+| `motion` (`>=12.0.0`) | Hardware GPU-accelerated motion presets (`translate3d`, `scale`, spring physics). |
+| `@iconify-icon/react` | Unified SVG-free icon rendering via `<Icon icon="solar:..." />`.                  |
+| `tailwind-merge`      | Conflict resolution behind `cn()` class merging.                                  |
 
 ---
 

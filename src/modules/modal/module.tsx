@@ -1,31 +1,85 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import {
+  lazy,
+  Suspense,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   defineModule,
   type PageConfig,
   type PageModuleApi,
 } from "@/core/kernel";
+import { createStore } from "@/foundation/utils";
+import { useStore } from "@/react/hooks";
 
+import type * as OverlayView from "./components/overlay";
 import { ModalContext, ModalProvider } from "./context";
 import { useModal, useModalActions } from "./hooks";
 import { getModalIdentity } from "./model/identity";
+import { INITIAL_MODAL_STATE } from "./model/state";
 import {
   type DefineModalOptions,
   type ModalDefinition,
   type ModalInput,
   type ModalPageApi,
   type ModalPageConfig,
+  type ModalState,
 } from "./types";
 
-const LazyModal = dynamic(
-  () => import("./components/overlay").then((view) => view.Modal),
-  {
-    ssr: false,
-  },
+let overlayChunk: Promise<typeof OverlayView> | null = null;
+const loadOverlay = () => (overlayChunk ??= import("./components/overlay"));
+
+const LazyModal = lazy(() =>
+  loadOverlay().then((view) => ({ default: view.Modal })),
 );
+
+const IDLE_STORE = createStore<ModalState>(INITIAL_MODAL_STATE, {
+  freezeSnapshots: false,
+});
+
+const IDLE_PRELOAD_FALLBACK_MS = 2000;
+
+/** Warms the overlay chunk once the page is idle, off the hydration path. */
+function preloadWhenIdle(): () => void {
+  const preload = () => void loadOverlay();
+  if (typeof window.requestIdleCallback === "function") {
+    const handle = window.requestIdleCallback(preload);
+    return () => window.cancelIdleCallback(handle);
+  }
+  const timer = setTimeout(preload, IDLE_PRELOAD_FALLBACK_MS);
+  return () => clearTimeout(timer);
+}
+
+const hasOpenModal = (state: ModalState) => state.isOpen;
+
+/**
+ * Mounts the modal overlay the first time a modal opens and keeps it mounted
+ * afterwards (exit animations need it). Until then no overlay code runs: no
+ * viewport listeners, registry subscription or portal, and its chunk loads
+ * on idle instead of during hydration.
+ */
+function ModalOverlay() {
+  const modal = use(ModalContext);
+  const isOpen = useStore(modal?.store ?? IDLE_STORE, hasOpenModal);
+  const [needed, setNeeded] = useState(false);
+  if (isOpen && !needed) setNeeded(true);
+
+  useEffect(() => (modal ? preloadWhenIdle() : undefined), [modal]);
+
+  if (!needed) return null;
+  return (
+    <Suspense fallback={null}>
+      <LazyModal />
+    </Suspense>
+  );
+}
 
 function selectPageModals(config: PageConfig): ModalPageConfig | null {
   return config.modal ?? null;
@@ -66,7 +120,7 @@ export const modalModule = defineModule({
   id: "modal",
   context: ModalContext,
   Provider: ModalProvider,
-  Overlay: LazyModal,
+  Overlay: ModalOverlay,
   registry: {
     cleanupDelayMs: 600,
     keyPolicy: "named",

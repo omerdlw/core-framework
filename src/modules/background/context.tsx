@@ -39,14 +39,6 @@ export const BackgroundContext =
     null,
   );
 
-function useSafePathname(): string | null {
-  try {
-    return usePathname();
-  } catch {
-    return null;
-  }
-}
-
 interface BackgroundRuntime {
   /** Resolves the computed state, reusing the last result for identical inputs. */
   resolveState: (
@@ -191,7 +183,7 @@ function createBackground(initial: BackgroundInputs): BackgroundRuntime {
  * and exposes the state store and actions.
  */
 export function BackgroundProvider({ children }: BackgroundProviderProps) {
-  const pathname = useSafePathname();
+  const pathname = usePathname();
   const registryBackground =
     useRegistryValue<"background", Partial<BackgroundState>>(
       "background",

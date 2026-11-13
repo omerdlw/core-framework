@@ -60,11 +60,8 @@ const shared: Options = {
     "next/link",
     "next/navigation",
     "@iconify-icon/react",
-    "@radix-ui/react-tooltip",
     "motion",
     "motion/react",
-    "loading-dev",
-    "clsx",
     "tailwind-merge",
   ],
 };

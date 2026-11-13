@@ -116,13 +116,26 @@ export function createScheduler({
     pendingCount: 0,
     tasks: EMPTY_SCHEDULER_TASKS,
   };
+  // The snapshot is rebuilt on read, not on every schedule/cancel: without
+  // readers, tracking a task costs O(1) instead of copying every pending task.
+  let stale = false;
+
+  const readSnapshot = (): SchedulerSnapshot => {
+    if (stale) {
+      stale = false;
+      snapshot = {
+        pendingCount: tasks.size,
+        tasks:
+          tasks.size === 0
+            ? EMPTY_SCHEDULER_TASKS
+            : Array.from(tasks.values(), toTaskSnapshot),
+      };
+    }
+    return snapshot;
+  };
 
   const publish = () => {
-    snapshot = {
-      pendingCount: tasks.size,
-      tasks: Array.from(tasks.values(), toTaskSnapshot),
-    };
-
+    stale = true;
     for (const listener of listeners) {
       try {
         listener();
@@ -200,9 +213,7 @@ export function createScheduler({
       publish();
       return taskIds;
     },
-    getSnapshot(): SchedulerSnapshot {
-      return snapshot;
-    },
+    getSnapshot: readSnapshot,
     now,
     schedule(
       callback: (timestamp: number) => void,

@@ -126,14 +126,26 @@ function samePayloadInputs(a: RegistryInputs, b: RegistryInputs): boolean {
   );
 }
 
+// The installed modules array is frozen for the host's lifetime, so the set
+// is built once instead of on every render's registry pass.
+const componentSlicesByModules = new WeakMap<
+  readonly AnyCoreModule[],
+  ReadonlySet<string>
+>();
+
 function componentSliceIds(
   modules: readonly AnyCoreModule[],
 ): ReadonlySet<string> {
-  return new Set(
-    modules
-      .filter((coreModule) => coreModule.registry?.valueKind === "component")
-      .map((coreModule) => coreModule.id),
-  );
+  let ids = componentSlicesByModules.get(modules);
+  if (!ids) {
+    ids = new Set(
+      modules
+        .filter((coreModule) => coreModule.registry?.valueKind === "component")
+        .map((coreModule) => coreModule.id),
+    );
+    componentSlicesByModules.set(modules, ids);
+  }
+  return ids;
 }
 
 function useAppliedRegistryConfig(inputs: RegistryInputs): void {

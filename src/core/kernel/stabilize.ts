@@ -26,11 +26,14 @@ export interface StabilizeScope {
   usedPaths: Set<string>;
 }
 
+const DIRECT_COMPONENT_PATH = /^config\.([^.[]+)\.[^.[]+$/;
+
 function isDirectRegistryComponentPath(
   path: string,
   componentSlices: ReadonlySet<string>,
 ): boolean {
-  const match = /^config\.([^.[]+)\.[^.[]+$/.exec(path);
+  if (componentSlices.size === 0) return false;
+  const match = DIRECT_COMPONENT_PATH.exec(path);
   return Boolean(match && componentSlices.has(match[1]));
 }
 
@@ -75,7 +78,6 @@ function hasSameObjectKeys(
 }
 
 interface StabilizeState {
-  depth: number;
   scope: StabilizeScope;
   seen: WeakSet<object>;
 }
@@ -85,7 +87,8 @@ function stabilizeFunction(
   path: string,
   scope: StabilizeScope,
 ): unknown {
-  const isComponent = fn.name && /^[A-Z]/.test(fn.name);
+  const first = fn.name.charCodeAt(0);
+  const isComponent = first >= 65 && first <= 90; // A-Z
   if (
     isComponent ||
     isDirectRegistryComponentPath(path, scope.componentSlices)
@@ -108,12 +111,14 @@ function stabilizeElement(
   path: string,
   previousValue: unknown,
   state: StabilizeState,
+  depth: number,
 ): unknown {
-  const nextProps = stabilizeNested(
+  const nextProps = stabilize(
     element.props,
     `${path}.props`,
     isValidElement(previousValue) ? previousValue.props : undefined,
     state,
+    depth + 1,
   ) as Record<string, unknown>;
   if (
     isValidElement(previousValue) &&
@@ -131,6 +136,7 @@ function stabilizeArray(
   path: string,
   previousValue: unknown,
   state: StabilizeState,
+  depth: number,
 ): unknown {
   const nextValue = array.every(isReactNodeLike)
     ? Children.toArray(array as ReactNode[]) // every item passed isReactNodeLike
@@ -139,11 +145,12 @@ function stabilizeArray(
   let hasChanged = !previousArray || previousArray.length !== nextValue.length;
 
   const stabilizedValue: unknown[] = nextValue.map((item, index) => {
-    const nextItem = stabilizeNested(
+    const nextItem = stabilize(
       item,
       `${path}[${index}]`,
       previousArray?.[index],
       state,
+      depth + 1,
     );
     if (!previousArray || nextItem !== previousArray[index]) {
       hasChanged = true;
@@ -158,6 +165,7 @@ function stabilizeObject(
   path: string,
   previousValue: unknown,
   state: StabilizeState,
+  depth: number,
 ): unknown {
   const previousRecord = previousValue as Record<string, unknown> | undefined;
   const stabilizedValue: Record<string, unknown> = {};
@@ -165,11 +173,12 @@ function stabilizeObject(
   let hasChanged = !canReusePrevious;
 
   Object.keys(source).forEach((key) => {
-    const nextValue = stabilizeNested(
+    const nextValue = stabilize(
       source[key],
       `${path}.${key}`,
       previousRecord?.[key],
       state,
+      depth + 1,
     );
     stabilizedValue[key] = nextValue;
     if (!canReusePrevious || nextValue !== previousRecord?.[key]) {
@@ -180,25 +189,14 @@ function stabilizeObject(
   return !hasChanged ? previousValue : stabilizedValue;
 }
 
-function stabilizeNested(
-  value: unknown,
-  path: string,
-  previousValue: unknown,
-  state: StabilizeState,
-): unknown {
-  return stabilize(value, path, previousValue, {
-    ...state,
-    depth: state.depth + 1,
-  });
-}
-
 function stabilize(
   value: unknown,
   path: string,
   previousValue: unknown,
   state: StabilizeState,
+  depth: number,
 ): unknown {
-  if (state.depth > MAX_STABILIZATION_DEPTH) return value;
+  if (depth > MAX_STABILIZATION_DEPTH) return value;
 
   if (typeof value === "function") {
     return stabilizeFunction(value as AnyFunction, path, state.scope);
@@ -210,10 +208,10 @@ function stabilize(
   }
 
   if (isValidElement<Record<string, unknown>>(value)) {
-    return stabilizeElement(value, path, previousValue, state);
+    return stabilizeElement(value, path, previousValue, state, depth);
   }
   if (Array.isArray(value)) {
-    return stabilizeArray(value, path, previousValue, state);
+    return stabilizeArray(value, path, previousValue, state, depth);
   }
   if (typeof value !== "object" || value === null) return value;
 
@@ -222,6 +220,7 @@ function stabilize(
     path,
     previousValue,
     state,
+    depth,
   );
 }
 
@@ -238,5 +237,5 @@ export function stabilizeRegistryValue(
   seen = new WeakSet<object>(),
   depth = 0,
 ): unknown {
-  return stabilize(value, path, previousValue, { depth, scope, seen });
+  return stabilize(value, path, previousValue, { scope, seen }, depth);
 }

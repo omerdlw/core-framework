@@ -140,6 +140,15 @@ const selectTrips = (state: NavigationState) => ({
   last: state.last,
 });
 
+interface DockCommitRequest {
+  force?: boolean;
+  from: string;
+  href: string;
+  item?: DockItem | null;
+  routePolicy: DockRoutePolicy;
+  source?: string;
+}
+
 export function useDockNavigation() {
   const pathname = usePathname();
   const { locationKey, syncLocationKey } = useDockLocationKey();
@@ -180,7 +189,8 @@ export function useDockNavigation() {
     }
   }, [clearPreparedRouteReset, lastTransaction, stopLoading, syncLocationKey]);
 
-  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
+  // stable identity: dep of useDock's callbacks, which must hold without the
+  // compiler (tests run the uncompiled source)
   const cancelDock = useCallback(
     (reason = GUARD_CANCEL_REASON) => {
       navigator.cancel(reason);
@@ -190,64 +200,59 @@ export function useDockNavigation() {
     [clearPreparedRouteReset, closeSurface, navigator],
   );
 
-  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
+  // stable identity: input of navigate below
   const commitDock = useCallback(
-    async ({
-      force = false,
-      from,
-      href,
-      item,
-      routePolicy,
-      source = DEFAULT_NAVIGATION_SOURCE,
-    }: {
-      force?: boolean;
-      from: string;
-      href: string;
-      item?: DockItem | null;
-      routePolicy: DockRoutePolicy;
-      source?: string;
-    }) => {
-      const result = await navigator.navigate(href, {
-        force,
-        guard:
-          guards.count() > 0
-            ? () => guards.check(href, from) as Promise<NavigationBlock>
-            : undefined,
-        onCommit: () => {
-          continuity?.remember?.(from);
-          blurActiveElement();
-          prepareRouteReset(routePolicy);
-          emitDockEvent(DOCK_EVENTS.NAVIGATE_START, { from, to: href });
-        },
-        source,
-      });
-      if (result.ok) {
-        emitDockEvent(DOCK_EVENTS.NAVIGATE, { from, item, to: href });
-        return true;
-      }
-      if (result.blocked) {
-        blurActiveElement();
-        openDockGuardConfirmation({
-          closeSurface,
-          commit: (confirmed) =>
-            // Compiler exception (docs/architecture-and-rules.md): the guard
-            // confirmation runs after commitDock is declared, on user input.
-            // eslint-disable-next-line react-hooks/immutability
-            void commitDock({ ...confirmed, force: true }).catch((error) =>
-              report("Dock route transition", error),
-            ),
-          from,
-          href,
-          message: result.blocked.message,
-          routePolicy,
+    (request: DockCommitRequest): Promise<boolean> => {
+      // A confirmed guard re-runs through this local function rather than
+      // through commitDock itself, so the hook stays compilable.
+      const run = async ({
+        force = false,
+        from,
+        href,
+        item,
+        routePolicy,
+        source = DEFAULT_NAVIGATION_SOURCE,
+      }: DockCommitRequest): Promise<boolean> => {
+        const result = await navigator.navigate(href, {
+          force,
+          guard:
+            guards.count() > 0
+              ? () => guards.check(href, from) as Promise<NavigationBlock>
+              : undefined,
+          onCommit: () => {
+            continuity?.remember?.(from);
+            blurActiveElement();
+            prepareRouteReset(routePolicy);
+            emitDockEvent(DOCK_EVENTS.NAVIGATE_START, { from, to: href });
+          },
+          source,
         });
-      }
-      return false;
+        if (result.ok) {
+          emitDockEvent(DOCK_EVENTS.NAVIGATE, { from, item, to: href });
+          return true;
+        }
+        if (result.blocked) {
+          blurActiveElement();
+          openDockGuardConfirmation({
+            closeSurface,
+            commit: (confirmed) =>
+              void run({ ...confirmed, force: true }).catch((error) =>
+                report("Dock route transition", error),
+              ),
+            from,
+            href,
+            message: result.blocked.message,
+            routePolicy,
+          });
+        }
+        return false;
+      };
+      return run(request);
     },
     [closeSurface, continuity, guards, navigator, prepareRouteReset],
   );
 
-  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
+  // stable identity: dep of useDock's navigate (see cancelDock)
   const navigate = useCallback(
     async (
       href: string,

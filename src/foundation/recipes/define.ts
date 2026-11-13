@@ -1,10 +1,9 @@
-import type { ClassValue } from "clsx";
-
 import type { UiRegister } from "@/foundation/recipes";
 
 import { ANATOMY, type Anatomy } from "./anatomy";
 import { createCn, type MergeVocabulary } from "./cn";
 import {
+  type Classes,
   compileRecipe,
   extendRecipe,
   type MergedVariants,
@@ -139,7 +138,7 @@ export type UiParts<O = {}> = {
  */
 export interface Ui<O = {}> {
   readonly parts: UiParts<O>;
-  readonly cn: (...inputs: ClassValue[]) => string;
+  readonly cn: (...inputs: Classes[]) => string;
   readonly motion: UiMotion;
   readonly icons: UiIcons;
   readonly labels: UiLabels;
@@ -151,7 +150,7 @@ type CompiledParts = Record<string, Recipe>;
 function compileComponent(
   defaults: Parts,
   own: Record<string, RecipeOverride>,
-  cn: (...inputs: ClassValue[]) => string,
+  cn: (...inputs: Classes[]) => string,
 ): CompiledParts {
   const parts: CompiledParts = {};
   for (const part of new Set([...Object.keys(defaults), ...Object.keys(own)])) {
@@ -165,7 +164,7 @@ function compileComponent(
 
 function compileParts(
   config: UiConfig,
-  cn: (...inputs: ClassValue[]) => string,
+  cn: (...inputs: Classes[]) => string,
 ): Record<string, CompiledParts> {
   const out: Record<string, CompiledParts> = {};
   const overrides = (config.parts ?? {}) as Record<

@@ -1,7 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-
 /**
- * Anything `clsx` accepts as a class value.
+ * A class value: strings and numbers, nested arrays, and objects whose keys
+ * apply when their value is truthy (the `clsx` contract).
  */
 export type Classes =
   | string
@@ -129,8 +128,8 @@ function matches(
 export function resolveRecipe(
   def: RecipeDef,
   props: Record<string, unknown> = {},
-): ClassValue[] {
-  const out: ClassValue[] = [def.base];
+): Classes[] {
+  const out: Classes[] = [def.base];
   const variants = def.variants ?? {};
   const defaults = (def.defaultVariants ?? {}) as Record<string, unknown>;
   const selected: Record<string, string | null> = {};
@@ -146,7 +145,7 @@ export function resolveRecipe(
       out.push(compound.class, compound.className);
     }
   }
-  out.push(props.class as ClassValue, props.className as ClassValue);
+  out.push(props.class as Classes, props.className as Classes);
   return out;
 }
 
@@ -202,7 +201,7 @@ export function defineRecipe<const V extends VariantMap = {}>(
  */
 export function compileRecipe<V>(
   def: RecipeDef,
-  merge: (...inputs: ClassValue[]) => string,
+  merge: (...inputs: Classes[]) => string,
 ): Recipe<V> {
   const recipe = ((props?: Record<string, unknown>) =>
     merge(...resolveRecipe(def, props))) as Recipe<V>;
@@ -210,7 +209,29 @@ export function compileRecipe<V>(
   return recipe;
 }
 
+function appendClasses(value: Classes, out: string): string {
+  if (!value) return out;
+  if (typeof value === "string" || typeof value === "number") {
+    return out ? `${out} ${value}` : String(value);
+  }
+  if (typeof value !== "object") return out;
+  if (Array.isArray(value)) {
+    let next = out;
+    for (let index = 0; index < value.length; index += 1) {
+      next = appendClasses((value as readonly Classes[])[index], next);
+    }
+    return next;
+  }
+  const record = value as Readonly<Record<string, unknown>>;
+  let next = out;
+  for (const key of Object.keys(record)) {
+    if (record[key]) next = next ? `${next} ${key}` : key;
+  }
+  return next;
+}
+
 /**
  * Joins class values without Tailwind conflict resolution.
  */
-export const joinClasses = (...inputs: Classes[]): string => clsx(inputs);
+export const joinClasses = (...inputs: Classes[]): string =>
+  appendClasses(inputs, "");

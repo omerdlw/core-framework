@@ -73,3 +73,16 @@ Rendering is the same. What changes:
 The published JavaScript is built with `babel-plugin-react-compiler`. Components and hooks memoize automatically, so the source no longer carries most hand-written `useMemo`/`useCallback`/`memo`. Behaviour does not depend on the compiler: identities that effects, subscriptions, context values and public hook returns rely on stay stable in uncompiled code too.
 
 The compiled output is larger. Total gzipped JavaScript is about 35% above the previous build (about 273 KB vs 201 KB across all entries and chunks). The compiler accounts for most of that, about 25%. Bundlers still tree-shake per entry, so an app pays only for the entries it imports.
+
+## Tooltip without Radix (3.2.2)
+
+`Tooltip` and `TooltipProvider` no longer wrap `@radix-ui/react-tooltip`; placement, delay groups and presence are built in. `@radix-ui/react-tooltip`, `clsx` and `loading-dev` are no longer dependencies, so a fresh install pulls less. The public props are the same except:
+
+- `contentProps` takes plain `div` attributes and `data-*` hooks. Radix-only props (`onEscapeKeyDown`, `onPointerDownOutside`, `avoidCollisions`, `forceMount`, `asChild`, `hideWhenDetached`, `sticky`) are gone; flipping and shifting into the viewport always apply.
+- CSS variables are renamed: `--radix-tooltip-content-transform-origin` → `--tooltip-transform-origin`, `--radix-tooltip-content-available-width/height` → `--tooltip-available-width/height`, `--radix-tooltip-trigger-width/height` → `--tooltip-trigger-width/height`.
+- The portal wrapper is `[data-tooltip-wrapper]` (was `[data-radix-popper-content-wrapper]`). It still copies the content's `z-index`.
+- `data-state` (`delayed-open`, `instant-open`, `closed`) and `data-side` keep their values; `data-align` is new, and so is the `align` prop (`start`, `center`, `end`).
+- A `TooltipProvider` is optional. A `Tooltip` outside one uses a shared default group (700 ms delay, 300 ms skip window).
+- `ClassValue` from `clsx` is no longer re-exported through `cn`'s types; `cn` takes the framework's `Classes` type, which accepts the same strings, arrays, objects and falsy values.
+
+The modal overlay now loads with `React.lazy` instead of `next/dynamic`, mounts only after the first modal opens, and preloads its chunk when the browser is idle.

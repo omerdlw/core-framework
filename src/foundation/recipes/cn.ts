@@ -1,5 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
+
+import { type Classes, joinClasses } from "./recipe";
 
 /**
  * Extra Tailwind theme values and class groups that `cn` should merge correctly.
@@ -14,7 +15,7 @@ export interface MergeVocabulary {
  */
 export function createCn(
   vocabulary: MergeVocabulary = {},
-): (...inputs: ClassValue[]) => string {
+): (...inputs: Classes[]) => string {
   const merge = extendTailwindMerge({
     extend: {
       theme: vocabulary.theme ?? {},
@@ -26,7 +27,7 @@ export function createCn(
       ),
     },
   });
-  return (...inputs) => merge(clsx(inputs));
+  return (...inputs) => merge(joinClasses(...inputs));
 }
 
 /**

@@ -15,19 +15,25 @@ export function resolveEntryValueFor(
 ): unknown {
   if (!entry) return undefined;
 
-  const activeRecords = Object.entries(entry)
-    .map(([source, rawRecord]) => toSourceRecord(rawRecord, source))
-    .filter(
-      (record): record is SourceRecord =>
-        record !== null && (scope === null || record.scope === scope),
-    );
+  const activeRecords: SourceRecord[] = [];
+  for (const recordKey in entry) {
+    if (!Object.prototype.hasOwnProperty.call(entry, recordKey)) continue;
+    const record = toSourceRecord(entry[recordKey], recordKey);
+    if (record !== null && (scope === null || record.scope === scope)) {
+      activeRecords.push(record);
+    }
+  }
 
   if (activeRecords.length === 0) return undefined;
 
   // eslint-disable-next-line @typescript-eslint/unbound-method -- definition.merge is called unbound as merge(values); the registry-definition contract is a plain function that must not rely on this (pre-existing unbound call)
   const merge = definitions.get(type)?.merge;
+  if (activeRecords.length === 1) {
+    const [only] = activeRecords;
+    return merge && isObject(only.value) ? merge([only.value]) : only.value;
+  }
   if (merge) {
-    const sortedRecords = [...activeRecords].sort(compareRecords);
+    const sortedRecords = activeRecords.sort(compareRecords);
     const mergeCandidate = sortedRecords.every((record) =>
       isObject(record.value),
     );

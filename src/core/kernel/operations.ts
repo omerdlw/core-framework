@@ -1,8 +1,11 @@
 import {
   buildSourceRecord,
   createInitialRegistriesFor,
+  createRecordKey,
+  findRecordsToRemove,
   getSourceRecord,
   getSourceRecords,
+  hasAnySourceRecord,
   hasRecordChanged,
   type MaybeEntry,
   removeSourceRecord,
@@ -160,21 +163,89 @@ function hasOperationEffectFor(
   return false;
 }
 
+/**
+ * Copy-on-write view of a registry state for applying many operations: each
+ * touched type and entry is copied once, so a batch of n operations costs
+ * O(n) instead of re-spreading the whole type registry per operation.
+ * Untouched entries keep their identity (snapshot caches key on it).
+ */
+interface StateDraft {
+  readonly base: RegistryState;
+  readonly entries: Set<string>;
+  state: RegistryState;
+  readonly types: Set<string>;
+}
+
+function writableEntry(
+  draft: StateDraft,
+  type: string,
+  key: string,
+): RegistryState[string][string] {
+  if (draft.state === draft.base) draft.state = { ...draft.base };
+  if (!draft.types.has(type)) {
+    draft.state[type] = { ...(draft.state[type] || {}) };
+    draft.types.add(type);
+  }
+  const registry = draft.state[type];
+  const id = `${type}\u0000${key}`;
+  let entry = registry[key];
+  if (!draft.entries.has(id) || !entry) {
+    entry = { ...(entry || {}) };
+    registry[key] = entry;
+    draft.entries.add(id);
+  }
+  return entry;
+}
+
+function applyOperationToDraft(
+  draft: StateDraft,
+  operation: RegistryOperation,
+): void {
+  if (operation.kind === "register") {
+    const entry = writableEntry(draft, operation.type, operation.key);
+    const recordKey = createRecordKey(
+      operation.source,
+      operation.record.instanceId,
+      operation.record.scope,
+    );
+    entry[recordKey] = operation.record;
+    return;
+  }
+  const current = draft.state[operation.type]?.[operation.key];
+  if (!current) return;
+  const records = findRecordsToRemove(
+    current,
+    operation.source,
+    operation.instanceId,
+    operation.scope,
+  );
+  if (records.length === 0) return;
+  const entry = writableEntry(draft, operation.type, operation.key);
+  for (const { recordKey } of records) delete entry[recordKey];
+  if (!hasAnySourceRecord(entry))
+    delete draft.state[operation.type][operation.key];
+}
+
 function resolveEffectiveOperationsFor(
   definitions: RegistryDefinitions,
   state: RegistryState,
   operations: RegistryOperation[],
 ): { effectiveOperations: RegistryOperation[]; nextState: RegistryState } {
   const effectiveOperations: RegistryOperation[] = [];
-  let nextState = state;
+  const draft: StateDraft = {
+    base: state,
+    entries: new Set(),
+    state,
+    types: new Set(),
+  };
 
-  operations.forEach((operation) => {
-    if (!hasOperationEffectFor(definitions, nextState, operation)) return;
+  for (const operation of operations) {
+    if (!hasOperationEffectFor(definitions, draft.state, operation)) continue;
     effectiveOperations.push(operation);
-    nextState = applyOperationFor(definitions, nextState, operation);
-  });
+    applyOperationToDraft(draft, operation);
+  }
 
-  return { effectiveOperations, nextState };
+  return { effectiveOperations, nextState: draft.state };
 }
 
 /**

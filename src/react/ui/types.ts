@@ -1,5 +1,4 @@
 import type { Icon as IconifyIcon } from "@iconify-icon/react";
-import type * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import type NextLink from "next/link";
 import type {
   ButtonHTMLAttributes,
@@ -212,26 +211,51 @@ export interface SkeletonLinesProps {
 }
 
 /**
+ * Side of the trigger a tooltip prefers; it flips when that side has no room.
+ */
+export type TooltipSide = "top" | "right" | "bottom" | "left";
+
+/**
+ * Alignment of a tooltip along its trigger.
+ */
+export type TooltipAlign = "start" | "center" | "end";
+
+/**
  * Props of `Tooltip`.
  */
 export interface TooltipProps {
+  align?: TooltipAlign;
   children: ReactNode;
   className?: string;
   classNames?: PartClassNames<"tooltip">;
+  /** Minimum distance in px from the viewport edges. Default 0. */
   collisionPadding?: number;
   contentProps?: Omit<
-    ComponentProps<typeof TooltipPrimitive.Content>,
-    "children" | "className" | "side"
+    HTMLAttributes<HTMLDivElement>,
+    "children" | "className" | "id" | "role"
   > &
     DataAttributes;
   defaultOpen?: boolean;
+  /** Hover delay for this tooltip; defaults to the provider's `delayDuration`. */
   delayMs?: number;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
-  position?: "top" | "right" | "bottom" | "left";
+  position?: TooltipSide;
+  /** Distance in px between the trigger and the content. Default 0. */
   sideOffset?: number;
   text: ReactNode;
   triggerRef?: Ref<HTMLButtonElement>;
+}
+
+/**
+ * Props of `TooltipProvider`.
+ */
+export interface TooltipProviderProps {
+  children?: ReactNode;
+  /** Hover delay in ms before a tooltip opens. Default 700. */
+  delayDuration?: number;
+  /** Window in ms after a tooltip closes during which the next opens instantly. Default 300. */
+  skipDelayDuration?: number;
 }
 
 export type {

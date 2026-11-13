@@ -51,21 +51,24 @@ export function buildSourceRecord({
   };
 }
 
+// NUL never appears in sources, instance ids or scopes, so joining on it is
+// unambiguous and avoids JSON.stringify on every register and lookup.
+const SEP = "\u0000";
+
 export function createRecordKey(
   source: string,
   instanceId: string | null = null,
   scope: string = DEFAULT_REGISTRY_SCOPE,
 ): string {
+  const hasInstance = typeof instanceId === "string" && instanceId.length > 0;
   if (scope === DEFAULT_REGISTRY_SCOPE) {
-    if (typeof instanceId === "string" && instanceId.length > 0) {
-      return `instance:${JSON.stringify([source, instanceId])}`;
-    }
-    return `source:${JSON.stringify(source)}`;
+    return hasInstance
+      ? `i${SEP}${source}${SEP}${instanceId}`
+      : `s${SEP}${source}`;
   }
-  if (typeof instanceId === "string" && instanceId.length > 0) {
-    return `instance:${JSON.stringify([scope, source, instanceId])}`;
-  }
-  return `source:${JSON.stringify([scope, source])}`;
+  return hasInstance
+    ? `I${SEP}${scope}${SEP}${source}${SEP}${instanceId}`
+    : `S${SEP}${scope}${SEP}${source}`;
 }
 
 export function getSourceRecords(
@@ -74,15 +77,18 @@ export function getSourceRecords(
   scope: string | null = null,
 ): { recordKey: string; record: SourceRecord | null }[] {
   if (!entry) return [];
-  return Object.entries(entry)
-    .map(([recordKey, rawRecord]) => ({
-      recordKey,
-      record: toSourceRecord(rawRecord, recordKey),
-    }))
-    .filter(
-      ({ record }) =>
-        record?.source === source && (scope === null || record.scope === scope),
-    );
+  const matches: { recordKey: string; record: SourceRecord | null }[] = [];
+  for (const recordKey in entry) {
+    if (!hasOwnProperty(entry, recordKey)) continue;
+    const record = toSourceRecord(entry[recordKey], recordKey);
+    if (
+      record?.source === source &&
+      (scope === null || record.scope === scope)
+    ) {
+      matches.push({ recordKey, record });
+    }
+  }
+  return matches;
 }
 
 export function getSourceRecord(
@@ -106,11 +112,30 @@ export function resolveRecordPriority(
   return REGISTRY_SOURCE_PRIORITY[source] ?? 0;
 }
 
+/** True for a record built by `buildSourceRecord`: usable without copying. */
+function isNormalizedRecord(value: unknown): value is SourceRecord {
+  if (!isObject(value)) return false;
+  const record = value as Partial<SourceRecord>;
+  return (
+    typeof record.priority === "number" &&
+    Number.isFinite(record.priority) &&
+    typeof record.updatedAt === "number" &&
+    typeof record.sequence === "number" &&
+    typeof record.source === "string" &&
+    typeof record.scope === "string" &&
+    (record.instanceId === null || typeof record.instanceId === "string") &&
+    hasOwnProperty(record, "value")
+  );
+}
+
 export function toSourceRecord(
   rawValue: unknown,
   source: string = DEFAULT_SOURCE,
 ): SourceRecord | null {
   if (rawValue === undefined) return null;
+  // The registry only stores records it built itself; reading them is the
+  // hot path and must not allocate.
+  if (isNormalizedRecord(rawValue)) return rawValue;
   const rawRecord = rawValue as Record<string, unknown>;
 
   const isWrappedRecord =
@@ -182,10 +207,14 @@ export function hasRecordChanged(
   );
 }
 
-function hasAnySourceRecord(entry: MaybeEntry): boolean {
-  return Object.values(entry || {}).some(
-    (rawRecord) => rawRecord !== undefined,
-  );
+export function hasAnySourceRecord(entry: MaybeEntry): boolean {
+  if (!entry) return false;
+  for (const recordKey in entry) {
+    if (hasOwnProperty(entry, recordKey) && entry[recordKey] !== undefined) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function setSourceRecord(
@@ -216,13 +245,13 @@ export function setSourceRecord(
   };
 }
 
-interface KeyedRecord {
+export interface KeyedRecord {
   recordKey: string;
   record: SourceRecord;
 }
 
 /** Records an unregister targets: one exact record, or every match. */
-function findRecordsToRemove(
+export function findRecordsToRemove(
   entry: RegistryEntryRecords,
   source: string,
   instanceId: string | null,
