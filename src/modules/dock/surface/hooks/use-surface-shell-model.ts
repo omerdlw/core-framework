@@ -22,6 +22,18 @@ import {
  * State and handlers for a surface shell: focus trap, swipe-to-dismiss drag
  * and body motion variants.
  */
+/**
+ * Hands the node to a forwarded callback or object ref. Module level: the
+ * compiler does not allow writing to a prop inside the hook.
+ */
+function forwardRef(
+  ref: DockSurfaceShellProps["ref"],
+  node: HTMLElement | null,
+) {
+  if (typeof ref === "function") ref(node);
+  else if (ref) (ref as { current: HTMLElement | null }).current = node;
+}
+
 export function useDockSurfaceShellModel({
   ref,
   onClose = null,
@@ -32,11 +44,11 @@ export function useDockSurfaceShellModel({
   surfaceWidth = null,
 }: DockSurfaceShellProps) {
   const surfaceElementRef = useRef<HTMLElement | null>(null);
+  // stable identity: a callback ref; a new one would detach and reattach the node
   const setSurfaceElementRef = useCallback(
     (node: HTMLElement | null) => {
       surfaceElementRef.current = node;
-      if (typeof ref === "function") ref(node);
-      else if (ref) (ref as { current: HTMLElement | null }).current = node;
+      forwardRef(ref, node);
     },
     [ref],
   );
@@ -44,6 +56,7 @@ export function useDockSurfaceShellModel({
   const titleId =
     surfaceId == null ? undefined : `dock-surface-title-${surfaceId}`;
   const dockMotion = useDockMotion();
+  // stable identity: useTransform input/output ranges
   const dragRanges = useMemo(
     () => ({
       opacity: [...dockMotion.drag.opacity],
@@ -78,34 +91,30 @@ export function useDockSurfaceShellModel({
     typeof onClose === "function" &&
     isFullyOpen,
   );
-  const handleSurfacePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      if (!canDragDismiss) return;
-      const target = event.target as HTMLElement | null;
-      if (target?.closest?.(SURFACE_DRAG_IGNORE_SELECTOR)) return;
-      dragControls.start(event);
-    },
-    [canDragDismiss, dragControls],
-  );
+  const handleSurfacePointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    if (!canDragDismiss) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.(SURFACE_DRAG_IGNORE_SELECTOR)) return;
+    dragControls.start(event);
+  };
   const isBodyVisible =
     surfacePhase === DOCK_SURFACE_PHASE.EXPANDING_BODY ||
     surfacePhase === DOCK_SURFACE_PHASE.OPEN;
   const resolvedSurfaceId = surfaceId || ACTIVE_SURFACE_KEY;
-  const bodyVariants = useMemo(() => {
-    const { surfaceBody } = dockMotion.variants;
-    const { surfaceExit } = dockMotion.transitions;
-    return {
-      hidden: surfaceBody.hidden,
-      visible: {
-        ...(surfaceBody.visible as object),
-        transition: getDockPhaseMotion(dockMotion, surfacePhase).body,
-      },
-      exit: {
-        ...(surfaceBody.exit as object),
-        transition: surfaceExit,
-      },
-    };
-  }, [dockMotion, surfacePhase]);
+  const { surfaceBody } = dockMotion.variants;
+  const { surfaceExit } = dockMotion.transitions;
+  const bodyVariants = {
+    hidden: surfaceBody.hidden,
+    visible: {
+      ...(surfaceBody.visible as object),
+      transition: getDockPhaseMotion(dockMotion, surfacePhase).body,
+    },
+    exit: {
+      ...(surfaceBody.exit as object),
+      transition: surfaceExit,
+    },
+  };
+  // stable identity: consumers subscribe by reference (SurfaceItemContext)
   const surfaceItemValue = useMemo(
     () => ({ id: resolvedSurfaceId, width: surfaceWidth }),
     [resolvedSurfaceId, surfaceWidth],

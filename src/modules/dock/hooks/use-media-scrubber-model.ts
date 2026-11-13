@@ -2,7 +2,7 @@
 
 import { useMotionValue, useSpring } from "motion/react";
 import type React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { clamp } from "@/foundation/utils";
 
@@ -17,6 +17,14 @@ import { useDockMotion } from "../motion";
 interface SeekEvent {
   clientX?: number;
   touches?: ArrayLike<{ clientX: number }>;
+}
+
+/**
+ * Moves the video to `time`. Module level: the compiler does not allow writing
+ * to a value the hook received.
+ */
+function seekVideo(video: HTMLMediaElement, time: number) {
+  video.currentTime = time;
 }
 
 export function useDockMediaScrubberModel(_props: {
@@ -82,58 +90,47 @@ export function useDockMediaScrubberModel(_props: {
       videoElement.removeEventListener("loadedmetadata", publishProgress);
     };
   }, [isPlaying, videoElement]);
-  const seekToTime = useCallback(
-    (targetTime: number) => {
-      if (!videoElement || duration <= 0) return;
-      const nextTime = clamp(targetTime, 0, duration);
-      videoElement.currentTime = nextTime;
-      setCurrentTime(Math.floor(nextTime));
+  // DOM event handlers only, so a new function per render is fine.
+  const seekToTime = (targetTime: number) => {
+    if (!videoElement || duration <= 0) return;
+    const nextTime = clamp(targetTime, 0, duration);
+    seekVideo(videoElement, nextTime);
+    setCurrentTime(Math.floor(nextTime));
 
-      if (progressBarRef.current) {
-        progressBarRef.current.style.transform = `scaleX(${nextTime / duration})`;
-      }
-    },
-    [duration, videoElement],
-  );
-  const handleSeek = useCallback(
-    (event: SeekEvent) => {
-      if (!videoElement || !scrubberRef.current || !duration) return;
-      const rect = scrubberRef.current.getBoundingClientRect();
-      const clientX = event.clientX ?? event.touches?.[0]?.clientX ?? 0;
-      const { fraction } = getTrackPosition(clientX, rect);
+    if (progressBarRef.current) {
+      progressBarRef.current.style.transform = `scaleX(${nextTime / duration})`;
+    }
+  };
+  const handleSeek = (event: SeekEvent) => {
+    if (!videoElement || !scrubberRef.current || !duration) return;
+    const rect = scrubberRef.current.getBoundingClientRect();
+    const clientX = event.clientX ?? event.touches?.[0]?.clientX ?? 0;
+    const { fraction } = getTrackPosition(clientX, rect);
 
-      seekToTime(fraction * duration);
-    },
-    [duration, seekToTime, videoElement],
-  );
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      const keyTargets: Record<string, number> = {
-        ArrowLeft: currentTime - SCRUBBER_KEY_STEP_SECONDS,
-        ArrowRight: currentTime + SCRUBBER_KEY_STEP_SECONDS,
-        Home: 0,
-        End: duration,
-      };
-      if (!(event.key in keyTargets)) return;
+    seekToTime(fraction * duration);
+  };
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    const keyTargets: Record<string, number> = {
+      ArrowLeft: currentTime - SCRUBBER_KEY_STEP_SECONDS,
+      ArrowRight: currentTime + SCRUBBER_KEY_STEP_SECONDS,
+      Home: 0,
+      End: duration,
+    };
+    if (!(event.key in keyTargets)) return;
 
-      event.preventDefault();
-      event.stopPropagation();
-      seekToTime(keyTargets[event.key]);
-    },
-    [currentTime, duration, seekToTime],
-  );
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!scrubberRef.current || !duration) return;
-      const rect = scrubberRef.current.getBoundingClientRect();
-      const clientX = event.clientX ?? 0;
-      const { fraction, offsetX } = getTrackPosition(clientX, rect);
+    event.preventDefault();
+    event.stopPropagation();
+    seekToTime(keyTargets[event.key]);
+  };
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (!scrubberRef.current || !duration) return;
+    const rect = scrubberRef.current.getBoundingClientRect();
+    const clientX = event.clientX ?? 0;
+    const { fraction, offsetX } = getTrackPosition(clientX, rect);
 
-      hoverX.set(offsetX);
-      setHoverTime(fraction * duration);
-    },
-    [duration, hoverX],
-  );
+    hoverX.set(offsetX);
+    setHoverTime(fraction * duration);
+  };
 
   return {
     hasMedia,

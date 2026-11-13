@@ -41,6 +41,24 @@ interface PendingModal {
  * Owns the modal stack and resolves each `openModal` promise when its modal closes.
  * Optionally mounts a renderer next to its children.
  */
+/**
+ * Runs a modal's onClose and reports its failure, sync or async. Module level:
+ * the compiler cannot lower optional chaining inside a try block.
+ */
+function runOnClose(
+  onClose: ((result: unknown) => unknown) | undefined,
+  result: unknown,
+) {
+  try {
+    const outcome = onClose?.(result);
+    if (outcome instanceof Promise) {
+      outcome.catch((error) => report("Modal onClose", error));
+    }
+  } catch (error) {
+    report("Modal onClose", error);
+  }
+}
+
 export function ModalProvider({
   children,
   modalRenderer: ModalRenderer = null,
@@ -53,6 +71,7 @@ export function ModalProvider({
   const pendingRef = useRef<Map<number, PendingModal>>(new Map());
   const modalIdRef = useRef(0);
 
+  // stable identity: part of the modal actions consumers hold by reference
   const syncModalStack = useCallback(
     (nextStack: ModalEntry[]) => {
       modalStackRef.current = nextStack;
@@ -61,22 +80,17 @@ export function ModalProvider({
     [store],
   );
 
+  // stable identity: part of the modal actions consumers hold by reference
   const settleModal = useCallback((modalId: number, result: unknown) => {
     const pending = pendingRef.current.get(modalId);
     if (!pending) return;
     pendingRef.current.delete(modalId);
 
-    try {
-      const outcome = pending.onClose?.(result);
-      if (outcome instanceof Promise) {
-        outcome.catch((error) => report("Modal onClose", error));
-      }
-    } catch (error) {
-      report("Modal onClose", error);
-    }
+    runOnClose(pending.onClose, result);
     pending.resolve(result);
   }, []);
 
+  // stable identity: part of the modal actions consumers hold by reference
   const openModal = useCallback<ModalActions["openModal"]>(
     (modalInput, options = {}) => {
       if (!modalInput) return Promise.resolve(null);
@@ -104,6 +118,7 @@ export function ModalProvider({
     [syncModalStack],
   );
 
+  // stable identity: part of the modal actions consumers hold by reference
   const closeModal = useCallback<ModalActions["closeModal"]>(
     (result = null, targetModalId = null) => {
       const stack = modalStackRef.current;
@@ -116,6 +131,7 @@ export function ModalProvider({
     [settleModal, syncModalStack],
   );
 
+  // stable identity: part of the modal actions consumers hold by reference
   const closeAllModals = useCallback<ModalActions["closeAllModals"]>(
     (result = null) => {
       const stack = modalStackRef.current;
@@ -127,11 +143,13 @@ export function ModalProvider({
     [settleModal, syncModalStack],
   );
 
+  // stable identity: part of the public hook contract (useModalActions)
   const actionsValue = useMemo<ModalActions>(
     () => ({ closeAllModals, closeModal, openModal }),
     [openModal, closeModal, closeAllModals],
   );
 
+  // stable identity: consumers subscribe by reference
   const contextValue = useMemo<ModalContextValue>(
     () => ({ actions: actionsValue, store }),
     [actionsValue, store],

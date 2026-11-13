@@ -40,6 +40,12 @@ export const NOOP_NOTIFICATION_STORE = createStore<NotificationState>(
 );
 
 let notificationIdCounter = 0;
+// A function, not `++notificationIdCounter` inline: the compiler cannot lower an
+// update of a module variable inside a hook.
+function nextNotificationId() {
+  notificationIdCounter += 1;
+  return notificationIdCounter;
+}
 
 /**
  * Provides notification state and actions. Showing a notification replaces the
@@ -55,6 +61,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     new Map(),
   );
 
+  // stable identity: part of the notification actions consumers hold by reference
   const clearTimers = useCallback(() => {
     timersRef.current.forEach(clearTimeout);
     timersRef.current.clear();
@@ -62,6 +69,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   useEffect(() => clearTimers, [clearTimers]);
 
+  // stable identity: part of the notification actions consumers hold by reference
   const dismissNotification = useCallback(
     (id: string) => {
       clearTimeout(timersRef.current.get(id));
@@ -77,6 +85,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [store],
   );
 
+  // stable identity: part of the notification actions consumers hold by reference
   const dismissAllNotifications = useCallback(() => {
     clearTimers();
     store.publish((prev) =>
@@ -86,12 +95,13 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     );
   }, [clearTimers, store]);
 
+  // stable identity: part of the notification actions consumers hold by reference
   const showNotification = useCallback(
     (
       messageOrData: ReactNode | NotificationData,
       options?: ToastOptionsInput,
     ): string | null => {
-      const fallbackId = `notification-${++notificationIdCounter}`;
+      const fallbackId = `notification-${nextNotificationId()}`;
       const result = createNotificationEntry(
         messageOrData,
         options,
@@ -117,6 +127,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [clearTimers, dismissNotification, store],
   );
 
+  // stable identity: part of the public hook contract (useNotificationActions)
   const actions = useMemo<NotificationActions>(
     () => ({
       dismissAllNotifications,
@@ -126,6 +137,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [dismissAllNotifications, dismissNotification, showNotification],
   );
 
+  // stable identity: consumers subscribe by reference
   const value = useMemo<NotificationContextValue>(
     () => ({ actions, store }),
     [actions, store],

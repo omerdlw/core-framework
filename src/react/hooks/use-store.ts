@@ -1,17 +1,22 @@
 "use client";
 
-import { useCallback, useRef, useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 
 import { type ExternalStore } from "@/foundation/utils";
 
 /**
  * Subscribes a component to an external store, optionally to a selected slice with a custom equality check.
  */
+// Module level so the default keeps one identity (and the compiler can lower
+// the parameter list).
+const selectWholeState = <T>(state: T) => state;
+
 export function useStore<TState, TSlice = TState>(
   store: ExternalStore<TState>,
-  selector: (state: TState) => TSlice = (state: TState) =>
-    // The default selector returns the whole state, so TSlice is TState.
-    state as unknown as TSlice,
+  // The default selector returns the whole state, so TSlice is TState.
+  selector: (state: TState) => TSlice = selectWholeState as unknown as (
+    state: TState,
+  ) => TSlice,
   isEqual: (a: TSlice, b: TSlice) => boolean = Object.is,
 ): TSlice {
   const cacheRef = useRef<{
@@ -26,7 +31,9 @@ export function useStore<TState, TSlice = TState>(
     snapshot: null,
   });
 
-  const getSelectedSnapshot = useCallback(() => {
+  // A new getter per render is fine: the cache above keeps the snapshot
+  // stable, and only subscribe's identity makes React resubscribe.
+  const getSelectedSnapshot = () => {
     const snapshot = store.getSnapshot();
     const cache = cacheRef.current;
     if (
@@ -55,7 +62,7 @@ export function useStore<TState, TSlice = TState>(
       snapshot,
     };
     return selected;
-  }, [isEqual, selector, store]);
+  };
 
   return useSyncExternalStore(
     store.subscribe,

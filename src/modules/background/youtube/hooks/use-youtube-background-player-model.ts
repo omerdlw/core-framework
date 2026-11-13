@@ -88,6 +88,7 @@ export function useYouTubeBackgroundPlayerModel({
   }, [forceIframe, videoId]);
   const { audioStreamUrl, resolvedPoster, videoStreamUrl } =
     useYouTubeStreamSources({ codec, posterUrl, quality, showPoster, videoId });
+  // kept: useYouTubeBackgroundPlayerModel is a compiler exception (docs/architecture-and-rules.md)
   const syncCompanionAudio = useCallback((forceSeek = false) => {
     syncCompanionAudioElements({
       audio: audioRef.current,
@@ -96,6 +97,7 @@ export function useYouTubeBackgroundPlayerModel({
       video: videoRef.current,
     });
   }, []);
+  // kept: useYouTubeBackgroundPlayerModel is a compiler exception (docs/architecture-and-rules.md)
   const playWithFallback = useCallback(
     (video: HTMLVideoElement, forceSeek: boolean, unlockAudio: boolean) => {
       playWithMutedFallback({
@@ -113,6 +115,7 @@ export function useYouTubeBackgroundPlayerModel({
   const scheduleRetry = (callback: () => void, delay: number) => {
     scheduleRetryTimer(retryTimerIdsRef.current, callback, delay);
   };
+  // kept: useYouTubeBackgroundPlayerModel is a compiler exception (docs/architecture-and-rules.md)
   const handleEnded = useCallback(() => {
     endVideoPlayback({
       audioRef,
@@ -122,6 +125,7 @@ export function useYouTubeBackgroundPlayerModel({
       videoRef,
     });
   }, [setVideoPlaying, syncCompanionAudio]);
+  // kept: useYouTubeBackgroundPlayerModel is a compiler exception (docs/architecture-and-rules.md)
   const handleAudioError = useCallback(() => {
     handleCompanionAudioError({
       audioErrorRetryCountRef,

@@ -180,6 +180,7 @@ export function useDockNavigation() {
     }
   }, [clearPreparedRouteReset, lastTransaction, stopLoading, syncLocationKey]);
 
+  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
   const cancelDock = useCallback(
     (reason = GUARD_CANCEL_REASON) => {
       navigator.cancel(reason);
@@ -189,6 +190,7 @@ export function useDockNavigation() {
     [clearPreparedRouteReset, closeSurface, navigator],
   );
 
+  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
   const commitDock = useCallback(
     async ({
       force = false,
@@ -242,6 +244,7 @@ export function useDockNavigation() {
     [closeSurface, continuity, guards, navigator, prepareRouteReset],
   );
 
+  // kept: useDockNavigation is a compiler exception (docs/architecture-and-rules.md)
   const navigate = useCallback(
     async (
       href: string,

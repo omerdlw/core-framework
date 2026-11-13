@@ -36,6 +36,12 @@ import {
 } from "./types";
 
 let toastPromiseIdCounter = 0;
+// A function, not `++toastPromiseIdCounter` inline: the compiler cannot lower an
+// update of a module variable inside a hook.
+function nextToastPromiseId() {
+  toastPromiseIdCounter += 1;
+  return toastPromiseIdCounter;
+}
 
 /**
  * Returns the notification actions without subscribing to state changes.
@@ -119,6 +125,47 @@ interface ToastPromiseDeps {
 }
 
 /**
+ * The body of `toast.promise`. Module level: the compiler cannot lower
+ * optional chaining inside a try block in a hook.
+ */
+async function runToastPromise<T = unknown, E = unknown>(
+  { dismiss, showNotification, triggerToast }: ToastPromiseDeps,
+  promiseOrFn: Promise<T> | (() => Promise<T>),
+  messages: ToastPromiseMessages<T, E> = {},
+  options?: ToastOptionsInput,
+): Promise<T> {
+  const normalized = normalizeToastOptions(options);
+  const id =
+    normalized.id ||
+    normalized.dedupeKey ||
+    `toast-promise-${nextToastPromiseId()}`;
+  const sharedOptions = { ...normalized, id };
+
+  if (messages.loading) {
+    showNotification(messages.loading, {
+      ...sharedOptions,
+      duration: null,
+    });
+  }
+
+  try {
+    const resolved = await (typeof promiseOrFn === "function"
+      ? promiseOrFn()
+      : promiseOrFn);
+    const message = getOutcomeMessage(resolved, messages);
+    if (message) triggerToast(message, sharedOptions);
+    else if (messages.loading) dismiss(id);
+    return resolved;
+  } catch (error) {
+    triggerToast(
+      resolveMessage(messages.error, error as E) || toUserMessage(error),
+      sharedOptions,
+    );
+    throw error;
+  }
+}
+
+/**
  * Builds `toast.promise`: shows a loading toast, then replaces it with the
  * outcome message once the promise settles.
  */
@@ -127,42 +174,19 @@ function useToastPromise({
   showNotification,
   triggerToast,
 }: ToastPromiseDeps): ToastController["promise"] {
+  // stable identity: part of the public hook contract
   return useCallback(
-    async <T = unknown, E = unknown>(
+    <T = unknown, E = unknown>(
       promiseOrFn: Promise<T> | (() => Promise<T>),
       messages: ToastPromiseMessages<T, E> = {},
       options?: ToastOptionsInput,
-    ): Promise<T> => {
-      const normalized = normalizeToastOptions(options);
-      const id =
-        normalized.id ||
-        normalized.dedupeKey ||
-        `toast-promise-${++toastPromiseIdCounter}`;
-      const sharedOptions = { ...normalized, id };
-
-      if (messages.loading) {
-        showNotification(messages.loading, {
-          ...sharedOptions,
-          duration: null,
-        });
-      }
-
-      try {
-        const resolved = await (typeof promiseOrFn === "function"
-          ? promiseOrFn()
-          : promiseOrFn);
-        const message = getOutcomeMessage(resolved, messages);
-        if (message) triggerToast(message, sharedOptions);
-        else if (messages.loading) dismiss(id);
-        return resolved;
-      } catch (error) {
-        triggerToast(
-          resolveMessage(messages.error, error as E) || toUserMessage(error),
-          sharedOptions,
-        );
-        throw error;
-      }
-    },
+    ): Promise<T> =>
+      runToastPromise<T, E>(
+        { dismiss, showNotification, triggerToast },
+        promiseOrFn,
+        messages,
+        options,
+      ),
     [dismiss, showNotification, triggerToast],
   );
 }

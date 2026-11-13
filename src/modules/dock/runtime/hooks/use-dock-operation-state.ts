@@ -36,6 +36,7 @@ export function useDockOperationState() {
     operationStateRef.current = operationState;
   }, [operationState]);
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const start = useCallback((input: DockOperationInput = {}) => {
     const operation = createDockOperation({
       ...input,
@@ -50,6 +51,7 @@ export function useDockOperationState() {
     return operation;
   }, []);
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const update = useCallback(
     (id: string | number, patch: Partial<DockOperationInput> = {}) => {
       if (id == null) return false;
@@ -59,6 +61,7 @@ export function useDockOperationState() {
     [],
   );
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const complete = useCallback(
     (id: string | number, result: unknown = null) => {
       if (id == null) return false;
@@ -68,6 +71,7 @@ export function useDockOperationState() {
     [],
   );
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const cancel = useCallback((id: string | number, result: unknown = null) => {
     if (id == null) return false;
     const operation = operationStateRef.current.entries.find(
@@ -85,21 +89,25 @@ export function useDockOperationState() {
     return true;
   }, []);
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const clear = useCallback(
     (id: string | number | null = null) =>
       dispatchOperation({ id, type: DOCK_OPERATION_EVENTS.CLEAR }),
     [],
   );
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const operationActions = useMemo(
     () => ({ cancel, clear, complete, start, update }),
     [cancel, clear, complete, start, update],
   );
 
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const activeOperation = useMemo(
     () => resolveActiveDockOperation(operationState),
     [operationState],
   );
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const pendingCount = useMemo(
     () =>
       operationState.entries.filter(
@@ -107,6 +115,7 @@ export function useDockOperationState() {
       ).length,
     [operationState.entries],
   );
+  // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const operationHud = useMemo(
     () =>
       createDockOperationHud(activeOperation, {

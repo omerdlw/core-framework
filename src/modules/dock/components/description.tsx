@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { memo } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -11,7 +10,7 @@ import { useDockMotion } from "../motion";
 import type { DockDescriptionProps } from "../types";
 
 /** Secondary line of text in a dock card, with an optional enter/exit animation. */
-export const DockDescription = memo(function DockDescription({
+export function DockDescription({
   text,
   style,
   maxLines = 1,
@@ -22,8 +21,8 @@ export const DockDescription = memo(function DockDescription({
   if (text == null || text === "") return null;
 
   const { className, inlineStyle } = splitStyle(style);
-  const { opacity = dockMotion.opacity.description, ...restStyle } =
-    inlineStyle;
+  // A missing opacity falls back to the motion default below.
+  const { opacity, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
   const targetOpacity =
     typeof opacity === "number" ? opacity : dockMotion.opacity.description;
@@ -68,4 +67,4 @@ export const DockDescription = memo(function DockDescription({
       </AnimatePresence>
     </div>
   );
-});
+}

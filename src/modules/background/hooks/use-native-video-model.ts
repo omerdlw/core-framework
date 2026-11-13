@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useCallback, useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 
 import { report } from "@/foundation/utils";
 
@@ -22,6 +22,13 @@ export interface NativeVideoProps {
   style: CSSProperties;
 }
 
+/** Pauses a video that may already be detached; a failure is irrelevant. */
+function pauseQuietly(video: HTMLVideoElement | null) {
+  try {
+    video?.pause();
+  } catch {}
+}
+
 export function useNativeVideoModel({
   corp,
   isMuted,
@@ -35,7 +42,8 @@ export function useNativeVideoModel({
   className: _className,
 }: NativeVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const handleEnded = useCallback(() => {
+  // Media event handlers on <video> only, so a new function per render is fine.
+  const handleEnded = () => {
     const video = videoRef.current;
     if (!video) return;
     if (video.loop) {
@@ -47,13 +55,13 @@ export function useNativeVideoModel({
     }
     video.pause();
     setVideoPlaying(false);
-  }, [setVideoPlaying]);
-  const handleTimeUpdate = useCallback(() => {
+  };
+  const handleTimeUpdate = () => {
     const video = videoRef.current;
     if (video && isWithinCorp(video.currentTime, video.duration, corp)) {
       handleEnded();
     }
-  }, [corp, handleEnded]);
+  };
   const handleLoadedData = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -72,9 +80,7 @@ export function useNativeVideoModel({
     const video = videoRef.current;
     setVideoElement(video);
     return () => {
-      try {
-        video?.pause();
-      } catch {}
+      pauseQuietly(video);
     };
   }, [src, setVideoElement]);
   useEffect(() => () => setVideoElement(null), [setVideoElement]);

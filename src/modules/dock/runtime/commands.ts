@@ -97,10 +97,24 @@ function registerDockCommand(
   return { ...currentEntries, [key]: { key, ...command } };
 }
 
+/**
+ * The entries without `key`, or the same object when it is absent. Module
+ * level: the compiler cannot lower a computed key in a destructuring pattern.
+ */
+function withoutCommand(
+  currentEntries: DockCommandEntries,
+  key: string,
+): DockCommandEntries {
+  if (!currentEntries[key]) return currentEntries;
+  const { [key]: _, ...nextEntries } = currentEntries;
+  return nextEntries;
+}
+
 export function useDockCommandRegistry() {
   const [commandEntries, setCommandEntries] = useState<DockCommandEntries>({});
   const generatedCommandIdRef = useRef(0);
 
+  // stable identity: part of the dock actions (useDockActions) consumers hold
   const registerCommand = useCallback(
     (command: Partial<DockActionDescriptor>) => {
       if (!command) return;
@@ -115,15 +129,13 @@ export function useDockCommandRegistry() {
     [],
   );
 
+  // stable identity: part of the dock actions (useDockActions) consumers hold
   const unregisterCommand = useCallback((key: string) => {
     if (!key) return;
-    setCommandEntries((currentEntries) => {
-      if (!currentEntries[key]) return currentEntries;
-      const { [key]: _, ...nextEntries } = currentEntries;
-      return nextEntries;
-    });
+    setCommandEntries((currentEntries) => withoutCommand(currentEntries, key));
   }, []);
 
+  // stable identity: part of the dock actions (useDockActions) consumers hold
   const setCommands = useCallback((commands: DockCommandInput) => {
     if (!commands) {
       setCommandEntries({});
@@ -137,17 +149,20 @@ export function useDockCommandRegistry() {
     );
   }, []);
 
+  // stable identity: part of the dock actions (useDockActions) consumers hold
   const clearCommands = useCallback(() => {
     setCommandEntries((currentEntries) =>
       Object.keys(currentEntries).length === 0 ? currentEntries : {},
     );
   }, []);
 
+  // stable identity: published in the dock state, compared by reference
   const contextCommands = useMemo(
     () => Object.values(commandEntries),
     [commandEntries],
   );
 
+  // stable identity: part of the dock actions (useDockActions) consumers hold
   const actions = useMemo(
     () => ({
       clearContextActions: clearCommands,

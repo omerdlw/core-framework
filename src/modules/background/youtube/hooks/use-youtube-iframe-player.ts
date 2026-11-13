@@ -25,6 +25,34 @@ import { createYouTubeVideoElementProxy } from "../lib/parse";
 
 const PROGRESS_INTERVAL_MS = 200;
 
+// The try/catch helpers live at module level: the compiler cannot lower
+// optional chaining inside a try block in a hook.
+
+/** Destroys an iframe player; a player already torn down may throw. */
+function destroyQuietly(player: YouTubePlayer | null) {
+  try {
+    player?.destroy?.();
+  } catch {}
+}
+
+/** Pushes play, mute and rate to the iframe player; it may not be ready. */
+function applyPlayerState(
+  player: YouTubePlayer,
+  {
+    isMuted,
+    isPlaying,
+    playbackRate,
+  }: { isMuted: boolean; isPlaying: boolean; playbackRate: number },
+) {
+  try {
+    if (isPlaying) player.playVideo?.();
+    else player.pauseVideo?.();
+    if (isMuted) player.mute?.();
+    else player.unMute?.();
+    if (playbackRate) player.setPlaybackRate?.(playbackRate);
+  } catch {}
+}
+
 export function useYouTubeIframePlayer({
   enabled,
   hostRef,
@@ -116,9 +144,7 @@ export function useYouTubeIframePlayer({
     return () => {
       isDisposed = true;
       if (progressInterval !== null) window.clearInterval(progressInterval);
-      try {
-        playerRef.current?.destroy?.();
-      } catch {}
+      destroyQuietly(playerRef.current);
       playerRef.current = null;
       setVideoElement(null);
     };
@@ -141,12 +167,6 @@ export function useYouTubeIframePlayer({
   useEffect(() => {
     const current = playerRef.current;
     if (!enabled || !current) return;
-    try {
-      if (isPlaying) current.playVideo?.();
-      else current.pauseVideo?.();
-      if (isMuted) current.mute?.();
-      else current.unMute?.();
-      if (playbackRate) current.setPlaybackRate?.(playbackRate);
-    } catch {}
+    applyPlayerState(current, { isMuted, isPlaying, playbackRate });
   }, [enabled, isMuted, isPlaying, playbackRate]);
 }

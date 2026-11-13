@@ -64,6 +64,21 @@ interface LoadingTasks {
  * Keeps the stack of running loading tasks, the state they show, and the
  * minimum display time before loading may stop.
  */
+/**
+ * Awaits a task and always runs `settle` afterwards. Module level: the
+ * compiler cannot lower a try without a catch inside a hook.
+ */
+async function runThenSettle<T>(
+  task: Promise<T> | (() => Promise<T>),
+  settle: () => void,
+): Promise<T> {
+  try {
+    return typeof task === "function" ? await task() : await task;
+  } finally {
+    settle();
+  }
+}
+
 function useLoadingTasks(): LoadingTasks {
   const [manualState, setManualState] = useState<LoadingState>(
     DEFAULT_LOADING_STATE,
@@ -75,6 +90,7 @@ function useLoadingTasks(): LoadingTasks {
   const tasksRef = useRef<LoadingTask[]>([]);
   const nextTaskRef = useRef(1);
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const clearStopTimer = useCallback(() => {
     if (stopTimerRef.current !== null) {
       clearTimeout(stopTimerRef.current);
@@ -82,6 +98,7 @@ function useLoadingTasks(): LoadingTasks {
     }
   }, []);
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const resetState = useCallback(() => {
     clearStopTimer();
     minDurationRef.current = 0;
@@ -89,6 +106,7 @@ function useLoadingTasks(): LoadingTasks {
     setManualState(DEFAULT_LOADING_STATE);
   }, [clearStopTimer]);
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const beginTask = useCallback(
     (key: LoadingTaskKey, options: LoadingOptions) => {
       clearStopTimer();
@@ -96,7 +114,7 @@ function useLoadingTasks(): LoadingTasks {
       const tasks = tasksRef.current.filter((task) => task.key !== key);
       tasks.push({ key, state: nextState });
       tasksRef.current = tasks;
-      startTimeRef.current ??= Date.now();
+      if (startTimeRef.current === null) startTimeRef.current = Date.now();
       minDurationRef.current = Math.max(
         minDurationRef.current,
         nextState.minDuration,
@@ -106,6 +124,7 @@ function useLoadingTasks(): LoadingTasks {
     [clearStopTimer],
   );
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const endTask = useCallback(
     (key: LoadingTaskKey) => {
       const tasks = tasksRef.current;
@@ -131,6 +150,7 @@ function useLoadingTasks(): LoadingTasks {
     [clearStopTimer, resetState],
   );
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const setSkeleton = useCallback((nextSkeleton: SkeletonValue) => {
     setManualState((currentState) => {
       const skeleton =
@@ -146,6 +166,7 @@ function useLoadingTasks(): LoadingTasks {
     });
   }, []);
 
+  // stable identity: createLoadingActions captures it once (lazy useState)
   const withLoading = useCallback(
     async <T,>(
       task: Promise<T> | (() => Promise<T>),
@@ -156,11 +177,7 @@ function useLoadingTasks(): LoadingTasks {
         key,
         typeof options === "string" ? { message: options } : options,
       );
-      try {
-        return typeof task === "function" ? await task() : await task;
-      } finally {
-        endTask(key);
-      }
+      return runThenSettle(task, () => endTask(key));
     },
     [beginTask, endTask],
   );

@@ -13,7 +13,8 @@ export function useModalScrollLock(isModalVisible: boolean) {
     if (typeof document === "undefined") return;
 
     if (isModalVisible) {
-      releaseScrollLockRef.current ??= acquireGlobalScrollLock();
+      if (!releaseScrollLockRef.current)
+        releaseScrollLockRef.current = acquireGlobalScrollLock();
     } else if (releaseScrollLockRef.current) {
       releaseScrollLockRef.current();
       releaseScrollLockRef.current = null;
