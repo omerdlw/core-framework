@@ -61,7 +61,7 @@ npm install @omerdlw/base-framework motion
 
 Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.2.0`, `react-dom >= 19.2.0`, `motion >= 12.0.0`).
 
-Requires Node `>=22`. Upgrading from 5.x? See [MIGRATION.md](./MIGRATION.md).
+Requires Node `>=22`. Upgrading from 3.x? See [MIGRATION.md](./MIGRATION.md).
 
 ---
 

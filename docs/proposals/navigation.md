@@ -47,7 +47,7 @@ Why B:
    `definePeer("navigation", inert)` whose inert runtime never has a trip.
 
 The dock's `routing/transactions.ts` reducer moves into
-`src/core/navigation/state.ts` (in 6.0 the navigator machine moved from
+`src/core/navigation/state.ts` (in 3.5 the navigator machine moved from
 `modules/navigation/` to `src/core/navigation/`). `useDockNavigation()` keeps its return shape
 (`activeTransaction`, `lastTransaction`, `cancelDock`, `navigate`, …), so
 `runtime/dock.tsx` does not change. `DOCK_TRANSACTION_*` and the transaction
