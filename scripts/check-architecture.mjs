@@ -171,12 +171,12 @@ if (fs.existsSync(modulesDir)) {
     const usesMatch = fs
       .readFileSync(moduleFile, "utf8")
       .match(/\buses:\s*\[([^\]]*)\]/);
-    for (const id of usesMatch?.[1].matchAll(/["']([\w]+)["']/g) ?? []) {
+    for (const id of usesMatch?.[1].matchAll(/["']([\w-]+)["']/g) ?? []) {
       declared.add(id[1]);
     }
     const id = fs
       .readFileSync(moduleFile, "utf8")
-      .match(/\bid:\s*["'](\w+)["']/)?.[1];
+      .match(/\bid:\s*["']([\w-]+)["']/)?.[1];
     const read = new Set(barrelReads.get(entry.name) ?? []);
     for (const file of files.filter((candidate) =>
       candidate.startsWith(`${dir}${path.sep}`),
