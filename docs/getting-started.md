@@ -8,7 +8,7 @@
 
 Before installing `@omerdlw/base-framework`, verify your environment:
 
-- **Node.js:** `v20.0.0` or higher (Node 22 recommended)
+- **Node.js:** `>=22`
 - **Framework:** Next.js `15.0.0` or `16.0.0+` (App Router)
 - **React:** React `19.2.0+` & React DOM `19.2.0+`
 - **Styling:** Tailwind CSS v4
@@ -177,7 +177,7 @@ export default function HomePage() {
 | :--------------------------------- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
 | `@omerdlw/base-framework/kernel`   | Microkernel engine                          | `usePage()`, `defineModule()`, `definePeer()`, `useModule()`, `useModuleState()`                                            |
 | `@omerdlw/base-framework/provider` | Root host component                         | `CoreProvider`                                                                                                              |
-| `@omerdlw/base-framework/<module>` | 9 UI modules                                | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc.                                                    |
+| `@omerdlw/base-framework/<module>` | 10 UI modules                               | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc.                                                    |
 | `@omerdlw/base-framework/result`   | Functional error handling                   | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()`                                                         |
 | `@omerdlw/base-framework/events`   | Cross-cutting event bus                     | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap`                                                                          |
 | `@omerdlw/base-framework/theme`    | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()`               |

@@ -127,7 +127,7 @@ So a failed `useServerAction` produces a dock error card, plus a toast if you pa
 
 ## 7. File map
 
-A single file, `src/core/result.ts`. It depends only on `./utils/user-message` and `./utils/report`, so it is safe on both server and client (and is one of the server-safe core entries that must not import React or `next/*`).
+A single file, `src/foundation/result/index.ts`. It depends only on `@/foundation/utils/user-message` and `@/foundation/utils/report`, so it is safe on both server and client (it is a foundation entry and must not import React or `next/*`).
 
 ## 8. Dependencies
 

@@ -58,7 +58,7 @@ Whether you are a software architect or an AI Pair Programmer (Antigravity, Curs
 | **[`theming.md`](./theming.md)**                               | Designers & Developers | Visual customization guide: `defineThemeSpec()`, `defineTheme()`, `<ThemeProvider>`, and slot reference.                             |
 | **[`custom-modules.md`](./custom-modules.md)**                 | Advanced Developers    | Authoring custom modules via `defineModule()`, topological dependencies, and `usePage()` augmentation.                               |
 | **[`core-engine.md`](./core-engine.md)**                       | Developers & Agents    | `CoreProvider`, Theme engine, Event bus, Motion retiming, Pure utils, scheduler, and reactive stores.                                |
-| **[`testing.md`](./testing.md)**                               | Developers & QA        | Running the 520+ test suite, `happy-dom` harness (`renderHook`, `Themed`), and downstream component testing.                         |
+| **[`testing.md`](./testing.md)**                               | Developers & QA        | Running the 740-test suite, `happy-dom` harness (`renderHook`, `Themed`), and downstream component testing.                          |
 | **[`templates/AGENTS.md`](../templates/AGENTS.md)**            | AI Agents & Tech Leads | **Drop-in instructions** for AI coding assistants in projects using `@omerdlw/base-framework`.                                       |
 
 ### 2.2 Module Reference — [`modules/`](./modules/README.md)

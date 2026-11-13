@@ -1,6 +1,6 @@
 # Migrating from 5.x to 6.0
 
-6.0 reorganises the package into layers and tidies the public surface. Runtime behaviour is unchanged; what changes is where you import from and a few removed names.
+6.0 reorganises the package into layers and tidies the public surface. Most of the change is where you import from and a few removed names. Runtime behaviour is the same apart from one bug fix (see [Fixed](#fixed)) and the components that are no longer `memo()`.
 
 ## Requirements
 
@@ -34,10 +34,14 @@ Notes:
 
 ## Removed names
 
-| Removed                                      | Replacement                                                                                               |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `useModuleTheme` (from `./theme`)            | `useTheme`, same signature and behaviour                                                                  |
-| `useIsomorphicLayoutEffect` (from `./hooks`) | `useLayoutEffect` from `react`. React 19 no longer warns about `useLayoutEffect` during server rendering. |
+| Removed                                              | Replacement                                                                                               |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `useModuleTheme` (from `./theme` and `.`)            | `useTheme`, same signature and behaviour                                                                  |
+| `useIsomorphicLayoutEffect` (from `./hooks` and `.`) | `useLayoutEffect` from `react`. React 19 no longer warns about `useLayoutEffect` during server rendering. |
+
+## Fixed
+
+- The YouTube background's companion audio volume now falls back to `1` when the video's volume is unset. In 5.x the fallback never applied, because `Number(video.volume) ?? 1` ignores `NaN`.
 
 ## Components that are no longer `memo()`
 

@@ -10,15 +10,14 @@
 
 | Command                                                                                                      | Purpose                                                                                           |
 | :----------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| `npm test`                                                                                                   | Runs the full 520+ test suite (`tests/**/*.test.ts`) in ~1 second.                                |
-| `npm run test:coverage`                                                                                      | Runs the suite with complete line, branch, and function coverage reporting for `src/**`.          |
+| `npm test`                                                                                                   | Runs the full 740-test suite (`tests/**/*.test.ts`) on the uncompiled source.                     |
 | `npm run type-check`                                                                                         | Full TypeScript compiler validation (`tsc --noEmit`).                                             |
 | `npm run check:architecture`                                                                                 | Static AST validation checking for 0 circular dependencies and verified `uses` peer declarations. |
 | `node --import ./tests/support/register.mjs --test tests/core/kernel.test.ts`                                | Run a single test file.                                                                           |
 | `node --import ./tests/support/register.mjs --test --test-name-pattern="surface" tests/modules/dock.test.ts` | Run tests matching a specific pattern.                                                            |
 
 **Pre-flight Verification:**  
-`npm run type-check && npm run lint && npm run check:architecture && npm test && npm run build`
+`npm run verify` (format check, lint, type-check, architecture check, tests, build and the dist smoke tests)
 
 ---
 

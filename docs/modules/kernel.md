@@ -241,24 +241,36 @@ Pass the module id to `useModule`, `useModuleState` and `definePeer` as a **stri
 
 ## 9. File map
 
-| File                  | Responsibility                                                                                                       |
-| :-------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`            | Public barrel.                                                                                                       |
-| `types.ts`            | Registry, module, page-config and controller contracts.                                                              |
-| `constants.ts`        | Registry sources, source priority/rank, lifecycles, metadata keys, default scope.                                    |
-| `utils.ts`            | Input and scope resolution, config merging (`mergeModuleConfigs`), small guards.                                     |
-| `schema.ts`           | Key/value/metadata validation, metadata normalization (lifecycle → cleanup delay).                                   |
-| `operations.ts`       | Pure registry state machine (`createRegistryOperations`): records, ordering, merge, resolution cache.                |
-| `store.ts`            | `createRegistryStore`: subscriptions, snapshots, handles, `batch`, `transaction`.                                    |
-| `runtime.ts`          | Transactions.                                                                                                        |
-| `provider.tsx`        | `RegistryProvider`, `useRegistryValue`, `useRegistryEntries`, `useRegistryActions`.                                  |
-| `handlers.ts`         | `applyRegistryConfig`: slices → entries in one batch, cleanup per lifecycle.                                         |
-| `hooks.ts`            | `useRegistry` (select → stabilize → apply), `createRegistryApplyContext`, `useShallowStable`, config stabilization.  |
-| `adapters.tsx`        | `useModuleRegistration`.                                                                                             |
-| `installed.ts`        | Host context, `sortModules`, payload creation, registry definitions from modules.                                    |
-| `module.tsx`          | `defineModule`, `ModuleHost`, `useModule`, `useModuleState`, `definePeer`, `ModuleBoundary`, `useIsModuleInstalled`. |
-| `page-controller.tsx` | `usePage` (producer), `usePageController` (consumer), controller stack and scopes.                                   |
-| `compose.ts`          | `Compose` and provider-entry helpers.                                                                                |
+| File                     | Responsibility                                                                                                       |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`               | Public barrel.                                                                                                       |
+| `types.ts`               | Registry entry, source, lifecycle and metadata contracts.                                                            |
+| `types-modules.ts`       | Module, runtime and page-module contracts (`CoreModules`, `ModuleId`, `PageModuleApi`).                              |
+| `types-page.ts`          | Page options, page config and controller contracts.                                                                  |
+| `types-store.ts`         | Registry store, queue, apply-context and transaction contracts.                                                      |
+| `constants.ts`           | Registry sources, source priority/rank, lifecycles, metadata keys, default scope.                                    |
+| `utils.ts`               | Input and scope resolution, config merging (`mergeModuleConfigs`), small guards.                                     |
+| `schema.ts`              | Key/value/metadata validation, metadata normalization (lifecycle → cleanup delay).                                   |
+| `operations.ts`          | Pure registry state machine (`createRegistryOperations`): records, ordering, merge, resolution cache.                |
+| `operations-records.ts`  | Source records: keys, lookup, priority.                                                                              |
+| `operations-resolve.ts`  | Entry value resolution and the resolver cache.                                                                       |
+| `store.ts`               | `createRegistryStore`: composes the `store-*` parts into `batch`, `transaction`, register and read APIs.             |
+| `store-entries.ts`       | Initial entries normalization and initial state.                                                                     |
+| `store-registration.ts`  | Registration validation, value cloning, register operations.                                                         |
+| `store-subscriptions.ts` | Keyed listener registry and change notification.                                                                     |
+| `store-snapshots.ts`     | Snapshot readers.                                                                                                    |
+| `store-handles.ts`       | Registration handles (and the no-op handle).                                                                         |
+| `store-batch.ts`         | Batch queue.                                                                                                         |
+| `runtime.ts`             | Transactions.                                                                                                        |
+| `provider.tsx`           | `RegistryProvider`, `useRegistryValue`, `useRegistryEntries`, `useRegistryActions`.                                  |
+| `handlers.ts`            | `applyRegistryConfig`: slices → entries in one batch, cleanup per lifecycle.                                         |
+| `hooks.ts`               | `useRegistry` (select → stabilize → apply), `createRegistryApplyContext`, `useShallowStable`.                        |
+| `stabilize.ts`           | `stabilizeRegistryValue`: config stabilization across renders.                                                       |
+| `adapters.ts`            | `useModuleRegistration`.                                                                                             |
+| `installed.ts`           | Host context, `sortModules`, payload creation, registry definitions from modules.                                    |
+| `module.tsx`             | `defineModule`, `ModuleHost`, `useModule`, `useModuleState`, `definePeer`, `ModuleBoundary`, `useIsModuleInstalled`. |
+| `page-controller.tsx`    | `usePage` (producer), `usePageController` (consumer), controller stack and scopes.                                   |
+| `compose.ts`             | `Compose` and provider-entry helpers.                                                                                |
 
 ## 10. Dependencies
 

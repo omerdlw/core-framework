@@ -21,7 +21,7 @@ For in-depth architecture guides and module-by-module references, explore the [`
 - 🎨 **[Theming System Guide](./docs/theming.md)** — Visual customization: defineTheme, ThemeProvider, slot reference
 - 🧩 **[Custom Module Authoring](./docs/custom-modules.md)** — Build custom declarative modules with defineModule & usePage
 - ⚙️ **[Core Engine Deep Dive](./docs/core-engine.md)** — CoreProvider, theme engine, event bus, pure utils & stores
-- 🧪 **[Testing Guide](./docs/testing.md)** — 520+ test suite, test harness, happy-dom, downstream testing
+- 🧪 **[Testing Guide](./docs/testing.md)** — 740-test suite, test harness, happy-dom, downstream testing
 - 🤖 **[AI Agent Blueprint (`AGENTS.md`)](./templates/AGENTS.md)** — Drop-in rules for AI coding assistants
 
 ### Module & Component Reference
@@ -169,20 +169,20 @@ export default function DashboardPage() {
 
 ## 📚 Subpath Export Directory
 
-| Subpath                            | Purpose & Key Exports                                                       |
-| :--------------------------------- | :-------------------------------------------------------------------------- |
-| `@omerdlw/base-framework`          | Root exports of all sub-systems                                             |
-| `@omerdlw/base-framework/kernel`   | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`            |
-| `@omerdlw/base-framework/provider` | `CoreProvider` composition pipeline & `ModuleHost`                          |
-| `@omerdlw/base-framework/result`   | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                          |
-| `@omerdlw/base-framework/events`   | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                         |
-| `@omerdlw/base-framework/theme`    | `ThemeProvider`, `useTheme`, `defineThemeSpec`                              |
-| `@omerdlw/base-framework/ui`       | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)    |
-| `@omerdlw/base-framework/recipes`  | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                |
-| `@omerdlw/base-framework/utils`    | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
-| `@omerdlw/base-framework/hooks`    | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)           |
-| `@omerdlw/base-framework/error`    | Error boundaries and reporter sink                                          |
-| `@omerdlw/base-framework/<module>` | 9 standalone modules (`dock`, `modal`, `notification`, etc.)                |
+| Subpath                            | Purpose & Key Exports                                                                    |
+| :--------------------------------- | :--------------------------------------------------------------------------------------- |
+| `@omerdlw/base-framework`          | Root exports of all sub-systems                                                          |
+| `@omerdlw/base-framework/kernel`   | `usePage`, `defineModule`, `definePeer`, `ModuleHost`, `getOrCreateGlobalContext`        |
+| `@omerdlw/base-framework/provider` | `CoreProvider` composition pipeline                                                      |
+| `@omerdlw/base-framework/result`   | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                                       |
+| `@omerdlw/base-framework/events`   | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                                      |
+| `@omerdlw/base-framework/theme`    | `ThemeProvider`, `useTheme`, `defineThemeSpec`                                           |
+| `@omerdlw/base-framework/ui`       | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)                 |
+| `@omerdlw/base-framework/recipes`  | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                             |
+| `@omerdlw/base-framework/utils`    | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`)              |
+| `@omerdlw/base-framework/hooks`    | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)                        |
+| `@omerdlw/base-framework/error`    | Error boundaries (`GlobalError`, `ModuleError`, `ComponentError`) and `getErrorReporter` |
+| `@omerdlw/base-framework/<module>` | 10 standalone modules (`dock`, `modal`, `notification`, `navigation`, etc.)              |
 
 ---
 

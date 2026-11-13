@@ -236,7 +236,8 @@ No classes or colors in the module, except the pointer-following `left/top/posit
 | `dom.ts`       | Menu viewport positioning, keyboard arrow navigation index helper, scroll lock keys detection, class name joining. |
 | `state.ts`     | Initial and next-open menu state derivation, visibility custom event dispatch.                                     |
 | `resolver.ts`  | Candidate normalization, path/target/route scoring, context building, `resolveContextMenu`, `prepareMenu`.         |
-| `context.tsx`  | `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`), `useContextMenu*` consumer hooks.                  |
+| `context.tsx`  | `ContextMenuContext` and `ContextMenuProvider` (store, `openMenu`, `closeMenu`, `bind`).                           |
+| `hooks.ts`     | `useContextMenu*` consumer hooks, registration, the global listener, dismissal and the content view model.         |
 | `overlay.tsx`  | `ContextMenuGlobal`, portalled renderer, content host, header, item components, and interaction listeners.         |
 | `motion.ts`    | `useContextMenuMotion`. The values come from the app's context-menu theme.                                         |
 | `module.tsx`   | `contextMenuModule`, page API adapter, `defineContextMenu`, kernel type augmentation.                              |
