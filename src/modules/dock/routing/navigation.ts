@@ -230,6 +230,9 @@ export function useDockNavigation() {
         openDockGuardConfirmation({
           closeSurface,
           commit: (confirmed) =>
+            // Compiler exception (docs/architecture-and-rules.md): the guard
+            // confirmation runs after commitDock is declared, on user input.
+            // eslint-disable-next-line react-hooks/immutability
             void commitDock({ ...confirmed, force: true }).catch((error) =>
               report("Dock route transition", error),
             ),

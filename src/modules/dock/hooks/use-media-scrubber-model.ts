@@ -46,6 +46,8 @@ export function useDockMediaScrubberModel(_props: {
     if (!videoElement) {
       if (progressBarRef.current)
         progressBarRef.current.style.transform = "scaleX(0)";
+      // Clears state that mirrors the media element once it goes away.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentTime(0);
       setDuration(0);
       return;

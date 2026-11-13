@@ -73,10 +73,14 @@ function resolveRegisterArgsWithInstance(
 
 export function useShallowStable<T extends object>(value: T): T {
   const ref = useRef(value);
+  // Compiler exception (docs/architecture-and-rules.md): the ref keeps the
+  // last shallow-equal value; writing it during render is idempotent.
+  /* eslint-disable react-hooks/refs */
   if (ref.current !== value && !shallowEqual(ref.current, value)) {
     ref.current = value;
   }
   return ref.current;
+  /* eslint-enable react-hooks/refs */
 }
 
 /**

@@ -175,6 +175,5 @@ These functions are skipped by the compiler on purpose. Their memos stay hand-wr
 | `src/modules/background/youtube/hooks/use-youtube-background-player-model.ts` | `useYouTubeBackgroundPlayerModel` | Writes the latest props into `live.current` during render for imperative player callbacks.                              |
 | `src/modules/dock/routing/navigation.ts`                                      | `useDockNavigation`               | The guard-confirmation callback in `commitDock` refers to `commitDock` before its declaration finishes.                 |
 | `src/modules/dock/runtime/hooks/use-dock-operation-state.ts`                  | `useDockOperationState`           | Reads the operations ref during render.                                                                                 |
-| `src/modules/dock/hooks/use-media-controls-model.ts`                          | `useDockMediaControlsModel`       | Mutates the received media element (`volume`, `muted`, `playbackRate`, `currentTime`).                                  |
 
 Refactoring any of these is optional work; when one compiles, re-check its memos against the rule above.

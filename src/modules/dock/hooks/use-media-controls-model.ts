@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useDockMedia, useDockMediaActions } from "../context";
 import {
@@ -16,6 +16,31 @@ import {
   stepVolume,
   toPercentString,
 } from "../lib/media";
+
+// The media element is owned by the page; writing to it from handlers goes
+// through these helpers so the hook body does not mutate a received value.
+function setElementVolume(
+  element: HTMLMediaElement,
+  volume: number,
+  muted: boolean,
+) {
+  element.volume = volume;
+  element.muted = muted;
+}
+
+function setElementPlaybackRate(element: HTMLMediaElement, rate: number) {
+  element.playbackRate = rate;
+}
+
+function setElementTime(element: HTMLMediaElement, time: number) {
+  element.currentTime = time;
+}
+
+function capturePointer(target: Element, pointerId: number) {
+  try {
+    target.setPointerCapture?.(pointerId);
+  } catch {}
+}
 
 export function useDockMediaControlsModel(_props: { className?: string }) {
   const {
@@ -54,11 +79,15 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       typeof document !== "undefined" &&
       "pictureInPictureEnabled" in document
     ) {
+      // Read after mount so server and first client render agree.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPipSupported(Boolean(document.pictureInPictureEnabled));
     }
   }, []);
   useEffect(() => {
     if (!videoElement) {
+      // Clears state that mirrors the media element once it goes away.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlaybackRate(1);
       setIsPipActive(false);
       return undefined;
@@ -84,6 +113,8 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
   }, [videoElement]);
   useEffect(() => {
     if (!audibleElement) {
+      // Clears state that mirrors the media element once it goes away.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVolume(1);
       setIsMuted(false);
       return undefined;
@@ -116,125 +147,106 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       audibleElement.removeEventListener("volumechange", syncVolumeState);
     };
   }, [audibleElement]);
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleCycleSpeed = useCallback(() => {
+  // Handlers below only feed DOM events, so a new function per render is fine.
+  const handleCycleSpeed = () => {
     if (!videoElement) return;
     const nextRate = getNextPlaybackRate(playbackRate);
-    videoElement.playbackRate = nextRate;
+    setElementPlaybackRate(videoElement, nextRate);
     setPlaybackRate(nextRate);
-  }, [playbackRate, videoElement]);
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const updateVolumeFromPosition = useCallback(
-    (clientX: number) => {
-      if (!audibleElement || !volumeTrackRef.current) return;
+  };
+  const updateVolumeFromPosition = (clientX: number) => {
+    if (!audibleElement || !volumeTrackRef.current) return;
 
-      const rect = volumeTrackRef.current.getBoundingClientRect();
-      if (rect.width <= 0) return;
+    const rect = volumeTrackRef.current.getBoundingClientRect();
+    if (rect.width <= 0) return;
 
-      const { fraction } = getTrackPosition(clientX, rect);
-      const nextVolume = roundVolume(fraction);
-      const fractionPercent = toPercentString(fraction);
+    const { fraction } = getTrackPosition(clientX, rect);
+    const nextVolume = roundVolume(fraction);
+    const fractionPercent = toPercentString(fraction);
 
+    paintVolume(volumeFillRef.current, volumeThumbRef.current, fractionPercent);
+
+    const nextMuted = nextVolume === 0;
+    setElementVolume(audibleElement, nextVolume, nextMuted);
+
+    setVideoMuted?.(nextMuted);
+    setVolume(nextVolume);
+    setIsMuted(nextMuted);
+  };
+  const handleVolumePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    volumeDragCleanupRef.current?.();
+    isDraggingRef.current = true;
+    setIsDraggingVolume(true);
+
+    capturePointer(event.currentTarget, event.pointerId);
+
+    updateVolumeFromPosition(event.clientX);
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      updateVolumeFromPosition(moveEvent.clientX);
+    };
+
+    const handlePointerUp = () => {
+      isDraggingRef.current = false;
+      setIsDraggingVolume(false);
+
+      if (audibleElement) {
+        setVolume(Number(audibleElement.volume) || 0);
+        setIsMuted(Boolean(audibleElement.muted));
+      }
+      removePointerListeners();
+    };
+
+    const removePointerListeners = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+      if (volumeDragCleanupRef.current === removePointerListeners) {
+        volumeDragCleanupRef.current = null;
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, {
+      passive: true,
+    });
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+
+    volumeDragCleanupRef.current = removePointerListeners;
+  };
+  const handleToggleMute = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!audibleElement) return;
+
+    if (isMuted || volume === 0) {
+      const restoredVolume = volume === 0 ? RESTORED_VOLUME : volume;
+      setElementVolume(audibleElement, restoredVolume, false);
+
+      setVideoMuted?.(false);
+      setVolume(restoredVolume);
+      setIsMuted(false);
+
+      const restoredPercent = toPercentString(restoredVolume);
       paintVolume(
         volumeFillRef.current,
         volumeThumbRef.current,
-        fractionPercent,
+        restoredPercent,
       );
+    } else {
+      setElementVolume(audibleElement, audibleElement.volume, true);
+      setVideoMuted?.(true);
+      setIsMuted(true);
 
-      audibleElement.volume = nextVolume;
-      const nextMuted = nextVolume === 0;
-      audibleElement.muted = nextMuted;
-
-      setVideoMuted?.(nextMuted);
-      setVolume(nextVolume);
-      setIsMuted(nextMuted);
-    },
-    [setVideoMuted, audibleElement],
-  );
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleVolumePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      volumeDragCleanupRef.current?.();
-      isDraggingRef.current = true;
-      setIsDraggingVolume(true);
-
-      try {
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-      } catch {}
-
-      updateVolumeFromPosition(event.clientX);
-
-      const handlePointerMove = (moveEvent: PointerEvent) => {
-        if (!isDraggingRef.current) return;
-        updateVolumeFromPosition(moveEvent.clientX);
-      };
-
-      const handlePointerUp = () => {
-        isDraggingRef.current = false;
-        setIsDraggingVolume(false);
-
-        if (audibleElement) {
-          setVolume(Number(audibleElement.volume) || 0);
-          setIsMuted(Boolean(audibleElement.muted));
-        }
-        removePointerListeners();
-      };
-
-      const removePointerListeners = () => {
-        window.removeEventListener("pointermove", handlePointerMove);
-        window.removeEventListener("pointerup", handlePointerUp);
-        window.removeEventListener("pointercancel", handlePointerUp);
-        if (volumeDragCleanupRef.current === removePointerListeners) {
-          volumeDragCleanupRef.current = null;
-        }
-      };
-
-      window.addEventListener("pointermove", handlePointerMove, {
-        passive: true,
-      });
-      window.addEventListener("pointerup", handlePointerUp);
-      window.addEventListener("pointercancel", handlePointerUp);
-
-      volumeDragCleanupRef.current = removePointerListeners;
-    },
-    [updateVolumeFromPosition, audibleElement],
-  );
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleToggleMute = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      if (!audibleElement) return;
-
-      if (isMuted || volume === 0) {
-        const restoredVolume = volume === 0 ? RESTORED_VOLUME : volume;
-        audibleElement.volume = restoredVolume;
-        audibleElement.muted = false;
-
-        setVideoMuted?.(false);
-        setVolume(restoredVolume);
-        setIsMuted(false);
-
-        const restoredPercent = toPercentString(restoredVolume);
-        paintVolume(
-          volumeFillRef.current,
-          volumeThumbRef.current,
-          restoredPercent,
-        );
-      } else {
-        audibleElement.muted = true;
-        setVideoMuted?.(true);
-        setIsMuted(true);
-
-        paintVolume(volumeFillRef.current, volumeThumbRef.current, "0%");
-      }
-    },
-    [isMuted, setVideoMuted, audibleElement, volume],
-  );
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleTogglePip = useCallback(async () => {
+      paintVolume(volumeFillRef.current, volumeThumbRef.current, "0%");
+    }
+  };
+  const handleTogglePip = async () => {
     if (!videoElement) return;
     try {
       if (document.pictureInPictureElement) {
@@ -243,35 +255,31 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
         await (videoElement as HTMLVideoElement).requestPictureInPicture();
       }
     } catch {}
-  }, [videoElement]);
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleSkipBackward = useCallback(() => {
+  };
+  const handleSkipBackward = () => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
-    videoElement.currentTime = Math.max(0, current - MEDIA_SKIP_SECONDS);
-  }, [videoElement]);
-  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
-  const handleSkipForward = useCallback(() => {
+    setElementTime(videoElement, Math.max(0, current - MEDIA_SKIP_SECONDS));
+  };
+  const handleSkipForward = () => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
     const duration = Number(videoElement.duration) || 0;
-    videoElement.currentTime = getSkipForwardTime(current, duration);
-  }, [videoElement]);
+    setElementTime(videoElement, getSkipForwardTime(current, duration));
+  };
 
   const handleVolumeKeyDown = (event: React.KeyboardEvent) => {
     if (!audibleElement) return;
     if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
       event.preventDefault();
       const next = stepVolume(volume, -1);
-      audibleElement.volume = next;
       const nextMuted = next === 0;
-      audibleElement.muted = nextMuted;
+      setElementVolume(audibleElement, next, nextMuted);
       setVideoMuted?.(nextMuted);
     } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
       event.preventDefault();
       const next = stepVolume(volume, 1);
-      audibleElement.volume = next;
-      audibleElement.muted = false;
+      setElementVolume(audibleElement, next, false);
       setVideoMuted?.(false);
     }
   };

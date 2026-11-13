@@ -118,6 +118,9 @@ export function useDockOperationState() {
   // kept: useDockOperationState is a compiler exception (docs/architecture-and-rules.md)
   const operationHud = useMemo(
     () =>
+      // Compiler exception (docs/architecture-and-rules.md): cancel reads
+      // the ref only when the HUD's cancel button is pressed, not in render.
+      // eslint-disable-next-line react-hooks/refs
       createDockOperationHud(activeOperation, {
         onCancel: cancel,
         pendingCount,

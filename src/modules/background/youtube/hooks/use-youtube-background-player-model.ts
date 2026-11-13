@@ -68,6 +68,9 @@ export function useYouTubeBackgroundPlayerModel({
     shouldAutoPlay,
     startTime,
   });
+  // Compiler exception (docs/architecture-and-rules.md): imperative player
+  // callbacks read the latest props from live.current; render only writes it.
+  // eslint-disable-next-line react-hooks/refs
   live.current = {
     corp,
     endTime,
@@ -79,6 +82,9 @@ export function useYouTubeBackgroundPlayerModel({
     startTime,
   };
   useEffect(() => {
+    // Resets the player state when the video changes; the player itself is
+    // the external system these flags track.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUseIframeFallback(Boolean(forceIframe));
     setIsFrameReady(false);
     setIsBuffering(true);

@@ -65,21 +65,22 @@ export default tseslint.config(
       "@typescript-eslint/prefer-optional-chain": "off",
       // Index loops that also use the index are kept as written.
       "@typescript-eslint/prefer-for-of": "off",
-      // React Compiler diagnostics: warnings until the hooks pass (Task 9).
-      "react-hooks/refs": "warn",
-      "react-hooks/immutability": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/purity": "warn",
-      "react-hooks/static-components": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
-      "react-hooks/use-memo": "warn",
-      "react-hooks/globals": "warn",
-      "react-hooks/error-boundaries": "warn",
-      "react-hooks/incompatible-library": "warn",
-      "react-hooks/unsupported-syntax": "warn",
-      "react-hooks/component-hook-factories": "warn",
-      "react-hooks/config": "warn",
-      "react-hooks/gating": "warn",
+      // React Compiler diagnostics. Scoped disables carry a reason; see
+      // "Compiler exceptions" in docs/architecture-and-rules.md.
+      "react-hooks/refs": "error",
+      "react-hooks/immutability": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/purity": "error",
+      "react-hooks/static-components": "error",
+      "react-hooks/preserve-manual-memoization": "error",
+      "react-hooks/use-memo": "error",
+      "react-hooks/globals": "error",
+      "react-hooks/error-boundaries": "error",
+      "react-hooks/incompatible-library": "error",
+      "react-hooks/unsupported-syntax": "error",
+      "react-hooks/component-hook-factories": "error",
+      "react-hooks/config": "error",
+      "react-hooks/gating": "error",
       "no-restricted-imports": [
         "error",
         {
