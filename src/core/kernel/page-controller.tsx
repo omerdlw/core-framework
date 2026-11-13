@@ -222,7 +222,7 @@ function useModuleControllers(
   pageApi: PageModuleApi,
 ): PageModules {
   // stable identity: part of the public hook contract
-  // (page.use receives the same slice until the page config changes)
+  // (page.use receives the same slice until the config changes)
   const moduleSlices = useMemo(
     () =>
       modules.map((coreModule) =>

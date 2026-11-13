@@ -149,3 +149,32 @@ What are you adding?
 ├─ Pure utility or data store (scheduler, store, clamp)   -> src/utils/
 └─ Error handling & reporting (reporter, boundary)       -> src/error/
 ```
+
+---
+
+## 6. React Compiler and Memoization
+
+Client entries are built with `babel-plugin-react-compiler` (infer mode). The build prints `React Compiler (client entries): N compiled, M skipped` and lists every skip.
+
+Code must behave the same with and without the compiler: tests, SSR and consumers who bundle the source run it uncompiled. A value that reaches an effect dependency, a render-phase comparison, a `useSyncExternalStore` subscribe, a context value or a public hook return needs a stable source without the compiler (a module constant, a lazy `useState` factory, or a kept memo). Every kept `useMemo`/`useCallback` carries a reason comment, for example:
+
+- `// stable identity: consumers subscribe by reference` (context values)
+- `// stable identity: part of the public hook contract` (public hook returns)
+
+Memos that only feed render output or DOM event handlers are dropped.
+
+### Compiler exceptions
+
+These functions are skipped by the compiler on purpose. Their memos stay hand-written and are marked `// kept: <fn> is a compiler exception`.
+
+| File                                                                          | Function                          | Reason                                                                                                                  |
+| :---------------------------------------------------------------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| `src/core/kernel/hooks.ts`                                                    | `useShallowStable`                | Reads and writes a ref during render to keep a shallow-equal value stable; a state-based version costs an extra render. |
+| `src/modules/ambient/hooks.ts`                                                | `useStableObject`                 | Same ref-during-render pattern as `useShallowStable`.                                                                   |
+| `src/modules/background/context.tsx`                                          | `useSafePathname`                 | Calls `usePathname()` inside try/catch so the provider works outside a router; no memos inside.                         |
+| `src/modules/background/youtube/hooks/use-youtube-background-player-model.ts` | `useYouTubeBackgroundPlayerModel` | Writes the latest props into `live.current` during render for imperative player callbacks.                              |
+| `src/modules/dock/routing/navigation.ts`                                      | `useDockNavigation`               | The guard-confirmation callback in `commitDock` refers to `commitDock` before its declaration finishes.                 |
+| `src/modules/dock/runtime/hooks/use-dock-operation-state.ts`                  | `useDockOperationState`           | Reads the operations ref during render.                                                                                 |
+| `src/modules/dock/hooks/use-media-controls-model.ts`                          | `useDockMediaControlsModel`       | Mutates the received media element (`volume`, `muted`, `playbackRate`, `currentTime`).                                  |
+
+Refactoring any of these is optional work; when one compiles, re-check its memos against the rule above.

@@ -18,6 +18,9 @@ const FLOW_UNAVAILABLE_MESSAGE = "Dock surface flow is unavailable";
  * Binds a component to a named surface flow: tracks its state and exposes
  * open, update, complete and cancel controls. Restores the flow from the URL
  * the first time each flow id is seen.
+ *
+ * Pass a stable `input` (module constant or memoized): a new object each
+ * render rebuilds the flow definition.
  */
 export function useSurfaceFlow(input: SurfaceFlowDefinitionInput) {
   const context = use(SurfaceFlowContext);

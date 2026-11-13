@@ -2,7 +2,7 @@ import "../support/dom.ts";
 
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, mock, test } from "node:test";
-import { act, createElement as h } from "react";
+import { act, createElement as h, useState } from "react";
 
 import { ModuleHost } from "../../src/core/kernel/index.ts";
 import {
@@ -718,6 +718,32 @@ describe("navigation module", () => {
     ]);
     assert.equal(seen.active?.source, "dock");
     assert.equal(seen.dock.activeTransaction?.id, seen.active?.id);
+  });
+
+  test("with the module installed, the dock's navigate keeps its identity across re-renders", async () => {
+    const identities = new Set<unknown>();
+    let bump: () => void = () => {};
+    function DockProbe() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      identities.add(useDockNavigation().navigate);
+      return null;
+    }
+    const scheduler = createDockScheduler({
+      cancelFrame: (id) => clearTimeout(id),
+      requestFrame: (callback) => setTimeout(() => callback(Date.now()), 16),
+    });
+    await render(
+      h(
+        ModuleHost,
+        { modules: [navigationModule] },
+        h(DockProvider, { scheduler }, h(DockProbe)),
+      ),
+    );
+    identities.clear();
+    await act(async () => bump());
+    await act(async () => bump());
+    assert.equal(identities.size, 1);
   });
 
   test("without the module the dock runs its own navigator", async () => {

@@ -10,6 +10,12 @@ import { DockProvider } from "../../src/modules/dock/provider.tsx";
 import { BreadcrumbProvider } from "../../src/modules/dock/routing/breadcrumbs.tsx";
 import { useRegisterBreadcrumbOverride } from "../../src/modules/dock/routing/breadcrumbs.tsx";
 import { useDock } from "../../src/modules/dock/runtime/hooks/use-dock.ts";
+import {
+  SurfaceExtensionsContext,
+  SurfaceFlowContext,
+} from "../../src/modules/dock/surface/context.tsx";
+import { useDockSurfaceControlsModel } from "../../src/modules/dock/surface/hooks/use-surface-controls-model.ts";
+import { useSurfaceFlow } from "../../src/modules/dock/surface/hooks/use-surface-flow.tsx";
 import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 import { dockMotion } from "../support/motion/dock.ts";
 import { registryDefinitions } from "../support/registry.ts";
@@ -120,5 +126,52 @@ describe("dock identities hold without the compiler", () => {
       settled,
       "context consumers do not re-render when the provider's parent does",
     );
+  });
+
+  test("useSurfaceFlow keeps its controls stable for a stable input", async () => {
+    const input = { id: "signup", createSurface: () => ({}) };
+    const flowContext = {
+      surfaceState: null,
+      restoreSurfaceFlow: async () => ({ success: true }),
+    };
+    const identities = new Set<unknown>();
+    let bump: () => void = () => {};
+    function Probe() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      identities.add(useSurfaceFlow(input).open);
+      return null;
+    }
+    await render(
+      h(SurfaceFlowContext.Provider, { value: flowContext }, h(Probe)),
+    );
+    await act(async () => bump());
+    await act(async () => bump());
+    assert.equal(identities.size, 1);
+  });
+
+  test("surface hooks keep useSyncExternalStore's subscribe stable", async () => {
+    let subscriptions = 0;
+    const headerActions = {
+      subscribe: () => {
+        subscriptions += 1;
+        return () => {};
+      },
+      getAction: () => null,
+    };
+    const extensions = { value: { extensions: null, headerActions } };
+    let bump: () => void = () => {};
+    function Probe() {
+      const [, setTick] = useState(0);
+      bump = () => setTick((tick) => tick + 1);
+      useDockSurfaceControlsModel({});
+      return null;
+    }
+    await render(
+      h(SurfaceExtensionsContext.Provider, extensions as never, h(Probe)),
+    );
+    await act(async () => bump());
+    await act(async () => bump());
+    assert.equal(subscriptions, 1, "subscribed once across re-renders");
   });
 });

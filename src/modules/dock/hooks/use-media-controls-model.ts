@@ -116,14 +116,14 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       audibleElement.removeEventListener("volumechange", syncVolumeState);
     };
   }, [audibleElement]);
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleCycleSpeed = useCallback(() => {
     if (!videoElement) return;
     const nextRate = getNextPlaybackRate(playbackRate);
     videoElement.playbackRate = nextRate;
     setPlaybackRate(nextRate);
   }, [playbackRate, videoElement]);
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const updateVolumeFromPosition = useCallback(
     (clientX: number) => {
       if (!audibleElement || !volumeTrackRef.current) return;
@@ -151,7 +151,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     },
     [setVideoMuted, audibleElement],
   );
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleVolumePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -202,7 +202,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     },
     [updateVolumeFromPosition, audibleElement],
   );
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleToggleMute = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation();
@@ -233,7 +233,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     },
     [isMuted, setVideoMuted, audibleElement, volume],
   );
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleTogglePip = useCallback(async () => {
     if (!videoElement) return;
     try {
@@ -244,13 +244,13 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       }
     } catch {}
   }, [videoElement]);
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleSkipBackward = useCallback(() => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
     videoElement.currentTime = Math.max(0, current - MEDIA_SKIP_SECONDS);
   }, [videoElement]);
-  // kept: useMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
+  // kept: useDockMediaControlsModel is a compiler exception (docs/architecture-and-rules.md)
   const handleSkipForward = useCallback(() => {
     if (!videoElement) return;
     const current = Number(videoElement.currentTime) || 0;
