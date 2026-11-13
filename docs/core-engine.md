@@ -6,19 +6,20 @@
 
 ## 1. What is in the core
 
-| Entry                              | Path           | Server-safe? | What it is                                                                                                                                                                       |
-| :--------------------------------- | :------------- | :----------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@omerdlw/base-framework/utils`    | `utils/`       |      ✅      | Scheduling, stores, string/number/object helpers, motion retiming (`defineMotion`, `retime`), `report`, `toUserMessage`. Bottom of the stack: imports nothing from other layers. |
-| `@omerdlw/base-framework/result`   | `result.ts`    |      ✅      | `Result<T, E>`, `createSafeAction`. → [result.md](./modules/result.md)                                                                                                           |
-| `@omerdlw/base-framework/events`   | `events.ts`    |      ✅      | `globalEvents` bus, `EVENT_TYPES`, `FrameworkEventMap`.                                                                                                                          |
-| `@omerdlw/base-framework/hooks`    | `hooks/`       |    client    | Universal React hooks.                                                                                                                                                           |
-| `@omerdlw/base-framework/theme`    | `theme.tsx`    |    client    | Theme specs and provider (shared by core and modules).                                                                                                                           |
-| `@omerdlw/base-framework/design`   | `design/`      |    client    | Styled components (`Button`, `Icon`, `Loader`, `Tooltip`, …) the modules render with too. → [design.md](./design.md)                                                             |
-| `@omerdlw/base-framework/kernel`   | `kernel/`      |    client    | Module host, registry, `usePage`. → [kernel.md](./modules/kernel.md)                                                                                                             |
-| `@omerdlw/base-framework/error`    | `error/`       |    client    | Boundaries, reporter. → [error-boundary.md](./modules/error-boundary.md)                                                                                                         |
-| `@omerdlw/base-framework/provider` | `provider.tsx` |    client    | `CoreProvider`: the one component that assembles everything.                                                                                                                     |
+| Entry                              | Path                  | Server-safe? | What it is                                                                                                                                                                    |
+| :--------------------------------- | :-------------------- | :----------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@omerdlw/base-framework/utils`    | `foundation/utils/`   |      ✅      | Scheduling, stores, string/number/object helpers, motion retiming (`defineMotion`, `retime`), `report`, `toUserMessage`. Foundation layer: imports nothing from other layers. |
+| `@omerdlw/base-framework/result`   | `foundation/result/`  |      ✅      | `Result<T, E>`, `createSafeAction`. → [result.md](./modules/result.md)                                                                                                        |
+| `@omerdlw/base-framework/recipes`  | `foundation/recipes/` |      ✅      | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`. → [design.md](./design.md)                                                                                      |
+| `@omerdlw/base-framework/events`   | `foundation/events/`  |      ✅      | `globalEvents` bus, `EVENT_TYPES`, `FrameworkEventMap`.                                                                                                                       |
+| `@omerdlw/base-framework/hooks`    | `react/hooks/`        |    client    | Universal React hooks.                                                                                                                                                        |
+| `@omerdlw/base-framework/theme`    | `react/theme/`        |    client    | Theme specs and provider (shared by core and modules).                                                                                                                        |
+| `@omerdlw/base-framework/ui`       | `react/ui/`           |    client    | Styled components (`Button`, `Icon`, `Loader`, `Tooltip`, …) the modules render with too. → [design.md](./design.md)                                                          |
+| `@omerdlw/base-framework/kernel`   | `core/kernel/`        |    client    | Module host, registry, `usePage`. → [kernel.md](./modules/kernel.md)                                                                                                          |
+| `@omerdlw/base-framework/error`    | `core/error/`         |    client    | Boundaries, reporter. → [error-boundary.md](./modules/error-boundary.md)                                                                                                      |
+| `@omerdlw/base-framework/provider` | `core/provider/`      |    client    | `CoreProvider`: the one component that assembles everything.                                                                                                                  |
 
-Server-safe entries (`utils`, `design/recipes`, `result`, `events`) must not import React or `next/*`, so route handlers, server actions and the Edge can use them.
+Server-safe entries (`utils`, `recipes`, `result`, `events`) must not import React or `next/*`, so route handlers, server actions and the Edge can use them.
 
 ## 2. `CoreProvider`
 
@@ -169,7 +170,7 @@ The only numbers left in module code are relative stacking inside a module's own
 
 ## 9. Gotchas
 
-- Importing `@omerdlw/base-framework/hooks` or `@omerdlw/base-framework/design` from a server-safe entry breaks the lint boundary and the Edge bundle.
+- Importing `@omerdlw/base-framework/hooks` or `@omerdlw/base-framework/ui` from a server-safe entry breaks the lint boundary and the Edge bundle.
 - `createStore` snapshots are frozen in development: mutate through `publish`/`setState`, never in place.
 - `useStore` without a selector re-renders on every change; select a slice.
 - A theme file that is not listed in `src/config/index.ts` crashes the first component that uses it (by design, with a clear message).

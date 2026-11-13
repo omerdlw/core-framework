@@ -1,6 +1,6 @@
 {
   "name": "@omerdlw/base-framework",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Microkernel engine and first-party declarative UI modules for app-like Next.js products.",
   "type": "module",
   "sideEffects": [
@@ -136,6 +136,7 @@
     "!docs/superpowers",
     "templates",
     "README.md",
+    "MIGRATION.md",
     "LICENSE"
   ],
   "engines": {

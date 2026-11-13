@@ -1,4 +1,4 @@
-# Dock — `@omerdlw/base-framework/modules/dock`
+# Dock — `@omerdlw/base-framework/dock`
 
 > **Read this first if you need to:** show a page title/icon/banner, open a sheet or wizard, block navigation, show progress or an error, add toolbar buttons, or understand why the bottom card does what it does.
 
@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                                            |
 | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { … } from "@omerdlw/base-framework/modules/dock"` (barrel only, no deep imports from `src/app` or `src/features`)                                 |
+| **Import**         | `import { … } from "@omerdlw/base-framework/dock"` (barrel only, no deep imports from `src/app` or `src/features`)                                         |
 | **Module id**      | `dock` (`dockModule`, installed by `CoreProvider` through `defaultModules`)                                                                                |
 | **Renders**        | `Dock` overlay, portalled to `document.body`, DOM id `dock-card-stack`                                                                                     |
 | **Registry type**  | `dock` (key policy `path`, lifecycle `route`, cleanup delay 600 ms, entries merged by priority)                                                            |
@@ -117,7 +117,7 @@ operations.complete(op!.id);
 
 ```ts
 import { globalEvents } from "@omerdlw/base-framework/events";
-import { DOCK_EVENTS } from "@omerdlw/base-framework/modules/dock";
+import { DOCK_EVENTS } from "@omerdlw/base-framework/dock";
 
 globalEvents.emit(DOCK_EVENTS.STATUS_SET, {
   type: "SAVED",
@@ -150,7 +150,7 @@ globalEvents.emit(DOCK_EVENTS.STATUS_SET, {
 
 ## 5. Public API reference
 
-Everything below is exported from `@omerdlw/base-framework/modules/dock`. Anything not listed is internal (see [§19](#19-file-map)).
+Everything below is exported from `@omerdlw/base-framework/dock`. Anything not listed is internal (see [§19](#19-file-map)).
 
 ### 5.1 Installation and state
 
@@ -755,7 +755,7 @@ Gotchas:
 
 ## 20. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useRegistryEntries`, `useModuleRegistration`), `@omerdlw/base-framework/events`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/design`, `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useRegistryEntries`, `useModuleRegistration`), `@omerdlw/base-framework/events`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/ui`, `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
 - **Peers:** `loading` (page-loading flag, `stopLoading` after navigation), `media` (session state and controls), `notification` (is a toast visible). Each is read through `definePeer` with an inert stand-in, and listed in `uses`.
 - **Used by:** `src/features/**` (surfaces, statuses, context actions, motion presets), `src/app/**` (`usePage({ dock })`, `registry.tsx`), `controls` and `notification` (they locate the dock by DOM id `dock-card-stack`), and the `context-menu` (reads the active card through `useModuleState("dock", …)`).
 - **Never imports** another module's source (enforced by `npm run check:architecture`).

@@ -1,4 +1,4 @@
-# Background — `@omerdlw/base-framework/modules/background`
+# Background — `@omerdlw/base-framework/background`
 
 > **Read this first if you need to:** put an image, a video file or a YouTube video behind a page, dim or fade it, change it from code (mute, loop, play), or understand how the dock's video controls reach the video.
 
@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                                                                                                               |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { … } from "@omerdlw/base-framework/modules/background"`                                                                                                                                                              |
+| **Import**         | `import { … } from "@omerdlw/base-framework/background"`                                                                                                                                                                      |
 | **Module id**      | `background` (`backgroundModule`, in `defaultModules`)                                                                                                                                                                        |
 | **Renders**        | `BackgroundOverlay` as a **Backdrop**: a full-viewport layer _behind_ the page (the host renders backdrops before `children`)                                                                                                 |
 | **Registry type**  | `background` — singleton key `page-background`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
@@ -192,6 +192,6 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 
 ## 12. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/design` (`Spinner`), `@omerdlw/base-framework/theme`, `motion/react`, `next/navigation`; the route `src/app/api/background/youtube`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `definePeer`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/ui` (`Spinner`), `@omerdlw/base-framework/theme`, `motion/react`, `next/navigation`; the route `src/app/api/background/youtube`.
 - **Peer:** `media` (read through `definePeer`, listed in `uses`).
 - **Used by:** `src/core/provider.tsx` (installs it) and every page that calls `usePage({ background })`; the dock and audio sources interact with it only through `media`.

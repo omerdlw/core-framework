@@ -140,8 +140,8 @@ When testing Next.js components or pages that consume `@omerdlw/base-framework`:
 1. **Wrapping with `CoreProvider`:** Provide a test wrapper with the required modules:
    ```tsx
    import { CoreProvider } from "@omerdlw/base-framework/provider";
-   import { dockModule } from "@omerdlw/base-framework/modules/dock";
-   import { notificationModule } from "@omerdlw/base-framework/modules/notification";
+   import { dockModule } from "@omerdlw/base-framework/dock";
+   import { notificationModule } from "@omerdlw/base-framework/notification";
 
    export function TestProviders({ children }: { children: React.ReactNode }) {
      return (

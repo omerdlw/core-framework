@@ -156,5 +156,5 @@ Raw `Error.message` values (database, SDK, vendor wording) never reach the UI. `
 
 ## 11. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/events` (`APP_ERROR`), `@omerdlw/base-framework/design` (`Button`, `Icon` for the fallback), `@omerdlw/base-framework/theme`, `@omerdlw/base-framework/utils` (`report`, `setReportSink`, `toUserMessage`), `next/navigation` (`usePathname`).
+- **Uses:** `@omerdlw/base-framework/events` (`APP_ERROR`), `@omerdlw/base-framework/ui` (`Button`, `Icon` for the fallback), `@omerdlw/base-framework/theme`, `@omerdlw/base-framework/utils` (`report`, `setReportSink`, `toUserMessage`), `next/navigation` (`usePathname`).
 - **Used by:** `src/core/provider.tsx`; the dock (turns `APP_ERROR` into its error status) and the notification module (toasts `APP_ERROR` with `notify: true`) react to the event without importing this module.

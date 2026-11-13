@@ -6,21 +6,21 @@ One page per module/core entry. Each page answers, from the big picture down to 
 
 ## 1. Index
 
-| Module         | Import                                                            | Doc                                      | What it owns                                                                                       | Page key (`usePage`) | Registry type |
-| :------------- | :---------------------------------------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------- | :------------ |
-| Kernel         | `@omerdlw/base-framework/kernel`                                  | [kernel.md](./kernel.md)                 | Module host, registry, `usePage`, `defineModule`, peers                                            | `title`, `registry`  | —             |
-| Dock           | `@omerdlw/base-framework/modules/dock`                            | [dock.md](./dock.md)                     | The only chrome: card stack, surfaces/flows, HUD, operations, status overlays, guards, breadcrumbs | `dock`               | `dock`        |
-| Modal          | `@omerdlw/base-framework/modules/modal`                           | [modal.md](./modal.md)                   | Promise-based stacked dialogs                                                                      | `modal`              | `modal`       |
-| Notification   | `@omerdlw/base-framework/modules/notification`                    | [notification.md](./notification.md)     | Single-slot toasts docked to the dock; event-driven feedback                                       | `notification`       | —             |
-| Navigation     | `@omerdlw/base-framework/modules/navigation`                      | [navigation.md](./navigation.md)         | Trips: exit holds, payload to the next page, back-button hold, intent prefetch                     | —                    | —             |
-| Loading        | `@omerdlw/base-framework/modules/loading`                         | [loading.md](./loading.md)               | Loading overlay + busy flag                                                                        | `loading`            | `loading`     |
-| Background     | `@omerdlw/base-framework/modules/background`                      | [background.md](./background.md)         | Image / video / YouTube layer behind the page                                                      | `background`         | `background`  |
-| Media          | `@omerdlw/base-framework/modules/media`                           | [media.md](./media.md)                   | The active media session the dock controls operate on                                              | `media`              | `media`       |
-| Ambient        | `@omerdlw/base-framework/modules/ambient`                         | [ambient.md](./ambient.md)               | Image → palette → CSS color variables                                                              | `ambient`            | —             |
-| Controls       | `@omerdlw/base-framework/modules/controls`                        | [controls.md](./controls.md)             | Paired control rails beside the dock                                                               | `controls`           | `controls`    |
-| Context menu   | `@omerdlw/base-framework/modules/context-menu` (id `contextMenu`) | [context-menu.md](./context-menu.md)     | Declarative right-click menus                                                                      | `contextMenu`        | `contextMenu` |
-| Error boundary | `@omerdlw/base-framework/error`                                   | [error-boundary.md](./error-boundary.md) | Boundaries, reporter, window error listener                                                        | —                    | —             |
-| Result         | `@omerdlw/base-framework/result`                                  | [result.md](./result.md)                 | `Result<T, E>`, `createSafeAction`                                                                 | —                    | —             |
+| Module         | Import                                                    | Doc                                      | What it owns                                                                                       | Page key (`usePage`) | Registry type |
+| :------------- | :-------------------------------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------- | :------------ |
+| Kernel         | `@omerdlw/base-framework/kernel`                          | [kernel.md](./kernel.md)                 | Module host, registry, `usePage`, `defineModule`, peers                                            | `title`, `registry`  | —             |
+| Dock           | `@omerdlw/base-framework/dock`                            | [dock.md](./dock.md)                     | The only chrome: card stack, surfaces/flows, HUD, operations, status overlays, guards, breadcrumbs | `dock`               | `dock`        |
+| Modal          | `@omerdlw/base-framework/modal`                           | [modal.md](./modal.md)                   | Promise-based stacked dialogs                                                                      | `modal`              | `modal`       |
+| Notification   | `@omerdlw/base-framework/notification`                    | [notification.md](./notification.md)     | Single-slot toasts docked to the dock; event-driven feedback                                       | `notification`       | —             |
+| Navigation     | `@omerdlw/base-framework/navigation`                      | [navigation.md](./navigation.md)         | Trips: exit holds, payload to the next page, back-button hold, intent prefetch                     | —                    | —             |
+| Loading        | `@omerdlw/base-framework/loading`                         | [loading.md](./loading.md)               | Loading overlay + busy flag                                                                        | `loading`            | `loading`     |
+| Background     | `@omerdlw/base-framework/background`                      | [background.md](./background.md)         | Image / video / YouTube layer behind the page                                                      | `background`         | `background`  |
+| Media          | `@omerdlw/base-framework/media`                           | [media.md](./media.md)                   | The active media session the dock controls operate on                                              | `media`              | `media`       |
+| Ambient        | `@omerdlw/base-framework/ambient`                         | [ambient.md](./ambient.md)               | Image → palette → CSS color variables                                                              | `ambient`            | —             |
+| Controls       | `@omerdlw/base-framework/controls`                        | [controls.md](./controls.md)             | Paired control rails beside the dock                                                               | `controls`           | `controls`    |
+| Context menu   | `@omerdlw/base-framework/context-menu` (id `contextMenu`) | [context-menu.md](./context-menu.md)     | Declarative right-click menus                                                                      | `contextMenu`        | `contextMenu` |
+| Error boundary | `@omerdlw/base-framework/error`                           | [error-boundary.md](./error-boundary.md) | Boundaries, reporter, window error listener                                                        | —                    | —             |
+| Result         | `@omerdlw/base-framework/result`                          | [result.md](./result.md)                 | `Result<T, E>`, `createSafeAction`                                                                 | —                    | —             |
 
 General guides: [../getting-started.md](../getting-started.md) (installation & setup), [../architecture-and-rules.md](../architecture-and-rules.md) (rules and boundaries), [../theming.md](../theming.md) (custom themes), [../custom-modules.md](../custom-modules.md) (custom module authoring), [../core-engine.md](../core-engine.md) (provider, theme, events, hooks, utils, tokens), [../testing.md](../testing.md) (testing guide).
 
@@ -64,43 +64,32 @@ Every `definePeer`/`useModuleState`/`useModule` call needs the **peer id as a st
 
 ## 4. Canonical module template
 
-Every folder in `src/modules/` uses the same **slots**. A slot that does not apply is omitted, never created empty. `tests/architecture.test.ts` fails when a required file or the module's doc page is missing, or when an unexpected file appears at the module root.
+Modules use one of two layouts. Both are described in full in [architecture-and-rules §2](../architecture-and-rules.md#2-canonical-module-file-pattern). A slot that does not apply is omitted, never created empty. `npm run check:architecture` enforces the layers, module isolation and the 400-line file limit.
 
-| File           |      Required       | Responsibility                                                                                                                                   |
-| :------------- | :-----------------: | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     |         ✅          | Public barrel: named exports only; nothing internal leaks through it.                                                                            |
-| `types.ts`     |         ✅          | Public TypeScript contracts, **no runtime code** (a `types/` folder with an `index.ts` is also accepted).                                        |
-| `constants.ts` |         ✅          | Frozen configuration, enums, event names, the theme spec (`defineThemeSpec`).                                                                    |
-| `utils.ts`     |         ✅          | Pure helpers (no React state).                                                                                                                   |
-| `module.tsx`   | installable modules | `defineModule` definition, `defineX` builder, `declare module "@omerdlw/base-framework/kernel"` augmentation (`module.ts` when there is no JSX). |
-| `context.tsx`  |    when stateful    | The context, the provider and the `useX` hooks (**one** context per module).                                                                     |
-| `hooks.ts`     |      optional       | Extra hooks, notably the `use<Component>Model` logic behind each overlay component.                                                              |
-| `state.ts`     |      optional       | State factory, initial state, pure reducers.                                                                                                     |
-| `overlay.tsx`  |      optional       | **All** visual components: JSX only, calling `use*Model` hooks (no state, effects or refs).                                                      |
-| `motion.ts`    |      optional       | The module's `use*Motion()` hook and helpers that pick from the app's motion.                                                                    |
-| `store.ts`     |      optional       | A store file when warranted.                                                                                                                     |
+**Flat layout** (default): `index.ts`, `module.tsx`, `types.ts` and `constants.ts` are required; `context.tsx` (one context), `state.ts`, `hooks.ts`, `overlay.tsx`, `motion.ts` and `utils.ts` are optional, plus topic files for a cohesive concern.
+
+**Folder layout** (`background`, `dock`, `modal`): `components/` (one public component per file), `hooks/` (one view-model file per component), `model/` (pure state, no React), `lib/` (pure helpers, no React) and `types/` (split by area, with an `index.ts`), next to `index.ts`, `module.tsx`, `constants.ts`, `context.tsx` and `motion.ts`.
 
 Rules of thumb:
 
-- A module may add a **topic file or folder** for a cohesive concern, declared in the file-pattern test (`background/youtube/`, `context-menu/resolver.ts`, the dock's `routing/ runtime/ status/ surface/ cards.tsx hud.ts provider.tsx`). Files past ~500 lines go into a sub-folder.
-- Relative imports may reach into the **same** module only. Cross-module needs go through peers or `globalEvents`.
+- A module imports another module only through its public barrel (`@/modules/<name>`) and only when `<name>` is in its `uses`. Looser needs go through peers or `globalEvents`.
 - Barrels use explicit named exports (`export { a, b } from "./x"`), never `export *` from implementation files; `export type * from "./types"` is fine.
 - **No design in code:** colors, sizes, radii and typography are theme slots (`src/config/<name>.module.theme.ts`); animation comes from the theme's `motion`.
 
 ### 4.1 File matrix (current)
 
-| Module       | `index types constants utils` |  `module`   |  `context`   | `hooks` | `state` | `overlay` | `motion` | Extras                                                                               |
-| :----------- | :---------------------------: | :---------: | :----------: | :-----: | :-----: | :-------: | :------: | :----------------------------------------------------------------------------------- |
-| ambient      |              ✅               |     ✅      |      ✅      |    —    |    —    |     —     |    —     |                                                                                      |
-| background   |              ✅               |     ✅      |      ✅      |   ✅    |    —    |    ✅     |    ✅    | `youtube/`                                                                           |
-| context-menu |              ✅               |     ✅      |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    | `resolver.ts`                                                                        |
-| controls     |              ✅               |     ✅      |      —       |   ✅    |    —    |    ✅     |    —     |                                                                                      |
-| dock         |              ✅               |     ✅      | `context.ts` |   ✅    |   ✅    |    ✅     |    ✅    | `provider.tsx`, `cards.tsx`, `hud.ts`, `routing/`, `runtime/`, `status/`, `surface/` |
-| loading      |              ✅               |     ✅      |      ✅      |   ✅    |    —    |    ✅     |    —     |                                                                                      |
-| media        |              ✅               |     ✅      |      ✅      |   ✅    |    —    |    ✅     |    —     |                                                                                      |
-| modal        |              ✅               |     ✅      |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    |                                                                                      |
-| navigation   |              ✅               |     ✅      |      ✅      |   ✅    |   ✅    |     —     |    —     | `navigator.ts`, `listeners.ts`, `settings.ts`                                        |
-| notification |              ✅               | `module.ts` |      ✅      |   ✅    |    —    |    ✅     |    ✅    |                                                                                      |
+| Module       | Layout |  `context`   | `hooks`  | `state`  |   `overlay`   | `motion` | Extras                                                                            |
+| :----------- | :----: | :----------: | :------: | :------: | :-----------: | :------: | :-------------------------------------------------------------------------------- |
+| ambient      |  flat  |      ✅      |    ✅    |    —     |       —       |    —     | `analyze*.ts`, `extractor.ts`, `pipeline.ts`, `settings.ts`, `server/`, `worker/` |
+| background   | folder |      ✅      | `hooks/` | `model/` | `components/` |    ✅    | `youtube/`, `lib/`                                                                |
+| context-menu |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    ✅    | `resolver.ts`, `items.ts`, `dom.ts`                                               |
+| controls     |  flat  |      —       |    ✅    |    —     |      ✅       |    —     | `entries.ts`, `layout.ts`                                                         |
+| dock         | folder | `context.ts` | `hooks/` | `model/` | `components/` |    ✅    | `provider.tsx`, `hud.ts`, `routing/`, `runtime/`, `status/`, `surface/`, `lib/`   |
+| loading      |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    —     |                                                                                   |
+| media        |  flat  |      ✅      |    ✅    |    —     |      ✅       |    —     | `playback.ts`, `session.ts`                                                       |
+| modal        | folder |      ✅      | `hooks/` | `model/` | `components/` |    ✅    | `lib/`                                                                            |
+| navigation   |  flat  |      ✅      |    ✅    |    —     |       —       |    —     | `listeners.ts`; the navigator machine lives in `src/core/navigation/`             |
+| notification |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    ✅    |                                                                                   |
 
 ### 4.2 Why some optional slots are absent
 
@@ -108,7 +97,7 @@ Rules of thumb:
 | :------------- | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
 | `ambient`      | `overlay`, `motion`     | Renders nothing: it writes CSS custom properties; transitions are CSS classes from the theme.                                          |
 | `controls`     | `context`, `motion`     | Stateless: entries live in the registry and layout is measured from the DOM. No animation.                                             |
-| `loading`      | `motion`, `state`       | The overlay renders `Spinner` (or a skeleton) and mounts/unmounts instantly; state is a small `useState` in the provider.              |
+| `loading`      | `motion`                | The overlay renders `Spinner` (or a skeleton) and mounts/unmounts instantly.                                                           |
 | `navigation`   | `overlay`, `motion`     | Renders nothing: it binds the router and listens to the document; animation is the app's, in its holds.                                |
 | `media`        | `motion`                | Renders nothing; `overlay.tsx` holds only the components that return `null` (`MediaSource`, `MediaOverlay`).                           |
 | `notification` | builder                 | Toasts are imperative: `useToast` (in `hooks.ts`) plays the builder role.                                                              |
@@ -116,7 +105,7 @@ Rules of thumb:
 
 ## 5. Adding a module
 
-1. **Create** `src/modules/<name>/` with `index.ts`, `types.ts`, `constants.ts`, `utils.ts`, and (as needed) `context.tsx`, `hooks.ts`, `overlay.tsx`, `motion.ts`, `module.tsx`.
+1. **Create** `src/modules/<name>/` with `index.ts`, `types.ts`, `constants.ts`, and (as needed) `utils.ts`, `context.tsx`, `hooks.ts`, `overlay.tsx`, `motion.ts`, `module.tsx`.
 2. **Define it** in `module.tsx`:
    ```ts
    export const announcementModule = defineModule({
@@ -172,9 +161,9 @@ Every page follows this skeleton (omit sections that do not apply). Keep it **ve
 
 ```
 src/app ─┐
-src/features ─┼─▶ @omerdlw/base-framework/modules/* ──▶ @omerdlw/base-framework/kernel ──▶ @omerdlw/base-framework/{utils,hooks,events,result}
+src/features ─┼─▶ @omerdlw/base-framework/<module> ──▶ @omerdlw/base-framework/kernel ──▶ @omerdlw/base-framework/{utils,hooks,events,result}
 src/core/provider.tsx ┘         │
-                               └──▶ @omerdlw/base-framework/design, @omerdlw/base-framework/theme
+                               └──▶ @omerdlw/base-framework/ui, @omerdlw/base-framework/theme
 ```
 
 Modules are installed by `CoreProvider` from the list the app passes; orchestration drives modules through their `defineModule` definitions and never imports them.

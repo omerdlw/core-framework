@@ -1,4 +1,4 @@
-# Modal — `@omerdlw/base-framework/modules/modal`
+# Modal — `@omerdlw/base-framework/modal`
 
 > **Read this first if you need to:** open a dialog and `await` its answer (confirm, pick, form), show a bottom sheet or side panel, stack dialogs, or expose route-specific dialogs by key.
 >
@@ -8,7 +8,7 @@
 
 |                    |                                                                                                                                                                                                                                     |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { defineModal, useModal, ModalContainer, … } from "@omerdlw/base-framework/modules/modal"`                                                                                                                                  |
+| **Import**         | `import { defineModal, useModal, ModalContainer, … } from "@omerdlw/base-framework/modal"`                                                                                                                                          |
 | **Module id**      | `modal` (`modalModule`, in `defaultModules`)                                                                                                                                                                                        |
 | **Renders**        | `Modal` overlay, **lazy-loaded** (`next/dynamic`, `ssr: false`), portalled to `document.body`                                                                                                                                       |
 | **Registry type**  | `modal` — key policy `named`, value kind `component`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |
@@ -228,5 +228,5 @@ Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming
 
 ## 10. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/design` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `next/dynamic`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `ModuleBoundary`), `@omerdlw/base-framework/utils` (`acquireGlobalScrollLock`, `createStore`), `@omerdlw/base-framework/ui` (`Button`, `Icon`), `@omerdlw/base-framework/theme`, `next/dynamic`, `motion/react`.
 - **Used by:** `src/core/provider.tsx` (installs it), pages and features through `useModal` / `page.modules.modal`.

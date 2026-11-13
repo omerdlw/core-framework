@@ -91,7 +91,7 @@ When consuming Server Actions in the UI, do not write manual `try/catch` and `if
 ```tsx
 "use client";
 
-import { useToast } from "@omerdlw/base-framework/modules/notification";
+import { useToast } from "@omerdlw/base-framework/notification";
 import { updateProfile } from "@/features/account/actions";
 
 export function ProfileForm() {
@@ -112,20 +112,20 @@ export function ProfileForm() {
 
 Always import from the exact subpaths exposed by `@omerdlw/base-framework`:
 
-| What you need                          | Where to import it                             |
-| :------------------------------------- | :--------------------------------------------- |
-| `usePage`, `defineModule`              | `@omerdlw/base-framework/kernel`               |
-| `CoreProvider`                         | `@omerdlw/base-framework/provider`             |
-| `ok`, `err`, `isResult`, `type Result` | `@omerdlw/base-framework/result`               |
-| `globalEvents`, `EVENT_TYPES`          | `@omerdlw/base-framework/events`               |
-| `useToast`                             | `@omerdlw/base-framework/modules/notification` |
-| `useDockActions`, `useDockStatus`      | `@omerdlw/base-framework/modules/dock`         |
-| `useModal`, `useModalContext`          | `@omerdlw/base-framework/modules/modal`        |
-| `useAmbientTheme`                      | `@omerdlw/base-framework/modules/ambient`      |
-| `report`, `createStore`                | `@omerdlw/base-framework/utils`                |
-| `cn`, `defineUi`                       | `@omerdlw/base-framework/design/recipes`       |
-| `useClickOutside`, `useGlobalEvent`    | `@omerdlw/base-framework/hooks`                |
-| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/design`               |
+| What you need                          | Where to import it                     |
+| :------------------------------------- | :------------------------------------- |
+| `usePage`, `defineModule`              | `@omerdlw/base-framework/kernel`       |
+| `CoreProvider`                         | `@omerdlw/base-framework/provider`     |
+| `ok`, `err`, `isResult`, `type Result` | `@omerdlw/base-framework/result`       |
+| `globalEvents`, `EVENT_TYPES`          | `@omerdlw/base-framework/events`       |
+| `useToast`                             | `@omerdlw/base-framework/notification` |
+| `useDockActions`, `useDockStatus`      | `@omerdlw/base-framework/dock`         |
+| `useModal`, `useModalContext`          | `@omerdlw/base-framework/modal`        |
+| `useAmbientTheme`                      | `@omerdlw/base-framework/ambient`      |
+| `report`, `createStore`                | `@omerdlw/base-framework/utils`        |
+| `cn`, `defineUi`                       | `@omerdlw/base-framework/recipes`      |
+| `useClickOutside`, `useGlobalEvent`    | `@omerdlw/base-framework/hooks`        |
+| `Button`, `Icon`, `Spinner`, `Tooltip` | `@omerdlw/base-framework/ui`           |
 
 ### Rule 5: Modals and Surfaces Must Be Declared or Scoped
 
@@ -144,14 +144,14 @@ In `src/app/providers.tsx`:
 "use client";
 
 import { CoreProvider } from "@omerdlw/base-framework/provider";
-import { dockModule } from "@omerdlw/base-framework/modules/dock";
-import { modalModule } from "@omerdlw/base-framework/modules/modal";
-import { notificationModule } from "@omerdlw/base-framework/modules/notification";
-import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
-import { backgroundModule } from "@omerdlw/base-framework/modules/background";
-import { controlsModule } from "@omerdlw/base-framework/modules/controls";
-import { loadingModule } from "@omerdlw/base-framework/modules/loading";
-import { navigationModule } from "@omerdlw/base-framework/modules/navigation";
+import { dockModule } from "@omerdlw/base-framework/dock";
+import { modalModule } from "@omerdlw/base-framework/modal";
+import { notificationModule } from "@omerdlw/base-framework/notification";
+import { ambientModule } from "@omerdlw/base-framework/ambient";
+import { backgroundModule } from "@omerdlw/base-framework/background";
+import { controlsModule } from "@omerdlw/base-framework/controls";
+import { loadingModule } from "@omerdlw/base-framework/loading";
+import { navigationModule } from "@omerdlw/base-framework/navigation";
 
 const modules = [
   dockModule,

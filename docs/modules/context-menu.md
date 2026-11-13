@@ -1,4 +1,4 @@
-# Context Menu — `@omerdlw/base-framework/modules/context-menu`
+# Context Menu — `@omerdlw/base-framework/context-menu`
 
 > **Read this first if you need to:** replace the browser's right-click menu, add menu entries for a page, a region, or a single element, give entries conditions/shortcuts/danger styling, or know how the "best" menu is chosen.
 
@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                                                                                                                                         |
 | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Import**         | `import { useContextMenu, defineContextMenu, … } from "@omerdlw/base-framework/modules/context-menu"`                                                                                                                                                   |
+| **Import**         | `import { useContextMenu, defineContextMenu, … } from "@omerdlw/base-framework/context-menu"`                                                                                                                                                           |
 | **Module id**      | `contextMenu` (camelCase: `contextMenuModule`; the theme id is `context-menu`)                                                                                                                                                                          |
 | **Renders**        | `ContextMenuGlobal` overlay: one global `contextmenu` listener + one portalled menu                                                                                                                                                                     |
 | **Registry type**  | `contextMenu` — key policy `route`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`), reserved keys `current-page` and `*` |
@@ -243,6 +243,6 @@ No classes or colors in the module, except the pointer-following `left/top/posit
 
 ## 9. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `useModuleState`), `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/design` (`Icon`), `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryEntries`, `useModuleState`), `@omerdlw/base-framework/utils`, `@omerdlw/base-framework/hooks`, `@omerdlw/base-framework/ui` (`Icon`), `@omerdlw/base-framework/theme`, `next/navigation`, `motion/react`.
 - **Peer:** `dock` — read with `useModuleState("dock", selectDockPageCard, null)`; works (without a default header) when the dock is not installed.
 - **Used by:** `src/core/provider.tsx` (installs it), `page.modules.contextMenu`, and features that register menus.

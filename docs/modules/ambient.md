@@ -1,4 +1,4 @@
-# Ambient — `@omerdlw/base-framework/modules/ambient`
+# Ambient — `@omerdlw/base-framework/ambient`
 
 > **Read this first if you need to:** tint a page from an image (cover, avatar, album art), compute a palette on the server and hand it to the client, use more than one colour from an image (roles, tonal ramps, region glows, text colours), set theme colors from code, scope a tint to one element, or know which CSS variables change.
 
@@ -6,7 +6,7 @@
 
 |                    |                                                                                                   |
 | :----------------- | :------------------------------------------------------------------------------------------------ |
-| **Import**         | `import { useAmbientTheme, configureAmbient, … } from "@omerdlw/base-framework/modules/ambient"`  |
+| **Import**         | `import { useAmbientTheme, configureAmbient, … } from "@omerdlw/base-framework/ambient"`          |
 | **Server entry**   | `import { extractAmbientPalette } from "@omerdlw/base-framework/ambient/server"` (Node; no React) |
 | **Worker entry**   | `import { serveAmbientWorker } from "@omerdlw/base-framework/ambient/worker"`                     |
 | **Module id**      | `ambient` (`ambientModule`, in `defaultModules`)                                                  |

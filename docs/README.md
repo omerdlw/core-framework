@@ -21,22 +21,22 @@ Consumer Next.js App (app/, layout.tsx, page.tsx)
   │
   ▼
 First-Party Declarative UI Modules:
-  ├─ @omerdlw/base-framework/modules/dock          (Floating app chrome, cards, surfaces, flows, HUD, navigation guards)
-  ├─ @omerdlw/base-framework/modules/modal         (Promise-based stacked dialogs, focus trap, smooth scroll lock)
-  ├─ @omerdlw/base-framework/modules/notification  (Toast notifications, toast.promise, toast.fromResult)
-  ├─ @omerdlw/base-framework/modules/ambient       (Media color extraction & dynamic canvas lighting)
-  ├─ @omerdlw/base-framework/modules/background    (Multi-layer video, YouTube loop proxy, edge fades)
-  ├─ @omerdlw/base-framework/modules/controls      (Paired HUD action rails flanking the dock)
-  ├─ @omerdlw/base-framework/modules/loading       (Coordinated loading overlay, skeleton sync, anti-flicker delay)
-  ├─ @omerdlw/base-framework/modules/media         (Unified media playback session, transport leader vs displacement)
-  └─ @omerdlw/base-framework/modules/context-menu  (Viewport-clamped right-click context menus)
+  ├─ @omerdlw/base-framework/dock          (Floating app chrome, cards, surfaces, flows, HUD, navigation guards)
+  ├─ @omerdlw/base-framework/modal         (Promise-based stacked dialogs, focus trap, smooth scroll lock)
+  ├─ @omerdlw/base-framework/notification  (Toast notifications, toast.promise, toast.fromResult)
+  ├─ @omerdlw/base-framework/ambient       (Media color extraction & dynamic canvas lighting)
+  ├─ @omerdlw/base-framework/background    (Multi-layer video, YouTube loop proxy, edge fades)
+  ├─ @omerdlw/base-framework/controls      (Paired HUD action rails flanking the dock)
+  ├─ @omerdlw/base-framework/loading       (Coordinated loading overlay, skeleton sync, anti-flicker delay)
+  ├─ @omerdlw/base-framework/media         (Unified media playback session, transport leader vs displacement)
+  └─ @omerdlw/base-framework/context-menu  (Viewport-clamped right-click context menus)
 
 Foundational Libraries & Primitives:
   ├─ @omerdlw/base-framework/theme     (Theme engine: defineThemeSpec, defineTheme, ThemeProvider, useTheme)
   ├─ @omerdlw/base-framework/result    (Functional Result<T, E> error handling: ok, err, createSafeAction)
   ├─ @omerdlw/base-framework/events    (Cross-cutting decoupled event bus: globalEvents, EVENT_TYPES)
-  ├─ @omerdlw/base-framework/design        (Unstyled components your app gives a look: Button, Input, Select, Switch, Checkbox, SegmentedControl, Carousel, …)
-  ├─ @omerdlw/base-framework/design/recipes (Server-safe defineUi, recipes, cn, createCn, ANATOMY)
+  ├─ @omerdlw/base-framework/ui        (Unstyled components your app gives a look: Button, Input, Select, Switch, Checkbox, SegmentedControl, Carousel, …)
+  ├─ @omerdlw/base-framework/recipes (Server-safe defineUi, recipes, cn, createCn, ANATOMY)
   ├─ @omerdlw/base-framework/hooks     (useStore, useGlobalEvent, useClickOutside, useRequiredContext)
   ├─ @omerdlw/base-framework/utils     (clamp, debounce, throttle, createStore, createScheduler, report)
   └─ @omerdlw/base-framework/error     (GlobalError, ModuleError, UserError, toUserMessage)
@@ -120,7 +120,7 @@ Whether you are a software architect or an AI Pair Programmer (Antigravity, Curs
 
 ## 5. Conventions Used in These Docs
 
-- Package imports use `@omerdlw/base-framework/*` (e.g., `@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/modules/dock`).
+- Package imports use `@omerdlw/base-framework/*` (e.g., `@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/dock`).
 - "Page API" refers to `usePage(...).modules.<id>`; "peer" refers to a module consumed via `definePeer` / `useModuleState`.
 - Configuration tables list **defaults**; if a default is not stated, the option is optional and defaults to undefined.
 - When documentation and source code disagree, **the code wins** — fix the documentation immediately.

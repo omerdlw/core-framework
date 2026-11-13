@@ -1,20 +1,20 @@
-# Navigation — `@omerdlw/base-framework/modules/navigation`
+# Navigation — `@omerdlw/base-framework/navigation`
 
 > **Read this first if you need to:** play an exit animation before the route changes (on a click, the dock or the back button), hand data from the page being left to the page being opened (a palette, a scroll position, a grade), prefetch links on hover intent, or know whether a navigation is under way.
 
 ## 1. At a glance
 
-|                    |                                                                                                                                     |
-| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { useNavigation, useNavigationHold, useArrival, … } from "@omerdlw/base-framework/modules/navigation"` (also `/navigation`) |
-| **Module id**      | `navigation` (`navigationModule`, in `defaultModules`)                                                                              |
-| **Renders**        | nothing; `NavigationProvider` binds the Next router and installs the `popstate` and intent listeners                                |
-| **Registry type**  | none                                                                                                                                |
-| **Page slice**     | none                                                                                                                                |
-| **Peers (`uses`)** | none (the **dock** reads _this_ module through `useModule("navigation")`)                                                           |
-| **Events**         | `NAVIGATION_START`, `NAVIGATION_COMMIT`, `NAVIGATION_END` on `globalEvents`                                                         |
-| **DOM contracts**  | `a[href]` for intent prefetch; `data-prefetch="false"` opts a link out                                                              |
-| **Tests**          | `tests/modules/navigation.test.ts`                                                                                                  |
+|                    |                                                                                                                             |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| **Import**         | `import { useNavigation, useNavigationHold, useArrival, … } from "@omerdlw/base-framework/navigation"` (also `/navigation`) |
+| **Module id**      | `navigation` (`navigationModule`, in `defaultModules`)                                                                      |
+| **Renders**        | nothing; `NavigationProvider` binds the Next router and installs the `popstate` and intent listeners                        |
+| **Registry type**  | none                                                                                                                        |
+| **Page slice**     | none                                                                                                                        |
+| **Peers (`uses`)** | none (the **dock** reads _this_ module through `useModule("navigation")`)                                                   |
+| **Events**         | `NAVIGATION_START`, `NAVIGATION_COMMIT`, `NAVIGATION_END` on `globalEvents`                                                 |
+| **DOM contracts**  | `a[href]` for intent prefetch; `data-prefetch="false"` opts a link out                                                      |
+| **Tests**          | `tests/modules/navigation.test.ts`                                                                                          |
 
 ## 2. Mental model
 
@@ -71,7 +71,7 @@ await navigate("/movie/42", { payload: { palette } });
 Type the payload once, in the app:
 
 ```ts
-declare module "@omerdlw/base-framework/modules/navigation" {
+declare module "@omerdlw/base-framework/navigation" {
   interface NavigationPayload {
     palette?: AmbientPalette | null;
     grade?: string | null;

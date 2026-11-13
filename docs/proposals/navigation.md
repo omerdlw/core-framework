@@ -47,7 +47,8 @@ Why B:
    `definePeer("navigation", inert)` whose inert runtime never has a trip.
 
 The dock's `routing/transactions.ts` reducer moves into
-`modules/navigation/state.ts`. `useDockNavigation()` keeps its return shape
+`src/core/navigation/state.ts` (in 6.0 the navigator machine moved from
+`modules/navigation/` to `src/core/navigation/`). `useDockNavigation()` keeps its return shape
 (`activeTransaction`, `lastTransaction`, `cancelDock`, `navigate`, …), so
 `runtime/dock.tsx` does not change. `DOCK_TRANSACTION_*` and the transaction
 reducer types are removed (`DockTransaction` is now `NavigationTrip`);
@@ -104,7 +105,7 @@ navigator.store                      // ExternalStore<{ active, last }>
 `guard` is the dock's hook to run its existing guard registry and
 confirmation surface inside the trip; app-wide blockers are out of scope (§7).
 
-### React (`@omerdlw/base-framework/modules/navigation`)
+### React (`@omerdlw/base-framework/navigation`)
 
 | Export                                        | Replaces in Guffin                                               |
 | :-------------------------------------------- | :--------------------------------------------------------------- |
@@ -122,7 +123,7 @@ The payload is typed by augmentation, so the framework does not depend on
 ambient:
 
 ```ts
-declare module "@omerdlw/base-framework/modules/navigation" {
+declare module "@omerdlw/base-framework/navigation" {
   interface NavigationPayload {
     palette?: AmbientPalette | null;
     grade?: string | null;

@@ -1,4 +1,4 @@
-# Design — `@omerdlw/base-framework/design`
+# Design — `@omerdlw/base-framework/ui`
 
 > **Read this first if you need to:** build an interface from the framework's components (Button, Input, Select, Switch, Checkbox, SegmentedControl, Carousel, Tooltip, Image, Avatar, Loader, Skeleton, indicators), give them your product's look, add your own variants, or understand why the framework ships no styles.
 
@@ -16,8 +16,8 @@ The framework holds **no design**. No CSS file, no colour or size tokens, no mot
 Without a ui, every component renders with no class at all and no animation. That is the contract, and a test holds it.
 
 ```
-@omerdlw/base-framework/design/recipes   defineUi, recipes, createCn, ANATOMY   (server-safe)
-@omerdlw/base-framework/design           UiProvider + components                ("use client")
+@omerdlw/base-framework/recipes   defineUi, recipes, createCn, ANATOMY   (server-safe)
+@omerdlw/base-framework/ui           UiProvider + components                ("use client")
 ```
 
 `design` sits beside `hooks` in the layer hierarchy: it imports `hooks`, `theme`, `kernel` and `utils`, and never imports a module. The modules render with its `Button`, `Icon`, `Loader` and `Tooltip`, so those pick up the app's look too.
@@ -30,7 +30,7 @@ Without a ui, every component renders with no class at all and no animation. Tha
 
 ```ts
 // src/design/ui.ts — no "use client": Server Components import it too
-import { defineUi } from "@omerdlw/base-framework/design/recipes";
+import { defineUi } from "@omerdlw/base-framework/recipes";
 
 export const ui = defineUi({
   parts: {
@@ -59,7 +59,7 @@ export const ui = defineUi({
   motion: { follow: { type: "spring", stiffness: 500, damping: 40 } },
 });
 
-declare module "@omerdlw/base-framework/design/recipes" {
+declare module "@omerdlw/base-framework/recipes" {
   interface UiRegister {
     ui: typeof ui;
   }
@@ -72,7 +72,7 @@ A part takes a recipe (`{ base, variants, compoundVariants, defaultVariants }`);
 
 ```tsx
 // app/providers.tsx ("use client")
-import { TooltipProvider, UiProvider } from "@omerdlw/base-framework/design";
+import { TooltipProvider, UiProvider } from "@omerdlw/base-framework/ui";
 import { ui } from "@/design/ui";
 
 <UiProvider ui={ui}>

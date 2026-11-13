@@ -146,7 +146,7 @@ Create `src/modules/tour/overlay.tsx`:
 
 import React from "react";
 import { useTheme } from "@omerdlw/base-framework/theme";
-import { Button } from "@omerdlw/base-framework/design";
+import { Button } from "@omerdlw/base-framework/ui";
 import { useTour } from "./context";
 import { tourTheme } from "./constants";
 
@@ -229,7 +229,7 @@ In `src/app/providers.tsx`:
 
 ```tsx
 import { CoreProvider } from "@omerdlw/base-framework/provider";
-import { dockModule } from "@omerdlw/base-framework/modules/dock";
+import { dockModule } from "@omerdlw/base-framework/dock";
 import { tourModule } from "@/modules/tour";
 
 export function Providers({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-# Notification — `@omerdlw/base-framework/modules/notification`
+# Notification — `@omerdlw/base-framework/notification`
 
 > **Read this first if you need to:** show feedback ("Saved", "Link copied"), toast a promise or a server-action `Result`, raise feedback from code that does not import React, or understand where toasts appear.
 
@@ -6,7 +6,7 @@
 
 |                     |                                                                                                    |
 | :------------------ | :------------------------------------------------------------------------------------------------- |
-| **Import**          | `import { useToast } from "@omerdlw/base-framework/modules/notification"`                          |
+| **Import**          | `import { useToast } from "@omerdlw/base-framework/notification"`                                  |
 | **Module id**       | `notification` (`notificationModule`, in `defaultModules`)                                         |
 | **Renders**         | `NotificationLayer` overlay: the toast + an event listener                                         |
 | **Registry type**   | none                                                                                               |

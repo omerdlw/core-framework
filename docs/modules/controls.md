@@ -1,4 +1,4 @@
-# Controls — `@omerdlw/base-framework/modules/controls`
+# Controls — `@omerdlw/base-framework/controls`
 
 > **Read this first if you need to:** put small floating buttons on the left and right of the dock (mute, play/pause, back to top…), per page, without any layout code.
 
@@ -6,7 +6,7 @@
 
 |                    |                                                                                                                                        |
 | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { useControls, defineControls, … } from "@omerdlw/base-framework/modules/controls"`                                            |
+| **Import**         | `import { useControls, defineControls, … } from "@omerdlw/base-framework/controls"`                                                    |
 | **Module id**      | `controls` (`controlsModule`, in `defaultModules`)                                                                                     |
 | **Renders**        | `Controls` overlay: two rails (`<aside>`) portalled to `document.body`, **only on viewports ≥ 640 px** (theme)                         |
 | **Registry type**  | `controls` — key policy `named` (`<path>::<id>`), lifecycle `immediate`, entries validated                                             |

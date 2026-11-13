@@ -1,4 +1,4 @@
-# Media — `@omerdlw/base-framework/modules/media`
+# Media — `@omerdlw/base-framework/media`
 
 > **Read this first if you need to:** play an audio file for a page, make sure the dock's media controls work for audio or video, sync an audio track to the background video, or understand which source the controls operate on.
 
@@ -6,7 +6,7 @@
 
 |                   |                                                                                                                                                                                                                     |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Import**        | `import { useMedia, MediaSource, … } from "@omerdlw/base-framework/modules/media"`                                                                                                                                  |
+| **Import**        | `import { useMedia, MediaSource, … } from "@omerdlw/base-framework/media"`                                                                                                                                          |
 | **Module id**     | `media` (`mediaModule`, in `defaultModules`)                                                                                                                                                                        |
 | **Renders**       | Nothing. `MediaOverlay` is an overlay that returns `null`; it only plays the page's declared audio.                                                                                                                 |
 | **Registry type** | `media` — singleton key `page-media`, lifecycle `immediate` (entries are removed the moment the registering page unmounts; the declared 600 ms delay applies only if a registration opts into `graceful` / `route`) |

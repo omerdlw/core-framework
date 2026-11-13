@@ -58,15 +58,15 @@ import { CoreProvider } from "@omerdlw/base-framework/provider";
 import { ThemeProvider } from "@omerdlw/base-framework/theme";
 
 // Import desired first-party modules
-import { dockModule } from "@omerdlw/base-framework/modules/dock";
-import { modalModule } from "@omerdlw/base-framework/modules/modal";
-import { notificationModule } from "@omerdlw/base-framework/modules/notification";
-import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
-import { backgroundModule } from "@omerdlw/base-framework/modules/background";
-import { controlsModule } from "@omerdlw/base-framework/modules/controls";
-import { loadingModule } from "@omerdlw/base-framework/modules/loading";
-import { navigationModule } from "@omerdlw/base-framework/modules/navigation";
-import { contextMenuModule } from "@omerdlw/base-framework/modules/context-menu";
+import { dockModule } from "@omerdlw/base-framework/dock";
+import { modalModule } from "@omerdlw/base-framework/modal";
+import { notificationModule } from "@omerdlw/base-framework/notification";
+import { ambientModule } from "@omerdlw/base-framework/ambient";
+import { backgroundModule } from "@omerdlw/base-framework/background";
+import { controlsModule } from "@omerdlw/base-framework/controls";
+import { loadingModule } from "@omerdlw/base-framework/loading";
+import { navigationModule } from "@omerdlw/base-framework/navigation";
+import { contextMenuModule } from "@omerdlw/base-framework/context-menu";
 
 // Define the modules your application uses
 const modules = [
@@ -126,7 +126,7 @@ Create `src/app/page.tsx`:
 "use client";
 
 import { usePage } from "@omerdlw/base-framework/kernel";
-import { Button, Icon } from "@omerdlw/base-framework/design";
+import { Button, Icon } from "@omerdlw/base-framework/ui";
 
 export default function HomePage() {
   const page = usePage({
@@ -173,18 +173,18 @@ export default function HomePage() {
 
 `@omerdlw/base-framework` exposes 11 tree-shakable subpaths. Always import from the dedicated subpath:
 
-| Subpath                             | Purpose                                     | Key Exports                                                                                                                 |
-| :---------------------------------- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
-| `@omerdlw/base-framework/kernel`    | Microkernel engine                          | `usePage()`, `defineModule()`, `definePeer()`, `useModule()`, `useModuleState()`                                            |
-| `@omerdlw/base-framework/provider`  | Root host component                         | `CoreProvider`                                                                                                              |
-| `@omerdlw/base-framework/modules/*` | 9 UI modules                                | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc.                                                    |
-| `@omerdlw/base-framework/result`    | Functional error handling                   | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()`                                                         |
-| `@omerdlw/base-framework/events`    | Cross-cutting event bus                     | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap`                                                                          |
-| `@omerdlw/base-framework/theme`     | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()`               |
-| `@omerdlw/base-framework/design`    | Unstyled components your `defineUi` styles  | `Button`, `Icon`, `Select`, `Carousel`, `UiProvider`, …                                                                     |
-| `@omerdlw/base-framework/hooks`     | Universal React hooks                       | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()`                                               |
-| `@omerdlw/base-framework/utils`     | Pure runtime utilities                      | `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()`, `defineMotion()`, `gpuTransform()` |
-| `@omerdlw/base-framework/error`     | Isolated error boundaries                   | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()`                                                                |
+| Subpath                            | Purpose                                     | Key Exports                                                                                                                 |
+| :--------------------------------- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| `@omerdlw/base-framework/kernel`   | Microkernel engine                          | `usePage()`, `defineModule()`, `definePeer()`, `useModule()`, `useModuleState()`                                            |
+| `@omerdlw/base-framework/provider` | Root host component                         | `CoreProvider`                                                                                                              |
+| `@omerdlw/base-framework/<module>` | 9 UI modules                                | `dockModule`, `modalModule`, `notificationModule`, `ambientModule`, etc.                                                    |
+| `@omerdlw/base-framework/result`   | Functional error handling                   | `Result<T, E>`, `ok()`, `err()`, `isResult()`, `createSafeAction()`                                                         |
+| `@omerdlw/base-framework/events`   | Cross-cutting event bus                     | `globalEvents`, `EVENT_TYPES`, `FrameworkEventMap`                                                                          |
+| `@omerdlw/base-framework/theme`    | Declarative theme engine (slots and motion) | `defineThemeSpec()`, `defineTheme()`, `ThemeProvider`, `useTheme()`, `useModuleMotion()`, `useMotionTokens()`               |
+| `@omerdlw/base-framework/ui`       | Unstyled components your `defineUi` styles  | `Button`, `Icon`, `Select`, `Carousel`, `UiProvider`, …                                                                     |
+| `@omerdlw/base-framework/hooks`    | Universal React hooks                       | `useStore()`, `useClickOutside()`, `useGlobalEvent()`, `useRequiredContext()`                                               |
+| `@omerdlw/base-framework/utils`    | Pure runtime utilities                      | `clamp()`, `debounce()`, `throttle()`, `createStore()`, `createScheduler()`, `report()`, `defineMotion()`, `gpuTransform()` |
+| `@omerdlw/base-framework/error`    | Isolated error boundaries                   | `GlobalError`, `ModuleError`, `UserError`, `toUserMessage()`                                                                |
 
 ---
 

@@ -132,4 +132,4 @@ A single file, `src/core/result.ts`. It depends only on `./utils/user-message` a
 ## 8. Dependencies
 
 - **Uses:** `@omerdlw/base-framework/utils` (`UserError`, `toUserMessage`, `report`) only.
-- **Used by:** every `server/actions.ts` in `src/features/**`, `@omerdlw/base-framework/hooks` (`useServerAction`, `useAsyncAction`), `@omerdlw/base-framework/modules/notification` (`isResult` for `toast.fromResult` / `promise`), and route-level helpers that return `Result`.
+- **Used by:** every `server/actions.ts` in `src/features/**`, `@omerdlw/base-framework/hooks` (`useServerAction`, `useAsyncAction`), `@omerdlw/base-framework/notification` (`isResult` for `toast.fromResult` / `promise`), and route-level helpers that return `Result`.

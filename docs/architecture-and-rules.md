@@ -1,60 +1,84 @@
 # Architecture, Boundaries & The 10 Inviolable Rules
 
-> **Read this first if you are about to:** contribute to `@omerdlw/base-framework`, author or modify a module, structure downstream application code that consumes the package, or understand how the microkernel enforces layer boundaries.
+> **Read this first if you are about to:** contribute to `@omerdlw/base-framework`, author or modify a module, structure downstream application code that consumes the package, or understand how the layers are enforced.
 
 ---
 
 ## 1. The Package Architecture Hierarchy
 
-`@omerdlw/base-framework` is built as an ultra-lean microkernel orchestrating self-contained declarative UI modules:
+The source is split into four layers. A file's layer is its first folder under `src/`:
 
-```
-@omerdlw/base-framework/modules/*    (3. Declarative UI Modules: dock, modal, notification, ambient, background, controls, loading, media, context-menu)
-   ↓ imports
-@omerdlw/base-framework/{kernel, provider, theme, error} (2. Orchestration Engine: ModuleHost, RegistryStore, PageController, Error Boundaries)
-   ↓ imports
-@omerdlw/base-framework/{design, hooks} (1. React Layer: Design components & universal React hooks)
-   ↓ imports
-@omerdlw/base-framework/{utils, design/recipes, result, events} (0. Pure Foundation: Zero React dependencies, server & edge safe)
-```
+| Layer | Folder           | Contents                                                                           | Public subpaths                                                                      |
+| :---- | :--------------- | :--------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0     | `src/foundation` | No React, server and edge safe: `result`, `events`, `utils`, `recipes`             | `/result`, `/events`, `/utils`, `/recipes`                                           |
+| 1     | `src/react`      | React primitives: `context`, `hooks`, `theme`, `ui` (components and `UiProvider`)  | `/hooks`, `/theme`, `/ui`                                                            |
+| 2     | `src/core`       | Orchestration: `kernel`, `error`, `provider`, `navigation` (the navigator machine) | `/kernel`, `/error`, `/provider`                                                     |
+| 3     | `src/modules`    | The UI modules and `modules/index.ts` (`defaultModules`)                           | `/modules`, `/<module>` (`/dock`, `/modal`, …), `/ambient/server`, `/ambient/worker` |
+
+`src/index.ts` and `src/modules/index.ts` are barrels and may import from any layer.
 
 ### 1.1 Layer Invariants
 
-1. **Downwards Only:** Higher layers may import from lower layers; a lower layer **never** imports from a higher layer.
-2. **Server-Safe Foundation:** `@omerdlw/base-framework/utils`, `design/recipes`, `result`, and `events` have **zero dependencies on React or Next.js DOM**. They can be imported safely in Server Components, Route Handlers, Server Actions, and Edge functions.
-3. **Module Isolation:** Modules are strict siblings. A module (`dock`, `modal`, etc.) **must never import from another module**. Cross-module communication occurs strictly via declared peers (`uses: ["peerId"]`), `useModuleState()`, or `globalEvents`.
-4. **No Deep Imports:** Public consumers import only from official subpath exports (`@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/modules/dock`). Direct file-path imports (e.g., `@omerdlw/base-framework/dist/kernel/page.js`) are forbidden.
-5. **Zero Cycles:** All package internal code maintains 0 cyclical dependencies, verified statically by `npm run check:architecture`.
+1. **Downwards only:** a file imports from its own layer or a lower one, never a higher one. Type-only imports count too.
+2. **Server-safe foundation:** `src/foundation/**` never imports `react`, `react-dom`, `next/*` or `motion/*`, and never touches `window` or `document` at module scope. `/result`, `/events`, `/utils` and `/recipes` are safe in Server Components, Route Handlers, Server Actions and Edge functions.
+3. **Module isolation:** a module imports another module only through that module's public barrel (`@/modules/<name>`), and only when `<name>` is in its `uses`. Deep imports into another module's files are errors (Rule 1).
+4. **No deep imports for consumers:** apps import only the subpaths in `package.json#exports` (`@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/dock`). File paths such as `@omerdlw/base-framework/dist/kernel/page.js` are not part of the API.
+5. **Zero cycles:** the import graph has no cycles, verified by `npm run check:architecture`.
+6. **Inside a layer:** imports point straight at the file (`@/core/kernel/hooks`). A folder's `index.ts` is a public entry only; internal code does not import through it.
 
 ---
 
 ## 2. Canonical Module File Pattern
 
-Every first-party module inside `src/modules/<name>/` strictly adheres to a canonical slot pattern:
+### 2.1 Flat layout (default)
 
-| File           | Responsibility                                                                                                                                                                              | Required? |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------: |
-| `index.ts`     | Clean barrel export (public API types, hooks, module definition).                                                                                                                           |    ✅     |
-| `types.ts`     | Complete TypeScript type contracts and state interfaces (no runtime code).                                                                                                                  |    ✅     |
-| `constants.ts` | Module identifier, theme spec definition (`defineThemeSpec`), constants.                                                                                                                    |    ✅     |
-| `utils.ts`     | Pure deterministic helper functions (zero React state).                                                                                                                                     |    ✅     |
-| `module.tsx`   | Module definition via `defineModule()`, `declare module` type augmentations.                                                                                                                |    ✅     |
-| `context.tsx`  | React Context, Provider, and `useX()` hooks (**at most one context per module**).                                                                                                           | Optional  |
-| `state.ts`     | Initial state factory, pure reducers, state transition functions.                                                                                                                           | Optional  |
-| `hooks.ts`     | Component view-models (e.g. `useDockOverlayModel`).                                                                                                                                         | Optional  |
-| `overlay.tsx`  | Pure visual JSX presentation (consumes view-models; defines no state or refs).                                                                                                              | Optional  |
-| `motion.ts`    | The module's `use*Motion()` hook and helpers that choose from the app's motion by state. No motion values: the module's motion contract lives in `types.ts`, the values in the app's theme. | Optional  |
+Used by `ambient`, `context-menu`, `controls`, `loading`, `media`, `navigation` and `notification`.
+
+| File           | Responsibility                                                                              | Required? |
+| :------------- | :------------------------------------------------------------------------------------------ | :-------: |
+| `index.ts`     | Public barrel with named exports.                                                           |    ✅     |
+| `module.tsx`   | `defineModule()` and `declare module` augmentations.                                        |    ✅     |
+| `types.ts`     | Type contracts, no runtime code.                                                            |    ✅     |
+| `constants.ts` | Module id, `defineThemeSpec`, constants.                                                    |    ✅     |
+| `context.tsx`  | Context and provider; at most one context per module.                                       | Optional  |
+| `state.ts`     | Initial state and pure reducers.                                                            | Optional  |
+| `hooks.ts`     | View-model hooks (`use<Component>Model`).                                                   | Optional  |
+| `overlay.tsx`  | Visual JSX that consumes the view-models; no state, effects or refs.                        | Optional  |
+| `motion.ts`    | The module's `use*Motion()` hook. Motion values live in the app's theme, not in the module. | Optional  |
+| `utils.ts`     | Pure helpers.                                                                               | Optional  |
+
+A module may add topic files for a cohesive concern (`context-menu/resolver.ts`, `media/session.ts`). Ambient's `server/` and `worker/` sub-entries stay in place.
+
+### 2.2 Folder layout
+
+Modules that outgrow the flat layout (more than 12 files, or a file near 400 lines) use folders. Today that is `background`, `dock` and `modal`:
+
+```
+modules/<name>/
+├── index.ts  module.tsx  constants.ts  context.tsx  motion.ts
+├── components/   one public component per file (plus small sub-components only it uses)
+├── hooks/        view-model hooks, one file per component
+├── model/        pure state and machine logic (no React)
+├── lib/          pure helpers (no React)
+└── types/        types split by area, plus index.ts
+```
+
+A module that already keeps a sub-feature in its own folder keeps it (`dock/routing`, `dock/runtime`, `dock/status`, `dock/surface`, `background/youtube`), and that folder follows the same `components/`, `hooks/`, `model/` split.
+
+No file under `src/` exceeds 400 lines; `npm run check:architecture` enforces it.
 
 ---
 
 ## 3. The 10 Inviolable Rules
 
-### Rule 1: Zero Cross-Module Imports
+### Rule 1: Modules Meet Only at Public Barrels
 
-Modules must remain completely decoupled. Never import from another module directly.
+A module never reaches into another module's files. When it needs another module, it imports that module's public barrel and declares it in `uses`, so the coupling is explicit and checked, like a package dependency. Looser needs go through `useModuleState()`, `definePeer()` or `globalEvents`.
 
-- ❌ `import { useDock } from "@omerdlw/base-framework/modules/dock"` inside `src/modules/modal/overlay.tsx`
-- ✅ Declare the peer dependency in `module.tsx` (`uses: ["dock"]`) and access state via `useModuleState("dock")` or `definePeer("dock", inert)`.
+- ❌ `import { createNavigator } from "../navigation/navigator"` inside `src/modules/dock/`
+- ❌ `import { useNavigation } from "@/modules/navigation"` without `uses: ["navigation"]`
+- ✅ `uses: ["navigation"]` in `module.tsx`, then `import { … } from "@/modules/navigation"`
+- ✅ `useModuleState("dock")` or `definePeer("dock", inert)` when the peer may be absent
 
 ### Rule 2: Public Subpath Import Contract
 
@@ -65,10 +89,10 @@ All code imported by consumer applications must resolve through defined subpaths
 
 ### Rule 3: Server-Safe Foundation Purity
 
-The foundation entries (`@omerdlw/base-framework/utils`, `design/recipes`, `result`, `events`) must never import React, hooks, or browser-specific window globals at module scope.
+The foundation (`src/foundation`, published as `/utils`, `/recipes`, `/result`, `/events`) never imports React, Next.js or motion, and never touches browser globals at module scope.
 
-- ❌ `import { useState } from "react"` inside `src/utils/`
-- ✅ Keep utility functions pure, deterministic, and testable without a DOM.
+- ❌ `import { useState } from "react"` inside `src/foundation/utils/`
+- ✅ Keep foundation functions pure, deterministic and testable without a DOM.
 
 ### Rule 4: Motion Token Singularity
 
@@ -115,25 +139,26 @@ First-party modules must contain zero locked-in visual styling classes or hardco
 
 ### Rule 10: Pre-Flight Verification
 
-Never consider any modification to the package or consumer code complete without running the full verification pipeline:
+Never consider a change to the package complete without running the full pipeline:
 
 ```bash
-npm run type-check && npm run lint && npm run check:architecture && npm test && npm run build
+npm run verify
 ```
 
-All checks must exit with code `0`.
+It runs `format:check`, `lint`, `type-check`, `check:architecture`, `test`, `build` and `test:dist`, and must exit with code `0`.
 
 ---
 
 ## 4. Enforcement Mechanisms
 
-| Tool                    | Command                      | Scope Enforced                                                                                            |
-| :---------------------- | :--------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| **TypeScript**          | `npm run type-check`         | Strict compiler type verification across all source files and test suites.                                |
-| **ESLint**              | `npm run lint`               | Subpath boundary checks, no deep imports, no `any` without comment, motion rules.                         |
-| **Architecture Script** | `npm run check:architecture` | Validates 0 import cycles across all files, validates module `uses` declarations.                         |
-| **Node Test Runner**    | `npm test`                   | 520+ tests asserting kernel lifecycles, module state machines, token correctness, and atom accessibility. |
-| **tsup Bundler**        | `npm run build`              | Validates tree-shakable ESM packaging and `.d.ts` declaration generation.                                 |
+| Tool                    | Command                      | Scope enforced                                                                                                                                                                      |
+| :---------------------- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Prettier**            | `npm run format:check`       | One formatting for source, tests and docs.                                                                                                                                          |
+| **ESLint**              | `npm run lint`               | Type-aware rules, import order, public subpaths only, the React Compiler rules (`react-hooks/*` as errors).                                                                         |
+| **TypeScript**          | `npm run type-check`         | Strict types for `src`, `templates` and `tests/types`.                                                                                                                              |
+| **Architecture script** | `npm run check:architecture` | Four rules: no import cycles; layers only import downwards and foundation stays framework-free; modules meet only at declared public barrels (`uses`); files stay within 400 lines. |
+| **Node test runner**    | `npm test`                   | 740 tests over foundation, react, core and modules, run on the uncompiled source.                                                                                                   |
+| **tsup + smoke tests**  | `npm run build`, `test:dist` | ESM bundles with the React Compiler, `.d.ts` output, and 13 smoke tests against `dist`.                                                                                             |
 
 ---
 
@@ -141,16 +166,17 @@ All checks must exit with code `0`.
 
 ```
 What are you adding?
-├─ Reusable design component (Button, Icon, Select, Carousel) -> src/design/components/<name>.tsx
-├─ First-party UI module (Dock, Modal, Ambient, Toast)   -> src/modules/<module>/
-├─ Universal React hook (useStore, useClickOutside)       -> src/hooks/
-├─ Motion mechanics (retime, tempo, CSS transition)      -> src/utils/
-├─ Orchestration logic (registry, provider nesting)      -> src/kernel/
-├─ Pure utility or data store (scheduler, store, clamp)   -> src/utils/
-└─ Error handling & reporting (reporter, boundary)       -> src/error/
+├─ Pure helper, store or scheduler (clamp, createStore)       -> src/foundation/utils/
+├─ Result type or event bus addition                          -> src/foundation/result/, src/foundation/events/
+├─ Recipe, anatomy or class helper (defineUi, cn)             -> src/foundation/recipes/
+├─ Universal React hook (useStore, useClickOutside)           -> src/react/hooks/
+├─ Theme or motion plumbing (defineTheme, useModuleMotion)    -> src/react/theme/
+├─ Reusable component (Button, Icon, Select, Carousel)        -> src/react/ui/components/
+├─ Orchestration (registry, page controller, provider)        -> src/core/kernel/, src/core/provider/
+├─ Error handling and reporting (boundary, listener)          -> src/core/error/
+├─ Navigation machine shared by modules                       -> src/core/navigation/
+└─ First-party UI module (Dock, Modal, Ambient, Toast)        -> src/modules/<module>/
 ```
-
----
 
 ## 6. React Compiler and Memoization
 

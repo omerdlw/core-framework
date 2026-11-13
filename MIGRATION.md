@@ -38,3 +38,21 @@ Notes:
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `useModuleTheme` (from `./theme`)            | `useTheme`, same signature and behaviour                                                                  |
 | `useIsomorphicLayoutEffect` (from `./hooks`) | `useLayoutEffect` from `react`. React 19 no longer warns about `useLayoutEffect` during server rendering. |
+
+## Components that are no longer `memo()`
+
+These public components were wrapped in `React.memo` in 5.x and are now plain function components:
+
+- `DockCardBanner`, `DockCardHeader`, `DockDescription`, `DockIcon`, `DockTitle` (from `./dock`)
+- `YouTubeBackgroundPlayer` (from `./background`)
+
+Rendering is the same. What changes:
+
+- Their type is a function component, not `MemoExoticComponent`. Code that names the type (`typeof DockTitle` with `.type`, `MemoExoticComponent<…>`) needs updating.
+- They re-render with their parent. The published build compiles them with the React Compiler, which skips work when props are unchanged. If you bundle the source without the compiler and relied on the memo, wrap them yourself: `const MemoTitle = memo(DockTitle)`.
+
+## React Compiler and bundle size
+
+The published JavaScript is built with `babel-plugin-react-compiler`. Components and hooks memoize automatically, so the source no longer carries most hand-written `useMemo`/`useCallback`/`memo`. Behaviour does not depend on the compiler: identities that effects, subscriptions, context values and public hook returns rely on stay stable in uncompiled code too.
+
+The compiled output is larger. Total gzipped JavaScript is about 35% above 5.0.0 (about 273 KB vs 201 KB across all entries and chunks). The compiler accounts for most of that, about 25%. Bundlers still tree-shake per entry, so an app pays only for the entries it imports.

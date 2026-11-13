@@ -97,17 +97,17 @@ return <div className={slots.card} style={styles.card} />;
 
 Below is the complete reference of theme specs exported by the 9 first-party modules:
 
-| Module             | Spec Export         | Import Path                                    | Primary Slots                                                          |
-| :----------------- | :------------------ | :--------------------------------------------- | :--------------------------------------------------------------------- |
-| **Dock**           | `dockTheme`         | `@omerdlw/base-framework/modules/dock`         | `card`, `header`, `title`, `description`, `icon`, `surface`, `status`  |
-| **Modal**          | `modalTheme`        | `@omerdlw/base-framework/modules/modal`        | `backdrop`, `dialog`, `header`, `title`, `body`, `footer`, `close`     |
-| **Notification**   | `notificationTheme` | `@omerdlw/base-framework/modules/notification` | `viewport`, `toast`, `title`, `description`, `icon`, `action`, `close` |
-| **Ambient**        | `ambientTheme`      | `@omerdlw/base-framework/modules/ambient`      | `container`, `canvas`                                                  |
-| **Background**     | `backgroundTheme`   | `@omerdlw/base-framework/modules/background`   | `layer`, `overlay`, `fades`                                            |
-| **Controls**       | `controlsTheme`     | `@omerdlw/base-framework/modules/controls`     | `rail`, `button`, `icon`                                               |
-| **Loading**        | `loadingTheme`      | `@omerdlw/base-framework/modules/loading`      | `overlay`, `spinner`, `message`                                        |
-| **Context Menu**   | `contextMenuTheme`  | `@omerdlw/base-framework/modules/context-menu` | `menu`, `item`, `separator`, `label`, `shortcut`                       |
-| **Error Boundary** | `errorTheme`        | `@omerdlw/base-framework/error`                | `boundary`, `card`, `title`, `message`, `retryButton`                  |
+| Module             | Spec Export         | Import Path                            | Primary Slots                                                          |
+| :----------------- | :------------------ | :------------------------------------- | :--------------------------------------------------------------------- |
+| **Dock**           | `dockTheme`         | `@omerdlw/base-framework/dock`         | `card`, `header`, `title`, `description`, `icon`, `surface`, `status`  |
+| **Modal**          | `modalTheme`        | `@omerdlw/base-framework/modal`        | `backdrop`, `dialog`, `header`, `title`, `body`, `footer`, `close`     |
+| **Notification**   | `notificationTheme` | `@omerdlw/base-framework/notification` | `viewport`, `toast`, `title`, `description`, `icon`, `action`, `close` |
+| **Ambient**        | `ambientTheme`      | `@omerdlw/base-framework/ambient`      | `container`, `canvas`                                                  |
+| **Background**     | `backgroundTheme`   | `@omerdlw/base-framework/background`   | `layer`, `overlay`, `fades`                                            |
+| **Controls**       | `controlsTheme`     | `@omerdlw/base-framework/controls`     | `rail`, `button`, `icon`                                               |
+| **Loading**        | `loadingTheme`      | `@omerdlw/base-framework/loading`      | `overlay`, `spinner`, `message`                                        |
+| **Context Menu**   | `contextMenuTheme`  | `@omerdlw/base-framework/context-menu` | `menu`, `item`, `separator`, `label`, `shortcut`                       |
+| **Error Boundary** | `errorTheme`        | `@omerdlw/base-framework/error`        | `boundary`, `card`, `title`, `message`, `retryButton`                  |
 
 ---
 
@@ -117,10 +117,10 @@ Create a theme definitions file in your project (e.g. `src/config/themes.ts`):
 
 ```ts
 import { defineTheme } from "@omerdlw/base-framework/theme";
-import { dockTheme } from "@omerdlw/base-framework/modules/dock";
-import { modalTheme } from "@omerdlw/base-framework/modules/modal";
-import { notificationTheme } from "@omerdlw/base-framework/modules/notification";
-import { loadingTheme } from "@omerdlw/base-framework/modules/loading";
+import { dockTheme } from "@omerdlw/base-framework/dock";
+import { modalTheme } from "@omerdlw/base-framework/modal";
+import { notificationTheme } from "@omerdlw/base-framework/notification";
+import { loadingTheme } from "@omerdlw/base-framework/loading";
 import { errorTheme } from "@omerdlw/base-framework/error";
 
 export const appThemes = [
@@ -252,7 +252,7 @@ Each animating module exports its contract type. Give it a full value, the same 
 ```ts
 // src/config/theme/dock.ts
 import { defineTheme } from "@omerdlw/base-framework/theme";
-import { dockTheme } from "@omerdlw/base-framework/modules/dock";
+import { dockTheme } from "@omerdlw/base-framework/dock";
 import { dockMotion } from "./motion/dock";
 
 export const dockThemeConfig = defineTheme(dockTheme, { slots: { … }, motion: dockMotion });

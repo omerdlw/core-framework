@@ -61,6 +61,8 @@ npm install @omerdlw/base-framework motion
 
 Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.2.0`, `react-dom >= 19.2.0`, `motion >= 12.0.0`).
 
+Requires Node `>=22`. Upgrading from 5.x? See [MIGRATION.md](./MIGRATION.md).
+
 ---
 
 ## 🚀 Quick Start
@@ -73,13 +75,13 @@ Create your client providers component (e.g. `src/app/providers.tsx`):
 "use client";
 
 import { CoreProvider } from "@omerdlw/base-framework/provider";
-import { dockModule } from "@omerdlw/base-framework/modules/dock";
-import { modalModule } from "@omerdlw/base-framework/modules/modal";
-import { notificationModule } from "@omerdlw/base-framework/modules/notification";
-import { ambientModule } from "@omerdlw/base-framework/modules/ambient";
-import { backgroundModule } from "@omerdlw/base-framework/modules/background";
-import { loadingModule } from "@omerdlw/base-framework/modules/loading";
-import { navigationModule } from "@omerdlw/base-framework/modules/navigation";
+import { dockModule } from "@omerdlw/base-framework/dock";
+import { modalModule } from "@omerdlw/base-framework/modal";
+import { notificationModule } from "@omerdlw/base-framework/notification";
+import { ambientModule } from "@omerdlw/base-framework/ambient";
+import { backgroundModule } from "@omerdlw/base-framework/background";
+import { loadingModule } from "@omerdlw/base-framework/loading";
+import { navigationModule } from "@omerdlw/base-framework/navigation";
 
 const modules = [
   dockModule,
@@ -167,20 +169,20 @@ export default function DashboardPage() {
 
 ## 📚 Subpath Export Directory
 
-| Subpath                                  | Purpose & Key Exports                                                       |
-| :--------------------------------------- | :-------------------------------------------------------------------------- |
-| `@omerdlw/base-framework`                | Root exports of all sub-systems                                             |
-| `@omerdlw/base-framework/kernel`         | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`            |
-| `@omerdlw/base-framework/provider`       | `CoreProvider` composition pipeline & `ModuleHost`                          |
-| `@omerdlw/base-framework/result`         | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                          |
-| `@omerdlw/base-framework/events`         | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                         |
-| `@omerdlw/base-framework/theme`          | `ThemeProvider`, `useTheme`, `defineThemeSpec`                              |
-| `@omerdlw/base-framework/design`         | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)    |
-| `@omerdlw/base-framework/design/recipes` | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                |
-| `@omerdlw/base-framework/utils`          | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
-| `@omerdlw/base-framework/hooks`          | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)           |
-| `@omerdlw/base-framework/error`          | Error boundaries and reporter sink                                          |
-| `@omerdlw/base-framework/modules/*`      | 9 standalone modules (`dock`, `modal`, `notification`, etc.)                |
+| Subpath                            | Purpose & Key Exports                                                       |
+| :--------------------------------- | :-------------------------------------------------------------------------- |
+| `@omerdlw/base-framework`          | Root exports of all sub-systems                                             |
+| `@omerdlw/base-framework/kernel`   | `usePage`, `defineModule`, `definePeer`, `createContextRegistry`            |
+| `@omerdlw/base-framework/provider` | `CoreProvider` composition pipeline & `ModuleHost`                          |
+| `@omerdlw/base-framework/result`   | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                          |
+| `@omerdlw/base-framework/events`   | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                         |
+| `@omerdlw/base-framework/theme`    | `ThemeProvider`, `useTheme`, `defineThemeSpec`                              |
+| `@omerdlw/base-framework/ui`       | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)    |
+| `@omerdlw/base-framework/recipes`  | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                |
+| `@omerdlw/base-framework/utils`    | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`) |
+| `@omerdlw/base-framework/hooks`    | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)           |
+| `@omerdlw/base-framework/error`    | Error boundaries and reporter sink                                          |
+| `@omerdlw/base-framework/<module>` | 9 standalone modules (`dock`, `modal`, `notification`, etc.)                |
 
 ---
 

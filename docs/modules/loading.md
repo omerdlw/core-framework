@@ -1,20 +1,20 @@
-# Loading — `@omerdlw/base-framework/modules/loading`
+# Loading — `@omerdlw/base-framework/loading`
 
 > **Read this first if you need to:** show a full-screen loading state for a page or an async action, keep a spinner up long enough not to flicker, supply your own skeleton, or read "is the app busy" from another module.
 
 ## 1. At a glance
 
-|                    |                                                                                                             |
-| :----------------- | :---------------------------------------------------------------------------------------------------------- |
-| **Import**         | `import { useLoadingActions, useLoading, defineLoading, … } from "@omerdlw/base-framework/modules/loading"` |
-| **Module id**      | `loading` (`loadingModule`, in `defaultModules`)                                                            |
-| **Renders**        | `LoadingOverlay`: a fixed full-screen `<div role="status" aria-busy>` with a `Spinner` (or your skeleton)   |
-| **Registry type**  | `loading` — singleton key `page-loading`, lifecycle `graceful`, cleanup delay 600 ms                        |
-| **Page slice**     | `usePage({ loading })` → `page.modules.loading` (all actions + `set`)                                       |
-| **Peers (`uses`)** | none (the dock reads _this_ module through `definePeer("loading")`)                                         |
-| **Theme**          | `loadingTheme` slot `overlay` in `src/config/loading.module.theme.ts`                                       |
-| **z-index**        | the app's layer, set in the theme `styles`                                                                  |
-| **Tests**          | `tests/modules/loading.test.ts`                                                                             |
+|                    |                                                                                                           |
+| :----------------- | :-------------------------------------------------------------------------------------------------------- |
+| **Import**         | `import { useLoadingActions, useLoading, defineLoading, … } from "@omerdlw/base-framework/loading"`       |
+| **Module id**      | `loading` (`loadingModule`, in `defaultModules`)                                                          |
+| **Renders**        | `LoadingOverlay`: a fixed full-screen `<div role="status" aria-busy>` with a `Spinner` (or your skeleton) |
+| **Registry type**  | `loading` — singleton key `page-loading`, lifecycle `graceful`, cleanup delay 600 ms                      |
+| **Page slice**     | `usePage({ loading })` → `page.modules.loading` (all actions + `set`)                                     |
+| **Peers (`uses`)** | none (the dock reads _this_ module through `definePeer("loading")`)                                       |
+| **Theme**          | `loadingTheme` slot `overlay` in `src/config/loading.module.theme.ts`                                     |
+| **z-index**        | the app's layer, set in the theme `styles`                                                                |
+| **Tests**          | `tests/modules/loading.test.ts`                                                                           |
 
 ## 2. Mental model
 
@@ -153,5 +153,5 @@ No classes or inline styles in the module. The `loadingTheme` slot `overlay` (st
 
 ## 9. Dependencies
 
-- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/design` (`Spinner`), `@omerdlw/base-framework/hooks` (`useIsFullscreenStateActive`), `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
+- **Uses:** `@omerdlw/base-framework/kernel` (`defineModule`, `useModuleRegistration`, `useRegistryValue`), `@omerdlw/base-framework/ui` (`Spinner`), `@omerdlw/base-framework/hooks` (`useIsFullscreenStateActive`), `@omerdlw/base-framework/utils` (`createStore`), `@omerdlw/base-framework/theme`.
 - **Used by:** `src/core/provider.tsx` (installs it); the **dock**, which reads `isLoading` and calls `stopLoading` through `definePeer("loading")` (inert when not installed); pages and features through `useLoading*` / `page.modules.loading`.
