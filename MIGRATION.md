@@ -1,10 +1,10 @@
-# Migrating from 3.x to 3.5
+# Migrating from 3.x to 3.2
 
-3.5 reorganises the package into layers and tidies the public surface. Most of the change is where you import from and a few removed names. Runtime behaviour is the same apart from one bug fix (see [Fixed](#fixed)) and the components that are no longer `memo()`.
+3.2 reorganises the package into layers and tidies the public surface. Most of the change is where you import from and a few removed names. Runtime behaviour is the same apart from one bug fix (see [Fixed](#fixed)) and the components that are no longer `memo()`.
 
 ## The framework holds no design
 
-Coming from 3.1.0, note that 3.5 also includes an unreleased step in which every visual decision moved to the app:
+Coming from 3.1.0, note that 3.2 also includes an unreleased step in which every visual decision moved to the app:
 
 - `./styles.css`, the `styles/` folder, design tokens (`Z_INDEX`, motion presets), default recipes, tones, default motion, icon names and `templates/motion` are removed. Supply them from your app's `ui`.
 - Atoms and `utils/cn` are removed. Use the vocabulary-free `cn` and the `./ui` components (`Button`, `Icon`, `Loader`, `Tooltip`). `Button` takes `href` to render a link.
@@ -18,11 +18,11 @@ The subpath table below maps the previous build's layout. In it, the `./design` 
 ## Requirements
 
 - Node `>=22` (see `engines` in `package.json`).
-- React and React DOM `>=19.2.0` (peer dependencies; 3.x accepted `>=19.0.0`). 3.5 uses `useEffectEvent`, which is stable only from React 19.2. If you are on React 19.0 or 19.1, upgrade `react` and `react-dom` first.
+- React and React DOM `>=19.2.0` (peer dependencies; 3.x accepted `>=19.0.0`). 3.2 uses `useEffectEvent`, which is stable only from React 19.2. If you are on React 19.0 or 19.1, upgrade `react` and `react-dom` first.
 
 ## Subpath changes
 
-| 3.x                                      | 3.5                                           |
+| 3.x                                      | 3.2                                           |
 | ---------------------------------------- | --------------------------------------------- |
 | `.`                                      | `.`                                           |
 | `./result`                               | `./result`                                    |

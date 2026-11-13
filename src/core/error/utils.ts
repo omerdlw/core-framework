@@ -108,7 +108,7 @@ export function fingerprint(
 
   // Thrown values are untyped; read message/name defensively.
   const errObj = error as { message?: string; name?: string } | null;
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; a thrown non-Error object stringifies to "[object Object]" as before (behaviour kept in 3.5 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; a thrown non-Error object stringifies to "[object Object]" as before (behaviour kept in 3.2 restructure)
   const errorMessage = (errObj?.message || String(error || "")).slice(
     0,
     FINGERPRINT_MESSAGE_LENGTH,
@@ -158,7 +158,7 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message.trim();
 
   const errObj = error as { message?: string; toString?: () => string };
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; the last fallback stringifies an object without message/toString to "[object Object]" as before (behaviour kept in 3.5 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; the last fallback stringifies an object without message/toString to "[object Object]" as before (behaviour kept in 3.2 restructure)
   return String(errObj?.message || errObj?.toString?.() || error).trim();
 }
 

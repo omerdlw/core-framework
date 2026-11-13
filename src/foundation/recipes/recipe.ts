@@ -104,7 +104,7 @@ export interface Recipe<V = VariantMap> {
 export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
 
 const key = (value: unknown): string | null =>
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 3.5 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 3.2 restructure)
   value === null || value === undefined ? null : String(value);
 
 function matches(

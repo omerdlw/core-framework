@@ -165,10 +165,10 @@ export function resolveGradientSettings({
   } else if (typeof fadeEdges === "object" && fadeEdges !== null) {
     const edgeObj = fadeEdges as { left?: unknown; right?: unknown };
     if (edgeObj.left !== undefined)
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- fadeEdges.left is unknown user input; an object yields NaN, which falls back to 0 via || as before (behaviour kept in 3.5 restructure)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- fadeEdges.left is unknown user input; an object yields NaN, which falls back to 0 via || as before (behaviour kept in 3.2 restructure)
       leftPercent = parseFloat(String(edgeObj.left)) || 0;
     if (edgeObj.right !== undefined)
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- fadeEdges.right is unknown user input; an object yields NaN, which falls back to 0 via || as before (behaviour kept in 3.5 restructure)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- fadeEdges.right is unknown user input; an object yields NaN, which falls back to 0 via || as before (behaviour kept in 3.2 restructure)
       rightPercent = parseFloat(String(edgeObj.right)) || 0;
   } else if (fadeEdges === false) {
     leftPercent = 0;
