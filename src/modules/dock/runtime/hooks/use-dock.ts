@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { normalizePath, shallowEqual } from "@/foundation/utils";
+import { shallowEqual } from "@/foundation/utils";
 import { useRequiredContext } from "@/react/hooks";
 
 import { DOCK_ATTENTION_KIND } from "../../constants";
 import { DockContext, useDockActions, useDockSelector } from "../../context";
 import { useDockRouteReset } from "../../hooks/use-dock-route-reset";
+import { getDockRoutePathname } from "../../model/paths";
 import { useDockNavigation } from "../../routing/navigation";
 import type { DockNavigateOptions } from "../../types";
 import { useDockDisplay } from "../display";
@@ -45,9 +46,10 @@ export function useDock() {
     pathname,
   } = core;
 
-  const effectivePathname = activeTransaction?.to
-    ? normalizePath(activeTransaction.to)
-    : pathname;
+  const effectivePathname = getDockRoutePathname(
+    pathname,
+    activeTransaction?.to,
+  );
   const display = useDockDisplay(effectivePathname, {
     isNavigating: Boolean(activeTransaction),
   });

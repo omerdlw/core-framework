@@ -1,3 +1,4 @@
+import { pathOf } from "@/core/navigation/utils";
 import { normalizePath } from "@/foundation/utils";
 
 /** True when two paths are equal after normalization. */
@@ -20,6 +21,19 @@ export function isPathPrefix(
   if (normalizedCandidate === normalizedPathname) return true;
   if (normalizedCandidate === "/") return normalizedPathname.startsWith("/");
   return normalizedPathname.startsWith(`${normalizedCandidate}/`);
+}
+
+/**
+ * The pathname the dock resolves its cards against: where an in-flight
+ * navigation is heading, else the current one. Cards are keyed by pathname,
+ * so the target's query and hash are dropped: a step that only changes the
+ * query keeps the card it is on.
+ */
+export function getDockRoutePathname(
+  pathname: string,
+  transitionTo?: string | null,
+): string {
+  return transitionTo ? pathOf(transitionTo) : pathname;
 }
 
 /** True when an inline action path applies to the current pathname. */

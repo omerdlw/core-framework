@@ -272,6 +272,26 @@ export interface DockMotion {
     fullscreenOpacity: number;
     origin: string;
     resizeFallback: number;
+    /**
+     * Resting card width in px, used when a card or surface sets none of its
+     * own. Clamped to the viewport like any width. Defaults to 460.
+     */
+    width?: number;
+    /**
+     * The card's vertical padding, one side, in px: match the card's CSS.
+     * The card is sized to its content plus this above and below. Defaults
+     * to 10.
+     */
+    padding?: number;
+    /**
+     * The CSS custom property the dock height is published as on `<html>`.
+     * `false` publishes none: a variable written on the root restyles every
+     * element on the page each time the dock changes height (twice per
+     * surface open), so an app with a large page can read `dockHeight` from
+     * state (`useDockHeight`) and size only the elements that need it.
+     * Defaults to `--dock-h`.
+     */
+    heightVar?: string | false;
   };
   opacity: {
     banner: number;

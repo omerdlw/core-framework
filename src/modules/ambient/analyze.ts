@@ -1,5 +1,12 @@
 import { clusterAmbientPixels } from "./analyze-clusters";
 import {
+  buildDarkPage,
+  buildLightPage,
+  GROUNDS,
+  type PageContext,
+  readableOn,
+} from "./analyze-ground";
+import {
   type Cluster,
   colorfulness,
   isChromatic,
@@ -12,14 +19,7 @@ import {
   salience,
 } from "./analyze-measures";
 import { buildSwatch, fitTone, roleChroma, roleTone } from "./analyze-swatches";
-import {
-  clamp,
-  formatOklch,
-  hueDistance,
-  labToLch,
-  smoothstep,
-  toneOf,
-} from "./oklab";
+import { clamp, formatOklch, hueDistance, labToLch } from "./oklab";
 import { AMBIENT_REGIONS, DEFAULT_ANALYSIS } from "./settings";
 import type {
   AmbientAnalysisOptions,
@@ -36,7 +36,7 @@ import type {
  * Version of the palette analysis algorithm; bump it to invalidate palettes
  * cached from an older version.
  */
-export const AMBIENT_ANALYSIS_VERSION = 2;
+export const AMBIENT_ANALYSIS_VERSION = 4;
 
 export { findContentBounds } from "./analyze-bounds";
 export { skinLikeness } from "./analyze-measures";
@@ -57,21 +57,16 @@ const MIN_DILUTION = 0.55;
 const DILUTION_RANGE = 0.45;
 const GREY_LIGHTNESS_RANGE = [0.3, 0.8] as const;
 
-const DOMINANT_SPEC = { cap: 0.2, gain: 1.15, max: 0.74, min: 0.42 };
-const VIBRANT_SPEC = { cap: 0.22, gain: 1.35, max: 0.84, min: 0.62 };
-const MUTED_SPEC = { cap: 0.07, gain: 1, max: 0.66, min: 0.38 };
-const ACCENT_SPEC = { cap: 0.22, gain: 1.3, max: 0.8, min: 0.55 };
-const REGION_SPEC = { cap: 0.18, gain: 1.15 };
-const REGION_LIGHTNESS_RANGE = [0.42, 0.72] as const;
-const REGION_FALLBACK_LIGHTNESS_RANGE = [0.3, 0.7] as const;
+const CHROMA = {
+  accent: { cap: 0.22, gain: 1.3 },
+  dominant: { cap: 0.2, gain: 1.15 },
+  muted: { cap: 0.07, gain: 1 },
+  region: { cap: 0.18, gain: 1.15 },
+  vibrant: { cap: 0.22, gain: 1.35 },
+};
 
-const SHADOW_MAX_SOURCE_LIGHTNESS = 0.5;
-const SHADOW_MIN_SOURCE_CHROMA = 0.02;
-const SHADOW_MIN_SOURCE_POPULATION = 0.02;
-const SHADOW_LIGHTNESS_DRIFT = 0.02;
-const SHADOW_MEAN_LIGHTNESS_PIVOT = 0.45;
-const SHADOW_MEAN_LIGHTNESS_GAIN = 0.06;
-const SHADOW_CHROMA_CAP = 0.1;
+/** Presence at which an image counts as fully colourful. */
+const FULL_PRESENCE = FULL_DILUTION_PRESENCE;
 
 type ClusterShare = (cluster: Cluster) => number;
 
@@ -82,12 +77,8 @@ interface RolePicks {
   vivid: Cluster | null;
 }
 
-interface PaletteContext {
-  clusters: Cluster[];
-  dilution: number;
-  meanL: number;
+interface PaletteContext extends PageContext {
   minContrast: number;
-  neutral: boolean;
   share: ClusterShare;
 }
 
@@ -163,7 +154,9 @@ function pickRoleClusters(
 
 function buildRoles(
   picks: RolePicks,
-  { dilution, meanL, minContrast, neutral, share }: PaletteContext,
+  page: OklchColor,
+  { dilution, ground, meanL, minContrast, neutral, share }: PaletteContext,
+  isLight: boolean,
 ): Record<AmbientRole, AmbientSwatch> {
   const { accent, dominant, muted, vivid } = picks;
   const grey = {
@@ -173,79 +166,59 @@ function buildRoles(
   };
   const dominantHue = dominant?.h ?? vivid?.h ?? 0;
   const accentSource = accent ?? vivid;
+  const spec = (role: AmbientRole) => {
+    const [min, max] = ground.roles[role];
+    return { ...CHROMA[role], max, min };
+  };
+  const readable = (tone: OklchColor) =>
+    readableOn(tone, page, ground.roleContrast, isLight ? "dark" : "light");
+  const [mutedMin, mutedMax] = ground.roles.muted;
   return {
     dominant: buildSwatch(
-      roleTone(dominant, DOMINANT_SPEC, grey),
+      readable(roleTone(dominant, spec("dominant"), grey)),
       dominant ? share(dominant) : 0,
       true,
       minContrast,
     ),
     vibrant: buildSwatch(
-      roleTone(
-        vivid,
-        VIBRANT_SPEC,
-        { c: 0, h: dominantHue, l: 0.78 },
-        dilution,
+      readable(
+        roleTone(
+          vivid,
+          spec("vibrant"),
+          { c: 0, h: dominantHue, l: ground.fallback.vibrant },
+          dilution,
+        ),
       ),
       vivid ? share(vivid) : 0,
       true,
       minContrast,
     ),
     muted: buildSwatch(
-      roleTone(muted, MUTED_SPEC, {
-        c: dominant ? 0.035 : 0,
-        h: dominantHue,
-        l: clamp(meanL, 0.38, 0.66),
-      }),
+      readable(
+        roleTone(muted, spec("muted"), {
+          c: dominant ? 0.035 : 0,
+          h: dominantHue,
+          l: clamp(meanL, mutedMin, mutedMax),
+        }),
+      ),
       muted ? share(muted) : 0,
       Boolean(muted) || neutral,
       minContrast,
     ),
     accent: buildSwatch(
-      roleTone(
-        accentSource,
-        ACCENT_SPEC,
-        { c: 0, h: dominantHue, l: 0.72 },
-        dilution,
+      readable(
+        roleTone(
+          accentSource,
+          spec("accent"),
+          { c: 0, h: dominantHue, l: ground.fallback.accent },
+          dilution,
+        ),
       ),
       accentSource ? share(accentSource) : 0,
       Boolean(accent),
       minContrast,
     ),
   };
-}
-
-function buildShadow(
-  dominant: Cluster | null,
-  { clusters, meanL, neutral }: PaletteContext,
-  baseLightness: number,
-): OklchColor {
-  const shadowPick = neutral
-    ? null
-    : pickBest(
-        clusters.filter(
-          (cluster) =>
-            cluster.l <= SHADOW_MAX_SOURCE_LIGHTNESS &&
-            cluster.c >= SHADOW_MIN_SOURCE_CHROMA &&
-            cluster.pop >= SHADOW_MIN_SOURCE_POPULATION,
-        ),
-        (cluster) =>
-          cluster.pop * cluster.rel * smoothstep(0.05, 0.14, cluster.l),
-      );
-  const deepSource = shadowPick ?? dominant;
-  const lightness = clamp(
-    baseLightness +
-      (meanL - SHADOW_MEAN_LIGHTNESS_PIVOT) * SHADOW_MEAN_LIGHTNESS_GAIN,
-    baseLightness - SHADOW_LIGHTNESS_DRIFT,
-    baseLightness + SHADOW_LIGHTNESS_DRIFT,
-  );
-  if (!deepSource) return { c: 0, h: 0, l: lightness };
-  return toneOf(
-    deepSource.h,
-    lightness,
-    clamp(0.3 + 0.7 * deepSource.rel, 0, 0.85),
-    SHADOW_CHROMA_CAP,
-  );
 }
 
 /** Picks the most salient reliable colour among one region's cluster samples. */
@@ -282,7 +255,7 @@ function pickRegionColor(
 function buildRegion(
   weights: Float64Array,
   lab: Float64Array,
-  { clusters, meanL, neutral }: PaletteContext,
+  { clusters, ground, meanL, neutral }: PaletteContext,
 ): AmbientRegionColor {
   let regionTotal = 0;
   let regionL = 0;
@@ -296,20 +269,22 @@ function buildRegion(
     lab,
     regionTotal,
   );
+  const [regionMin, regionMax] = ground.region;
+  const [fallbackMin, fallbackMax] = ground.regionFallback;
   const chosen = neutral || strength < MIN_PRESENCE ? null : pick;
   const tone = chosen
     ? fitTone(
         chosen.h,
-        clamp(chosen.l, REGION_LIGHTNESS_RANGE[0], REGION_LIGHTNESS_RANGE[1]),
-        roleChroma(chosen, REGION_SPEC),
+        clamp(chosen.l, regionMin, regionMax),
+        roleChroma(chosen, CHROMA.region),
       )
     : {
         c: 0,
         h: 0,
         l: clamp(
           regionTotal > 0 ? regionL / regionTotal : meanL,
-          REGION_FALLBACK_LIGHTNESS_RANGE[0],
-          REGION_FALLBACK_LIGHTNESS_RANGE[1],
+          fallbackMin,
+          fallbackMax,
         ),
       };
   return {
@@ -358,6 +333,7 @@ export function analyzeAmbientPixels(
     dilution:
       MIN_DILUTION +
       DILUTION_RANGE * Math.min(1, presence / FULL_DILUTION_PRESENCE),
+    ground: GROUNDS[options.ground],
     meanL,
     minContrast: options.minContrast,
     neutral: presence < MIN_PRESENCE,
@@ -370,13 +346,19 @@ export function analyzeAmbientPixels(
     context.neutral,
     options.minHueDistance,
   );
+  const isLight = options.ground === "light";
+  const page = isLight
+    ? buildLightPage(picks.dominant, context)
+    : buildDarkPage(picks.dominant, context);
   return {
+    ground: options.ground,
     neutral: context.neutral,
+    page: formatOklch(page),
+    presence: context.neutral
+      ? 0
+      : round3(clamp(presence / FULL_PRESENCE, 0, 1)),
     regions: buildRegions(context, regionWeights, regionLab),
-    roles: buildRoles(picks, context),
-    shadow: formatOklch(
-      buildShadow(picks.dominant, context, options.shadowLightness),
-    ),
+    roles: buildRoles(picks, page, context, isLight),
   };
 }
 

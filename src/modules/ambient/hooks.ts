@@ -14,7 +14,7 @@ import {
   resolveTargetElement,
 } from "./dom";
 import { extractPaletteFromImage, primeAmbientPalette } from "./extractor";
-import { getAmbientSettings } from "./settings";
+import { getAmbientSettings, resolveAnalysis } from "./settings";
 import type {
   AmbientConfig,
   AmbientContextValue,
@@ -48,7 +48,11 @@ export function useAmbientColor(
   options: AmbientExtractOptions | null = null,
 ): { isExtracting: boolean; palette: AmbientPalette | null } {
   const stableOptions = useStableObject(options);
-  const initialPalette = useStableObject(options?.initialPalette ?? null);
+  const offered = useStableObject(options?.initialPalette ?? null);
+  // A palette made for another ground (a server set up differently, an old
+  // cache) is not shown: its page and roles sit at the wrong lightness.
+  const ground = resolveAnalysis(stableOptions?.analysis).ground;
+  const initialPalette = offered?.ground === ground ? offered : null;
 
   const srcKey =
     typeof imageSource === "string" ? imageSource : imageSource?.src;

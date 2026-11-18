@@ -86,3 +86,14 @@ The compiled output is larger. Total gzipped JavaScript is about 35% above the p
 - `ClassValue` from `clsx` is no longer re-exported through `cn`'s types; `cn` takes the framework's `Classes` type, which accepts the same strings, arrays, objects and falsy values.
 
 The modal overlay now loads with `React.lazy` instead of `next/dynamic`, mounts only after the first modal opens, and preloads its chunk when the browser is idle.
+
+## Ambient grounds and dock sizing (3.3.0)
+
+Ambient palettes are now made for a **ground**, the kind of page they lie on: `"dark"` (the default, as before) or `"light"`. Set it once with `configureAmbient({ analysis: { ground: "light" } })` and pass the same `analysis` to the server extractor.
+
+- `AmbientPalette.shadow` is replaced by `page` (the page tone for the ground) and `presence` (how colourful the image is, `0` to `1`). Palettes also carry `ground`.
+- The `--ambient-shadow` variable is now `--ambient-page`, and `--ambient-presence` is new. In `cssVars`, rename `shadow` to `page`; `presence` can be renamed or turned off the same way.
+- `AmbientAnalysisOptions.shadowLightness` is replaced by `ground`. On the dark ground the page tone keeps its old lightness (0.16).
+- An `initialPalette` made for another ground than the configured one is ignored. Palettes cached across deploys should carry `AMBIENT_ANALYSIS_VERSION` in their key.
+
+The dock card is sized to its content plus `motion.deck.padding` above and below (default 10 px), instead of a fixed 68 px base. `motion.deck.width` sets the resting card width (default 460 px). `motion.deck.heightVar` names the CSS variable published on `<html>` (default `--dock-h`); `false` publishes none, so an app can read `dockHeight` from state and avoid restyling the whole page on every height change.

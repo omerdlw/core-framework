@@ -28,12 +28,14 @@ client        image URL ─fetch─▶ createImageBitmap ─────┤   (w
                                                         ▼
         roles: dominant · vibrant · muted · accent   (each: colour, `on`, 11-tone ramp)
         regions: top · bottom · left · right · center
-        shadow: the deep tone of the image's shadows
+        page: the page tone for the ground (dark or light) · presence: how colourful
                                                         ▼
                          CSS variables on the target element ─▶ everything that reads them re-tints
 ```
 
-Ambient is a **colour pipeline**, not a component: pick an image (or pass colors directly), and the `--ambient-*` variables change. The app maps its own tokens onto them, e.g. `:root { --primary: var(--ambient-vibrant, #101010); --black: var(--ambient-shadow, #0b0b0b) }`; Tailwind classes such as `bg-primary` and anything using `var(--black)` then follow automatically, and the fallbacks apply whenever no palette is set.
+Ambient is a **colour pipeline**, not a component: pick an image (or pass colors directly), and the `--ambient-*` variables change. The app maps its own tokens onto them, e.g. `:root { --primary: var(--ambient-vibrant, #101010); --bg: var(--ambient-page, #0b0b0b) }`; Tailwind classes such as `bg-primary` and anything using `var(--bg)` then follow automatically, and the fallbacks apply whenever no palette is set.
+
+A palette is made for one **ground**, the kind of page it lies on: `"dark"` (default) or `"light"`. The app says which once (`configureAmbient({ analysis: { ground: "light" } })`, and the same `analysis` on the server); the framework then makes the page tone, the region glows and the roles for that ground, and stays out of everything else. See §6.1.
 
 A palette is plain JSON (~2.7 KB), so it can be computed once on the server, cached, and passed down as `initialPalette`. When its `source` is the same image URL, the client does not extract again. Client extraction is the fallback.
 
@@ -53,7 +55,7 @@ useAmbientTheme({ image: backdropUrl || account?.avatarUrl || null });
 // 4. Explicit colors, scoped to one element
 const cardRef = useRef<HTMLDivElement>(null);
 useAmbientTheme({
-  colors: { "--ambient-vibrant": "#e5d3ff", "--ambient-shadow": "#140d1f" },
+  colors: { "--ambient-vibrant": "#e5d3ff", "--ambient-page": "#140d1f" },
   scope: cardRef,
 });
 ```
@@ -110,14 +112,15 @@ The app builds the `Worker` itself because only its bundler can turn `new URL(".
 
 Default names; see §5.2 to rename them or turn groups off. Nothing is written until a palette exists.
 
-| Variable                       | Value                                                                                                                         |
-| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| `--ambient-shadow`             | deep tone (L ≈ 0.16) of the shadows' hue, at the chroma sRGB allows there: navy, burgundy, forest… (chroma 0 for grey images) |
-| `--ambient-{role}`             | the role's colour; roles: `dominant`, `vibrant`, `muted`, `accent`                                                            |
-| `--ambient-on-{role}`          | text colour on that role, ≥ 4.5:1 (WCAG 2) by default                                                                         |
-| `--ambient-{role}-{tone}`      | ramp tones `10 15 20 30 40 50 60 70 80 90 95` (= OKLCH L × 100)                                                               |
-| `--ambient-{region}`           | regions: `top`, `bottom`, `left`, `right`, `center`                                                                           |
-| any variable named in `colors` | the literal value                                                                                                             |
+| Variable                       | Value                                                                                                                                    |
+| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ambient-page`               | the page tone for the ground (§6.1): dark L ≈ 0.16 in the shadows' hue; light L 0.9–0.955 in the image's mood (chroma 0 for grey images) |
+| `--ambient-presence`           | how colourful the image is, `0` (grey) … `1`: e.g. the opacity of a wash                                                                 |
+| `--ambient-{role}`             | the role's colour; roles: `dominant`, `vibrant`, `muted`, `accent`                                                                       |
+| `--ambient-on-{role}`          | text colour on that role, ≥ 4.5:1 (WCAG 2) by default                                                                                    |
+| `--ambient-{role}-{tone}`      | ramp tones `10 15 20 30 40 50 60 70 80 90 95` (= OKLCH L × 100)                                                                          |
+| `--ambient-{region}`           | regions: `top`, `bottom`, `left`, `right`, `center`                                                                                      |
+| any variable named in `colors` | the literal value                                                                                                                        |
 
 `colors` keys are custom property names: a key starting with `--` is used verbatim; anything else becomes `--color-<key>`. `colors` always wins over extracted values.
 
@@ -164,23 +167,25 @@ Until a palette exists the shared state's `palette` is `null` and no variable is
 
 Settings live on `globalThis`, so every bundled copy of the module (one per package entry) shares them. Call it once at start-up, in a client module (and on the server too if you change `analysis`).
 
-| Setting      | Default                                                                                                                      | Meaning                                                                                                                                                                                                                                     |
-| :----------- | :--------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `proxy`      | `"/api/ambient/proxy?url="`                                                                                                  | Tried last, only for cross-origin images whose direct request (and its one cache-bypassing retry) failed. A string is a prefix the encoded URL is appended to, or a template with `{url}`; a function returns the URL; `null` turns it off. |
-| `strategy`   | `"auto"`                                                                                                                     | `"auto"`: the worker if one is configured, else the main thread. `"worker"`: worker only (no main-thread extraction). `"main"`: main thread only. `"none"`: never extract on the client (server palettes only).                             |
-| `worker`     | `null`                                                                                                                       | `() => Worker` running `serveAmbientWorker()` (§3.2). If it fails to start or errors, extraction falls back to the main thread (except under `"worker"`).                                                                                   |
-| `cssVars`    | `--ambient-shadow`, `--ambient-{role}`, `--ambient-on-{role}`, `--ambient-{role}-{tone}`, `--ambient-{region}`, all 11 tones | Rename any variable; `null` turns that variable or group off; `tones: [10, 20, 90]` or `false` limits the ramp variables.                                                                                                                   |
-| `analysis`   | `DEFAULT_ANALYSIS`                                                                                                           | `sampleSize` 128, `clusters` 7, `centerWeight` 0.5, `letterbox` true, `minHueDistance` 40, `minContrast` 4.5, `shadowLightness` 0.16.                                                                                                       |
-| `cacheLimit` | `100`                                                                                                                        | Client palettes kept (oldest evicted).                                                                                                                                                                                                      |
-| `linger`     | `3000` (`DEFAULT_LINGER_MS`)                                                                                                 | How long (ms) a page-wide theme's variables stay after it goes, so the next page takes over from them. `0` removes them at once.                                                                                                            |
+| Setting      | Default                                                                                                                                          | Meaning                                                                                                                                                                                                                                     |
+| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `proxy`      | `"/api/ambient/proxy?url="`                                                                                                                      | Tried last, only for cross-origin images whose direct request (and its one cache-bypassing retry) failed. A string is a prefix the encoded URL is appended to, or a template with `{url}`; a function returns the URL; `null` turns it off. |
+| `strategy`   | `"auto"`                                                                                                                                         | `"auto"`: the worker if one is configured, else the main thread. `"worker"`: worker only (no main-thread extraction). `"main"`: main thread only. `"none"`: never extract on the client (server palettes only).                             |
+| `worker`     | `null`                                                                                                                                           | `() => Worker` running `serveAmbientWorker()` (§3.2). If it fails to start or errors, extraction falls back to the main thread (except under `"worker"`).                                                                                   |
+| `cssVars`    | `--ambient-page`, `--ambient-presence`, `--ambient-{role}`, `--ambient-on-{role}`, `--ambient-{role}-{tone}`, `--ambient-{region}`, all 11 tones | Rename any variable; `null` turns that variable or group off; `tones: [10, 20, 90]` or `false` limits the ramp variables.                                                                                                                   |
+| `analysis`   | `DEFAULT_ANALYSIS`                                                                                                                               | `sampleSize` 128, `clusters` 7, `centerWeight` 0.5, `letterbox` true, `minHueDistance` 40, `minContrast` 4.5, `ground` `"dark"`.                                                                                                            |
+| `cacheLimit` | `100`                                                                                                                                            | Client palettes kept (oldest evicted).                                                                                                                                                                                                      |
+| `linger`     | `3000` (`DEFAULT_LINGER_MS`)                                                                                                                     | How long (ms) a page-wide theme's variables stay after it goes, so the next page takes over from them. `0` removes them at once.                                                                                                            |
 
 ### 5.3 `AmbientPalette`
 
 ```ts
 {
   source?: string | null;                   // the image URL it was made from
+  ground: "dark" | "light";                 // the ground it was made for
   neutral: boolean;                         // the image has (almost) no colour
-  shadow: string;                           // deep tone of the shadows (oklch())
+  presence: number;                         // 0 grey … 1 fully coloured
+  page: string;                             // the page tone for the ground (oklch())
   roles: Record<"dominant" | "vibrant" | "muted" | "accent", {
     color: string; on: string;              // oklch() strings
     l: number; c: number; h: number;
@@ -217,29 +222,44 @@ Before every request, redirects included, the host is resolved (`resolve`, defau
 - **Clustering.** Pixels are binned by 15-bit RGB (OKLab averaged per bin). Coloured bins (chroma ≥ 0.022) and grey bins are clustered **apart** with weighted, deterministically seeded k-means in OKLab (ΔL counts 0.45×, so hue beats lightness; vivid bins pull up to ~2.5× harder), 5 + 2 clusters by default. Splitting them keeps the greys of a dark poster from using up every cluster and swallowing its one coloured detail. The vivid pull only shapes the clusters: a cluster's colour is the plain mean of its pixels, so a face is not tinted toward the red title it shares a cluster with.
 - **Roles.** A hue's share is that of its family (clusters within 20°). `dominant` = max share × chroma; `vibrant` = max chroma² × share^0.3; `accent` = the best hue at least `minHueDistance` (40°) from `dominant`, or `vibrant` marked `fromImage: false` when the image has one hue; `muted` = the largest low-chroma (≤ 0.09) colour, or a quiet tone of the dominant hue. Skin, hair, wood and tungsten-lit walls (hues near 54°, chroma 0.03–0.12, see `skinLikeness`) count up to 65% less in every pick, roles and regions alike: film frames are full of them, and they are what a frame shows, rarely its mood. Hue trust fades below L 0.28 and above L 0.9.
 - **Tones.** A role keeps about its source's **chroma**, not its share of the gamut: × 1.15 (`dominant`, regions), × 1.3 (`accent`), × 1.35 (`vibrant`), × 1 (`muted`); a faint tint is raised to at most 0.05 so it still reads as a colour; skin is held back up to 30%; and reds and oranges get a 30% lower ceiling, since they read louder than blues at the same chroma. Carrying the gamut share instead (as before `AMBIENT_ANALYSIS_VERSION` 2) turned pale faces and beige rooms into loud orange: at mid lightness orange has twice the room teal has. The ramp keeps the role's share of the gamut at each L (`toneOf`, × 0.96 of `maxChroma`), so a dark tone of blue stays blue; nothing is ever out of gamut.
-- **`shadow`.** The hue of the shadows (clusters at L ≤ 0.5, scored by share × relative chroma) or, without coloured shadows, of `dominant`; at L `shadowLightness` ± 0.02 and up to 0.1 chroma.
+- **`page`.** Dark ground: the hue of the shadows (clusters at L ≤ 0.5, scored by share × relative chroma) or, without coloured shadows, of `dominant`; at L 0.16 ± 0.02 and up to 0.1 chroma. Light ground: paper in the hue of `dominant` (the image's mood, not its shadows), 35% of its chroma held to 0.01–0.05 (warm and skin hues 30% less, scaled down for faint images), at L 0.955 ± 0.008, stepping down (no lower than 0.9) until the hue has the gamut room for that chroma: near white, sRGB holds five times more yellow than violet, so a yellow film's paper stays near white and a violet one's turns lilac.
+- **`presence`.** The coloured share of the image (weighted by colourfulness and hue trust), 1 from 25% up; 0 for a neutral image.
 - **`on`.** A near-white or near-black carrying a hint of the role's hue, pushed toward pure white / black until it reaches `minContrast`.
-- **Regions.** Each region (thirds of the content box; `center` is the middle half) takes its most chromatic-and-present cluster, coloured by that cluster's own pixels **in the region** (not its frame-wide mean), at L 0.42–0.72 and × 1.15 its chroma; `strength` is how coloured the region is.
-- **Neutral images.** If coloured pixels make up under 3% (weighted), the palette is grey: `neutral: true`, `dominant`, `vibrant`, `muted`, `shadow` and regions have chroma 0. A vivid detail (≥ 0.6% of the image, chroma ≥ 0.06) still becomes `accent`, e.g. the red coat in _Schindler's List_.
+- **Regions.** Each region (thirds of the content box; `center` is the middle half) takes its most chromatic-and-present cluster, coloured by that cluster's own pixels **in the region** (not its frame-wide mean), at the ground's region lightness (§6.1) and × 1.15 its chroma; `strength` is how coloured the region is.
+- **Neutral images.** If coloured pixels make up under 3% (weighted), the palette is grey: `neutral: true`, `dominant`, `vibrant`, `muted`, `page` and regions have chroma 0, `presence` is 0. A vivid detail (≥ 0.6% of the image, chroma ≥ 0.06) still becomes `accent`, e.g. the red coat in _Schindler's List_.
 - **Cost.** About 3–8 ms per image for the analysis (Node, warm); in Chromium, ~13 ms for a cached image end to end on the main thread, ~20 ms through the worker (off the main thread). ~2.7 KB of JSON per palette.
 - **Cache.** Client: `cacheLimit` palettes (oldest evicted), keyed by URL (+ analysis overrides); concurrent requests share one promise. Server: 500 per process. A cache that outlives a deploy (`unstable_cache`, a database) should carry `AMBIENT_ANALYSIS_VERSION` in its key, so palettes are computed again when the analysis changes.
 - **Stability.** `colors`, `cssVars`, `options` and `initialPalette` are stabilized with `shallowEqual`, so fresh object literals each render do **not** re-apply the theme (keep `cssVars.tones` a constant array). The same pixels always give the same palette.
 - **Failure.** Client: `extractPaletteFromImage` resolves `null` and the hooks keep `initialPalette` (or nothing); it never throws. Server: `null`, except a missing decoder.
 
+### 6.1 Grounds
+
+Everything else in the analysis (clusters, role picks, skin, ramps, `on`) is the same on both grounds; the ground moves only these:
+
+|                         | `dark` (default)                                                           | `light`                                                                                          |
+| :---------------------- | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| `page`                  | L 0.16, the shadows' hue                                                   | L 0.9–0.955, the mood's (dominant) hue; lower where the hue needs room for its colour            |
+| Role lightness bands    | dominant 0.42–0.74 · vibrant 0.62–0.84 · muted 0.38–0.66 · accent 0.55–0.8 | dominant 0.42–0.6 · vibrant 0.5–0.64 · muted 0.42–0.58 · accent 0.46–0.62                        |
+| Role contrast on `page` | ≥ 3:1 (lifted if needed)                                                   | ≥ 4.5:1 (deepened if needed): a role reads as text on paper                                      |
+| Regions                 | L 0.42–0.72 (glows on dark); colourless 0.3–0.7                            | L 0.8–0.9 (pale light on paper); colourless at the page's lightness, so they leave no grey stain |
+
+A palette carries its `ground`; an `initialPalette` made for another ground than the one configured is not shown (its page and roles would sit at the wrong lightness), so set the same `analysis.ground` on the server and the client.
+
 ## 7. Recipes and gotchas
 
-| I want to…                             | Do this                                                                                               |
-| :------------------------------------- | :---------------------------------------------------------------------------------------------------- |
-| Tint a page from its hero image        | `usePage({ ambient: heroUrl })`                                                                       |
-| No flash, no client work               | Compute on the server (§3.1); add `configureAmbient({ strategy: "none" })` if every image has one     |
-| Glows that follow the picture          | `radial-gradient(at 20% 0%, color-mix(in oklab, var(--ambient-top) 30%, transparent), transparent)` … |
-| Text on a role colour                  | `background: var(--ambient-accent); color: var(--ambient-on-accent)`                                  |
-| A surface a few steps above the shadow | `var(--ambient-dominant-20)` / `-30`                                                                  |
-| Tint only one section                  | `useAmbientTheme({ image, scope: "#section" })`                                                       |
-| Rename the variables                   | `configureAmbient({ cssVars: { shadow: "--bg", role: "--tint-{role}" } })`                            |
-| Fewer variables on `<html>`            | `configureAmbient({ cssVars: { tones: [20, 80], region: null } })`                                    |
-| Own proxy / no proxy                   | `configureAmbient({ proxy: "/img?u={url}" })` / `{ proxy: null }`                                     |
-| Disable tint on one page               | `usePage({ ambient: false })`                                                                         |
+| I want to…                          | Do this                                                                                               |
+| :---------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| Tint a page from its hero image     | `usePage({ ambient: heroUrl })`                                                                       |
+| No flash, no client work            | Compute on the server (§3.1); add `configureAmbient({ strategy: "none" })` if every image has one     |
+| Glows that follow the picture       | `radial-gradient(at 20% 0%, color-mix(in oklab, var(--ambient-top) 30%, transparent), transparent)` … |
+| Text on a role colour               | `background: var(--ambient-accent); color: var(--ambient-on-accent)`                                  |
+| A surface a few steps off the page  | dark: `var(--ambient-dominant-20)` / `-30`; light: `-90` / `-95`                                      |
+| Fade a wash with the image's colour | `opacity: var(--ambient-presence, 0)`                                                                 |
+| Tint only one section               | `useAmbientTheme({ image, scope: "#section" })`                                                       |
+| Rename the variables                | `configureAmbient({ cssVars: { page: "--bg", role: "--tint-{role}" } })`                              |
+| Fewer variables on `<html>`         | `configureAmbient({ cssVars: { tones: [20, 80], region: null } })`                                    |
+| Own proxy / no proxy                | `configureAmbient({ proxy: "/img?u={url}" })` / `{ proxy: null }`                                     |
+| Disable tint on one page            | `usePage({ ambient: false })`                                                                         |
 
 - The theme is global by default: two components calling `useAmbientTheme` without `scope` fight over the `--ambient-*` variables; the last effect wins.
 - Cross-origin images that block CORS **and** the proxy cannot be sampled on the client; `initialPalette` (or the app's CSS fallbacks) stays. The server has no CORS limits.
@@ -248,28 +268,29 @@ Before every request, redirects included, the host is resolved (`resolve`, defau
 
 ## 8. File map
 
-| File                  | Responsibility                                                                                |
-| :-------------------- | :-------------------------------------------------------------------------------------------- |
-| `index.ts`            | Public barrel export (client entry).                                                          |
-| `constants.ts`        | `ambientTheme` spec.                                                                          |
-| `types.ts`            | Palette, swatch, region, settings, config, descriptor, page contracts.                        |
-| `settings.ts`         | Defaults, `configureAmbient` (on `globalThis`), proxy resolution. Pure.                       |
-| `oklab.ts`            | OKLab/OKLCH math, gamut room (`maxChroma`), tones, WCAG contrast, `on` colours. Pure.         |
-| `quantize.ts`         | Deterministic weighted k-means. Pure.                                                         |
-| `analyze.ts`          | `analyzeAmbientPixels`: roles, ramps, regions, `shadow`, from the parts below. Pure.          |
-| `analyze-bounds.ts`   | Letterbox cut (`findContentBounds`). Pure.                                                    |
-| `analyze-clusters.ts` | Binning and clustering of pixels. Pure.                                                       |
-| `analyze-measures.ts` | Thresholds, cluster reliability and colorfulness measures. Pure.                              |
-| `analyze-swatches.ts` | Role chroma and tone fitting, swatch building. Pure.                                          |
-| `pipeline.ts`         | fetch → `createImageBitmap` → canvas pixels → analysis; runs in a window or a worker.         |
-| `extractor.ts`        | Client cache, strategy, worker dispatch with main-thread fallback.                            |
-| `worker/index.ts`     | `serveAmbientWorker` (the `ambient/worker` entry).                                            |
-| `server/index.ts`     | `extractAmbientPalette`, sharp decoder, URL guard, server cache (the `ambient/server` entry). |
-| `server/address.ts`   | Host normalization and private-address checks for the URL guard.                              |
-| `dom.ts`              | Target resolution, CSS variable maps, scoped style restoration.                               |
-| `hooks.ts`            | `useAmbientColor`, `useAmbientTheme`, `useAmbient`, `useStableObject`.                        |
-| `context.tsx`         | `AmbientContext` and `AmbientProvider` store.                                                 |
-| `module.tsx`          | `ambientModule`, `resolvePageAmbientTheme`, `defineAmbient`, kernel type augmentation.        |
+| File                  | Responsibility                                                                                 |
+| :-------------------- | :--------------------------------------------------------------------------------------------- |
+| `index.ts`            | Public barrel export (client entry).                                                           |
+| `constants.ts`        | `ambientTheme` spec.                                                                           |
+| `types.ts`            | Palette, swatch, region, settings, config, descriptor, page contracts.                         |
+| `settings.ts`         | Defaults, `configureAmbient` (on `globalThis`), proxy resolution. Pure.                        |
+| `oklab.ts`            | OKLab/OKLCH math, gamut room (`maxChroma`), tones, WCAG contrast, `on` colours. Pure.          |
+| `quantize.ts`         | Deterministic weighted k-means. Pure.                                                          |
+| `analyze.ts`          | `analyzeAmbientPixels`: roles, ramps, regions, `page`, `presence`, from the parts below. Pure. |
+| `analyze-ground.ts`   | Per-ground lightness bands, the page tone and role readability. Pure.                          |
+| `analyze-bounds.ts`   | Letterbox cut (`findContentBounds`). Pure.                                                     |
+| `analyze-clusters.ts` | Binning and clustering of pixels. Pure.                                                        |
+| `analyze-measures.ts` | Thresholds, cluster reliability and colorfulness measures. Pure.                               |
+| `analyze-swatches.ts` | Role chroma and tone fitting, swatch building. Pure.                                           |
+| `pipeline.ts`         | fetch → `createImageBitmap` → canvas pixels → analysis; runs in a window or a worker.          |
+| `extractor.ts`        | Client cache, strategy, worker dispatch with main-thread fallback.                             |
+| `worker/index.ts`     | `serveAmbientWorker` (the `ambient/worker` entry).                                             |
+| `server/index.ts`     | `extractAmbientPalette`, sharp decoder, URL guard, server cache (the `ambient/server` entry).  |
+| `server/address.ts`   | Host normalization and private-address checks for the URL guard.                               |
+| `dom.ts`              | Target resolution, CSS variable maps, scoped style restoration.                                |
+| `hooks.ts`            | `useAmbientColor`, `useAmbientTheme`, `useAmbient`, `useStableObject`.                         |
+| `context.tsx`         | `AmbientContext` and `AmbientProvider` store.                                                  |
+| `module.tsx`          | `ambientModule`, `resolvePageAmbientTheme`, `defineAmbient`, kernel type augmentation.         |
 
 ## 9. Dependencies
 

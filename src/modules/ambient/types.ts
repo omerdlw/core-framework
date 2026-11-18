@@ -53,12 +53,24 @@ export interface AmbientRegionColor {
 }
 
 /**
- * The colours extracted from an image: roles, regions and a shadow.
+ * The ground a palette is made for: a dark page or a light one. It sets the
+ * page tone, the lightness of the region glows and how dark or light the
+ * roles sit so they read on the page.
+ */
+export type AmbientGround = "dark" | "light";
+
+/**
+ * The colours extracted from an image for one ground: the page tone, roles,
+ * regions and how colourful the image is.
  */
 export interface AmbientPalette {
   source?: string | null;
+  ground: AmbientGround;
   neutral: boolean;
-  shadow: string;
+  /** How colourful the image is, from 0 (grey) to 1. */
+  presence: number;
+  /** The page tone for the ground, in the image's hue. */
+  page: string;
   roles: Record<AmbientRole, AmbientSwatch>;
   regions: Record<AmbientRegion, AmbientRegionColor>;
 }
@@ -82,7 +94,7 @@ export interface AmbientAnalysisOptions {
   letterbox: boolean;
   minHueDistance: number;
   minContrast: number;
-  shadowLightness: number;
+  ground: AmbientGround;
 }
 
 /**
@@ -109,7 +121,8 @@ export type AmbientProxy = string | ((src: string) => string | null) | null;
  * CSS variable name templates for palette values; null skips a group.
  */
 export interface AmbientCssVarNames {
-  shadow: string | null;
+  page: string | null;
+  presence: string | null;
   role: string | null;
   on: string | null;
   tone: string | null;

@@ -60,11 +60,15 @@ import {
   splitStyle,
 } from "../../src/modules/dock/lib/styles.ts";
 import {
+  getContainerHeight,
+  getDockCardWidth,
   getItemMeasurementKey,
   getRouteMeasurementKey,
+  publishDockHeightCssVar,
 } from "../../src/modules/dock/model/layout.ts";
 import {
   getDockLocationKey,
+  getDockRoutePathname,
   isPathPrefix,
   isSafeInternalHref,
   isSamePath,
@@ -965,12 +969,94 @@ describe("surface transitions", () => {
 });
 
 describe("dock utils", () => {
+  describe("dock card height", () => {
+    test("is the content plus 10 px padding on both sides by default", () => {
+      assert.equal(getContainerHeight({ cardContentHeight: 98 }), 118);
+      assert.equal(getContainerHeight({ cardContentHeight: 0 }), 68);
+      assert.equal(
+        getContainerHeight({ cardContentHeight: 0, isHud: true }),
+        52,
+      );
+    });
+
+    test("follows the theme's card padding", () => {
+      assert.equal(
+        getContainerHeight({ cardContentHeight: 98, padding: 12 }),
+        122,
+      );
+      assert.equal(
+        getContainerHeight({ cardContentHeight: 0, padding: 12 }),
+        72,
+      );
+      assert.equal(
+        getContainerHeight({ cardContentHeight: 0, isHud: true, padding: 12 }),
+        56,
+      );
+      assert.equal(
+        getContainerHeight({ cardContentHeight: 98, padding: Number.NaN }),
+        118,
+      );
+    });
+  });
+
+  describe("dock card width", () => {
+    const withViewport = (width: number, run: () => void) => {
+      const previous = Object.getOwnPropertyDescriptor(window, "innerWidth");
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        value: width,
+      });
+      try {
+        run();
+      } finally {
+        if (previous) Object.defineProperty(window, "innerWidth", previous);
+        else delete (window as { innerWidth?: number }).innerWidth;
+      }
+    };
+
+    test("defaults to 460 and takes the theme's width when given", () => {
+      withViewport(1440, () => {
+        assert.equal(getDockCardWidth(), 460);
+        assert.equal(getDockCardWidth({ fallback: 520 }), 520);
+        assert.equal(getDockCardWidth({ fallback: 0 }), 460);
+        assert.equal(getDockCardWidth({ fallback: Number.NaN }), 460);
+      });
+    });
+
+    test("a card's own width beats the theme's", () => {
+      withViewport(1440, () => {
+        assert.equal(getDockCardWidth({ fallback: 520, width: 380 }), 380);
+      });
+    });
+
+    test("the theme's width is clamped to the viewport", () => {
+      withViewport(400, () => {
+        assert.equal(getDockCardWidth({ fallback: 520 }), 384);
+      });
+    });
+  });
+
   describe("dock path helpers", () => {
     test("isSamePath ignores trailing slashes and rejects empties", () => {
       assert.equal(isSamePath("/account/", "/account"), true);
       assert.equal(isSamePath("/a", "/b"), false);
       assert.equal(isSamePath("", ""), false);
       assert.equal(isSamePath(null, "/a"), false);
+    });
+
+    test("getDockRoutePathname resolves an in-flight href by its pathname", () => {
+      // A query-only step (?month=) keeps the card it is on: matching the
+      // whole href instead fell back to the ancestor card mid-flight.
+      assert.equal(
+        getDockRoutePathname(
+          "/account/a/diary",
+          "/account/a/diary?month=2026-10",
+        ),
+        "/account/a/diary",
+      );
+      assert.equal(getDockRoutePathname("/a", "/b/c/#top"), "/b/c");
+      assert.equal(getDockRoutePathname("/a", null), "/a");
+      assert.equal(getDockRoutePathname("/a", ""), "/a");
     });
 
     test("isPathPrefix matches on segment boundaries only", () => {
@@ -2544,4 +2630,32 @@ test("dock public surface is unchanged", async () => {
     "useSurfaceReturn",
     "useSurfaceStep",
   ]);
+});
+
+describe("publishDockHeightCssVar", () => {
+  afterEach(() => {
+    document.documentElement.style.removeProperty("--dock-h");
+    document.documentElement.style.removeProperty("--shelf");
+  });
+
+  test("writes --dock-h on <html> by default", () => {
+    publishDockHeightCssVar(95.6);
+    assert.equal(
+      document.documentElement.style.getPropertyValue("--dock-h"),
+      "96px",
+    );
+  });
+
+  test("writes the theme's variable instead, or none for false", () => {
+    publishDockHeightCssVar(80, "--shelf");
+    assert.equal(
+      document.documentElement.style.getPropertyValue("--shelf"),
+      "80px",
+    );
+    publishDockHeightCssVar(80, false);
+    assert.equal(
+      document.documentElement.style.getPropertyValue("--dock-h"),
+      "",
+    );
+  });
 });

@@ -3,21 +3,22 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 
 import {
-  DOCK_CARD_LAYOUT,
   DOCK_HEIGHT_BUFFER,
   DOCK_SURFACE_PHASE,
   HEIGHT_EPSILON,
 } from "../constants";
-import { getContainerHeight, publishDockHeightCssVar } from "../model/layout";
+import {
+  getContainerHeight,
+  getDockCardMinHeight,
+  publishDockHeightCssVar,
+} from "../model/layout";
 import type { UseDockHeightControllerOptions } from "../types";
 
 interface HeightControllerInputs {
+  heightVar?: string | false;
   isHud: boolean;
+  padding?: number | null;
   setDockHeight: UseDockHeightControllerOptions["setDockHeight"];
-}
-
-function getBaseHeight(isHud: boolean): number {
-  return isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight;
 }
 
 /**
@@ -32,7 +33,10 @@ function createHeightController(
   let inputs = initial;
   let contentHeight = 0;
   let frame: number | null = null;
-  let lastAppliedContainerHeight = getBaseHeight(initial.isHud);
+  let lastAppliedContainerHeight = getDockCardMinHeight(
+    initial.isHud,
+    initial.padding,
+  );
   let lastAppliedSpacerHeight = lastAppliedContainerHeight + DOCK_HEIGHT_BUFFER;
 
   const applyHeight = () => {
@@ -44,6 +48,7 @@ function createHeightController(
     const height = getContainerHeight({
       cardContentHeight: contentHeight,
       isHud: inputs.isHud,
+      padding: inputs.padding,
     });
 
     const totalSpacerHeight = height + DOCK_HEIGHT_BUFFER;
@@ -56,7 +61,7 @@ function createHeightController(
       Math.abs(totalSpacerHeight - lastAppliedSpacerHeight) > HEIGHT_EPSILON
     ) {
       lastAppliedSpacerHeight = totalSpacerHeight;
-      publishDockHeightCssVar(totalSpacerHeight);
+      publishDockHeightCssVar(totalSpacerHeight, inputs.heightVar);
       inputs.setDockHeight(totalSpacerHeight);
     }
   };
@@ -81,27 +86,32 @@ function createHeightController(
 
 export function useDockHeightController({
   contentKey = null,
+  heightVar,
   isHud = false,
+  padding,
   setDockHeight,
   surfacePhase = DOCK_SURFACE_PHASE.IDLE,
 }: UseDockHeightControllerOptions) {
   const [containerHeight, setContainerHeight] = useState<number>(() =>
-    getBaseHeight(isHud),
+    getDockCardMinHeight(isHud, padding),
   );
   const [{ applyHeight, dispose, handleContentHeightChange, setInputs }] =
     useState(() =>
-      createHeightController({ isHud, setDockHeight }, setContainerHeight),
+      createHeightController(
+        { heightVar, isHud, padding, setDockHeight },
+        setContainerHeight,
+      ),
     );
 
   useLayoutEffect(() => {
-    setInputs({ isHud, setDockHeight });
-  }, [isHud, setDockHeight, setInputs]);
+    setInputs({ heightVar, isHud, padding, setDockHeight });
+  }, [heightVar, isHud, padding, setDockHeight, setInputs]);
 
   useEffect(() => dispose, [dispose]);
 
   useLayoutEffect(() => applyHeight(), [applyHeight, contentKey]);
   useLayoutEffect(() => applyHeight(), [applyHeight, surfacePhase]);
-  useLayoutEffect(() => applyHeight(), [applyHeight, isHud]);
+  useLayoutEffect(() => applyHeight(), [applyHeight, isHud, padding]);
 
   return { containerHeight, handleContentHeightChange };
 }

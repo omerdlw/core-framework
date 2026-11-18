@@ -1100,7 +1100,11 @@ describe("page runtime", () => {
   });
 
   describe("ambient: theme users are isolated from the shared palette", () => {
-    const PAGE_PALETTE = { shadow: "#000000", source: "/page.jpg" };
+    const PAGE_PALETTE = {
+      ground: "dark",
+      page: "#000000",
+      source: "/page.jpg",
+    };
 
     test("usePage does not re-render when the shared palette changes", async () => {
       const ambient = createProbe(() => useAmbient());
@@ -1112,7 +1116,8 @@ describe("page runtime", () => {
 
       await act(async () =>
         ambient.latest!.setPalette({
-          shadow: "#010101",
+          ground: "dark",
+          page: "#010101",
           source: "/abcdef.jpg",
         }),
       );

@@ -366,12 +366,18 @@ export interface StandardItemContentProps {
 export interface ContainerHeightOptions {
   cardContentHeight?: number | string | null;
   isHud?: boolean;
+  /** The card's vertical padding, one side, in px (`deck.padding`). Defaults to 10. */
+  padding?: number | null;
 }
 
 /** Options for the dock height controller hook. */
 export interface UseDockHeightControllerOptions {
   contentKey?: unknown;
   isHud?: boolean;
+  /** The card's vertical padding, one side, in px (`deck.padding`). Defaults to 10. */
+  padding?: number | null;
+  /** The CSS variable published on `<html>` (`deck.heightVar`), or `false`. */
+  heightVar?: string | false;
   setDockHeight: (height: number) => void;
   surfacePhase?: string;
 }

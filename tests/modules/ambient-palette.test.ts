@@ -138,15 +138,19 @@ describe("ambient: k-means", () => {
 });
 
 describe("ambient: analyzeAmbientPixels", () => {
-  test("gives a shadow tone, roles with ramps and regions", () => {
+  test("gives a page tone, presence, roles with ramps and regions", () => {
     const palette = analyzeAmbientPixels(solid(ORANGE));
-    assert.match(palette.shadow, /^oklch\(/);
+    assert.match(palette.page, /^oklch\(/);
     assert.deepEqual(Object.keys(palette).sort(), [
+      "ground",
       "neutral",
+      "page",
+      "presence",
       "regions",
       "roles",
-      "shadow",
     ]);
+    assert.equal(palette.ground, "dark");
+    assert.ok(palette.presence > 0.5, `presence ${palette.presence}`);
     assert.equal(palette.neutral, false);
     for (const role of ["dominant", "vibrant", "muted", "accent"] as const) {
       const swatch = palette.roles[role];
@@ -181,12 +185,82 @@ describe("ambient: analyzeAmbientPixels", () => {
     );
   });
 
-  test("shadow is a deep tone of the image, not near-black grey", () => {
+  test("a dark page is a deep tone of the image, not near-black grey", () => {
     const palette = analyzeAmbientPixels(solid(NAVY));
-    const shadow = parse(palette.shadow);
+    const shadow = parse(palette.page);
     assert.ok(shadow.l >= 0.13 && shadow.l <= 0.19, `L ${shadow.l}`);
     assert.ok(shadow.c >= 0.05, `C ${shadow.c}`);
     assert.ok(hueDistance(shadow.h, 264) < 15, `h ${shadow.h}`);
+  });
+
+  describe("on a light ground", () => {
+    const light = (pixels: AmbientPixels) =>
+      analyzeAmbientPixels(pixels, { ground: "light" });
+
+    test("the page is paper in the image's mood, not its shadows", () => {
+      // Teal shadows under an orange frame: a dark page takes the shadows,
+      // a light one the image's dominant hue.
+      const pixels = image(60, 40, (x, y) =>
+        y > 30 ? [10, 45, 50] : x < 50 ? ORANGE : TEAL,
+      );
+      const palette = light(pixels);
+      const page = parse(palette.page);
+      assert.equal(palette.ground, "light");
+      assert.ok(page.l >= 0.9 && page.l <= 0.965, `L ${page.l}`);
+      assert.ok(page.c > 0.008 && page.c <= 0.05, `C ${page.c}`);
+      assert.ok(
+        hueDistance(page.h, palette.roles.dominant.h) < 15,
+        `h ${page.h}`,
+      );
+      assert.ok(inGamut(page));
+    });
+
+    test("a violet image turns the paper lilac; a yellow one stays near white", () => {
+      const violet = parse(light(solid([110, 70, 200])).page);
+      const yellow = parse(light(solid([235, 210, 60])).page);
+      assert.ok(violet.c >= 0.035, `violet C ${violet.c}`);
+      assert.ok(violet.l >= 0.9 && violet.l < 0.95, `violet L ${violet.l}`);
+      assert.ok(yellow.l >= 0.945, `yellow L ${yellow.l}`);
+      assert.ok(inGamut(violet) && inGamut(yellow));
+    });
+
+    test("a grey image gives a grey page", () => {
+      const palette = light(solid([128, 128, 128]));
+      assert.equal(parse(palette.page).c, 0);
+      assert.equal(palette.presence, 0);
+    });
+
+    test("every role reads on the page", () => {
+      for (const rgb of [ORANGE, TEAL, NAVY, RED, [240, 220, 60] as RGB]) {
+        const palette = light(image(60, 40, (x) => (x < 34 ? rgb : TEAL)));
+        const page = parse(palette.page);
+        for (const [role, swatch] of Object.entries(palette.roles)) {
+          assert.ok(
+            contrastRatio(swatch, page) >= 4.5,
+            `${rgb.join(",")} ${role} ${contrastRatio(swatch, page).toFixed(2)}`,
+          );
+        }
+      }
+    });
+
+    test("region glows are pale, the same hue as on a dark ground", () => {
+      const pixels = image(60, 40, (x) => (x < 30 ? TEAL : ORANGE));
+      const palette = light(pixels);
+      const dark = analyzeAmbientPixels(pixels);
+      for (const region of ["left", "right"] as const) {
+        const glow = palette.regions[region];
+        assert.ok(glow.l >= 0.8 && glow.l <= 0.9, `${region} L ${glow.l}`);
+        assert.ok(glow.c > 0.03, `${region} C ${glow.c}`);
+        assert.ok(hueDistance(glow.h, dark.regions[region].h) < 1);
+        assert.ok(inGamut(glow), region);
+      }
+    });
+
+    test("ramps are the same on both grounds' scales", () => {
+      const palette = light(solid(TEAL));
+      for (const tone of AMBIENT_TONES)
+        assert.ok(inGamut(parse(palette.roles.accent.ramp[tone])), `${tone}`);
+    });
   });
 
   test("a two-tone image keeps both hues: dominant and a distinct accent", () => {
@@ -210,7 +284,8 @@ describe("ambient: analyzeAmbientPixels", () => {
       ),
     );
     assert.equal(palette.neutral, true);
-    assert.equal(parse(palette.shadow).c, 0);
+    assert.equal(parse(palette.page).c, 0);
+    assert.equal(palette.presence, 0);
     for (const swatch of Object.values(palette.roles))
       assert.equal(swatch.c, 0);
     for (const region of Object.values(palette.regions))
@@ -334,15 +409,16 @@ describe("ambient: settings", () => {
   test("configureAmbient merges and restores", () => {
     const before = getAmbientSettings();
     const restore = configureAmbient({
-      analysis: { clusters: 6 },
-      cssVars: { shadow: "--bg" },
+      analysis: { clusters: 6, ground: "light" },
+      cssVars: { page: "--bg" },
       proxy: null,
       strategy: "main",
     });
     const during = getAmbientSettings();
     assert.equal(during.analysis.clusters, 6);
     assert.equal(during.analysis.sampleSize, before.analysis.sampleSize);
-    assert.equal(during.cssVars.shadow, "--bg");
+    assert.equal(during.analysis.ground, "light");
+    assert.equal(during.cssVars.page, "--bg");
     assert.equal(during.cssVars.role, "--ambient-{role}");
     assert.equal(during.proxy, null);
     assert.equal(during.strategy, "main");
@@ -374,10 +450,11 @@ describe("ambient: CSS variables", () => {
     image(60, 40, (x) => (x < 34 ? TEAL : ORANGE)),
   );
 
-  test("a palette writes shadow, roles, on colours, ramps and regions, all under --ambient-", () => {
+  test("a palette writes page, presence, roles, on colours, ramps and regions, all under --ambient-", () => {
     const vars = resolveAmbientVarMap({ image: "/a.jpg", palette });
     assert.ok(Object.keys(vars).every((name) => name.startsWith("--ambient-")));
-    assert.equal(vars["--ambient-shadow"], palette.shadow);
+    assert.equal(vars["--ambient-page"], palette.page);
+    assert.equal(vars["--ambient-presence"], String(palette.presence));
     assert.equal(vars["--ambient-dominant"], palette.roles.dominant.color);
     assert.equal(vars["--ambient-on-accent"], palette.roles.accent.on);
     assert.equal(vars["--ambient-vibrant-20"], palette.roles.vibrant.ramp[20]);
@@ -387,7 +464,7 @@ describe("ambient: CSS variables", () => {
   test("names, tones and groups are configurable", () => {
     const vars = resolveAmbientVarMap({
       cssVars: {
-        shadow: "--page",
+        page: "--page",
         region: null,
         tone: "--{role}{tone}",
         tones: [10, 90],
@@ -395,8 +472,8 @@ describe("ambient: CSS variables", () => {
       image: "/a.jpg",
       palette,
     });
-    assert.equal(vars["--page"], palette.shadow);
-    assert.equal(vars["--ambient-shadow"], undefined);
+    assert.equal(vars["--page"], palette.page);
+    assert.equal(vars["--ambient-page"], undefined);
     assert.equal(vars["--dominant10"], palette.roles.dominant.ramp[10]);
     assert.equal(vars["--dominant20"], undefined);
     assert.equal(vars["--ambient-left"], undefined);
@@ -605,7 +682,7 @@ describe("ambient: client extraction", () => {
         strategy: "main",
       });
       assert.equal(created, 1);
-      assert.equal(inWorker?.shadow, onMain?.shadow);
+      assert.equal(inWorker?.page, onMain?.page);
       assert.deepEqual(inWorker?.roles, onMain?.roles);
     } finally {
       restoreWorker();

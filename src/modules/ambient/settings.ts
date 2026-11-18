@@ -45,8 +45,8 @@ export const DEFAULT_ANALYSIS: Readonly<AmbientAnalysisOptions> = Object.freeze(
     letterbox: true,
     minContrast: 4.5,
     minHueDistance: 40,
+    ground: "dark",
     sampleSize: 128,
-    shadowLightness: 0.16,
   },
 );
 
@@ -58,7 +58,8 @@ export const DEFAULT_CSS_VAR_NAMES: Readonly<AmbientCssVarNames> =
     on: "--ambient-on-{role}",
     region: "--ambient-{region}",
     role: "--ambient-{role}",
-    shadow: "--ambient-shadow",
+    page: "--ambient-page",
+    presence: "--ambient-presence",
     tone: "--ambient-{role}-{tone}",
   });
 

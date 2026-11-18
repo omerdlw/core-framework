@@ -84,10 +84,13 @@ export function useDockModel() {
   const isSubCardVisible = scene.isCompanionVisible;
   const isExtensionsVisible = useIsSurfaceExtensionsVisible(activeItem);
   const contentKey = resolveDockContentKey(activeItem, isHudActive, hud);
+  const dockMotion = useDockMotion();
   const { containerHeight, handleContentHeightChange } =
     useDockHeightController({
       contentKey,
+      heightVar: dockMotion.deck.heightVar,
       isHud: isHudActive,
+      padding: dockMotion.deck.padding,
       setDockHeight,
       surfacePhase: activeItem?.surfacePhase,
     });
@@ -162,7 +165,6 @@ export function useDockModel() {
     setIsStackHovered,
     statusStyle,
   });
-  const dockMotion = useDockMotion();
   const dockStackTransition = getDockStackTransition(dockMotion, {
     expanded,
     resizeDistance: surfaceResizeDistance,

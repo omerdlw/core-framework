@@ -18,15 +18,39 @@ export function getViewportMaxHeight(): number {
   return window.innerHeight - VIEWPORT_MARGIN;
 }
 
+const DEFAULT_CARD_PADDING = DOCK_CARD_LAYOUT.chromeHeight / 2;
+
+/**
+ * The card's vertical padding (one side) in px: the theme's `deck.padding`,
+ * else 10. The card's height is its content plus this above and below.
+ */
+export function getDockCardPadding(padding?: number | null): number {
+  return typeof padding === "number" && Number.isFinite(padding) && padding >= 0
+    ? padding
+    : DEFAULT_CARD_PADDING;
+}
+
+/**
+ * The shortest a card may be: the base and HUD heights are their content
+ * (48 px, 32 px) plus the card's padding on both sides.
+ */
+export function getDockCardMinHeight(
+  isHud = false,
+  padding?: number | null,
+): number {
+  const chrome = getDockCardPadding(padding) * 2;
+  const base = isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight;
+  return base - DOCK_CARD_LAYOUT.chromeHeight + chrome;
+}
+
 /** Height of the dock container for a given card content height, clamped to the viewport. */
 export function getContainerHeight({
   cardContentHeight,
   isHud = false,
+  padding,
 }: ContainerHeightOptions): number {
-  const chromeHeight = DOCK_CARD_LAYOUT.chromeHeight;
-  const minCardHeight = isHud
-    ? DOCK_CARD_LAYOUT.hudHeight
-    : DOCK_CARD_LAYOUT.baseHeight;
+  const chromeHeight = getDockCardPadding(padding) * 2;
+  const minCardHeight = getDockCardMinHeight(isHud, padding);
   const numericContentHeight = Number(cardContentHeight);
 
   const nextCardHeight = Math.max(
@@ -40,11 +64,19 @@ export function getContainerHeight({
 /** Card width for the current viewport, honouring an explicit width when given. */
 export function getDockCardWidth({
   width,
+  fallback,
 }: {
   width?: number | string | null;
+  /** Width when `width` is unset: the theme's `deck.width`, else 460. */
+  fallback?: number | null;
 } = {}): number {
+  const fallbackWidth =
+    typeof fallback === "number" && Number.isFinite(fallback) && fallback > 0
+      ? fallback
+      : DEFAULT_CARD_WIDTH;
+
   if (typeof window === "undefined") {
-    return width ? Number(width) || DEFAULT_CARD_WIDTH : DEFAULT_CARD_WIDTH;
+    return width ? Number(width) || fallbackWidth : fallbackWidth;
   }
 
   const windowWidth = window.innerWidth;
@@ -57,7 +89,7 @@ export function getDockCardWidth({
   }
 
   return Math.min(
-    DEFAULT_CARD_WIDTH,
+    fallbackWidth,
     Math.max(windowWidth - MOBILE_VIEWPORT_GUTTER, 0),
   );
 }
@@ -92,13 +124,16 @@ export function hasMeaningfulHeightChange(
   );
 }
 
-/** Publishes the dock height as the `--dock-h` CSS variable. */
-export function publishDockHeightCssVar(heightPx: number) {
-  if (typeof document === "undefined") return;
-  document.documentElement.style.setProperty(
-    DOCK_HEIGHT_CSS_VAR,
-    `${Math.round(heightPx)}px`,
-  );
+/**
+ * Publishes the dock height as a CSS variable on `<html>`: `--dock-h`, or
+ * the theme's `deck.heightVar`; `false` publishes nothing.
+ */
+export function publishDockHeightCssVar(
+  heightPx: number,
+  name: string | false = DOCK_HEIGHT_CSS_VAR,
+) {
+  if (typeof document === "undefined" || name === false) return;
+  document.documentElement.style.setProperty(name, `${Math.round(heightPx)}px`);
 }
 
 function isSurfaceShapePhase(phase: string | undefined): boolean {

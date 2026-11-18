@@ -92,14 +92,14 @@ describe("ambient page", () => {
 
       const cleanup = applyScopedCssVariables(div, {
         "--ambient-vibrant": "red",
-        "--ambient-shadow": "black",
+        "--ambient-page": "black",
       });
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "red");
-      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "black");
+      assert.equal(div.style.getPropertyValue("--ambient-page"), "black");
 
       cleanup();
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "blue");
-      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
+      assert.equal(div.style.getPropertyValue("--ambient-page"), "");
     });
 
     test("applyScopedCssVariables stacks: the latest wins, removing one reveals the one beneath", async () => {
@@ -110,7 +110,7 @@ describe("ambient page", () => {
 
       const first = applyScopedCssVariables(div, {
         "--ambient-vibrant": "red",
-        "--ambient-shadow": "black",
+        "--ambient-page": "black",
       });
       const second = applyScopedCssVariables(div, {
         "--ambient-vibrant": "green",
@@ -119,7 +119,7 @@ describe("ambient page", () => {
 
       first();
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
-      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
+      assert.equal(div.style.getPropertyValue("--ambient-page"), "");
       second();
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "blue");
     });
@@ -133,7 +133,7 @@ describe("ambient page", () => {
 
       const leaving = applyScopedCssVariables(
         div,
-        { "--ambient-vibrant": "red", "--ambient-shadow": "black" },
+        { "--ambient-vibrant": "red", "--ambient-page": "black" },
         { linger: 1_000 },
       );
       leaving();
@@ -146,7 +146,7 @@ describe("ambient page", () => {
         { linger: 1_000 },
       );
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
-      assert.equal(div.style.getPropertyValue("--ambient-shadow"), "");
+      assert.equal(div.style.getPropertyValue("--ambient-page"), "");
       t.mock.timers.tick(1_000);
       assert.equal(div.style.getPropertyValue("--ambient-vibrant"), "green");
 

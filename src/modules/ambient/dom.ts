@@ -183,7 +183,8 @@ export function paletteVarMap(
 ): Record<string, string> {
   const varMap: Record<string, string> = {};
   if (!palette) return varMap;
-  if (names.shadow) varMap[names.shadow] = palette.shadow;
+  if (names.page) varMap[names.page] = palette.page;
+  if (names.presence) varMap[names.presence] = String(palette.presence);
   for (const role of AMBIENT_ROLES) {
     const swatch = palette.roles[role];
     if (names.role) varMap[fill(names.role, { role })] = swatch.color;

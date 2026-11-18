@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { getDockCardWidth, getTargetItemWidth } from "../model/layout";
+import { useDockMotion } from "../motion";
 import type { DockItem } from "../types";
 
 const emptySubscribe = () => () => {};
@@ -16,7 +17,11 @@ export function useDockViewport(activeItem: DockItem | null = null) {
     () => null,
   );
 
-  const stackWidth = getDockCardWidth({ width: targetWidth });
+  const { deck } = useDockMotion();
+  const stackWidth = getDockCardWidth({
+    fallback: deck.width,
+    width: targetWidth,
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
