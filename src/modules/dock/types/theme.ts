@@ -105,6 +105,7 @@ export type DockThemeSlot =
   | "commandTooltip"
   | "command"
   | "commandBadge"
+  | "compact"
   | "statusCard"
   | "statusIcon"
   | "statusTitle"
@@ -158,6 +159,7 @@ export type DockThemeSlot =
   | "loadingText"
   | "loadingTitle"
   | "loadingDescription"
+  | "loadingAction"
   | "action"
   | "actionActive"
   | "actionFill"
@@ -248,6 +250,8 @@ export interface DockMotion {
     hud: Variants;
     scrubberTooltip: Variants;
     breadcrumbs: Variants;
+    /** The card's content giving way to the compact row, and back. */
+    compact: Variants;
     backdrop: Variants;
     surfaceBody: Variants;
     controlsContainer: Variants;
@@ -264,7 +268,15 @@ export interface DockMotion {
   phases: Record<DockSurfacePhaseKey, DockSurfacePhaseMotion>;
   deck: {
     elevation: { rest: string; elevated: string };
-    peek: (position: number) => { lift: number; scale: number };
+    /**
+     * Offset for a back card while the front card is hovered. `opacity`, when
+     * given, replaces the card's resting opacity so hidden cards can show.
+     */
+    peek: (position: number) => {
+      lift: number;
+      scale: number;
+      opacity?: number;
+    };
     exit: (card: DockCardExitInput) => TargetAndTransition;
     tapScale: number;
     stacking: DockDeckStacking;
@@ -311,5 +323,7 @@ export interface DockMotion {
     peekStagger: number;
     peekStaggerCap: number;
     staggerExponent?: number;
+    /** Seconds a page change must stay pending before the front card shows its skeleton. */
+    pendingSkeleton?: number;
   };
 }

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/foundation/recipes/cn";
 
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { usePendingSkeleton } from "../hooks/use-pending-skeleton";
 import { useStandardItemContentModel } from "../hooks/use-standard-item-content-model";
 import { stopPropagationOnly } from "../lib/card";
 import { DOCK_COMPOSITOR_STYLE, useDockMotion } from "../motion";
@@ -73,6 +74,9 @@ export function StandardItemContent({
     pathname,
   });
   const theme = useDockTheme();
+  const isSkeleton = usePendingSkeleton(
+    Boolean(isTop && item.isRoutePending && !item.isStatus && !isHudActive),
+  );
   const footerAnimate = isActionDismissed ? "dismissed" : "visible";
   const footerTransition = isActionDismissed
     ? dockMotion.transitions.actionDismiss
@@ -88,9 +92,26 @@ export function StandardItemContent({
       className={theme.slots.cardFooter}
       style={theme.styles.cardFooter}
     >
-      <div className={theme.slots.cardAction} onClick={stopPropagationOnly}>
-        {footerNode}
-      </div>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div
+          key={isSkeleton ? "dock-card-action:skeleton" : "dock-card-action"}
+          variants={dockMotion.variants.textCrossfade}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={dockMotion.transitions.fade}
+          className={theme.slots.cardAction}
+          onClick={stopPropagationOnly}
+        >
+          {isSkeleton ? (
+            <div
+              className={cn(theme.slots.loadingAction, dockMotion.skeleton)}
+            />
+          ) : (
+            footerNode
+          )}
+        </motion.div>
+      </AnimatePresence>
     </motion.div>
   ) : null;
   return (
@@ -136,6 +157,7 @@ export function StandardItemContent({
             description={description}
             isTop={isTop}
             contextCommands={contextCommands}
+            isSkeleton={isSkeleton}
           />
           <AnimatePresence mode="popLayout" initial={false}>
             {footer}

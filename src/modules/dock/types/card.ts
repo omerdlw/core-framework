@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode, SyntheticEvent } from "react";
 import type { RegistryMetadata } from "@/core/kernel";
 import type { createScheduler, ExternalStore } from "@/foundation/utils";
 
+import type { DockCompactProps } from "./compact";
 import type {
   DockHudDescriptor,
   DockOperation,
@@ -150,6 +151,8 @@ export interface DockState {
   dockReturnHandoffs: DockReturnHandoff[];
   expanded: boolean;
   hud: DockHudDescriptor | null;
+  /** The app asks for the compact layout; shown while nothing needs the card. */
+  compact: boolean;
   hudEntries: DockHudDescriptor[];
   isHudActive: boolean;
   isSurfaceOpen: boolean;
@@ -184,6 +187,8 @@ export interface DockUiActions {
   registerContextAction: (action: Partial<DockActionDescriptor>) => void;
   setContextActions: (actions: DockActionDescriptor[]) => void;
   setExpanded: (expanded: boolean) => void;
+  /** Asks for the compact layout (true) or the full card (false). */
+  setCompact: (compact: boolean) => void;
   setHud: (descriptor: DockHudDescriptor) => void;
   setDockHeight: (height: number) => void;
   setSearchQuery: (query: string) => void;
@@ -317,6 +322,8 @@ export interface DockCardHeaderProps {
   description?: string | null;
   isTop?: boolean;
   contextCommands?: DockActionDescriptor[];
+  /** The page is changing: draw the identity as a skeleton, keep the commands. */
+  isSkeleton?: boolean;
 }
 
 /** Props of a single dock card. */
@@ -342,6 +349,8 @@ export interface DockCardItemProps {
   hud?: DockHudDescriptor | null;
   clearHud?: ((id?: string) => void) | null;
   contextCommands?: DockActionDescriptor[];
+  /** Set on the front card while the dock shows the compact layout. */
+  compact?: DockCompactProps | null;
 }
 
 /** Props of the standard (non-surface) card content. */

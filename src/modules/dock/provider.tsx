@@ -55,6 +55,7 @@ export function DockProvider({
   } = useDockHudRegistry();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [compact, setCompact] = useState(false);
   const [dockHeight, setRawDockHeight] = useState(0);
   const [
     {
@@ -131,6 +132,7 @@ export function DockProvider({
       hud: activeHud,
       hudEntries: Object.values(hudEntries),
       isHudActive,
+      compact,
       dockContinuity: continuityEntries,
       dockReturnHandoffs: returnHandoffs,
       operations,
@@ -154,6 +156,7 @@ export function DockProvider({
       hud: activeHud,
       hudEntries: Object.values(hudEntries),
       isHudActive,
+      compact,
       dockContinuity: continuityEntries,
       dockReturnHandoffs: returnHandoffs,
       operations,
@@ -180,6 +183,7 @@ export function DockProvider({
     expanded,
     hudEntries,
     isHudActive,
+    compact,
     locationKey,
     operations,
     rawSurfaceState,
@@ -209,6 +213,7 @@ export function DockProvider({
       // eslint-disable-next-line @typescript-eslint/unbound-method -- createDockGuardRegistry builds register as a closure over its own state and never uses this
       registerGuard: guards.register,
       setDockHeight,
+      setCompact,
       setSearchQuery,
     }),
     [

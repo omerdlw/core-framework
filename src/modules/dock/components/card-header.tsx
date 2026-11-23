@@ -14,6 +14,8 @@ import { DockDescription } from "./description";
 import { DockIcon } from "./icon";
 import { DockTitle } from "./title";
 
+const SKELETON_HEADER_KEY = "dock-header:skeleton";
+
 const HEADER_IDENTITY_STYLE = {
   flex: "1 1 0%",
   minWidth: 0,
@@ -47,6 +49,7 @@ export function DockCardHeader({
   description,
   isTop = false,
   contextCommands = [],
+  isSkeleton = false,
 }: DockCardHeaderProps) {
   const dockMotion = useDockMotion();
   const { item, hasBanner, headerKey } = useDockCardHeaderModel({
@@ -75,59 +78,90 @@ export function DockCardHeader({
       <div className={theme.slots.headerRow}>
         <div style={HEADER_IDENTITY_STYLE}>
           <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={headerKey}
-              variants={dockMotion.variants.headerSwap}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={dockMotion.transitions.headerSwap}
-              className={theme.slots.headerRow}
-              style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
-            >
-              <div className={theme.slots.headerIcon}>
-                {item.icon ? (
-                  <DockIcon
-                    animated={false}
-                    icon={headerIcon}
-                    iconOverlay={effectiveIconOverlay}
-                    style={itemStyle.icon}
-                    onClick={iconClickHandler}
-                    ariaLabel={iconAriaLabel}
+            {isSkeleton ? (
+              <motion.div
+                key={SKELETON_HEADER_KEY}
+                variants={dockMotion.variants.headerSwap}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={dockMotion.transitions.headerSwap}
+                className={theme.slots.loading}
+                style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+              >
+                <div
+                  className={cn(theme.slots.loadingIcon, dockMotion.skeleton)}
+                />
+                <div className={theme.slots.loadingText}>
+                  <div
+                    className={cn(
+                      theme.slots.loadingTitle,
+                      dockMotion.skeleton,
+                    )}
                   />
-                ) : (
-                  <div className={theme.slots.headerIconEmpty} />
-                )}
-                {!showVideoIcon && !effectiveIconOverlay && (
-                  <Badge badge={badge} />
-                )}
-              </div>
-
-              <div className={theme.slots.headerBody}>
-                <div className={theme.slots.headerText}>
-                  <div className={theme.slots.headerTitleRow}>
-                    <DockTitle
+                  <div
+                    className={cn(
+                      theme.slots.loadingDescription,
+                      dockMotion.skeleton,
+                    )}
+                  />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={headerKey}
+                variants={dockMotion.variants.headerSwap}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={dockMotion.transitions.headerSwap}
+                className={theme.slots.headerRow}
+                style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+              >
+                <div className={theme.slots.headerIcon}>
+                  {item.icon ? (
+                    <DockIcon
                       animated={false}
-                      text={item.title || item.name}
-                      style={{
-                        ...itemStyle.title,
-                        className: cn(
-                          itemStyle.title?.className,
-                          theme.slots.headerTitle,
-                        ),
-                      }}
+                      icon={headerIcon}
+                      iconOverlay={effectiveIconOverlay}
+                      style={itemStyle.icon}
+                      onClick={iconClickHandler}
+                      ariaLabel={iconAriaLabel}
                     />
-                  </div>
-                  {Boolean(description) && (
-                    <DockDescription
-                      animated={false}
-                      text={description}
-                      style={itemStyle.description}
-                    />
+                  ) : (
+                    <div className={theme.slots.headerIconEmpty} />
+                  )}
+                  {!showVideoIcon && !effectiveIconOverlay && (
+                    <Badge badge={badge} />
                   )}
                 </div>
-              </div>
-            </motion.div>
+
+                <div className={theme.slots.headerBody}>
+                  <div className={theme.slots.headerText}>
+                    <div className={theme.slots.headerTitleRow}>
+                      <DockTitle
+                        animated={false}
+                        text={item.title || item.name}
+                        style={{
+                          ...itemStyle.title,
+                          className: cn(
+                            itemStyle.title?.className,
+                            theme.slots.headerTitle,
+                          ),
+                        }}
+                      />
+                    </div>
+                    {Boolean(description) && (
+                      <DockDescription
+                        animated={false}
+                        text={description}
+                        style={itemStyle.description}
+                      />
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
         {isTop && !item.isStatus ? (

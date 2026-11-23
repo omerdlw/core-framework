@@ -176,3 +176,23 @@ export function resolveCardStackFlags(
   );
   return { isCollapsedBackgroundCard, isCollapsedGhostCard, isExtensionShelf };
 }
+
+/** True when a back card is offset by `deck.peek` because the front card is hovered. */
+export function isDockCardPeeking({
+  expanded = false,
+  isStackHovered = false,
+  isSurfaceActive = false,
+  position = 0,
+}: {
+  expanded?: boolean;
+  isStackHovered?: boolean;
+  isSurfaceActive?: boolean;
+  position?: number;
+}) {
+  return Boolean(
+    !expanded &&
+    isStackHovered &&
+    (Number(position) || 0) > 0 &&
+    !isSurfaceActive,
+  );
+}

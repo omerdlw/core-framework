@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockCardItemModel } from "../hooks/use-card-item-model";
 import { useDockTheme } from "../hooks/use-dock-theme";
+import { isDockCardPeeking } from "../lib/card-item";
 import {
   DOCK_COMPOSITOR_STYLE,
   DOCK_UNSEEN_EXIT,
@@ -18,6 +19,7 @@ import {
 } from "../motion";
 import type { DockCardItemProps } from "../types";
 import { DockCardBanner } from "./card-banner";
+import { DockCompact } from "./compact";
 import { LoadingItemContent, StandardItemContent } from "./item-content";
 import { DockMediaScrubber } from "./media-scrubber";
 import { renderActionSlot } from "./surface/action";
@@ -46,6 +48,7 @@ export function DockCardItem({
   hud = null,
   clearHud = null,
   contextCommands = [],
+  compact = null,
 }: DockCardItemProps) {
   const dockMotion = useDockMotion();
   const {
@@ -121,6 +124,12 @@ export function DockCardItem({
     position,
     delay: cardDelay,
   });
+  const isPeeking = isDockCardPeeking({
+    expanded,
+    isStackHovered,
+    isSurfaceActive,
+    position,
+  });
   const cardExit = getDockItemExitValues(dockMotion, {
     motionValues,
     position,
@@ -145,6 +154,22 @@ export function DockCardItem({
     />
   );
   const renderContentLayer = () => {
+    if (compact) {
+      return (
+        <motion.div
+          key="compact-content-layer"
+          variants={dockMotion.variants.compact}
+          initial="hidden"
+          animate="visible"
+          exit={layerExit}
+          transition={dockMotion.transitions.headerSwap}
+          style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+          className={theme.slots.cardStandard}
+        >
+          <DockCompact {...compact} />
+        </motion.div>
+      );
+    }
     if (showsSurfaceLayer) {
       return (
         <motion.div
@@ -202,6 +227,7 @@ export function DockCardItem({
         tabIndex={-1}
         {...cardData}
         data-ghost
+        data-peek={isPeeking || undefined}
         className={cardClassName}
         style={cardStyle}
         initial={false}
@@ -215,8 +241,10 @@ export function DockCardItem({
     <motion.div
       ref={ref}
       {...cardData}
+      data-peek={isPeeking || undefined}
       className={cardClassName}
       data-controls-anchor={isTop ? "true" : undefined}
+      data-compact={compact ? "true" : undefined}
       style={cardStyle}
       initial={false}
       animate={cardAnimate}

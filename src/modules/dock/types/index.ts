@@ -1,5 +1,6 @@
 export type * from "./card";
 export type * from "./hud";
+export type * from "./compact";
 export type * from "./media";
 export type * from "./routing";
 export type * from "./surface";

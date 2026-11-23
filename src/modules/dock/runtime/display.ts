@@ -20,6 +20,7 @@ import {
   useDockMediaActions,
   useDockSelector,
 } from "../context";
+import { isInlineActionPathMatch } from "../model/paths";
 import { resolveDockAttention } from "../model/state";
 import { createDockTopology } from "../routing/model/topology";
 import { useDockStatus } from "../status/hooks";
@@ -83,13 +84,20 @@ export function usePendingRouteHold(
     match,
     pathname: normalizedPathname,
   });
-  const isHeld = selected !== match.item;
+  // The item still in front from the previous page (held, or its entry not
+  // yet cleaned up) stays pending until the next page's item replaces it.
+  const isStale = Boolean(
+    (hold.isOpen || isNavigating) &&
+    selected?.path &&
+    !isInlineActionPathMatch(selected.path, normalizedPathname),
+  );
+  const isPending = selected !== match.item || isStale;
   // stable identity: effect dep (activeItem feeds publishRoute in
   // useDockViewConnection)
   return useMemo(
     () =>
-      isHeld && selected ? { ...selected, isRoutePending: true } : selected,
-    [isHeld, selected],
+      isPending && selected ? { ...selected, isRoutePending: true } : selected,
+    [isPending, selected],
   );
 }
 

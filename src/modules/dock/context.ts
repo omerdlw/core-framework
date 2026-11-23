@@ -72,6 +72,7 @@ export const EMPTY_DOCK_STATE: DockState = Object.freeze({
   activeOperation: null,
   activeSurfaceEntry: null,
   activeSurfaceId: null,
+  compact: false,
   contextActions: [],
   dockContinuity: [],
   dockHeight: 0,

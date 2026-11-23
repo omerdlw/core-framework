@@ -1,7 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import { DOCK_SURFACE_PHASE } from "../../constants";
-import type { DockCardItemProps, DockItem } from "../../types";
+import type {
+  DockCardItemProps,
+  DockCompactProps,
+  DockItem,
+} from "../../types";
 import { getIsItemActive, getItemKey } from "../pipeline";
 
 /** Focus index meaning that no card is focused. */
@@ -13,6 +17,7 @@ const OUTSIDE_DISMISS_UNHANDLED = "unhandled";
 
 const ACTIVE_KEY_FALLBACK = "active";
 const DEFAULT_ROUTE_KEY = "default";
+const FRONT_CARD_KEY = "dock-card:front";
 
 /** Key that changes whenever the content the dock shows is replaced. */
 export function resolveDockContentKey(
@@ -57,6 +62,8 @@ interface DockCardPropsInput {
     DockCardItemProps["onContentHeightChange"]
   >;
   hud: DockCardItemProps["hud"];
+  /** Set while the dock shows the compact layout: only the front card stays. */
+  compact: DockCompactProps | null;
   isExtensionsVisible: boolean;
   isHudActive: boolean;
   isStackHovered: boolean;
@@ -81,6 +88,7 @@ interface CardHandlersInput extends Pick<
   | "setIsStackHovered"
 > {
   canTopCardPreview: boolean;
+  compact: DockCompactProps | null;
   isTop: boolean;
   item: DockItem;
   position: number;
@@ -89,6 +97,7 @@ interface CardHandlersInput extends Pick<
 function createCardHandlers({
   canTopCardPreview,
   clearHoverState,
+  compact,
   expanded,
   isStatusActive,
   isTop,
@@ -115,6 +124,10 @@ function createCardHandlers({
   };
 
   const handleClick = () => {
+    if (compact) {
+      compact.setCompact(false);
+      return;
+    }
     if (item.isOverlay || isStatusActive || item.isStatus) return;
     if (!expanded) {
       clearHoverState();
@@ -144,6 +157,7 @@ export function createDockCardProps({
   expanded,
   handleContentHeightChange,
   hud,
+  compact,
   isExtensionsVisible,
   isHudActive,
   isStackHovered,
@@ -155,10 +169,13 @@ export function createDockCardProps({
   setIsStackHovered,
   statusStyle,
 }: DockCardPropsInput) {
-  const positionedDockItems = dockItems
+  // The front card is one persistent element: navigation, status and HUD
+  // changes swap its content in place instead of mounting a new card.
+  const shownItems = compact ? dockItems.slice(0, 1) : dockItems;
+  const positionedDockItems = shownItems
     .map((item, index) => ({
       item,
-      key: getItemKey(item, index),
+      key: index === 0 ? FRONT_CARD_KEY : getItemKey(item, index),
       position: index,
     }))
     .sort((left, right) => left.key.localeCompare(right.key));
@@ -166,13 +183,14 @@ export function createDockCardProps({
   return positionedDockItems.map(({ item, key, position }) => {
     const isTop = position === 0;
     const isActive = getIsItemActive(item, activeItem);
-    const canTopCardPreview = !isStatusActive;
+    const canTopCardPreview = !isStatusActive && !compact;
 
     const { handleClick, handleMouseEnter, handleMouseLeave } =
       createCardHandlers({
         canTopCardPreview,
         clearHoverState,
         expanded,
+        compact: isTop ? compact : null,
         isStatusActive,
         isTop,
         item,
@@ -205,6 +223,7 @@ export function createDockCardProps({
       hud,
       clearHud,
       contextCommands: contextActions,
+      compact: isTop ? compact : null,
       onMouseEnter: handleMouseEnter,
       onMouseLeave: handleMouseLeave,
       onClick: handleClick,

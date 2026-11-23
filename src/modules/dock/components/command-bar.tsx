@@ -74,8 +74,11 @@ export function DockCommandBar({
   hasBanner?: boolean;
 }) {
   const dockMotion = useDockMotion();
-  const { actions, currentPath, isExiting, handleExitComplete } =
-    useDockCommandBarModel({ activeItem, contextCommands, hasBanner });
+  const { actions, isExiting, handleExitComplete } = useDockCommandBarModel({
+    activeItem,
+    contextCommands,
+    hasBanner,
+  });
   const theme = useDockTheme();
   if (actions.length === 0 && !isExiting) return null;
   return (
@@ -84,7 +87,7 @@ export function DockCommandBar({
         {actions.map((action, index) => (
           <motion.div
             // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- action.icon is a ReactNode; an element icon without action.key stringifies to "[object Object]" and yields a non-unique key (pre-existing)
-            key={`${currentPath}-${action.key || action.icon || `dock-action-${index}`}`}
+            key={`${action.key || action.icon || `dock-action-${index}`}`}
             variants={dockMotion.variants.commandBar}
             style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
             custom={index}

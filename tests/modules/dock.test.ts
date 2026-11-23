@@ -1469,6 +1469,14 @@ describe("dock utils: item identity and keys", () => {
       }),
     );
   });
+
+  test("the header key ignores the page behind an identical header", () => {
+    const show = { name: "show", path: "/tv/1", title: "Show" } as any;
+    assert.equal(
+      resolveDockHeaderKey({ link: show }),
+      resolveDockHeaderKey({ link: { ...show, path: "/tv/1/season/1" } }),
+    );
+  });
 });
 
 describe("dock utils: item lists", () => {
@@ -2657,5 +2665,37 @@ describe("publishDockHeightCssVar", () => {
       document.documentElement.style.getPropertyValue("--dock-h"),
       "",
     );
+  });
+});
+
+describe("dock cards: front card", () => {
+  test("the front card keeps one key across pages", async () => {
+    const { createDockCardProps } =
+      await import("../../src/modules/dock/runtime/model/cards.ts");
+    const noop = () => {};
+    const keysFor = (front: string) =>
+      createDockCardProps({
+        activeItem: null,
+        clearHoverState: noop,
+        clearHud: null,
+        contextActions: [],
+        dockItems: [{ path: front }, { path: "/" }] as any,
+        expanded: false,
+        handleContentHeightChange: noop,
+        hud: null,
+        isExtensionsVisible: false,
+        isHudActive: false,
+        isStackHovered: false,
+        isStatusActive: false,
+        navigate: noop,
+        setExpanded: noop,
+        setFocusedIndex: noop,
+        setIsHovered: noop,
+        setIsStackHovered: noop,
+        statusStyle: null,
+      })
+        .filter((card) => card.isTop)
+        .map((card) => card.key);
+    assert.deepEqual(keysFor("/movie/1"), keysFor("/person/2"));
   });
 });

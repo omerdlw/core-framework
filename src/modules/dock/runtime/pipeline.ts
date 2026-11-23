@@ -42,12 +42,13 @@ export function resolveDockHeaderKey({
   const statusPart = link?.isStatus
     ? `status:${link.statusType || link.type || "status"}`
     : "standard";
-  const identityPart = link?.path || link?.name || link?.id || "item";
+  // Only what the header shows: a new page with the same header (a season
+  // under its show) keeps the header still instead of crossfading it.
   const titlePart = link?.title || link?.name || "";
   const descPart = description || "";
   const iconPart = showVideoIcon ? "video" : link?.icon || "no-icon";
   // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- link.icon may be a React element, which stringifies to "[object Object]" in this signature key (pre-existing)
-  return `${statusPart}:${identityPart}:${iconPart}:${titlePart}:${descPart}`;
+  return `${statusPart}:${iconPart}:${titlePart}:${descPart}`;
 }
 
 export function findDockItemIndex(

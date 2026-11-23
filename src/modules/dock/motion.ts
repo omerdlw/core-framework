@@ -4,6 +4,7 @@ import { cssTransition, gpuTransform } from "@/foundation/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/react/theme";
 
 import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
+import { isDockCardPeeking } from "./lib/card-item";
 import type {
   DockMotion,
   DockSurfacePhaseKey,
@@ -301,16 +302,20 @@ export function getDockItemAnimateValues(
   } = {},
 ) {
   if (!motionValues) return {};
-  const safePosition = Math.max(0, Number(position) || 0);
-  const isHoveredOffset =
-    !expanded && isStackHovered && safePosition > 0 && !isSurfaceActive;
-  const peek = isHoveredOffset ? motion.deck.peek(safePosition) : null;
+  const peek = isDockCardPeeking({
+    expanded,
+    isStackHovered,
+    isSurfaceActive,
+    position,
+  })
+    ? motion.deck.peek(Math.max(0, Number(position) || 0))
+    : null;
   const y = peek ? motionValues.y - peek.lift : motionValues.y;
   const scale = peek ? motionValues.scale * peek.scale : motionValues.scale;
 
   return {
     transform: toGpuTransform(y, scale),
-    opacity: motionValues.opacity,
+    opacity: peek?.opacity ?? motionValues.opacity,
   };
 }
 

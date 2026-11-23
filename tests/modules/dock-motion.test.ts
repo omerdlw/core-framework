@@ -16,6 +16,7 @@ import {
 import { getDockItemCardProps } from "../../src/modules/dock/lib/styles.ts";
 import {
   getDockCardDelay,
+  getDockItemAnimateValues,
   getDockItemExitValues,
   getDockLayoutTransition,
   getDockPhaseMotion,
@@ -364,5 +365,52 @@ describe("dock rendering from the theme", () => {
     assert.equal(await dismiss(dockMotion, 10, 450), 1);
     assert.equal(await dismiss(tuned, 25, 0), 1);
     assert.equal(await dismiss(tuned, 15, 90), 0);
+  });
+});
+
+describe("dock peek", () => {
+  const values = { y: -10, scale: 0.9, opacity: 0 };
+  const peeking: DockMotion = {
+    ...dockMotion,
+    deck: {
+      ...dockMotion.deck,
+      peek: (position) => ({ lift: position * 4, scale: 1, opacity: 0.5 }),
+    },
+  };
+
+  test("a hovered stack lifts back cards and applies the peek opacity", () => {
+    const animate = getDockItemAnimateValues(peeking, {
+      motionValues: values,
+      isStackHovered: true,
+      position: 1,
+    });
+    assert.equal(animate.opacity, 0.5);
+    assert.match(String(animate.transform), /-14px/);
+  });
+
+  test("without hover, expanded or an open surface the resting values stay", () => {
+    for (const flags of [
+      { isStackHovered: false },
+      { isStackHovered: true, expanded: true },
+      { isStackHovered: true, isSurfaceActive: true },
+    ]) {
+      const animate = getDockItemAnimateValues(peeking, {
+        motionValues: values,
+        position: 1,
+        ...flags,
+      });
+      assert.equal(animate.opacity, 0);
+    }
+  });
+
+  test("a peek without opacity keeps the resting opacity", () => {
+    const animate = getDockItemAnimateValues(
+      {
+        ...dockMotion,
+        deck: { ...dockMotion.deck, peek: () => ({ lift: 2, scale: 1 }) },
+      },
+      { motionValues: values, isStackHovered: true, position: 2 },
+    );
+    assert.equal(animate.opacity, 0);
   });
 });

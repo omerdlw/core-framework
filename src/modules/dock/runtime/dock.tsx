@@ -13,11 +13,13 @@ import {
 import { useDockHeightController } from "../hooks/use-dock-height-controller";
 import { useDockKeyboard } from "../hooks/use-dock-keyboard";
 import { useDockViewport } from "../hooks/use-dock-viewport";
+import { getDockCardPadding } from "../model/layout";
 import { resolveDockScene } from "../model/state";
 import { getDockStackTransition, useDockMotion } from "../motion";
 import { useDockBreadcrumbs } from "../routing/breadcrumbs";
 import { useDockViewConnection } from "../routing/navigation";
 import { useIsSurfaceExtensionsVisible } from "../surface/hooks/use-surface-extensions";
+import type { DockCompactProps } from "../types";
 import { useDock } from "./hooks/use-dock";
 import {
   createDockCardProps,
@@ -27,6 +29,8 @@ import {
   resolveDockContentKey,
 } from "./model/cards";
 import { isNotFoundItem } from "./model/items";
+
+const DEFAULT_COMPACT_KEY = "default";
 
 export function useDockModel() {
   const {
@@ -44,15 +48,19 @@ export function useDockModel() {
   } = useDock();
   useDockViewConnection({ activeItem, locationKey, navigate, pathname });
   const isFullscreenStateActive = useIsFullscreenStateActive();
-  const { contextActions, hud } = useDockSelector(
+  const { compact, contextActions, hud } = useDockSelector(
     (state) => ({
+      compact: state.compact,
       contextActions: state.contextActions,
       hud: state.hud,
     }),
     (left, right) =>
-      left.contextActions === right.contextActions && left.hud === right.hud,
+      left.compact === right.compact &&
+      left.contextActions === right.contextActions &&
+      left.hud === right.hud,
   );
-  const { clearHud } = useDockActions();
+  const { clearHud, setCompact } = useDockActions();
+  const [compactWidth, setCompactWidth] = useState(0);
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(NO_FOCUSED_INDEX);
   const isNotificationVisible = useDockNotificationVisible();
@@ -83,8 +91,33 @@ export function useDockModel() {
   const isBreadcrumbsCardVisible = scene.companion === "breadcrumbs";
   const isSubCardVisible = scene.isCompanionVisible;
   const isExtensionsVisible = useIsSurfaceExtensionsVisible(activeItem);
-  const contentKey = resolveDockContentKey(activeItem, isHudActive, hud);
+  const isNotFound = Boolean(isNotFoundItem(activeItem));
+  const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
+  const isCompactActive =
+    compact &&
+    !expanded &&
+    !activeItem?.isSurface &&
+    !isOverlayActive &&
+    !isHudActive &&
+    !isStatusActive &&
+    !isNotificationVisible;
   const dockMotion = useDockMotion();
+  const compactPadding = getDockCardPadding(dockMotion.deck.padding);
+  const shownStackWidth =
+    isCompactActive && compactWidth > 0
+      ? Math.min(compactWidth + compactPadding * 2, stackWidth)
+      : stackWidth;
+  const compactProps: DockCompactProps | null = isCompactActive
+    ? {
+        activeItem,
+        contextCommands: contextActions,
+        onWidthChange: setCompactWidth,
+        setCompact,
+      }
+    : null;
+  const contentKey = isCompactActive
+    ? `compact:${activeItem?.path || DEFAULT_COMPACT_KEY}`
+    : resolveDockContentKey(activeItem, isHudActive, hud);
   const { containerHeight, handleContentHeightChange } =
     useDockHeightController({
       contentKey,
@@ -95,16 +128,19 @@ export function useDockModel() {
       surfacePhase: activeItem?.surfacePhase,
     });
   const [stackSize, setStackSize] = useState({
-    width: stackWidth,
+    width: shownStackWidth,
     height: containerHeight,
     resizeDistance: 0,
   });
-  if (stackSize.width !== stackWidth || stackSize.height !== containerHeight) {
+  if (
+    stackSize.width !== shownStackWidth ||
+    stackSize.height !== containerHeight
+  ) {
     setStackSize({
-      width: stackWidth,
+      width: shownStackWidth,
       height: containerHeight,
       resizeDistance: Math.hypot(
-        stackWidth - stackSize.width,
+        shownStackWidth - stackSize.width,
         containerHeight - stackSize.height,
       ),
     });
@@ -141,8 +177,6 @@ export function useDockModel() {
       setIsHovered(false);
     });
   }, [isFullscreenStateActive, setExpanded, setIsHovered]);
-  const isNotFound = Boolean(isNotFoundItem(activeItem));
-  const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
   const statusStyle =
     isStatusActive && !isNotFound ? activeItem?.style || null : null;
   const dockCardProps = createDockCardProps({
@@ -154,6 +188,7 @@ export function useDockModel() {
     expanded,
     handleContentHeightChange,
     hud,
+    compact: compactProps,
     isExtensionsVisible,
     isHudActive,
     isStackHovered,
@@ -179,7 +214,7 @@ export function useDockModel() {
     isFullscreenStateActive,
     dockRef,
     portalTarget,
-    stackWidth,
+    stackWidth: shownStackWidth,
     isOverlayActive,
     isBackdropVisible,
     isBreadcrumbsCardVisible,
