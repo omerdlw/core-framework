@@ -153,20 +153,32 @@ export function DockCardItem({
       isActionDismissed={isActionDismissed}
     />
   );
+  const isActionBeingDismissed =
+    item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION;
   const renderContentLayer = () => {
     if (compact) {
+      // A surface opening from the compact row: the row leaves where it is,
+      // at the compact width, before the card grows into the surface (its
+      // exit should finish within the dismiss-action phase).
       return (
         <motion.div
           key="compact-content-layer"
           variants={dockMotion.variants.compact}
           initial="hidden"
-          animate="visible"
+          animate={isActionBeingDismissed ? "exit" : "visible"}
           exit={layerExit}
           transition={dockMotion.transitions.headerSwap}
           style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
           className={theme.slots.cardStandard}
         >
-          <DockCompact {...compact} />
+          <DockCompact
+            {...compact}
+            action={
+              renderedActionSlot?.kind === "action" ? (
+                <Suspense>{renderedActionNode}</Suspense>
+              ) : null
+            }
+          />
         </motion.div>
       );
     }
@@ -202,8 +214,6 @@ export function DockCardItem({
         </motion.div>
       );
     }
-    const isActionBeingDismissed =
-      item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION;
     return (
       <motion.div
         key="standard-content-layer"

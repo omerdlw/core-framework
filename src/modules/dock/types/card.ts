@@ -374,6 +374,7 @@ export interface StandardItemContentProps {
 /** Inputs for computing the dock container height. */
 export interface ContainerHeightOptions {
   cardContentHeight?: number | string | null;
+  fitContent?: boolean;
   isHud?: boolean;
   /** The card's vertical padding, one side, in px (`deck.padding`). Defaults to 10. */
   padding?: number | null;
@@ -382,6 +383,7 @@ export interface ContainerHeightOptions {
 /** Options for the dock height controller hook. */
 export interface UseDockHeightControllerOptions {
   contentKey?: unknown;
+  fitContent?: boolean;
   isHud?: boolean;
   /** The card's vertical padding, one side, in px (`deck.padding`). Defaults to 10. */
   padding?: number | null;

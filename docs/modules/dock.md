@@ -665,6 +665,16 @@ These are what the layout **measures**, so they stay in the module. Where the ca
 
 Reserve space with `useDockHeight().padding` or `padding-bottom: var(--dock-h)`. The variable sits on `<html>`, so each write restyles the whole page; set `deck.heightVar: false` in the dock theme to skip it and size only the elements that need the height from `dockHeight`. Height changes are measured with a `ResizeObserver` and ignored below 0.5 px; during surface close phases the height is locked to the base height.
 
+### 16.1 Compact layout
+
+`setCompact(true)` asks the dock to shrink its front card to one row (the app decides when, e.g. on scroll down); `state.compact` reports the request. The row shows only while nothing needs the full card (no HUD, notification or expanded stack) and draws the card's action small beside the commands, split by a divider. The card fits the row's measured width plus `deck.padding`, with no base min-height. Back cards step away.
+
+- A command or the card's action works in place; only a tap elsewhere on the card asks for the full card again.
+- A surface opened from the compact row grows out of it and, on close, folds straight back into it (the row stays through the page-facing phases).
+- A status other than 404 stays in the row as its icon plus one line (description, else title).
+
+Slots: `compact`, `compactFrame`, `compactView`, `compactActions`, `compactDivider`, `compactStatus`, `compactStatusIcon`, `compactStatusText`. Motion: `variants.compact` (keep its `exit` shorter than the `dismissAction` timing so the row clears before a surface grows). The card carries `data-compact`.
+
 ## 17. Theming
 
 The module contains **no design classes**. Every slot comes from `dockTheme` (`src/config/dock.module.theme.ts`, 101 slots, named after the component that renders them): `stack`, `backdrop`, `card*`, `banner*`, `header*`, `title*`, `description*`, `icon*` (incl. `iconBadge`, `iconOverlay*`), `command*`, `status*`, `surface*`, `control*` (incl. `controlHeaderButton`), `extension*`, `scrubber*`, `media*`, `breadcrumbs*`, `loading*`, `action*`. State variants are `data-*` modifiers on the slot itself (`data-placement`, `data-blur`, `data-shelf`, `data-anchored`, `data-ghost`, `data-fill`, `data-active`, `data-banner`, `data-multiline`, `data-interactive`, `data-text`); the header of `src/config/dock.module.theme.ts` lists them. `styles` can add inline CSS per slot (z-index, banner masks, stack size/radius).

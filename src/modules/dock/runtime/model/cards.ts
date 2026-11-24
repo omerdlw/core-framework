@@ -118,7 +118,9 @@ function createCardHandlers({
 
   const handleMouseLeave = () => {
     if (expanded) setFocusedIndex(NO_FOCUSED_INDEX);
-    if (!isTop || !canTopCardPreview) return;
+    // Clearing is always safe, so a peek started before a surface or the
+    // compact layout took the card still ends when the pointer leaves.
+    if (!isTop) return;
     setIsStackHovered(false);
     setIsHovered(false);
   };

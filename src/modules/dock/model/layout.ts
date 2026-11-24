@@ -37,8 +37,11 @@ export function getDockCardPadding(padding?: number | null): number {
 export function getDockCardMinHeight(
   isHud = false,
   padding?: number | null,
+  fitContent = false,
 ): number {
   const chrome = getDockCardPadding(padding) * 2;
+  // Content-sized cards (compact row, surfaces) have no base height.
+  if (fitContent) return chrome;
   const base = isHud ? DOCK_CARD_LAYOUT.hudHeight : DOCK_CARD_LAYOUT.baseHeight;
   return base - DOCK_CARD_LAYOUT.chromeHeight + chrome;
 }
@@ -46,11 +49,12 @@ export function getDockCardMinHeight(
 /** Height of the dock container for a given card content height, clamped to the viewport. */
 export function getContainerHeight({
   cardContentHeight,
+  fitContent = false,
   isHud = false,
   padding,
 }: ContainerHeightOptions): number {
   const chromeHeight = getDockCardPadding(padding) * 2;
-  const minCardHeight = getDockCardMinHeight(isHud, padding);
+  const minCardHeight = getDockCardMinHeight(isHud, padding, fitContent);
   const numericContentHeight = Number(cardContentHeight);
 
   const nextCardHeight = Math.max(

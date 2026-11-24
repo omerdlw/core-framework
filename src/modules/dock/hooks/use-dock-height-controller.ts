@@ -16,6 +16,7 @@ import type { UseDockHeightControllerOptions } from "../types";
 
 interface HeightControllerInputs {
   heightVar?: string | false;
+  fitContent: boolean;
   isHud: boolean;
   padding?: number | null;
   setDockHeight: UseDockHeightControllerOptions["setDockHeight"];
@@ -47,6 +48,7 @@ function createHeightController(
 
     const height = getContainerHeight({
       cardContentHeight: contentHeight,
+      fitContent: inputs.fitContent,
       isHud: inputs.isHud,
       padding: inputs.padding,
     });
@@ -87,6 +89,7 @@ function createHeightController(
 export function useDockHeightController({
   contentKey = null,
   heightVar,
+  fitContent = false,
   isHud = false,
   padding,
   setDockHeight,
@@ -98,20 +101,23 @@ export function useDockHeightController({
   const [{ applyHeight, dispose, handleContentHeightChange, setInputs }] =
     useState(() =>
       createHeightController(
-        { heightVar, isHud, padding, setDockHeight },
+        { heightVar, fitContent, isHud, padding, setDockHeight },
         setContainerHeight,
       ),
     );
 
   useLayoutEffect(() => {
-    setInputs({ heightVar, isHud, padding, setDockHeight });
-  }, [heightVar, isHud, padding, setDockHeight, setInputs]);
+    setInputs({ heightVar, fitContent, isHud, padding, setDockHeight });
+  }, [heightVar, fitContent, isHud, padding, setDockHeight, setInputs]);
 
   useEffect(() => dispose, [dispose]);
 
   useLayoutEffect(() => applyHeight(), [applyHeight, contentKey]);
   useLayoutEffect(() => applyHeight(), [applyHeight, surfacePhase]);
-  useLayoutEffect(() => applyHeight(), [applyHeight, isHud, padding]);
+  useLayoutEffect(
+    () => applyHeight(),
+    [applyHeight, fitContent, isHud, padding],
+  );
 
   return { containerHeight, handleContentHeightChange };
 }

@@ -13,6 +13,7 @@ import {
 import { useDockHeightController } from "../hooks/use-dock-height-controller";
 import { useDockKeyboard } from "../hooks/use-dock-keyboard";
 import { useDockViewport } from "../hooks/use-dock-viewport";
+import { isSurfaceLayerShown } from "../lib/card";
 import { getDockCardPadding } from "../model/layout";
 import { resolveDockScene } from "../model/state";
 import { getDockStackTransition, useDockMotion } from "../motion";
@@ -93,13 +94,22 @@ export function useDockModel() {
   const isExtensionsVisible = useIsSurfaceExtensionsVisible(activeItem);
   const isNotFound = Boolean(isNotFoundItem(activeItem));
   const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
+  // A surface opened from the compact layout grows out of it and folds back
+  // into it: while the surface is not drawn (its action dismissing, its body
+  // collapsing, its header returning) the card keeps the compact row.
+  const isSurfaceFacingPage = Boolean(
+    activeItem?.isSurface && !isSurfaceLayerShown(activeItem),
+  );
+  // A status (signed out, offline…) keeps the compact row and shows there as
+  // a one-line message; the not-found page keeps its full card.
+  const isCompactStatus = Boolean(activeItem?.isStatus && !isNotFound);
   const isCompactActive =
     compact &&
     !expanded &&
-    !activeItem?.isSurface &&
-    !isOverlayActive &&
+    (!activeItem?.isSurface || isSurfaceFacingPage) &&
+    (!isOverlayActive || isSurfaceFacingPage || isCompactStatus) &&
     !isHudActive &&
-    !isStatusActive &&
+    (!isStatusActive || isCompactStatus) &&
     !isNotificationVisible;
   const dockMotion = useDockMotion();
   const compactPadding = getDockCardPadding(dockMotion.deck.padding);
@@ -122,6 +132,8 @@ export function useDockModel() {
     useDockHeightController({
       contentKey,
       heightVar: dockMotion.deck.heightVar,
+      // The compact row and an open surface are as tall as their content.
+      fitContent: isCompactActive || isSurfaceLayerShown(activeItem),
       isHud: isHudActive,
       padding: dockMotion.deck.padding,
       setDockHeight,

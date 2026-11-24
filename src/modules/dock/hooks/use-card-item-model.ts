@@ -134,11 +134,13 @@ export function useDockCardItemModel({
       prefetchRoute(item.path);
     if (!expanded) onMouseEnter?.();
   };
+  // Leaving always clears the hover, even while an overlay (a surface) holds
+  // the card: otherwise the stack peek it started outlives the surface.
   const handleMouseLeave = () => {
-    if (item.isOverlay) return;
-    if (item.path) cancelRoutePrefetch(item.path);
     setIsHovered(false);
     if (!expanded) onMouseLeave?.();
+    if (item.isOverlay) return;
+    if (item.path) cancelRoutePrefetch(item.path);
   };
   const handleFocus = () => {
     if (item.isOverlay) return;
