@@ -64,6 +64,8 @@ interface DockCardPropsInput {
   hud: DockCardItemProps["hud"];
   /** Set while the dock shows the compact layout: only the front card stays. */
   compact: DockCompactProps | null;
+  /** Inner width of the full card, for the front card's standard content. */
+  contentWidth: number | null;
   isExtensionsVisible: boolean;
   isHudActive: boolean;
   isStackHovered: boolean;
@@ -160,6 +162,7 @@ export function createDockCardProps({
   handleContentHeightChange,
   hud,
   compact,
+  contentWidth,
   isExtensionsVisible,
   isHudActive,
   isStackHovered,
@@ -226,6 +229,7 @@ export function createDockCardProps({
       clearHud,
       contextCommands: contextActions,
       compact: isTop ? compact : null,
+      contentWidth: isTop ? contentWidth : null,
       onMouseEnter: handleMouseEnter,
       onMouseLeave: handleMouseLeave,
       onClick: handleClick,

@@ -201,6 +201,8 @@ export function useDockModel() {
     handleContentHeightChange,
     hud,
     compact: compactProps,
+    contentWidth:
+      stackWidth > compactPadding * 2 ? stackWidth - compactPadding * 2 : null,
     isExtensionsVisible,
     isHudActive,
     isStackHovered,

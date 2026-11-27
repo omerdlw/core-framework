@@ -54,7 +54,12 @@ export function DockCompact({
       if (typeof size === "number") onWidthChange(Math.ceil(size));
     });
     observer.observe(row);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // The next compact row is measured afresh: the card holds its full
+      // width until then instead of shrinking to this row's width.
+      onWidthChange(0);
+    };
   }, [onWidthChange]);
 
   // One view at a time: the leaving one clears where it is before the next
@@ -82,8 +87,11 @@ export function DockCompact({
       {action ? <CompactAction action={action} /> : null}
     </motion.div>
   ) : (
+    // Keyed by the action too: a page whose action comes or goes while compact
+    // (a hero scrolled away) swaps rows instead of re-centring the commands
+    // in one frame.
     <motion.div
-      key="page"
+      key={action ? "page:action" : "page"}
       className={theme.slots.compactView}
       style={DOCK_COMPOSITOR_STYLE}
       variants={dockMotion.variants.compact}

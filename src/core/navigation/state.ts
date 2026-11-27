@@ -5,7 +5,7 @@ import type {
   NavigationStatus,
   NavigationTrip,
 } from "./types";
-import { isSameLocation, locationKeyOf } from "./utils";
+import { isSameLocation, isSamePathname, locationKeyOf } from "./utils";
 
 export function createNavigationState(location = ""): NavigationState {
   return { active: null, last: null, location };
@@ -70,13 +70,15 @@ export function judgeArrival(
   trip: NavigationTrip,
   key: string,
 ): ArrivalVerdict {
+  // The origin is its pathname: a page that rewrites its own query
+  // (history.replaceState to sync its state) has not gone anywhere.
+  const onOrigin = isSamePathname(key, trip.from);
   if (trip.phase === NAVIGATION_PHASE.ROUTING) {
-    const stillOnOrigin =
-      isSameLocation(key, trip.from) && !isSameLocation(key, trip.to);
+    const stillOnOrigin = onOrigin && !isSameLocation(key, trip.to);
     return stillOnOrigin ? "ignore" : "complete";
   }
   if (isSameLocation(key, trip.to)) return "complete";
-  if (!isSameLocation(key, trip.from)) return "cancel";
+  if (!onOrigin) return "cancel";
   return "ignore";
 }
 

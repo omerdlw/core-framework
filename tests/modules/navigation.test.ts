@@ -352,6 +352,24 @@ describe("createNavigator", () => {
     assert.equal(last?.reason, NAVIGATION_REASON.SUPERSEDED);
   });
 
+  test("the origin rewriting its own query while leaving keeps the trip", async () => {
+    // A page that syncs its state into the URL (history.replaceState) is
+    // still the origin: leaving it must not be taken for a move elsewhere.
+    const { navigator } = setup();
+    navigator.hold(() => new Promise(() => {}));
+    void navigator.navigate("/b");
+    await flushPromises();
+    navigator.arrive("/a?director=488");
+    assert.equal(navigator.store.getSnapshot().active?.to, "/b");
+  });
+
+  test("the origin rewriting its own query while routing is not an arrival", async () => {
+    const { navigator } = setup();
+    await navigator.navigate("/b");
+    navigator.arrive("/a?director=488");
+    assert.equal(navigator.store.getSnapshot().active?.to, "/b");
+  });
+
   test("a push that keeps the pathname completes on the next frame", async () => {
     const { frames, navigator, setLocation } = setup();
     await navigator.navigate("/a?tab=2");

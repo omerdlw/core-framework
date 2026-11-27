@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 import { DOCK_SURFACE_PHASE } from "../constants";
 import { useDockCardItemModel } from "../hooks/use-card-item-model";
@@ -49,7 +49,11 @@ export function DockCardItem({
   clearHud = null,
   contextCommands = [],
   compact = null,
-}: DockCardItemProps) {
+  contentWidth = null,
+}: DockCardItemProps & {
+  /** Inner width of the full card: the standard content keeps it, centred. */
+  contentWidth?: number | null;
+}) {
   const dockMotion = useDockMotion();
   const {
     item,
@@ -153,6 +157,20 @@ export function DockCardItem({
       isActionDismissed={isActionDismissed}
     />
   );
+  // The compact row and the full card are two families of content: switching
+  // between them lets the leaving one clear before the next arrives, instead
+  // of crossfading two layouts inside a card that is resizing. A surface
+  // stays in the family it opened from, so it still crossfades with the row
+  // (or the header) it grows out of and folds back into.
+  const [shownFamily, setShownFamily] = useState<"compact" | "full">(
+    compact ? "compact" : "full",
+  );
+  const [hasSwapped, setHasSwapped] = useState(false);
+  const family = compact ? "compact" : showsSurfaceLayer ? shownFamily : "full";
+  if (shownFamily !== family) {
+    setShownFamily(family);
+    setHasSwapped(true);
+  }
   const isActionBeingDismissed =
     item.surfacePhase === DOCK_SURFACE_PHASE.DISMISSING_ACTION;
   const renderContentLayer = () => {
@@ -222,7 +240,19 @@ export function DockCardItem({
         animate={isActionBeingDismissed ? "hidden" : "visible"}
         exit={layerExit}
         transition={getDockPhaseMotion(dockMotion, item.surfacePhase).header}
-        style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
+        style={{
+          ...DOCK_COMPOSITOR_STYLE,
+          willChange: "transform",
+          ...(contentWidth
+            ? {
+                // Laid out at the full card's width and centred, so a card
+                // growing out of (or into) the compact row reveals the
+                // content rather than reflowing it.
+                width: contentWidth,
+                marginInline: `calc((100% - ${contentWidth}px) / 2)`,
+              }
+            : null),
+        }}
         className={theme.slots.cardStandard}
       >
         {item.isLoading ? <LoadingItemContent /> : standardContent}
@@ -310,8 +340,22 @@ export function DockCardItem({
           pointerEvents: isCollapsedBackgroundCard ? "none" : "auto",
         }}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
-          {renderContentLayer()}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={family}
+            variants={
+              family === "compact"
+                ? dockMotion.variants.compact
+                : dockMotion.variants.headerRestore
+            }
+            initial={false}
+            animate="visible"
+            exit="exit"
+          >
+            <AnimatePresence mode="popLayout" initial={hasSwapped}>
+              {renderContentLayer()}
+            </AnimatePresence>
+          </motion.div>
         </AnimatePresence>
       </motion.div>
     </motion.div>
