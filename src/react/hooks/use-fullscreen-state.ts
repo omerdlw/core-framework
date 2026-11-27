@@ -2,9 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-const listeners = new Set<() => void>();
-
-const ACTIVE_FULLSCREEN_ROOT_SELECTOR =
+const ACTIVE_ROOT_SELECTOR =
   '[data-fullscreen-state-root="true"][data-affect-global-state="true"]';
 
 const OBSERVED_ATTRIBUTES = [
@@ -13,68 +11,42 @@ const OBSERVED_ATTRIBUTES = [
   "data-affect-global-state",
 ];
 
-let domObserver: MutationObserver | null = null;
+const listeners = new Set<() => void>();
+let observer: MutationObserver | null = null;
 let lastSnapshot = false;
 
-function getDomSnapshot(): boolean {
+function getSnapshot(): boolean {
   if (typeof document === "undefined") return false;
-  return document.querySelector(ACTIVE_FULLSCREEN_ROOT_SELECTOR) !== null;
+  return document.querySelector(ACTIVE_ROOT_SELECTOR) !== null;
 }
 
-function emitChange(): void {
+function emitIfChanged(): void {
+  const next = getSnapshot();
+  if (next === lastSnapshot) return;
+  lastSnapshot = next;
   listeners.forEach((listener) => listener());
 }
 
-function emitIfSnapshotChanged(): void {
-  const nextSnapshot = getDomSnapshot();
-
-  if (nextSnapshot === lastSnapshot) {
-    return;
-  }
-
-  lastSnapshot = nextSnapshot;
-  emitChange();
-}
-
-function ensureDomObserver(): void {
-  if (typeof document === "undefined" || domObserver || listeners.size === 0) {
-    return;
-  }
-
-  domObserver = new MutationObserver(() => {
-    emitIfSnapshotChanged();
-  });
-
-  domObserver.observe(document.documentElement, {
-    attributes: true,
-    childList: true,
-    subtree: true,
-    attributeFilter: OBSERVED_ATTRIBUTES,
-  });
-}
-
-function releaseDomObserver(): void {
-  if (listeners.size > 0 || !domObserver) {
-    return;
-  }
-
-  domObserver.disconnect();
-  domObserver = null;
-}
-
+/** One MutationObserver is shared by all subscribers and lives while any remain. */
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
-  ensureDomObserver();
-  emitIfSnapshotChanged();
+  if (!observer && typeof document !== "undefined") {
+    observer = new MutationObserver(emitIfChanged);
+    observer.observe(document.documentElement, {
+      attributeFilter: OBSERVED_ATTRIBUTES,
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+  emitIfChanged();
 
   return () => {
     listeners.delete(listener);
-    releaseDomObserver();
+    if (listeners.size > 0 || !observer) return;
+    observer.disconnect();
+    observer = null;
   };
-}
-
-function getSnapshot(): boolean {
-  return getDomSnapshot();
 }
 
 /**

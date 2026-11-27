@@ -7,13 +7,32 @@ import {
   type ReactNode,
   use,
   useId,
+  useLayoutEffect,
+  useRef,
   useState,
 } from "react";
-import { useLayoutEffect, useRef } from "react";
 
 import type { PillBox, Tracker } from "@/react/ui/types";
 
 import { useUi, useUiMotion } from "../provider";
+
+const INSTANT = { duration: 0 } as const;
+
+const HIGHLIGHT_STYLE = {
+  inset: 0,
+  pointerEvents: "none",
+  position: "absolute",
+} as const;
+
+const PILL_STYLE = {
+  left: 0,
+  pointerEvents: "none",
+  position: "absolute",
+} as const;
+
+const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
+
+// ---- Highlight ----
 
 interface SlidingHighlightProps {
   className?: string;
@@ -36,34 +55,6 @@ export function SlidingHighlight({
       layoutId={layoutId}
       style={HIGHLIGHT_STYLE}
       transition={{ layout: reduced ? INSTANT : (follow ?? INSTANT) }}
-    />
-  );
-}
-
-interface SlidingPillProps {
-  box: PillBox;
-  className: string;
-}
-
-/**
- * A pill that slides to a measured box.
- */
-export function SlidingPill({ box, className }: SlidingPillProps) {
-  const { follow, reduced } = useUiMotion();
-  const isSingleLine = box.height === undefined;
-  return (
-    <motion.span
-      animate={
-        isSingleLine
-          ? { width: box.width, x: box.x }
-          : { height: box.height, width: box.width, x: box.x, y: box.y }
-      }
-      aria-hidden="true"
-      className={className}
-      data-pill=""
-      initial={false}
-      style={isSingleLine ? PILL_STYLE : PILL_BOX_STYLE}
-      transition={reduced ? INSTANT : (follow ?? INSTANT)}
     />
   );
 }
@@ -131,21 +122,35 @@ export function useHighlightReset() {
   return { onPointerEnter: () => tracker?.hover(null) };
 }
 
-const INSTANT = { duration: 0 } as const;
+// ---- Pill ----
 
-const HIGHLIGHT_STYLE = {
-  inset: 0,
-  pointerEvents: "none",
-  position: "absolute",
-} as const;
+interface SlidingPillProps {
+  box: PillBox;
+  className: string;
+}
 
-const PILL_STYLE = {
-  left: 0,
-  pointerEvents: "none",
-  position: "absolute",
-} as const;
-
-const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
+/**
+ * A pill that slides to a measured box.
+ */
+export function SlidingPill({ box, className }: SlidingPillProps) {
+  const { follow, reduced } = useUiMotion();
+  const isSingleLine = box.height === undefined;
+  return (
+    <motion.span
+      animate={
+        isSingleLine
+          ? { width: box.width, x: box.x }
+          : { height: box.height, width: box.width, x: box.x, y: box.y }
+      }
+      aria-hidden="true"
+      className={className}
+      data-pill=""
+      initial={false}
+      style={isSingleLine ? PILL_STYLE : PILL_BOX_STYLE}
+      transition={reduced ? INSTANT : (follow ?? INSTANT)}
+    />
+  );
+}
 
 function measureBox(chosen: HTMLElement, wrapping: boolean): PillBox {
   return wrapping

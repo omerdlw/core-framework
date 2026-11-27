@@ -65,12 +65,12 @@ export function groupOpened(
   group.instant = true;
 }
 
+/** Starts the skip window, unless another tooltip already took over. */
 export function groupClosed(
   group: TooltipGroup,
   live: RefObject<LiveHandlers>,
   skipDelayMs: number,
 ) {
-  // Closed because another tooltip took over: the group stays instant.
   if (group.active !== live) return;
   group.active = null;
   clearSkipTimer(group);

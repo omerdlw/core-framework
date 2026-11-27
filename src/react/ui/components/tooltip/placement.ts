@@ -6,8 +6,7 @@
  * the trigger, and reports the transform origin that points at the trigger.
  */
 
-export type TooltipSide = "top" | "right" | "bottom" | "left";
-export type TooltipAlign = "start" | "center" | "end";
+import type { TooltipAlign, TooltipSide } from "@/react/ui/types";
 
 export interface PlacementBox {
   height: number;

@@ -34,7 +34,6 @@ const EXIT_FALLBACK_SLACK_MS = 50;
 const subscribeNothing = () => () => {};
 const onClient = () => true;
 const onServer = () => false;
-
 const noop = () => {};
 
 const WRAPPER_STYLE = {
@@ -232,20 +231,16 @@ export function Tooltip({
       });
       wrapper.style.transform = `translate3d(${placement.x}px, ${placement.y}px, 0)`;
       content.dataset.side = placement.side;
-      content.style.setProperty(
-        "--tooltip-transform-origin",
-        `${placement.originX}px ${placement.originY}px`,
-      );
-      content.style.setProperty(
-        "--tooltip-available-width",
-        `${placement.availableWidth}px`,
-      );
-      content.style.setProperty(
-        "--tooltip-available-height",
-        `${placement.availableHeight}px`,
-      );
-      content.style.setProperty("--tooltip-trigger-width", `${box.width}px`);
-      content.style.setProperty("--tooltip-trigger-height", `${box.height}px`);
+      const vars = {
+        "--tooltip-available-height": `${placement.availableHeight}px`,
+        "--tooltip-available-width": `${placement.availableWidth}px`,
+        "--tooltip-transform-origin": `${placement.originX}px ${placement.originY}px`,
+        "--tooltip-trigger-height": `${box.height}px`,
+        "--tooltip-trigger-width": `${box.width}px`,
+      };
+      for (const [name, value] of Object.entries(vars)) {
+        content.style.setProperty(name, value);
+      }
     };
     place();
 

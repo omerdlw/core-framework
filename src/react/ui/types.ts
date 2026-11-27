@@ -18,6 +18,8 @@ import type {
   PartsProps,
 } from "@/foundation/recipes/define";
 
+// ---- Display ----
+
 /**
  * Any `data-*` attribute.
  */
@@ -263,6 +265,8 @@ export interface TooltipProviderProps {
   /** Window in ms after a tooltip closes during which the next opens instantly. Default 300. */
   skipDelayDuration?: number;
 }
+
+// ---- Controls ----
 
 /**
  * Variant props of the checkbox box.

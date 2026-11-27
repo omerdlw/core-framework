@@ -39,6 +39,17 @@ const ARROW_KEYS = ["ArrowDown", "ArrowUp"];
 const SELECT_KEYS = ["Enter", " "];
 const NON_IDENTIFIER_CHARS = /[^a-zA-Z0-9_-]/g;
 
+// Snapshot readers for useSyncExternalStore: browser-only values that never change.
+const noSubscribe = () => () => {};
+const readHost = () => document.body;
+const noHost = () => null;
+
+const canAnchor = () =>
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("anchor-name", "--a");
+const cannotAnchor = () => false;
+
 /**
  * A single-choice dropdown with keyboard support.
  */
@@ -199,10 +210,9 @@ export function Select<T extends string = string>({
   const { menu: menuMotion, option: optionMotion } = motionTokens;
   const iconClass = parts.select.icon({ className: classNames.icon });
   const labelClass = parts.select.label({ className: classNames.label });
-  const menuStyle: MenuStyle =
-    floating && anchor
-      ? menuPlacementStyle(anchor, anchored, anchorName, offset)
-      : {};
+  const menuStyle: MenuStyle = floating
+    ? menuPlacementStyle(anchor, anchored, anchorName, offset)
+    : {};
 
   const menu = (
     <AnimatePresence custom={rise}>
@@ -310,16 +320,3 @@ export function Select<T extends string = string>({
     </div>
   );
 }
-
-const noSubscribe = () => () => {};
-
-const readHost = () => document.body;
-
-const noHost = () => null;
-
-const canAnchor = () =>
-  typeof CSS !== "undefined" &&
-  typeof CSS.supports === "function" &&
-  CSS.supports("anchor-name", "--a");
-
-const cannotAnchor = () => false;

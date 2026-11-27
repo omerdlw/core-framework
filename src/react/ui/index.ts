@@ -11,9 +11,8 @@ export {
   useDragScroll,
 } from "./components/carousel";
 export { useSlidingPill } from "./components/indicator";
-export { initialsOf } from "./components/avatar";
 
-export { Avatar } from "./components/avatar";
+export { Avatar, initialsOf } from "./components/avatar";
 export { Button } from "./components/button";
 export { Carousel } from "./components/carousel";
 export { Checkbox, CheckboxIndicator } from "./components/checkbox";

@@ -6,8 +6,7 @@ import type { SegmentedControlProps, SegmentedItem } from "@/react/ui/types";
 import { useUi } from "../provider";
 import { Button } from "./button";
 import { Icon } from "./icon";
-import { useSlidingPill } from "./indicator";
-import { SlidingPill } from "./indicator";
+import { SlidingPill, useSlidingPill } from "./indicator";
 
 interface SegmentProps<K extends string> {
   active: boolean;

@@ -12,6 +12,8 @@ import {
 } from "@/foundation/utils/tempo";
 import { getOrCreateGlobalContext } from "@/react/context";
 
+// ---- Theme definitions ----
+
 /**
  * A theme's identity and, through its type parameters, its slot names and motion shape.
  */
@@ -66,6 +68,8 @@ export function defineTheme<S extends string, M = never>(
 ): ThemeEntry {
   return { id: spec.id, config };
 }
+
+// ---- Contexts and providers ----
 
 const EMPTY: ReadonlyMap<string, ThemeEntry["config"]> = new Map();
 const ThemeContext = getOrCreateGlobalContext<
@@ -142,6 +146,8 @@ export function ThemeProvider({
   return <ThemeContext value={configs}>{content}</ThemeContext>;
 }
 
+// ---- Hooks ----
+
 function missingTheme(id: string): Error {
   return new Error(
     `Theme "${id}" is missing. Ensure its theme configuration is provided to <ThemeProvider themes={[...]}> (e.g. in src/config/ or your theme setup).`,
@@ -183,7 +189,20 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
   return tokens as T & { readonly reduced: boolean };
 }
 
+// Retimed module motion, cached per motion state and motion config.
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();
+
+function resolveModuleMotion(state: MotionState, motion: object): unknown {
+  let byConfig = resolvedMotion.get(state);
+  if (!byConfig) {
+    byConfig = new WeakMap();
+    resolvedMotion.set(state, byConfig);
+  }
+  if (!byConfig.has(motion)) {
+    byConfig.set(motion, retimeModuleMotion(motion, state));
+  }
+  return byConfig.get(motion);
+}
 
 /**
  * Returns a theme's motion, retimed to the current tempo; throws if it has none.
@@ -212,17 +231,7 @@ export function useOptionalModuleMotion<M>(
   return resolveModuleMotion(state, motion) as M;
 }
 
-function resolveModuleMotion(state: MotionState, motion: object): unknown {
-  let byConfig = resolvedMotion.get(state);
-  if (!byConfig) {
-    byConfig = new WeakMap();
-    resolvedMotion.set(state, byConfig);
-  }
-  if (!byConfig.has(motion)) {
-    byConfig.set(motion, retimeModuleMotion(motion, state));
-  }
-  return byConfig.get(motion);
-}
+// ---- Motion config ----
 
 interface ModuleMotionConfigProps {
   children?: ReactNode;

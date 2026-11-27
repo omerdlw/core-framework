@@ -37,10 +37,11 @@ export function useUi(): Ui {
   return use(UiContext);
 }
 
-// Cached per motion and clock, so the hook returns a stable object without memo.
+// Cached per UI motion and motion tokens, so the hook returns a stable object
+// without memo.
 const retimed = new WeakMap<
   UiMotion,
-  Map<string, UiMotion & { readonly reduced: boolean }>
+  WeakMap<object, UiMotion & { readonly reduced: boolean }>
 >();
 
 /**
@@ -48,20 +49,16 @@ const retimed = new WeakMap<
  */
 export function useUiMotion(): UiMotion & { readonly reduced: boolean } {
   const { motion } = useUi();
-  const { reduced, still, tempo } = useMotionTokens();
-  let byClock = retimed.get(motion);
-  if (!byClock) {
-    byClock = new Map();
-    retimed.set(motion, byClock);
+  const tokens = useMotionTokens();
+  let byTokens = retimed.get(motion);
+  if (!byTokens) {
+    byTokens = new WeakMap();
+    retimed.set(motion, byTokens);
   }
-  const id = `${tempo}:${reduced}`;
-  let value = byClock.get(id);
+  let value = byTokens.get(tokens);
   if (!value) {
-    value = {
-      ...retimeModuleMotion(motion, { reduced, still, tempo }),
-      reduced,
-    };
-    byClock.set(id, value);
+    value = { ...retimeModuleMotion(motion, tokens), reduced: tokens.reduced };
+    byTokens.set(tokens, value);
   }
   return value;
 }
