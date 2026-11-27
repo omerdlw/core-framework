@@ -236,7 +236,7 @@ const RESTORE_FOCUS_LABEL = "surface:restore-focus";
  * its flow and restores focus to the element that opened it. The settled
  * callback is read from `ctx.live`, so async close paths call the latest one.
  */
-export function createSurfaceRelease(ctx: SurfaceRuntimeContext) {
+function createSurfaceRelease(ctx: SurfaceRuntimeContext) {
   const { focusRestoreFrame, refs, scheduler } = ctx;
 
   const restoreSurfaceFocus = (

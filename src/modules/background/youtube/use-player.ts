@@ -219,7 +219,7 @@ export function useYouTubeBackgroundPlayerModel({
 }
 
 /** Resolves the proxied video and audio stream URLs and the optional poster. */
-export function useYouTubeStreamSources({
+function useYouTubeStreamSources({
   codec,
   posterUrl,
   quality,

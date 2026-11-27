@@ -94,7 +94,7 @@ export const CONTROL_ICON_SIZE = 16;
 /** Id given to a HUD that does not name one. */
 export const DEFAULT_HUD_ID = "hud";
 
-export const DOCK_CARD_DIMENSIONS = Object.freeze({
+const DOCK_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 20,
   extensionShelfHeight: 45,
   hudHeight: 52,

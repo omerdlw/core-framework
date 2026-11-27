@@ -24,7 +24,7 @@ import {
 // Stable subscribe for when no store is mounted.
 const NOOP_SUBSCRIBE = () => () => {};
 
-export function useDockSurfaceExtension({
+function useDockSurfaceExtension({
   align = "left",
   children,
   className = "",

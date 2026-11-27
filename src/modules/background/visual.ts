@@ -253,7 +253,7 @@ export function getEdgeFadeMask({
 }
 
 /** Turns a configured width into a CSS length; numbers are pixels. */
-export function resolveCssWidth(
+function resolveCssWidth(
   rawWidth: string | number | null | undefined,
 ): string | undefined {
   if (rawWidth === undefined || rawWidth === null || rawWidth === "") {

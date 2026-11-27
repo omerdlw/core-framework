@@ -233,11 +233,11 @@ function SlideSlot({ children }: SlideSlotProps) {
   return children;
 }
 
-export const EDGE_TOLERANCE = 4;
+const EDGE_TOLERANCE = 4;
 
-export const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD = 5;
 
-export const SCROLL_STEP = 0.8;
+const SCROLL_STEP = 0.8;
 
 // Within this fraction of the track width from either end, a glide snaps to the end.
 const END_SNAP_RATIO = 0.25;

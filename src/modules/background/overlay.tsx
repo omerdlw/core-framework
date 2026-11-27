@@ -259,7 +259,7 @@ export function BackgroundOverlay() {
   );
 }
 
-export function BackgroundGradients({
+function BackgroundGradients({
   count = 0,
   direction,
   color = DEFAULT_COLOR,
@@ -285,7 +285,7 @@ export function BackgroundGradients({
   );
 }
 
-export function EdgeGradient({
+function EdgeGradient({
   direction,
   percent = 0,
   opacity = 0,
@@ -312,7 +312,7 @@ export function EdgeGradient({
   );
 }
 
-export function NoiseOverlay({
+function NoiseOverlay({
   opacity,
   blendMode,
   inlineStyle,
@@ -344,7 +344,7 @@ export function NoiseOverlay({
   );
 }
 
-export function SolidOverlay({
+function SolidOverlay({
   opacity = 0,
   color,
   transitionStyle,

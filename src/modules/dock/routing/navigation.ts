@@ -62,7 +62,7 @@ function subscribeToBrowserLocation(onChange: () => void): () => void {
   };
 }
 
-export function useDockLocationKey() {
+function useDockLocationKey() {
   const pathname = usePathname();
 
   const getBrowserLocationKey = () =>

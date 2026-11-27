@@ -25,9 +25,7 @@ import type {
   AmbientTarget,
 } from "./types";
 
-export function useStableObject<T extends object | null | undefined>(
-  value: T,
-): T {
+function useStableObject<T extends object | null | undefined>(value: T): T {
   const ref = useRef<T>(value);
   // Compiler exception (docs/architecture-and-rules.md): the ref keeps the
   // last shallow-equal value; writing it during render is idempotent.

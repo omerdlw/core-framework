@@ -5,7 +5,7 @@ import { PLAYBACK_RATES } from "../constants";
 /** Seconds jumped by the skip-back and skip-forward controls. */
 export const MEDIA_SKIP_SECONDS = 10;
 /** Volume change per arrow-key press on the volume slider. */
-export const VOLUME_KEY_STEP = 0.05;
+const VOLUME_KEY_STEP = 0.05;
 /** Volume restored when unmuting from a volume of zero. */
 export const RESTORED_VOLUME = 0.7;
 /** Seconds moved by the arrow keys on the scrubber. */

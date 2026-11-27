@@ -212,7 +212,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
 }
 
 /** Publishes the background video to the media module, and withdraws it. */
-export function useBackgroundMediaSource(
+function useBackgroundMediaSource(
   state: BackgroundStateComputed,
   actions: BackgroundActions,
 ) {

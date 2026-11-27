@@ -105,17 +105,12 @@ export function maxChroma(l: number, h: number): number {
   return low;
 }
 
-export function relativeChroma({ c, h, l }: OklchColor): number {
-  const room = maxChroma(l, h);
-  return room <= 0 ? 0 : clamp(c / room, 0, 1);
-}
-
 export function hueDistance(a: number, b: number): number {
   const d = Math.abs(a - b) % 360;
   return d > 180 ? 360 - d : d;
 }
 
-export function luminance({ c, h, l }: OklchColor): number {
+function luminance({ c, h, l }: OklchColor): number {
   const [r, g, b] = oklchToLinearSrgb(l, c, h).map((v) => clamp(v, 0, 1));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }

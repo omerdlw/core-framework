@@ -278,7 +278,7 @@ export function createRegistryOperations(definitions: RegistryDefinitions) {
 
 export type RegistryOperations = ReturnType<typeof createRegistryOperations>;
 
-export function resolveEntryValueFor(
+function resolveEntryValueFor(
   definitions: RegistryDefinitions,
   type: string,
   entry: MaybeEntry,
@@ -323,7 +323,7 @@ export function resolveEntryValueFor(
   ).value;
 }
 
-export function createResolverCacheFor(
+function createResolverCacheFor(
   definitions: RegistryDefinitions,
 ): (type: string, entry: MaybeEntry, scope?: string | null) => unknown {
   const entryCache = new WeakMap<object, Map<string, unknown>>();

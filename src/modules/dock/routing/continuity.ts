@@ -148,7 +148,7 @@ function escapeFocusKey(key: string) {
  * On the next frame, restores the saved scroll position and focuses the
  * element tagged with the entry's (or the given) focus key.
  */
-export function restoreContinuityView(
+function restoreContinuityView(
   entry: DockContinuityEntry | null,
   focusKey: string | null,
   restoreScroll: boolean,

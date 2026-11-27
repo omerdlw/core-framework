@@ -169,7 +169,7 @@ function stripChildrenSystemFields(item: DockItem): DockItem {
   };
 }
 
-export function useDockItems(): { rawItems: DockItem[] } {
+function useDockItems(): { rawItems: DockItem[] } {
   const entries = useRegistryEntries<"dock", DockItem>("dock");
   // stable identity: render-phase comparison (usePendingRouteHold compares
   // match.item, which comes from these items, against its held item)

@@ -26,7 +26,7 @@ const MOBILE_VIEWPORT_GUTTER = 16;
 const DOCK_HEIGHT_CSS_VAR = "--dock-h";
 
 /** Tallest height the dock may take, leaving a margin inside the viewport. */
-export function getViewportMaxHeight(): number {
+function getViewportMaxHeight(): number {
   if (typeof window === "undefined") return Infinity;
   return window.innerHeight - VIEWPORT_MARGIN;
 }
@@ -214,7 +214,7 @@ function resolveDisplayActiveIndex(
  * Orders and filters the dock items for display: the active item first, a
  * route-pending item held in front, loading leftovers and ancestors removed.
  */
-export function computeDockLayout(
+function computeDockLayout(
   dockItems: DockItem[] | undefined,
   activeItem: DockItem | null | undefined,
   pathname: string,

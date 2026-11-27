@@ -122,7 +122,7 @@ export function DockSurfaceExtensionsBar({
 // Stable subscribe for when no store is mounted.
 const NOOP_SUBSCRIBE = () => () => {};
 
-export function useDockSurfaceExtensionsBarModel({
+function useDockSurfaceExtensionsBarModel({
   activeItem,
 }: {
   activeItem?: DockItem | null;

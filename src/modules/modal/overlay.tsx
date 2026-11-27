@@ -151,7 +151,7 @@ function ModalLayerContent({
   );
 }
 
-export function ModalLayer({
+function ModalLayer({
   closeModal,
   entry,
   isMobileViewport,
@@ -234,7 +234,7 @@ export function ModalLayer({
   );
 }
 
-export function ModalLayerSwitcher({
+function ModalLayerSwitcher({
   currentEntry,
   onSwitchToPrevious,
   previousEntry,

@@ -90,7 +90,7 @@ export function DockSurfaceHeaderButton({
   );
 }
 
-export function useDockSurfaceHeaderButtonModel(_props: {
+function useDockSurfaceHeaderButtonModel(_props: {
   children?: ReactNode;
   className?: string;
   disabled?: boolean;

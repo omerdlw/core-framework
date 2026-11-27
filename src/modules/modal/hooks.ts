@@ -243,7 +243,7 @@ export function useModalModel() {
 }
 
 /** Whether the viewport is in the mobile range; follows resizes. */
-export function useMobileViewport() {
+function useMobileViewport() {
   const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -265,7 +265,7 @@ export function useMobileViewport() {
  * While the modal is on top: focuses its first control, closes it on Escape,
  * keeps Tab inside it, and gives focus back when it goes away.
  */
-export function useModalFocusTrap({
+function useModalFocusTrap({
   closeModal,
   entryId,
   isTopModal,
@@ -298,7 +298,7 @@ export function useModalFocusTrap({
 }
 
 /** Locks page scrolling while a modal is visible and always releases it on unmount. */
-export function useModalScrollLock(isModalVisible: boolean) {
+function useModalScrollLock(isModalVisible: boolean) {
   const releaseScrollLockRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (typeof document === "undefined") return;

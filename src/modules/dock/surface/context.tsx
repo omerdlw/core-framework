@@ -113,7 +113,7 @@ export function useSurfaceAction(action: DockSlotContent | undefined) {
 }
 
 /** Per-surface store of header actions, observable by subscription. */
-export class SurfaceHeaderActionStore {
+class SurfaceHeaderActionStore {
   private store = createStore<{
     actionsBySurface: Record<string, DockSlotContent>;
     version: number;
@@ -167,7 +167,7 @@ export class SurfaceHeaderActionStore {
 }
 
 /** Per-surface store of extensions, observable by subscription. */
-export class SurfaceExtensionsStore {
+class SurfaceExtensionsStore {
   private extensionsBySurface = new Map<
     string,
     Map<string, NormalizedSurfaceExtension>

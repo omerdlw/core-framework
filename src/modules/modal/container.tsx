@@ -145,7 +145,7 @@ function resolveRightSlot({
   );
 }
 
-export function resolveHeader(
+function resolveHeader(
   header: ModalContainerProps["header"],
   close: ModalContainerProps["close"],
   theme: Theme,
@@ -175,7 +175,7 @@ export function resolveHeader(
   return { center: customNode ?? config.center ?? null, config, left, right };
 }
 
-export function SlotRow({
+function SlotRow({
   center,
   left,
   right,
@@ -208,7 +208,7 @@ export function SlotRow({
   );
 }
 
-export function CloseButton({
+function CloseButton({
   close,
   theme,
 }: {

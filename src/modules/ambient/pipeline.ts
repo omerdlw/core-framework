@@ -57,10 +57,7 @@ function isCrossOrigin(url: string): boolean {
   }
 }
 
-export function createContext2D(
-  width: number,
-  height: number,
-): Context2D | null {
+function createContext2D(width: number, height: number): Context2D | null {
   if (typeof OffscreenCanvas === "function") {
     return new OffscreenCanvas(width, height).getContext("2d", {
       willReadFrequently: true,
@@ -92,7 +89,7 @@ export function readPixels(
   };
 }
 
-export async function decodeBlob(
+async function decodeBlob(
   blob: Blob,
   size: number,
 ): Promise<AmbientPixels | null> {
@@ -113,7 +110,7 @@ export async function decodeBlob(
   }
 }
 
-export const canDecodeHere = () =>
+const canDecodeHere = () =>
   typeof createImageBitmap === "function" &&
   (typeof OffscreenCanvas === "function" || typeof document !== "undefined");
 

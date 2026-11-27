@@ -256,7 +256,7 @@ export type BackgroundOverlayModel = ReturnType<
 >;
 
 /** Resolves the background's enter/exit motion and its CSS overlay transition. */
-export function useBackgroundMotionModel(
+function useBackgroundMotionModel(
   animation: BackgroundAnimationConfig | null | undefined,
 ) {
   const backgroundMotion = useBackgroundMotion();

@@ -59,7 +59,7 @@ function Toast({
   );
 }
 
-export function NotificationContainer() {
+function NotificationContainer() {
   const { dismissNotification, isHydrated, activeEntry, theme } =
     useNotificationContainerModel();
   if (!isHydrated) return null;

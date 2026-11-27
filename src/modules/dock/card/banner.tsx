@@ -94,10 +94,7 @@ export function DockCardBanner({
   );
 }
 
-export function useDockCardBannerModel({
-  banner,
-  bannerUrl,
-}: DockCardBannerProps) {
+function useDockCardBannerModel({ banner, bannerUrl }: DockCardBannerProps) {
   const bannerObj = getBannerObject(banner);
   const rawUrl = resolveBannerUrl(banner, bannerUrl);
   const isValid = isValidBannerUrl(rawUrl);
@@ -113,7 +110,7 @@ export function useDockCardBannerModel({
 const bannerPreloadCache = new Set<string>();
 
 /** Warms the browser cache for a banner image, once per URL. */
-export function preloadBannerImage(url: string) {
+function preloadBannerImage(url: string) {
   if (!isValidBannerUrl(url) || bannerPreloadCache.has(url)) return;
   if (typeof window === "undefined") return;
   bannerPreloadCache.add(url);
@@ -134,7 +131,7 @@ export interface BannerRegistrationOptions {
 }
 
 /** Object form of a banner source, or null for strings and empty values. */
-export function getBannerObject(banner: DockBannerSource | undefined) {
+function getBannerObject(banner: DockBannerSource | undefined) {
   return typeof banner === "object" && banner !== null ? banner : null;
 }
 

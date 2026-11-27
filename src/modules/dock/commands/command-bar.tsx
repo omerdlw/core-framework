@@ -126,7 +126,7 @@ function resolveDockCommands({
   return sortToolbarActionsByOrder(getVisibleToolbarActions(mergedCommands));
 }
 
-export function useDockCommandBarModel({
+function useDockCommandBarModel({
   activeItem,
   contextCommands = [],
 }: {
@@ -157,7 +157,7 @@ export function useDockCommandBarModel({
   return { actions, currentPath, isExiting, handleExitComplete };
 }
 
-export function normalizeToolbarActions(actions: unknown): DockCommandEntry[] {
+function normalizeToolbarActions(actions: unknown): DockCommandEntry[] {
   const arrayActions = toArray(actions);
   const normalized: DockCommandEntry[] = [];
 
@@ -171,13 +171,13 @@ export function normalizeToolbarActions(actions: unknown): DockCommandEntry[] {
   return normalized;
 }
 
-export function getVisibleToolbarActions(
+function getVisibleToolbarActions(
   actions: DockCommandEntry[],
 ): DockCommandEntry[] {
   return actions.filter((action) => action.visible !== false);
 }
 
-export function sortToolbarActionsByOrder(
+function sortToolbarActionsByOrder(
   actions: DockCommandEntry[],
 ): DockCommandEntry[] {
   return [...actions].sort(
@@ -185,7 +185,7 @@ export function sortToolbarActionsByOrder(
   );
 }
 
-export function isActionlessDockItem(
+function isActionlessDockItem(
   activeItem: DockItem | null | undefined,
 ): boolean {
   return Boolean(
@@ -196,7 +196,7 @@ export function isActionlessDockItem(
   );
 }
 
-export function isStatusToolbarActionAllowed(
+function isStatusToolbarActionAllowed(
   activeItem: DockItem | null | undefined,
 ): boolean {
   return (

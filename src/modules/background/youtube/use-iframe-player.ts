@@ -195,7 +195,7 @@ export interface IframeEngineOptions {
  * Builds the iframe player's ready / state-change handlers and its progress
  * tick, all sharing one playback snapshot.
  */
-export function createIframeEngine({
+function createIframeEngine({
   emit,
   getPlayer,
   getProxy,

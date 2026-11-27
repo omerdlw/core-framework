@@ -13,7 +13,7 @@ type AncestorAwareItem = DockItem & {
   statusType?: string;
 };
 
-export function isSameDockItem(
+function isSameDockItem(
   item: DockItem | null | undefined,
   candidate: DockItem | null | undefined,
 ): boolean {

@@ -21,12 +21,12 @@ import {
 
 export type DockHudEntries = Record<string, DockHudDescriptor>;
 
-export function normalizePriority(value: unknown): number {
+function normalizePriority(value: unknown): number {
   const priority = Number(value);
   return Number.isFinite(priority) ? priority : DOCK_HUD_PRIORITY.DEFAULT;
 }
 
-export function normalizeAutoDismiss(value: unknown): number | null {
+function normalizeAutoDismiss(value: unknown): number | null {
   const ms = Number(value);
   return Number.isFinite(ms) && ms > 0 ? ms : null;
 }

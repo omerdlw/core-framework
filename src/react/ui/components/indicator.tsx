@@ -131,21 +131,21 @@ export function useHighlightReset() {
   return { onPointerEnter: () => tracker?.hover(null) };
 }
 
-export const INSTANT = { duration: 0 } as const;
+const INSTANT = { duration: 0 } as const;
 
-export const HIGHLIGHT_STYLE = {
+const HIGHLIGHT_STYLE = {
   inset: 0,
   pointerEvents: "none",
   position: "absolute",
 } as const;
 
-export const PILL_STYLE = {
+const PILL_STYLE = {
   left: 0,
   pointerEvents: "none",
   position: "absolute",
 } as const;
 
-export const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
+const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
 
 function measureBox(chosen: HTMLElement, wrapping: boolean): PillBox {
   return wrapping

@@ -107,7 +107,7 @@ function seekVideo(video: HTMLMediaElement, time: number) {
   video.currentTime = time;
 }
 
-export function useDockMediaScrubberModel(_props: {
+function useDockMediaScrubberModel(_props: {
   className?: string;
   showTimeOnHover?: boolean;
 }) {

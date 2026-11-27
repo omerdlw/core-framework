@@ -4,7 +4,7 @@ import type { RegistryOperation, RegistryState } from "../types/registry";
 
 type KeyListeners = Map<string | null, Set<() => void>>;
 
-export function notifyListeners(listeners: Set<() => void> | undefined): void {
+function notifyListeners(listeners: Set<() => void> | undefined): void {
   if (!listeners) return;
   for (const listener of listeners) {
     try {
@@ -15,7 +15,7 @@ export function notifyListeners(listeners: Set<() => void> | undefined): void {
   }
 }
 
-export function getOrCreateKeyListeners(
+function getOrCreateKeyListeners(
   listenersByType: Map<string, KeyListeners>,
   type: string,
   key: string | null,

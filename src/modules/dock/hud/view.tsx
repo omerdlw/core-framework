@@ -27,7 +27,7 @@ export function DockHudView({
   return hud.content ?? null;
 }
 
-export function useDockHudViewModel({
+function useDockHudViewModel({
   clearHud,
   hud,
   pathname,

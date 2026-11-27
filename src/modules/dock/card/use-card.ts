@@ -249,7 +249,7 @@ export function useDockCardItemModel({
   };
 }
 
-export function useActionSlot(
+function useActionSlot(
   item: DockItem,
   pathname: string,
   { isTop = false }: { isTop?: boolean } = {},
@@ -286,7 +286,7 @@ export function useActionSlot(
     : null;
 }
 
-export function useDockBadge(
+function useDockBadge(
   dockKey?: string | null,
   initialBadge?: ReactNode,
 ): DockBadgeState {

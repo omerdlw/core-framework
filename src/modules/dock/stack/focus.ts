@@ -39,7 +39,7 @@ export function isEditableDockTarget(target: unknown): boolean {
   );
 }
 
-export function getDockFocusableElements(
+function getDockFocusableElements(
   container: HTMLElement | null,
 ): HTMLElement[] {
   if (!container || typeof container.querySelectorAll !== "function") return [];

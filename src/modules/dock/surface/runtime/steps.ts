@@ -115,7 +115,7 @@ function createInitialStep(entry: ResolvedSurfaceEntry): SurfaceStep {
  * Returns the step list with `stepInput` appended, seeding it from the
  * surface's own content when the surface has no steps yet.
  */
-export function appendSurfaceStep(
+function appendSurfaceStep(
   entry: ResolvedSurfaceEntry,
   stepInput: SurfaceStep,
 ): SurfaceStep[] {
@@ -127,9 +127,6 @@ export function appendSurfaceStep(
 }
 
 /** True when `index` is an integer inside `[0, stepCount)`. */
-export function isSurfaceStepIndexInRange(
-  index: number,
-  stepCount: number,
-): boolean {
+function isSurfaceStepIndexInRange(index: number, stepCount: number): boolean {
   return Number.isInteger(index) && index >= 0 && index < stepCount;
 }

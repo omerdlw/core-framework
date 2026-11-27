@@ -213,7 +213,7 @@ function isRenderable(value: unknown): boolean {
 }
 
 /** Checks a dock registry entry's field types and returns any issues found. */
-export function validateDockEntry(entry: unknown): ValidationResult {
+function validateDockEntry(entry: unknown): ValidationResult {
   if (!isPlainObject(entry))
     return { issues: ["dock card must be a plain object"], valid: false };
   const issues: string[] = [];
@@ -250,7 +250,7 @@ export function validateDockEntry(entry: unknown): ValidationResult {
 }
 
 /** Merges dock registry entries in order, combining their style sections. */
-export function mergeDockEntries(
+function mergeDockEntries(
   entries: Record<string, unknown>[],
 ): Record<string, unknown> {
   return entries.reduce<Record<string, unknown>>((merged, entry) => {
@@ -279,7 +279,7 @@ function pageLoadingFlag(loading: unknown): boolean | undefined {
 }
 
 /** Extracts the dock slice from a page config, folding in its title, banner and loading flag. */
-export function selectPageDock(config: PageConfig): DockPageConfig | null {
+function selectPageDock(config: PageConfig): DockPageConfig | null {
   const dock = config.dock;
   const title = dock?.title ?? config.title;
   if (!dock && title === undefined) return null;
@@ -302,7 +302,7 @@ export function selectPageDock(config: PageConfig): DockPageConfig | null {
 }
 
 /** Turns a page's dock slice into registry entries keyed by path. */
-export function toDockEntries(
+function toDockEntries(
   slice: DockPageConfig,
   { pathname }: ModulePageContext,
 ): PageRegistration[] {
@@ -327,7 +327,7 @@ export function toDockEntries(
 }
 
 /** Opens a surface given as a handle, factory, descriptor or node from a page. */
-export function openPageSurface(
+function openPageSurface(
   target: unknown,
   props: Record<string, unknown>,
   openSurface: DockActions["openSurface"],

@@ -17,7 +17,7 @@ const emptySubscribe = () => () => {};
 /**
  * Portal target, layout, resolved controls and theme for Controls.
  */
-export function useControlsModel() {
+function useControlsModel() {
   const portalTarget = useSyncExternalStore(
     emptySubscribe,
     () => (typeof document !== "undefined" ? document.body : null),

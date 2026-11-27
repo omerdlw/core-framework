@@ -212,7 +212,7 @@ export interface BackgroundInputs {
 }
 
 /** Layers a normalized patch over the current one, merging `videoOptions`. */
-export function mergeOverridePatch(
+function mergeOverridePatch(
   currentPatch: Partial<BackgroundState> | null,
   nextPatch: Partial<BackgroundState>,
 ): Partial<BackgroundState> {

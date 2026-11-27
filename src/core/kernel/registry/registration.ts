@@ -16,7 +16,7 @@ import type {
 import { createRegisterOperation, type RegistryOperations } from "./operations";
 import { validateRegistryMetadata, validateRegistryValue } from "./schema";
 
-export function cloneRegistryValue<T>(
+function cloneRegistryValue<T>(
   value: T,
   seen = new WeakMap<object, unknown>(),
 ): T {
@@ -54,7 +54,7 @@ function resolveRegistrationOptions(
   return optionsArg && typeof optionsArg === "object" ? optionsArg : {};
 }
 
-export function validateRegistration(
+function validateRegistration(
   definitions: RegistryDefinitions,
   type: string,
   key: string,

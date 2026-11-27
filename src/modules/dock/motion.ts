@@ -56,7 +56,7 @@ export const DOCK_SURFACE_DRAG_CONSTRAINTS = Object.freeze({
   bottom: 0,
 } as const);
 
-export function toGpuTransform(
+function toGpuTransform(
   y: unknown = 0,
   scale: unknown = 1,
   x: unknown = 0,

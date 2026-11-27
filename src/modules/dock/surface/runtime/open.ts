@@ -121,7 +121,7 @@ export function createSurfaceOpen(
  * Expands a surface factory into its concrete input. Factories consume the
  * caller's config, so the remaining open options are reset in that case.
  */
-export function resolveSurfaceOpenInput(
+function resolveSurfaceOpenInput(
   input: SurfaceInput,
   config: OpenSurfaceOptions,
 ): { effectiveConfig: OpenSurfaceOptions; effectiveInput: unknown } {
@@ -143,7 +143,7 @@ export function resolveSurfaceOpenInput(
  * Creates and registers the runtime entry, payload and record for a newly
  * opened surface, remembering the focused element for later restoration.
  */
-export function registerOpenedSurface({
+function registerOpenedSurface({
   definition,
   payloads,
   providedFlowSession,

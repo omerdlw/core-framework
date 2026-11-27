@@ -176,7 +176,7 @@ export function useHud(hudDefinition: DockHudDefinition | null = null) {
 }
 
 /** Keeps a HUD descriptor registered with the dock for the lifetime of the caller. */
-export function useDockHudLifecycle({
+function useDockHudLifecycle({
   clearHud,
   descriptor,
   setHud,

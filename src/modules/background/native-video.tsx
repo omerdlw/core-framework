@@ -74,7 +74,7 @@ function pauseQuietly(video: HTMLVideoElement | null) {
   } catch {}
 }
 
-export function useNativeVideoModel({
+function useNativeVideoModel({
   corp,
   isMuted,
   isPlaying,

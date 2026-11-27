@@ -122,7 +122,7 @@ let farSight: IntersectionObserver | null = null;
 
 const FAR_ROOT_MARGIN = "50% 25%";
 
-export function watchDistance(frame: HTMLElement): () => void {
+function watchDistance(frame: HTMLElement): () => void {
   if (typeof IntersectionObserver === "undefined") {
     frame.removeAttribute("data-far");
     return () => {};

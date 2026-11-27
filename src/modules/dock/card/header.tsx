@@ -184,7 +184,7 @@ export function DockCardHeader({
   );
 }
 
-export function useDockCardHeaderModel({
+function useDockCardHeaderModel({
   item: propItem,
   link,
   showVideoIcon = false,
@@ -303,7 +303,7 @@ export function DockDescription({
   );
 }
 
-export function Badge({ badge }: { badge?: DockBadgeState }) {
+function Badge({ badge }: { badge?: DockBadgeState }) {
   const dockMotion = useDockMotion();
   const theme = useDockTheme();
   return (

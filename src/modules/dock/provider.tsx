@@ -293,7 +293,7 @@ function createExpansionActions(
   };
 }
 
-export function useDockExpansion() {
+function useDockExpansion() {
   const [expanded, setExpandedState] = useState(false);
   const [actions] = useState(() => createExpansionActions(setExpandedState));
 
@@ -307,7 +307,7 @@ function normalizeDockHeight(nextHeight: number): number {
 }
 
 /** Dock height and route-reset handshake, built once per provider. */
-export function createDockLocalActions(
+function createDockLocalActions(
   setRawDockHeight: Dispatch<SetStateAction<number>>,
 ) {
   let dockHeight = 0;
@@ -345,7 +345,7 @@ interface DockRoute {
  * navigating there first when needed. Built once per provider; the provider
  * pushes the current route in after each commit.
  */
-export function createSurfaceFlowReturns(
+function createSurfaceFlowReturns(
   continuity: DockContinuityActions,
   initialRoute: DockRoute,
 ) {
@@ -397,7 +397,7 @@ export function createSurfaceFlowReturns(
  * True when two dock states hold the same values. Arrays are compared by
  * their items, since `hudEntries` is rebuilt from the entry map each time.
  */
-export function isSameDockState(current: DockState, next: DockState): boolean {
+function isSameDockState(current: DockState, next: DockState): boolean {
   return (Object.keys(next) as (keyof DockState)[]).every((key) => {
     const a = current[key];
     const b = next[key];

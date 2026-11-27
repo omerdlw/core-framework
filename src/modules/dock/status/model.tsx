@@ -390,14 +390,11 @@ export interface GuardStatusOptions {
   clearStatus?: () => void;
 }
 
-export function reloadPage() {
+function reloadPage() {
   window.location.reload();
 }
 
-export function createRetryHandler(
-  onRetry?: () => void,
-  clearStatus?: () => void,
-) {
+function createRetryHandler(onRetry?: () => void, clearStatus?: () => void) {
   if (typeof onRetry !== "function") return reloadPage;
   return () => {
     clearStatus?.();

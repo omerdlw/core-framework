@@ -18,11 +18,7 @@ export function scheduleRetryTimer(
 }
 
 /** Playback position (seconds) at which a video should end, or 0 for "never". */
-export function resolveEffectiveEnd(
-  endTime: number,
-  corp: number,
-  duration: number,
-) {
+function resolveEffectiveEnd(endTime: number, corp: number, duration: number) {
   if (endTime > 0) return endTime;
   if (corp > 0 && duration > 0) return duration - corp;
   return 0;

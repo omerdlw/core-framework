@@ -168,7 +168,7 @@ interface ContextMenuContentProps {
   position: ContextMenuPosition;
 }
 
-export function ContextMenuContent({
+function ContextMenuContent({
   config,
   items,
   menuContext,

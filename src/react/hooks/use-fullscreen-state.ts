@@ -3,7 +3,6 @@
 import { useSyncExternalStore } from "react";
 
 const listeners = new Set<() => void>();
-const activeFullscreenStateIds = new Set<string>();
 
 const ACTIVE_FULLSCREEN_ROOT_SELECTOR =
   '[data-fullscreen-state-root="true"][data-affect-global-state="true"]';
@@ -18,10 +17,7 @@ let domObserver: MutationObserver | null = null;
 let lastSnapshot = false;
 
 function getDomSnapshot(): boolean {
-  if (typeof document === "undefined") {
-    return activeFullscreenStateIds.size > 0;
-  }
-
+  if (typeof document === "undefined") return false;
   return document.querySelector(ACTIVE_FULLSCREEN_ROOT_SELECTOR) !== null;
 }
 
@@ -79,16 +75,6 @@ function subscribe(listener: () => void): () => void {
 
 function getSnapshot(): boolean {
   return getDomSnapshot();
-}
-
-export function registerFullscreenState(id: string): void {
-  activeFullscreenStateIds.add(id);
-  emitIfSnapshotChanged();
-}
-
-export function unregisterFullscreenState(id: string): void {
-  activeFullscreenStateIds.delete(id);
-  emitIfSnapshotChanged();
 }
 
 /**

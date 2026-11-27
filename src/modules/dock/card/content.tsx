@@ -172,7 +172,7 @@ export function StandardItemContent({
   );
 }
 
-export function useStandardItemContentModel({
+function useStandardItemContentModel({
   item: propItem,
   link,
   isActive = false,
@@ -216,7 +216,7 @@ export function useStandardItemContentModel({
  * `timings.pendingSkeleton` seconds, so a fast navigation never blinks a
  * skeleton in and out.
  */
-export function usePendingSkeleton(isPending: boolean): boolean {
+function usePendingSkeleton(isPending: boolean): boolean {
   const delay = useDockMotion().timings.pendingSkeleton ?? 0;
   const [isDue, setIsDue] = useState(false);
   if (!isPending && isDue) setIsDue(false);

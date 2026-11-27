@@ -197,7 +197,7 @@ interface BatchQueueInit {
  * Creates the queue handed to a batch executor. It records operations instead
  * of applying them, so the store can commit them together.
  */
-export function createBatchQueue({
+function createBatchQueue({
   definitions,
   getStore,
   nextSequence,

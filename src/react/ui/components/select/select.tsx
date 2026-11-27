@@ -311,15 +311,15 @@ export function Select<T extends string = string>({
   );
 }
 
-export const noSubscribe = () => () => {};
+const noSubscribe = () => () => {};
 
-export const readHost = () => document.body;
+const readHost = () => document.body;
 
-export const noHost = () => null;
+const noHost = () => null;
 
-export const canAnchor = () =>
+const canAnchor = () =>
   typeof CSS !== "undefined" &&
   typeof CSS.supports === "function" &&
   CSS.supports("anchor-name", "--a");
 
-export const cannotAnchor = () => false;
+const cannotAnchor = () => false;
