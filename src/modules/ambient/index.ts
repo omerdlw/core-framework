@@ -18,14 +18,14 @@ export {
   onColorFor,
   srgbToOklab,
   toneOf,
-} from "./oklab";
+} from "./analysis/oklab";
 
 export {
   AMBIENT_ANALYSIS_VERSION,
   analyzeAmbientPixels,
   findContentBounds,
   skinLikeness,
-} from "./analyze";
+} from "./analysis/analyze";
 
 export {
   extractPaletteFromImage,

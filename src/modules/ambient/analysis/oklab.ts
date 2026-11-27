@@ -1,4 +1,4 @@
-import type { OklchColor } from "./types";
+import type { OklchColor } from "../types";
 
 export type Lab = [l: number, a: number, b: number];
 export type Rgb = [r: number, g: number, b: number];

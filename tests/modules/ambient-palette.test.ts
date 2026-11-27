@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, test } from "node:test";
 import { act } from "react";
 
+import { oklchToLinearSrgb } from "../../src/modules/ambient/analysis/oklab.ts";
+import { kmeans } from "../../src/modules/ambient/analysis/quantize.ts";
 import {
   AMBIENT_TONES,
   analyzeAmbientPixels,
@@ -21,8 +23,6 @@ import {
   toneOf,
   useAmbientColor,
 } from "../../src/modules/ambient/index.ts";
-import { oklchToLinearSrgb } from "../../src/modules/ambient/oklab.ts";
-import { kmeans } from "../../src/modules/ambient/quantize.ts";
 import {
   type AmbientDecoder,
   extractAmbientPalette,

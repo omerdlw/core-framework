@@ -1,11 +1,22 @@
-import { clusterAmbientPixels } from "./analyze-clusters";
+import { AMBIENT_REGIONS, DEFAULT_ANALYSIS } from "../settings";
+import type {
+  AmbientAnalysisOptions,
+  AmbientPalette,
+  AmbientPixels,
+  AmbientRegion,
+  AmbientRegionColor,
+  AmbientRole,
+  AmbientSwatch,
+  OklchColor,
+} from "../types";
+import { clusterAmbientPixels } from "./clusters";
 import {
   buildDarkPage,
   buildLightPage,
   GROUNDS,
   type PageContext,
   readableOn,
-} from "./analyze-ground";
+} from "./ground";
 import {
   type Cluster,
   colorfulness,
@@ -17,20 +28,9 @@ import {
   reliability,
   round3,
   salience,
-} from "./analyze-measures";
-import { buildSwatch, fitTone, roleChroma, roleTone } from "./analyze-swatches";
+} from "./measures";
 import { clamp, formatOklch, hueDistance, labToLch } from "./oklab";
-import { AMBIENT_REGIONS, DEFAULT_ANALYSIS } from "./settings";
-import type {
-  AmbientAnalysisOptions,
-  AmbientPalette,
-  AmbientPixels,
-  AmbientRegion,
-  AmbientRegionColor,
-  AmbientRole,
-  AmbientSwatch,
-  OklchColor,
-} from "./types";
+import { buildSwatch, fitTone, roleChroma, roleTone } from "./swatches";
 
 /**
  * Version of the palette analysis algorithm; bump it to invalidate palettes
@@ -38,8 +38,8 @@ import type {
  */
 export const AMBIENT_ANALYSIS_VERSION = 4;
 
-export { findContentBounds } from "./analyze-bounds";
-export { skinLikeness } from "./analyze-measures";
+export { findContentBounds } from "./bounds";
+export { skinLikeness } from "./measures";
 
 /** Two hues within this distance count as the same colour family. */
 const FAMILY_HUE_RANGE = 20;

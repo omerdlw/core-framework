@@ -1,5 +1,5 @@
+import type { AmbientRegion, OklchColor } from "../types";
 import { hueDistance, smoothstep } from "./oklab";
-import type { AmbientRegion, OklchColor } from "./types";
 
 export const MIN_CHROMA = 0.022;
 export const MIN_PRESENCE = 0.03;

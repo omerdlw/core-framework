@@ -1,4 +1,4 @@
-import { analyzeAmbientPixels } from "../analyze";
+import { analyzeAmbientPixels } from "../analysis/analyze";
 import { resolveAnalysis } from "../settings";
 import type {
   AmbientAnalysisOptions,
@@ -17,7 +17,7 @@ export {
   analyzeAmbientPixels,
   findContentBounds,
   fitSample,
-} from "../analyze";
+} from "../analysis/analyze";
 export { isPrivateAddress, isPrivateHostname } from "./address";
 export { configureAmbient, getAmbientSettings } from "../settings";
 export {
@@ -27,7 +27,7 @@ export {
   onColorFor,
   srgbToOklab,
   toneOf,
-} from "../oklab";
+} from "../analysis/oklab";
 export type * from "../types";
 
 /**

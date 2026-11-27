@@ -1,5 +1,5 @@
+import type { AmbientPixels } from "../types";
 import { srgbToOklab } from "./oklab";
-import type { AmbientPixels } from "./types";
 
 export interface Bounds {
   bottom: number;

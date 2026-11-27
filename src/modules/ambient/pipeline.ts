@@ -1,4 +1,4 @@
-import { analyzeAmbientPixels, fitSample } from "./analyze";
+import { analyzeAmbientPixels, fitSample } from "./analysis/analyze";
 import type {
   AmbientAnalysisOptions,
   AmbientPalette,

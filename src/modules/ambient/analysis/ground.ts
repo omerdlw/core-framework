@@ -1,10 +1,5 @@
-import {
-  type Cluster,
-  pickBest,
-  skinLikeness,
-  warmth,
-} from "./analyze-measures";
-import { fitTone } from "./analyze-swatches";
+import type { AmbientGround, AmbientRole, OklchColor } from "../types";
+import { type Cluster, pickBest, skinLikeness, warmth } from "./measures";
 import {
   clamp,
   contrastRatio,
@@ -13,7 +8,7 @@ import {
   smoothstep,
   toneOf,
 } from "./oklab";
-import type { AmbientGround, AmbientRole, OklchColor } from "./types";
+import { fitTone } from "./swatches";
 
 /**
  * Everything that depends on the ground. On a dark page the roles are light

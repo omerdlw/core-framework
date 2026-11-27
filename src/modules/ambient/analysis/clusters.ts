@@ -1,14 +1,9 @@
-import { type Bounds, findContentBounds } from "./analyze-bounds";
-import {
-  type Cluster,
-  MIN_CHROMA,
-  REGION_BITS,
-  reliability,
-} from "./analyze-measures";
+import { AMBIENT_REGIONS } from "../settings";
+import type { AmbientAnalysisOptions, AmbientPixels } from "../types";
+import { type Bounds, findContentBounds } from "./bounds";
+import { type Cluster, MIN_CHROMA, REGION_BITS, reliability } from "./measures";
 import { clamp, labToLch, maxChroma, srgbToOklab } from "./oklab";
 import { kmeans } from "./quantize";
-import { AMBIENT_REGIONS } from "./settings";
-import type { AmbientAnalysisOptions, AmbientPixels } from "./types";
 
 export interface AmbientClustering {
   clusters: Cluster[];
