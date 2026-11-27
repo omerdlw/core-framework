@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, type ReactNode } from "react";
+import type { JSX, ReactNode } from "react";
 
 import { GlobalError, GlobalErrorListener, ModuleError } from "@/core/error";
 import {
@@ -11,7 +11,7 @@ import {
   type ProviderEntry,
 } from "@/core/kernel";
 import { ModuleMotionConfig } from "@/react/theme";
-import { TooltipProvider } from "@/react/ui/components/tooltip";
+import { TooltipProvider } from "@/react/ui/components/tooltip/tooltip";
 
 const DEFAULT_TOOLTIP_DELAY = 300;
 const DEFAULT_TOOLTIP_SKIP_DELAY = 150;

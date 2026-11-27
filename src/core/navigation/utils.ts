@@ -1,4 +1,11 @@
-import { normalizePath } from "@/foundation/utils";
+import { globalEvents } from "@/foundation/events";
+import { isBrowser, normalizePath } from "@/foundation/utils";
+
+export type Timer = ReturnType<typeof setTimeout>;
+
+const NO_DELAY_MS = 0;
+
+// ---- Locations ----
 
 /**
  * True for same-origin absolute paths; rejects external and protocol-relative
@@ -35,7 +42,7 @@ export function isSamePathname(left: string, right: string): boolean {
 }
 
 export function readWindowLocation(): string | null {
-  if (typeof window === "undefined") return null;
+  if (!isBrowser) return null;
   const { hash, pathname, search } = window.location;
   return locationKeyOf(`${pathname}${search}${hash}`);
 }
@@ -46,3 +53,14 @@ export function internalLinkOf(target: EventTarget | null): Element | null {
   const link = target.closest("a[href]");
   return link && isSafeInternalHref(link.getAttribute("href")) ? link : null;
 }
+
+// ---- Scheduling and events ----
+
+export const emitGlobal = (event: string, payload: Record<string, unknown>) =>
+  globalEvents.emit(event, payload);
+
+export const afterPaint = (callback: () => void) => {
+  if (typeof requestAnimationFrame === "function")
+    requestAnimationFrame(() => callback());
+  else setTimeout(callback, NO_DELAY_MS);
+};

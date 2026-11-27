@@ -5,15 +5,19 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore, type ExternalStore, report } from "@/foundation/utils";
 
-import { createModalEntry, isSameModal } from "./model/entry";
-import { getModalIdentity } from "./model/identity";
-import { createModalState, INITIAL_MODAL_STATE } from "./model/state";
 import {
-  type ModalActions,
-  type ModalEntry,
-  type ModalOptions,
-  type ModalProviderProps,
-  type ModalState,
+  createModalEntry,
+  createModalState,
+  getModalIdentity,
+  INITIAL_MODAL_STATE,
+  isSameModal,
+} from "./state";
+import type {
+  ModalActions,
+  ModalEntry,
+  ModalOptions,
+  ModalProviderProps,
+  ModalState,
 } from "./types";
 
 /**
@@ -38,10 +42,6 @@ interface PendingModal {
 }
 
 /**
- * Owns the modal stack and resolves each `openModal` promise when its modal closes.
- * Optionally mounts a renderer next to its children.
- */
-/**
  * Runs a modal's onClose and reports its failure, sync or async. Module level:
  * the compiler cannot lower optional chaining inside a try block.
  */
@@ -59,6 +59,10 @@ function runOnClose(
   }
 }
 
+/**
+ * Owns the modal stack and resolves each `openModal` promise when its modal closes.
+ * Optionally mounts a renderer next to its children.
+ */
 export function ModalProvider({
   children,
   modalRenderer: ModalRenderer = null,

@@ -61,10 +61,6 @@ interface LoadingTasks {
 }
 
 /**
- * Keeps the stack of running loading tasks, the state they show, and the
- * minimum display time before loading may stop.
- */
-/**
  * Awaits a task and always runs `settle` afterwards. Module level: the
  * compiler cannot lower a try without a catch inside a hook.
  */
@@ -79,6 +75,10 @@ async function runThenSettle<T>(
   }
 }
 
+/**
+ * Keeps the stack of running loading tasks, the state they show, and the
+ * minimum display time before loading may stop.
+ */
 function useLoadingTasks(): LoadingTasks {
   const [manualState, setManualState] = useState<LoadingState>(
     DEFAULT_LOADING_STATE,

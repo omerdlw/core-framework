@@ -1,4 +1,4 @@
-import { isObject, toArray } from "@/foundation/utils";
+import { isObject, report, toArray } from "@/foundation/utils";
 
 import {
   CURRENT_PAGE_KEY,
@@ -71,7 +71,8 @@ function isPathAllowed(
   if (typeof config.pathMatcher === "function") {
     try {
       return Boolean(config.pathMatcher(pathname));
-    } catch {
+    } catch (error) {
+      report("Context menu pathMatcher", error);
       return false;
     }
   }
@@ -112,7 +113,9 @@ function getTargetScore(
       if (matched) {
         minDepth = Math.min(minDepth, getElementDepth(targetElement, matched));
       }
-    } catch {}
+    } catch {
+      // An invalid selector simply does not match.
+    }
   }
   return minDepth === Infinity
     ? null
@@ -156,12 +159,16 @@ function buildMenuContext(
   try {
     const payload = config.resolvePayload?.(event, context);
     if (payload !== undefined) context.payload = payload;
-  } catch {}
+  } catch (error) {
+    report("Context menu resolvePayload", error);
+  }
 
   try {
     const extra = config.resolveContext?.(event, context);
     if (isObject(extra)) context = { ...context, ...extra };
-  } catch {}
+  } catch (error) {
+    report("Context menu resolveContext", error);
+  }
 
   return context;
 }
@@ -190,6 +197,7 @@ function resolveEventTarget(event: MouseEvent): Element | null {
       .find((element) => !isMenuOverlayTarget(element));
     return underneath || initialTarget;
   } catch {
+    // elementsFromPoint is missing in some test DOMs; keep the event target.
     return initialTarget;
   }
 }
@@ -206,7 +214,8 @@ function passesWhen(
   if (typeof config.when !== "function") return config.when !== false;
   try {
     return Boolean(config.when(event, info));
-  } catch {
+  } catch (error) {
+    report("Context menu when", error);
     return false;
   }
 }

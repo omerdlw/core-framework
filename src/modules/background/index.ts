@@ -1,6 +1,6 @@
 "use client";
 
-export { BackgroundOverlay } from "./components/overlay";
+export { BackgroundOverlay } from "./overlay";
 export { BackgroundContext, BackgroundProvider } from "./context";
 export {
   useBackground,
@@ -28,7 +28,7 @@ export {
   mergeBackgroundState,
   normalizeBackgroundInput,
   resolveBackgroundState,
-} from "./model/state";
+} from "./state";
 export {
   BG_TOKEN_TO_OBJECT_STYLE,
   DEFAULT_COLOR,
@@ -38,13 +38,13 @@ export {
   getEdgeFadeMask,
   resolveVideoClassNames,
   resolveVideoOptions,
-} from "./model/visual";
+} from "./visual";
 export {
   applyVideoPlaybackState,
   triggerVideoPlaybackDirect,
   syncVideoMutedDirect,
   syncVideoLoopDirect,
-} from "./model/playback";
+} from "./playback";
 export {
   extractYouTubeVideoId,
   getYouTubeStreamUrl,
@@ -52,6 +52,6 @@ export {
   isDirectVideoUrl,
   isYouTubeUrl,
   parseYouTubeUrlConfig,
-} from "./youtube/lib/parse";
-export { YouTubeBackgroundPlayer } from "./youtube/components/player";
+} from "./youtube/parse";
+export { YouTubeBackgroundPlayer } from "./youtube/player";
 export * from "./types";

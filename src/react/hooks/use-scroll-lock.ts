@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 /**
  * The attribute set on the root element while page scrolling is locked.
  */
@@ -9,7 +10,8 @@ export const SCROLL_LOCK = "data-scroll-lock";
 let holds = 0;
 let startY = 0;
 
-const listener = { capture: true, passive: false } as const;
+/** Listener options for the handlers that may cancel scrolling. */
+const BLOCKING = { capture: true, passive: false } as const;
 
 // Sub-pixel rounding makes scroll metrics off by one at the edges.
 const SCROLL_EDGE_TOLERANCE_PX = 1;
@@ -68,21 +70,21 @@ function onTouchMove(event: TouchEvent): void {
 function hold(): void {
   if (holds++ > 0) return;
   document.documentElement.setAttribute(SCROLL_LOCK, "");
-  window.addEventListener("wheel", onWheel, listener);
+  window.addEventListener("wheel", onWheel, BLOCKING);
   window.addEventListener("touchstart", onTouchStart, {
     capture: true,
     passive: true,
   });
-  window.addEventListener("touchmove", onTouchMove, listener);
+  window.addEventListener("touchmove", onTouchMove, BLOCKING);
 }
 
 function release(): void {
   if (--holds > 0) return;
   holds = 0;
   document.documentElement.removeAttribute(SCROLL_LOCK);
-  window.removeEventListener("wheel", onWheel, listener);
+  window.removeEventListener("wheel", onWheel, BLOCKING);
   window.removeEventListener("touchstart", onTouchStart, { capture: true });
-  window.removeEventListener("touchmove", onTouchMove, listener);
+  window.removeEventListener("touchmove", onTouchMove, BLOCKING);
 }
 
 /**

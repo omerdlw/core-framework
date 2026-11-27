@@ -1,8 +1,8 @@
 export type * from "./types";
-export { Dock } from "./components/dock";
+export { Dock } from "./stack/dock";
 export { DockProvider } from "./provider";
 export { dockModule } from "./module";
-export { defineHud, useHud } from "./hud";
+export { defineHud, useHud } from "./hud/hud";
 export {
   createInlineSurfaceEntry,
   createSurfaceEntryDefinition,
@@ -13,24 +13,21 @@ export {
   useSurfaceStep,
 } from "./surface/definition";
 export { defineBreadcrumb } from "./routing/breadcrumbs";
-export { defineDockAction } from "./runtime/commands";
-export { useSurfaceFlow } from "./surface/hooks/use-surface-flow";
+export { defineDockAction } from "./commands/registry";
+export { useSurfaceFlow } from "./surface/use-flow";
 export {
   useSurfaceAction,
   useSurfaceDimensions,
   useSurfaceHeader,
   useSurfaceId,
 } from "./surface/context";
-export {
-  DockSurfaceAction,
-  DockSurfaceExtension,
-} from "./components/surface/action";
-export { DockSurfaceHeaderButton } from "./components/surface/header-button";
-export { DockCardBanner } from "./components/card-banner";
-export { DockCardHeader } from "./components/card-header";
-export { DockDescription } from "./components/description";
-export { DockTitle } from "./components/title";
-export { DockIcon } from "./components/icon";
+export { DockSurfaceAction, DockSurfaceExtension } from "./surface/extensions";
+export { DockSurfaceHeaderButton } from "./surface/header-button";
+export { DockCardBanner } from "./card/banner";
+export { DockCardHeader } from "./card/header";
+export { DockDescription } from "./card/header";
+export { DockTitle } from "./card/header";
+export { DockIcon } from "./card/icon";
 export {
   useDockActions,
   useDockHeight,
@@ -39,17 +36,17 @@ export {
   useOptionalDockActions,
   useOptionalDockState,
 } from "./context";
-export { useDockActionClass, useDockTheme } from "./hooks/use-dock-theme";
-export { useDockBanner } from "./hooks/use-dock-banner";
-export { useDockConfig } from "./hooks/use-dock-config";
-export { useDockDimensions } from "./hooks/use-dock-dimensions";
-export { useDockRegistration } from "./hooks/use-dock-registration";
-export { useSurfaceReturn } from "./hooks/use-surface-return";
-export { useDockContextActions } from "./runtime/commands";
-export { useDockHud } from "./hud";
-export { useDock } from "./runtime/hooks/use-dock";
+export { useDockActionClass, useDockTheme } from "./theme";
+export { useDockBanner } from "./hooks";
+export { useDockConfig } from "./hooks";
+export { useDockDimensions } from "./hooks";
+export { useDockRegistration } from "./hooks";
+export { useSurfaceReturn } from "./hooks";
+export { useDockContextActions } from "./commands/registry";
+export { useDockHud } from "./hud/hud";
+export { useDock } from "./stack/use-dock";
 export { createDockGuardRegistry, useDockGuard } from "./routing/guards";
-export { ErrorActions, GuardActions } from "./components/status-actions";
+export { ErrorActions, GuardActions } from "./status/actions";
 export { createErrorStatus, createGuardStatus } from "./status/model";
 export {
   DOCK_EVENTS,
@@ -58,5 +55,5 @@ export {
   DOCK_HUD_VARIANT,
   dockTheme,
 } from "./constants";
-export { isValidBannerUrl } from "./lib/styles";
+export { isValidBannerUrl } from "./theme";
 export { useDockMotion } from "./motion";

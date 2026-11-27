@@ -2,7 +2,10 @@
 
 import { lazy, useCallback, useMemo } from "react";
 
-import { DOCK_SURFACE_FLOW_STATUS } from "../constants";
+import {
+  DEFAULT_STEP_SURFACE_ID,
+  DOCK_SURFACE_FLOW_STATUS,
+} from "../constants";
 import { useDockActions, useDockSelector } from "../context";
 import type {
   BoundSurfaceFactory,
@@ -25,23 +28,20 @@ import type {
   SurfaceStep,
   UseSurfaceInput,
 } from "../types";
-import { DEFAULT_STEP_SURFACE_ID } from "./constants";
+import {
+  buildBuilderDescriptor,
+  createSurfaceOpenEntry,
+  resolveBuilderSettings,
+  resolveFromProps,
+  resolveSurfaceTargetComponent,
+} from "./builder";
 import {
   createSurfaceReturnHandshake,
   normalizeSurfaceFlowSnapshot,
   resolveSurfaceFlowReturnHandshake,
 } from "./helpers";
-import {
-  createSurfaceOpenEntry,
-  resolveFromProps,
-  resolveSurfaceTargetComponent,
-} from "./lib/target";
-import {
-  buildBuilderDescriptor,
-  resolveBuilderSettings,
-} from "./model/builder";
-import { normalizeSurfaceDefinition } from "./model/normalize";
-import { EMPTY_SURFACE_STACK } from "./model/records";
+import { normalizeSurfaceDefinition } from "./normalize";
+import { EMPTY_SURFACE_STACK } from "./runtime/records";
 
 /** Normalizes any accepted surface input and open options into a definition. */
 export function createSurfaceEntryDefinition(

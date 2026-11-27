@@ -1,4 +1,4 @@
-import { analyzeAmbientPixels } from "./analyze";
+import { analyzeAmbientPixels } from "./analysis/analyze";
 import {
   type AmbientExtractRequest,
   type AmbientExtractResult,

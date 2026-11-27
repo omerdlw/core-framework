@@ -39,13 +39,12 @@ export interface AmbientWorkerScope {
 export function serveAmbientWorker(
   scope: AmbientWorkerScope = globalThis,
 ): () => void {
-  const onMessage = async (event: MessageEvent) => {
-    const request = event.data as AmbientWorkerRequest | null;
-    if (request?.type !== AMBIENT_WORKER_REQUEST) return;
+  const respond = async (request: AmbientWorkerRequest) => {
     let result: Awaited<ReturnType<typeof extractHere>>;
     try {
       result = await extractHere(request);
     } catch {
+      // A failed extraction is answered with an empty palette.
       result = { palette: null, supported: true };
     }
     scope.postMessage({
@@ -54,9 +53,11 @@ export function serveAmbientWorker(
       type: AMBIENT_WORKER_RESPONSE,
     });
   };
-  // onMessage is async but catches its own errors; the listener ignores its result.
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  const onMessage = (event: MessageEvent) => {
+    const request = event.data as AmbientWorkerRequest | null;
+    if (request?.type !== AMBIENT_WORKER_REQUEST) return;
+    void respond(request);
+  };
   scope.addEventListener("message", onMessage);
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   return () => scope.removeEventListener("message", onMessage);
 }

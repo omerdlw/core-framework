@@ -66,16 +66,15 @@ export function useNavigationHold(
   hold: NavigationHold | false | null | undefined,
   { history = true }: NavigationHoldOptions = {},
 ): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
-  const { hold: register } = useOptionalNavigation();
+  const navigation = useOptionalNavigation();
   const runHold = useEffectEvent((trip: NavigationTrip) =>
     hold ? hold(trip) : undefined,
   );
   const enabled = Boolean(hold);
   useEffect(() => {
     if (!enabled) return;
-    return register((trip) => runHold(trip), { history });
-  }, [enabled, history, register]);
+    return navigation.hold((trip) => runHold(trip), { history });
+  }, [enabled, history, navigation]);
 }
 
 /**
@@ -86,14 +85,13 @@ export function useNavigationPayload<K extends NavigationPayloadKey>(
   key: K,
   value: NavigationPayloadValue<K>,
 ): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
-  const { provide } = useOptionalNavigation();
+  const navigation = useOptionalNavigation();
   const readValue = useEffectEvent(() =>
     typeof value === "function" ? (value as () => unknown)() : value,
   );
   useEffect(
-    () => provide(key, readValue as NavigationPayloadValue<K>),
-    [key, provide],
+    () => navigation.provide(key, readValue as NavigationPayloadValue<K>),
+    [key, navigation],
   );
 }
 
@@ -101,8 +99,7 @@ export function useNavigationPayload<K extends NavigationPayloadKey>(
  * Calls a listener when the user shows intent to navigate to a route.
  */
 export function useNavigationIntent(listener: NavigationIntentListener): void {
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
-  const { onIntent } = useOptionalNavigation();
+  const navigation = useOptionalNavigation();
   const handleIntent = useEffectEvent(
     (
       path: Parameters<NavigationIntentListener>[0],
@@ -110,8 +107,8 @@ export function useNavigationIntent(listener: NavigationIntentListener): void {
     ) => listener(path, href),
   );
   useEffect(
-    () => onIntent((path, href) => handleIntent(path, href)),
-    [onIntent],
+    () => navigation.onIntent((path, href) => handleIntent(path, href)),
+    [navigation],
   );
 }
 
@@ -132,7 +129,6 @@ export function useDeparture(): NavigationTrip | null {
 export function useArrival(pathname?: string): NavigationTrip | null {
   const routePathname = usePathname();
   const target = pathname ?? routePathname;
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- the navigation API comes from createNavigator closures or the arrow-function default context, none of which use this
-  const { arrival } = useOptionalNavigation();
-  return useNavigationState(() => arrival(target));
+  const navigation = useOptionalNavigation();
+  return useNavigationState(() => navigation.arrival(target));
 }

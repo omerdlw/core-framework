@@ -1,73 +1,56 @@
 # @omerdlw/base-framework
 
-> **Microkernel orchestration engine and first-party declarative UI modules for app-like Next.js 16 (App Router) & React 19 web applications.**
+A microkernel and a set of declarative UI modules for app-like Next.js (App Router) and React 19 products.
 
 [![npm version](https://img.shields.io/npm/v/@omerdlw/base-framework.svg)](https://www.npmjs.com/package/@omerdlw/base-framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![React 19](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 
----
+A page describes the chrome it needs (its dock card, background, modals, loading state) in one `usePage()` call. The kernel collects those declarations from every mounted route, resolves conflicts by priority and lifecycle, and hands each slice to the module that renders it. Modules never import each other's internals; they meet through typed contracts, peers and an event bus.
 
-## 📖 Complete Documentation Index
+The framework holds no design. Every class, timing and icon comes from the app's theme, so two products built on it look nothing alike.
 
-For in-depth architecture guides and module-by-module references, explore the [`docs/`](./docs) folder:
+## Architecture
 
-### General Architecture Guides
+```
+src/
+├── foundation/   Layer 0  Pure and server-safe: Result, event bus, utils, recipes
+├── react/        Layer 1  React primitives: hooks, theme, headless UI components
+├── core/         Layer 2  Kernel (registry, module host, usePage), errors, navigation
+└── modules/      Layer 3  dock, modal, notification, background, ambient, …
+```
 
-- 🚀 **[Getting Started & Installation](./docs/getting-started.md)** — Step-by-step setup, Tailwind CSS v4, root layout wiring
-- 🏛️ **[System Architecture Map](./docs/README.md)** — Macro overview, task lookup table, conventions
-- 📐 **[Architecture & 10 Rules](./docs/architecture-and-rules.md)** — Package layer hierarchy, boundaries, decision tree
-- 🎨 **[Theming System Guide](./docs/theming.md)** — Visual customization: defineTheme, ThemeProvider, slot reference
-- 🧩 **[Custom Module Authoring](./docs/custom-modules.md)** — Build custom declarative modules with defineModule & usePage
-- ⚙️ **[Core Engine Deep Dive](./docs/core-engine.md)** — CoreProvider, theme engine, event bus, pure utils & stores
-- 🧪 **[Testing Guide](./docs/testing.md)** — 740-test suite, test harness, happy-dom, downstream testing
-- 🤖 **[AI Agent Blueprint (`AGENTS.md`)](./templates/AGENTS.md)** — Drop-in rules for AI coding assistants
+- **Layers only import downwards.** The foundation never touches React or the DOM and is safe in Server Components and Edge functions.
+- **Modules are isolated.** A module reaches another only through its public barrel, and only when it declares it in `uses`.
+- **Code is grouped by feature.** Small modules use one flat folder; the dock splits into `stack/`, `card/`, `routing/`, `surface/` and so on.
 
-### Module & Component Reference
+`npm run check:architecture` enforces the first two, along with the absence of import cycles and a 500-line limit per file. The full set of rules is in [docs/architecture-and-rules.md](./docs/architecture-and-rules.md).
 
-- ⚡ **[Microkernel Engine (`kernel`)](./docs/modules/kernel.md)** — `usePage()`, `defineModule()`, topological registry
-- ⚓ **[Dock Module (`dock`)](./docs/modules/dock.md)** — Floating app chrome, cards, surfaces, flows, HUD, guards
-- 🪟 **[Modal Module (`modal`)](./docs/modules/modal.md)** — Stackable dialogs, focus trap, smooth scroll lock
-- 🔔 **[Notification Module (`notification`)](./docs/modules/notification.md)** — Toasts, `toast.fromResult`, auto 401 listener
-- 🎨 **[Ambient Lighting (`ambient`)](./docs/modules/ambient.md)** — Media color extraction, OKLCH canvas glow
-- 🖼️ **[Background Canvas (`background`)](./docs/modules/background.md)** — Multi-layer video, YouTube loop, cross-fades
-- 🖱️ **[Context Menu (`context-menu`)](./docs/modules/context-menu.md)** — Viewport clamping, declarative menus
-- 🎛️ **[Controls Module (`controls`)](./docs/modules/controls.md)** — Paired HUD action rails beside the dock
-- ⏳ **[Loading & Skeleton (`loading`)](./docs/modules/loading.md)** — Coordinated loading, anti-flicker delay
-- 🧭 **[Navigation (`navigation`)](./docs/modules/navigation.md)** — Exit holds, payload for the next page, back-button hold, intent prefetch
-- 🎵 **[Media Transport (`media`)](./docs/modules/media.md)** — Session sync, leader vs audible displacement
-- 🔒 **[Result Pattern (`result`)](./docs/modules/result.md)** — Functional `Result<T, E>`, `ok()`, `err()`
-- 🛡️ **[Error Boundary (`error-boundary`)](./docs/modules/error-boundary.md)** — Isolated boundaries, deduplicating reporter
+## Modules
 
----
+| Module                                           | What it does                                                            |
+| :----------------------------------------------- | :---------------------------------------------------------------------- |
+| [`dock`](./docs/modules/dock.md)                 | Floating app chrome: route cards, surfaces and flows, HUD, guards.      |
+| [`modal`](./docs/modules/modal.md)               | Stackable dialogs with focus trap and scroll lock.                      |
+| [`notification`](./docs/modules/notification.md) | Toasts, `toast.fromResult`, session-expiry handling.                    |
+| [`navigation`](./docs/modules/navigation.md)     | Exit holds, payloads for the next page, back-button holds, prefetch.    |
+| [`background`](./docs/modules/background.md)     | Layered video and image backgrounds, YouTube loops, cross-fades.        |
+| [`ambient`](./docs/modules/ambient.md)           | Palette extraction from media, applied as CSS variables.                |
+| [`context-menu`](./docs/modules/context-menu.md) | Declarative, route-aware context menus.                                 |
+| [`controls`](./docs/modules/controls.md)         | Paired action rails beside the dock.                                    |
+| [`loading`](./docs/modules/loading.md)           | Coordinated loading states with an anti-flicker delay.                  |
+| [`media`](./docs/modules/media.md)               | One media session across players, with audible and leader displacement. |
 
-## ✨ Features
-
-- ⚡ **Microkernel Architecture:** Ultra-lean orchestration host with topological module dependency sorting, transactional multi-source registry, and atomic route lifecycle commits.
-- 🧩 **First-Party Declarative UI Modules:** 10 production-tested modules (`dock`, `modal`, `notification`, `ambient`, `background`, `context-menu`, `controls`, `loading`, `media`, `navigation`) that communicate strictly through typed contracts without tight coupling.
-- 🎯 **Single Route Declaration (`usePage`):** Cleanly declare titles, navigation cards, modals, loading states, and background media in a single atomic hook call.
-- 🔒 **Type-Safe Result Pattern (`Result<T, E>`):** Functional, bulletproof error handling with `ok()`, `err()`, and direct feedback bridging via `toast.fromResult()`.
-- 🛡️ **Cross-Bundle Context Deduplication:** Guarantees stable React Context singletons across Next.js split chunks and monorepo boundaries.
-- 🎨 **No design inside:** no CSS, tokens or motion values. Modules and components take every class, timing and icon from your app's theme and `defineUi`.
-
----
-
-## 📦 Installation
+## Installation
 
 ```bash
 npm install @omerdlw/base-framework motion
 ```
 
-Ensure peer dependencies are satisfied (`next >= 15.0.0`, `react >= 19.2.0`, `react-dom >= 19.2.0`, `motion >= 12.0.0`).
+Peer dependencies: `next >= 15`, `react >= 19.2`, `react-dom >= 19.2`, `motion >= 12`. Node 22 or later. Upgrading from 3.x? See [MIGRATION.md](./MIGRATION.md).
 
-Requires Node `>=22`. Upgrading from 3.x? See [MIGRATION.md](./MIGRATION.md).
+## Quick start
 
----
-
-## 🚀 Quick Start
-
-### 1. Configure Providers in Your Next.js App
+### 1. Install the modules
 
 Create your client providers component (e.g. `src/app/providers.tsx`):
 
@@ -119,7 +102,7 @@ export default function RootLayout({
 }
 ```
 
-### 2. Tailwind CSS v4 Configuration
+### 2. Let Tailwind see the package
 
 Add the package path to your `@source` scanning inside `src/app/globals.css`:
 
@@ -128,7 +111,7 @@ Add the package path to your `@source` scanning inside `src/app/globals.css`:
 @source "../node_modules/@omerdlw/base-framework";
 ```
 
-### 3. Declare Route State with `usePage`
+### 3. Declare a page
 
 In any route client component:
 
@@ -165,33 +148,34 @@ export default function DashboardPage() {
 }
 ```
 
----
+## Public entry points
 
-## 📚 Subpath Export Directory
+| Subpath | Purpose & Key Exports |
+| :
 
-| Subpath                            | Purpose & Key Exports                                                                    |
-| :--------------------------------- | :--------------------------------------------------------------------------------------- |
-| `@omerdlw/base-framework`          | Root exports of all sub-systems                                                          |
-| `@omerdlw/base-framework/kernel`   | `usePage`, `defineModule`, `definePeer`, `ModuleHost`, `getOrCreateGlobalContext`        |
-| `@omerdlw/base-framework/provider` | `CoreProvider` composition pipeline                                                      |
-| `@omerdlw/base-framework/result`   | `ok()`, `err()`, `isResult()`, `type Result<T, E>`                                       |
-| `@omerdlw/base-framework/events`   | Decoupled event bus (`globalEvents`, `EVENT_TYPES`)                                      |
-| `@omerdlw/base-framework/theme`    | `ThemeProvider`, `useTheme`, `defineThemeSpec`                                           |
-| `@omerdlw/base-framework/ui`       | Unstyled components the app gives a look (`Button`, `Icon`, `Select`, …)                 |
-| `@omerdlw/base-framework/recipes`  | Server-safe `defineUi`, recipes, `cn`, `createCn`, `ANATOMY`                             |
-| `@omerdlw/base-framework/utils`    | Pure utilities (`report`, `createStore`, `createScheduler`, `defineMotion`)              |
-| `@omerdlw/base-framework/hooks`    | Essential hooks (`useClickOutside`, `useGlobalEvent`, `useStore`)                        |
-| `@omerdlw/base-framework/error`    | Error boundaries (`GlobalError`, `ModuleError`, `ComponentError`) and `getErrorReporter` |
-| `@omerdlw/base-framework/<module>` | 10 standalone modules (`dock`, `modal`, `notification`, `navigation`, etc.)              |
+Only these subpaths are public. File paths inside `dist/` are not part of the API.
 
----
+## Documentation
 
-## 🤖 For AI Coding Assistants (Cursor, Antigravity, Claude Code)
+- [Getting started](./docs/getting-started.md): installation, Tailwind, root layout
+- [Architecture and rules](./docs/architecture-and-rules.md): layers, module layout, the ten rules
+- [Core engine](./docs/core-engine.md): `CoreProvider`, themes, event bus, stores
+- [Theming](./docs/theming.md): `defineTheme`, `ThemeProvider`, motion tokens
+- [Custom modules](./docs/custom-modules.md): writing a module with `defineModule` and `usePage`
+- [Module reference](./docs/modules/README.md): one page per module
+- [Testing](./docs/testing.md): the test harness and testing downstream apps
 
-When developing a project that consumes `@omerdlw/base-framework`, copy [`templates/AGENTS.md`](./templates/AGENTS.md) into your downstream project root as `AGENTS.md`. This gives the AI assistant instant, complete context over the framework's strict rules, boundaries, and best practices.
+Working with an AI coding assistant? Copy [`templates/AGENTS.md`](./templates/AGENTS.md) into your app as `AGENTS.md`.
 
----
+## Development
 
-## 📄 License
+```bash
+npm install
+npm run verify   # format, lint, type-check, architecture, tests, build, dist smoke tests
+```
+
+Tests run with Node's built-in test runner on the uncompiled source; the build compiles client entries with the React Compiler and smoke-tests the bundle.
+
+## License
 
 MIT © [Ömer Deliavcı](https://github.com/omerdlw)

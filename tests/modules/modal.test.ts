@@ -16,23 +16,14 @@ import {
   SMOOTH_SCROLL_LOCK_EVENT,
 } from "../../src/modules/modal/constants.ts";
 import {
-  useModalActions,
-  useModalState,
-} from "../../src/modules/modal/hooks.ts";
-import {
   dispatchSmoothScrollLock,
   getFocusableElements,
   trapFocus,
-} from "../../src/modules/modal/lib/dom.ts";
+} from "../../src/modules/modal/dom.ts";
 import {
-  hasSlotContent,
-  isHeaderConfig,
-  resolveHeaderActions,
-} from "../../src/modules/modal/model/header.ts";
-import {
-  getModalIdentity,
-  getModalLabel,
-} from "../../src/modules/modal/model/identity.ts";
+  useModalActions,
+  useModalState,
+} from "../../src/modules/modal/hooks.ts";
 import {
   getModalLayout,
   getModalPosition,
@@ -42,8 +33,15 @@ import {
   isVerticalEdgePosition,
   normalizePosition,
   resolveActivePosition,
-} from "../../src/modules/modal/model/layout.ts";
+} from "../../src/modules/modal/layout.ts";
 import { defineModal, modalModule } from "../../src/modules/modal/module.tsx";
+import {
+  getModalIdentity,
+  getModalLabel,
+  hasSlotContent,
+  isHeaderConfig,
+  resolveHeaderActions,
+} from "../../src/modules/modal/state.ts";
 import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 import { modalMotion } from "../support/motion/modal.ts";
 

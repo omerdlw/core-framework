@@ -3,7 +3,7 @@ import type {
   RegistryScopeKind,
   RegistrySource,
   RegistryValidationMode,
-} from "./types";
+} from "./types/registry";
 
 /**
  * Source used when a registration does not name one.

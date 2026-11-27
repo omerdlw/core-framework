@@ -29,8 +29,7 @@ import {
   useDockActions,
   useDockLoadingActions as useLoadingActions,
 } from "../context";
-import { blurActiveElement } from "../lib/dom";
-import { getDockLocationKey, isSamePath } from "../model/paths";
+import { blurActiveElement } from "../stack/focus";
 import type {
   DockActions,
   DockItem,
@@ -38,7 +37,8 @@ import type {
   DockRouteSnapshot,
 } from "../types";
 import { openDockGuardConfirmation } from "./guards";
-import { resolveDockRoutePolicy } from "./model/policy";
+import { getDockLocationKey, isSamePath } from "./paths";
+import { resolveDockRoutePolicy } from "./policy";
 
 const LOCATION_SYNC_EVENT = "dock:location-sync";
 const DEFAULT_NAVIGATION_SOURCE = "dock";
@@ -62,7 +62,7 @@ function subscribeToBrowserLocation(onChange: () => void): () => void {
   };
 }
 
-export function useDockLocationKey() {
+function useDockLocationKey() {
   const pathname = usePathname();
 
   const getBrowserLocationKey = () =>

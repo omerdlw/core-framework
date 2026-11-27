@@ -1,0 +1,122 @@
+"use client";
+
+import { type RefObject, useEffect } from "react";
+
+import { applyVideoPlaybackState } from "../playback";
+import type { BackgroundActions } from "../types";
+import { AUDIO_SYNC_EVENTS, setElementMuted } from "./audio";
+
+const AUDIO_SYNC_INTERVAL_MS = 1000;
+
+/**
+ * Pauses the video and its companion audio; a detached element may throw.
+ * Module level: the compiler cannot lower optional chaining inside a try
+ * block in a hook.
+ */
+function pauseQuietly(
+  video: HTMLVideoElement,
+  audio: HTMLAudioElement | null | undefined,
+) {
+  try {
+    video.pause();
+    audio?.pause();
+  } catch {
+    // Elements that are already detached have nothing to pause.
+  }
+}
+
+/**
+ * Keeps the native video element and its companion audio in sync: registers the
+ * element, mirrors audio on media events, and applies play/rate/mute props.
+ */
+export function useYouTubeVideoSync({
+  audioRef,
+  isMuted,
+  isPlaying,
+  playbackRate,
+  retryTimerIdsRef,
+  setVideoElement,
+  setVideoPlaying,
+  syncCompanionAudio,
+  useIframeFallback,
+  videoRef,
+  videoStreamUrl,
+}: {
+  audioRef: RefObject<HTMLAudioElement | null>;
+  isMuted: boolean;
+  isPlaying: boolean;
+  playbackRate: number;
+  retryTimerIdsRef: RefObject<Set<number>>;
+  setVideoElement: BackgroundActions["setVideoElement"];
+  setVideoPlaying: BackgroundActions["setVideoPlaying"];
+  syncCompanionAudio: (forceSeek?: boolean) => void;
+  useIframeFallback: boolean;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  videoStreamUrl: string;
+}) {
+  useEffect(() => {
+    if (useIframeFallback) return undefined;
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    const retryTimerIds = retryTimerIdsRef.current;
+    if (!video) {
+      setVideoElement(null);
+      return undefined;
+    }
+
+    setVideoElement(video);
+
+    const onSync = () => syncCompanionAudio(false);
+    const onSeeked = () => syncCompanionAudio(true);
+    for (const event of AUDIO_SYNC_EVENTS) {
+      video.addEventListener(event, onSync);
+    }
+    video.addEventListener("seeked", onSeeked);
+    const syncTimer = window.setInterval(onSync, AUDIO_SYNC_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(syncTimer);
+      retryTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+      retryTimerIds.clear();
+      for (const event of AUDIO_SYNC_EVENTS) {
+        video.removeEventListener(event, onSync);
+      }
+      video.removeEventListener("seeked", onSeeked);
+      pauseQuietly(video, audio);
+    };
+  }, [
+    audioRef,
+    retryTimerIdsRef,
+    setVideoElement,
+    syncCompanionAudio,
+    useIframeFallback,
+    videoRef,
+    videoStreamUrl,
+  ]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (useIframeFallback || !video) return;
+    applyVideoPlaybackState({
+      isPlaying,
+      playbackRate,
+      setVideoPlaying,
+      videoElement: video,
+    });
+    syncCompanionAudio();
+  }, [
+    isPlaying,
+    playbackRate,
+    setVideoPlaying,
+    syncCompanionAudio,
+    useIframeFallback,
+    videoRef,
+  ]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (useIframeFallback || !video) return;
+    if (video.muted !== isMuted) setElementMuted(video, isMuted);
+    syncCompanionAudio(true);
+  }, [isMuted, syncCompanionAudio, useIframeFallback, videoRef]);
+}

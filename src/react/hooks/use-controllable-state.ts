@@ -2,7 +2,14 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-import { type UseControllableStateOptions } from "./types";
+/**
+ * Options for `useControllableState`: a default, an optional controlled value and a change callback.
+ */
+export interface UseControllableStateOptions<T> {
+  defaultValue: T;
+  onChange?: (nextValue: T) => void;
+  value?: T;
+}
 
 /**
  * State that is controlled when `value` is given and uncontrolled otherwise.

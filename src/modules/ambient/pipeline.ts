@@ -1,4 +1,4 @@
-import { analyzeAmbientPixels, fitSample } from "./analyze";
+import { analyzeAmbientPixels, fitSample } from "./analysis/analyze";
 import type {
   AmbientAnalysisOptions,
   AmbientPalette,
@@ -16,6 +16,10 @@ export type AmbientExtractResult =
 
 type Context2D = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
+/**
+ * Fetches an image as a blob, retrying cross-origin images without the cache
+ * and then through the proxy. Null when every attempt fails.
+ */
 export async function fetchImageBlob(
   src: string,
   proxyUrl: string | null,
@@ -33,18 +37,23 @@ export async function fetchImageBlob(
     const blob = await read(src);
     if (blob) return blob;
   } catch {
+    // A cached opaque response can fail CORS; retry once without the cache.
     if (isCrossOrigin(src)) {
       try {
         const blob = await read(src, { cache: "reload" });
         if (blob) return blob;
-      } catch {}
+      } catch {
+        // Still refused: try the proxy next.
+      }
     }
   }
 
   if (proxyUrl) {
     try {
       return await read(proxyUrl);
-    } catch {}
+    } catch {
+      // The proxy failed too: there is nothing to analyse.
+    }
   }
   return null;
 }
@@ -53,14 +62,12 @@ function isCrossOrigin(url: string): boolean {
   try {
     return new URL(url).origin !== globalThis.location?.origin;
   } catch {
+    // A relative or malformed URL is treated as same-origin.
     return false;
   }
 }
 
-export function createContext2D(
-  width: number,
-  height: number,
-): Context2D | null {
+function createContext2D(width: number, height: number): Context2D | null {
   if (typeof OffscreenCanvas === "function") {
     return new OffscreenCanvas(width, height).getContext("2d", {
       willReadFrequently: true,
@@ -75,6 +82,7 @@ export function createContext2D(
   return null;
 }
 
+/** Draws an image scaled to the sample size and reads its RGBA pixels. */
 export function readPixels(
   image: CanvasImageSource,
   sourceWidth: number,
@@ -92,7 +100,7 @@ export function readPixels(
   };
 }
 
-export async function decodeBlob(
+async function decodeBlob(
   blob: Blob,
   size: number,
 ): Promise<AmbientPixels | null> {
@@ -104,6 +112,7 @@ export async function decodeBlob(
       resizeWidth: size,
     });
   } catch {
+    // Some browsers reject resize options; decode at full size instead.
     bitmap = await createImageBitmap(blob);
   }
   try {
@@ -113,10 +122,11 @@ export async function decodeBlob(
   }
 }
 
-export const canDecodeHere = () =>
+const canDecodeHere = () =>
   typeof createImageBitmap === "function" &&
   (typeof OffscreenCanvas === "function" || typeof document !== "undefined");
 
+/** Fetches, decodes and analyses an image on the current thread. */
 export async function extractHere(
   request: AmbientExtractRequest,
 ): Promise<AmbientExtractResult> {
@@ -130,6 +140,7 @@ export async function extractHere(
       supported: true,
     };
   } catch {
+    // An undecodable image simply has no palette.
     return { palette: null, supported: true };
   }
 }

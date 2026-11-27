@@ -117,19 +117,19 @@ describe("layers and module isolation", () => {
 describe("file length", () => {
   const lines = (count: number) => "export const x = 1;\n".repeat(count);
 
-  test("rejects a file over 400 lines and reports its length", () => {
-    const result = runFixture({ "src/foundation/long.ts": lines(401) });
+  test("rejects a file over 500 lines and reports its length", () => {
+    const result = runFixture({ "src/foundation/long.ts": lines(501) });
     assert.equal(result.code, 1);
     assert.ok(
       result.stderr.includes(
-        "File length: src/foundation/long.ts has 401 lines",
+        "File length: src/foundation/long.ts has 501 lines",
       ),
       result.stderr,
     );
   });
 
-  test("accepts a file of exactly 400 lines", () => {
-    const result = runFixture({ "src/foundation/ok.ts": lines(400) });
+  test("accepts a file of exactly 500 lines", () => {
+    const result = runFixture({ "src/foundation/ok.ts": lines(500) });
     assert.equal(result.code, 0, result.stderr);
   });
 });

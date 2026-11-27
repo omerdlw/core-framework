@@ -63,7 +63,7 @@ export const DEFAULT_CSS_VAR_NAMES: Readonly<AmbientCssVarNames> =
     tone: "--ambient-{role}-{tone}",
   });
 
-export const DEFAULT_PROXY = "/api/ambient/proxy?url=";
+const DEFAULT_PROXY = "/api/ambient/proxy?url=";
 
 /**
  * How long, in milliseconds, page-level variables stay after their owner
@@ -94,7 +94,7 @@ export function getAmbientSettings(): AmbientSettings {
   return (scope[SETTINGS_KEY] ??= createDefaults());
 }
 
-export function mergeAmbientSettings(
+function mergeAmbientSettings(
   base: AmbientSettings,
   input: AmbientSettingsInput,
 ): AmbientSettings {

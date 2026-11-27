@@ -5,8 +5,10 @@ export {
   ERROR_LISTENER_CONFIG,
   ERROR_MESSAGES,
   MAX_CONTEXT,
+  errorTheme,
   MAX_FINGERPRINTS,
 } from "./constants";
+export type { ErrorThemeSlot } from "./constants";
 
 export {
   createErrorContext,
@@ -35,8 +37,5 @@ export {
 } from "./boundary";
 
 export { GlobalErrorListener } from "./listener";
-
-export { errorTheme } from "./theme";
-export type { ErrorThemeSlot } from "./theme";
 
 export type * from "./types";

@@ -19,22 +19,21 @@ import {
 import { createStore } from "@/foundation/utils";
 import { useStore } from "@/react/hooks";
 
-import type * as OverlayView from "./components/overlay";
 import { ModalContext, ModalProvider } from "./context";
 import { useModal, useModalActions } from "./hooks";
-import { getModalIdentity } from "./model/identity";
-import { INITIAL_MODAL_STATE } from "./model/state";
-import {
-  type DefineModalOptions,
-  type ModalDefinition,
-  type ModalInput,
-  type ModalPageApi,
-  type ModalPageConfig,
-  type ModalState,
+import type * as OverlayView from "./overlay";
+import { getModalIdentity, INITIAL_MODAL_STATE } from "./state";
+import type {
+  DefineModalOptions,
+  ModalDefinition,
+  ModalInput,
+  ModalPageApi,
+  ModalPageConfig,
+  ModalState,
 } from "./types";
 
 let overlayChunk: Promise<typeof OverlayView> | null = null;
-const loadOverlay = () => (overlayChunk ??= import("./components/overlay"));
+const loadOverlay = () => (overlayChunk ??= import("./overlay"));
 
 const LazyModal = lazy(() =>
   loadOverlay().then((view) => ({ default: view.Modal })),

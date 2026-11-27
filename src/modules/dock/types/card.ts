@@ -1,9 +1,8 @@
-import type { ComponentType, ReactNode, SyntheticEvent } from "react";
+import type { ComponentType, ReactNode, Ref, SyntheticEvent } from "react";
 
 import type { RegistryMetadata } from "@/core/kernel";
 import type { createScheduler, ExternalStore } from "@/foundation/utils";
 
-import type { DockCompactProps } from "./compact";
 import type {
   DockHudDescriptor,
   DockOperation,
@@ -328,7 +327,7 @@ export interface DockCardHeaderProps {
 
 /** Props of a single dock card. */
 export interface DockCardItemProps {
-  ref?: React.Ref<HTMLDivElement>;
+  ref?: Ref<HTMLDivElement>;
   activeItem?: DockItem | null;
   onContentHeightChange?: ((height: number) => void) | null;
   isStackHovered?: boolean;
@@ -398,3 +397,14 @@ export type DockScheduler = ReturnType<typeof createScheduler>;
 
 /** Identifier of a task queued on the dock scheduler. */
 export type DockScheduledTaskId = ReturnType<DockScheduler["schedule"]>;
+
+/** What the front card needs to draw the compact layout. */
+export interface DockCompactProps {
+  /** The card's action, drawn small beside the commands. */
+  action?: ReactNode;
+  activeItem: DockItem | null;
+  contextCommands: DockActionDescriptor[];
+  /** Reports the compact row's own width in px, so the dock can fit it. */
+  onWidthChange: (width: number) => void;
+  setCompact: (compact: boolean) => void;
+}

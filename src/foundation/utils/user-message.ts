@@ -12,6 +12,17 @@ export const USER_MESSAGES = Object.freeze({
   server: "We're having trouble on our end. Please try again in a moment",
 } as const);
 
+const NETWORK_FAILURE = /failed to fetch|network|load failed|fetch failed/i;
+
+const STATUS_UNAUTHORIZED = 401;
+const STATUS_FORBIDDEN = 403;
+const STATUS_NOT_FOUND = 404;
+const STATUS_REQUEST_TIMEOUT = 408;
+const STATUS_RATE_LIMITED = 429;
+const STATUS_GATEWAY_TIMEOUT = 504;
+const STATUS_CLIENT_ERROR_MIN = 400;
+const STATUS_SERVER_ERROR_MIN = 500;
+
 /**
  * An error whose message is safe to show to the user as-is.
  */
@@ -32,17 +43,6 @@ export interface UserMessageOptions {
   fallback?: string;
   codes?: Readonly<Record<string, string>>;
 }
-
-const NETWORK_FAILURE = /failed to fetch|network|load failed|fetch failed/i;
-
-const STATUS_UNAUTHORIZED = 401;
-const STATUS_FORBIDDEN = 403;
-const STATUS_NOT_FOUND = 404;
-const STATUS_REQUEST_TIMEOUT = 408;
-const STATUS_RATE_LIMITED = 429;
-const STATUS_GATEWAY_TIMEOUT = 504;
-const STATUS_CLIENT_ERROR_MIN = 400;
-const STATUS_SERVER_ERROR_MIN = 500;
 
 function readField<T>(
   source: unknown,

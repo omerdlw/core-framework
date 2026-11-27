@@ -24,15 +24,17 @@ The source is split into four layers. A file's layer is its first folder under `
 3. **Module isolation:** a module imports another module only through that module's public barrel (`@/modules/<name>`), and only when `<name>` is in its `uses`. Deep imports into another module's files are errors (Rule 1).
 4. **No deep imports for consumers:** apps import only the subpaths in `package.json#exports` (`@omerdlw/base-framework/kernel`, `@omerdlw/base-framework/dock`). File paths such as `@omerdlw/base-framework/dist/kernel/page.js` are not part of the API.
 5. **Zero cycles:** the import graph has no cycles, verified by `npm run check:architecture`.
-6. **Inside a layer:** imports point straight at the file (`@/core/kernel/hooks`). A folder's `index.ts` is a public entry only; internal code does not import through it.
+6. **Inside a layer:** imports point straight at the file (`@/core/kernel/registry/hooks`). A folder's `index.ts` is a public entry only; internal code does not import through it.
 
 ---
 
 ## 2. Canonical Module File Pattern
 
+Code is grouped by what it does, not by what kind of file it is. A reader looking for the dock's breadcrumbs opens `dock/routing/`, not `components/`, `hooks/` and `model/` in turn. Two layouts follow from that rule.
+
 ### 2.1 Flat layout (default)
 
-Used by `ambient`, `context-menu`, `controls`, `loading`, `media`, `navigation` and `notification`.
+Used by `ambient`, `background`, `context-menu`, `controls`, `loading`, `media`, `modal`, `navigation` and `notification`.
 
 | File           | Responsibility                                                                              | Required? |
 | :------------- | :------------------------------------------------------------------------------------------ | :-------: |
@@ -42,30 +44,37 @@ Used by `ambient`, `context-menu`, `controls`, `loading`, `media`, `navigation` 
 | `constants.ts` | Module id, `defineThemeSpec`, constants.                                                    |    ✅     |
 | `context.tsx`  | Context and provider; at most one context per module.                                       | Optional  |
 | `state.ts`     | Initial state and pure reducers.                                                            | Optional  |
-| `hooks.ts`     | View-model hooks (`use<Component>Model`).                                                   | Optional  |
+| `hooks.ts`     | Public hooks and view-model hooks (`use<Component>Model`).                                  | Optional  |
 | `overlay.tsx`  | Visual JSX that consumes the view-models; no state, effects or refs.                        | Optional  |
 | `motion.ts`    | The module's `use*Motion()` hook. Motion values live in the app's theme, not in the module. | Optional  |
 | `utils.ts`     | Pure helpers.                                                                               | Optional  |
 
-A module may add topic files for a cohesive concern (`context-menu/resolver.ts`, `media/session.ts`). Ambient's `server/` and `worker/` sub-entries stay in place.
+A module adds topic files for a cohesive concern (`context-menu/resolver.ts`, `media/session.ts`, `modal/layout.ts`) and a folder for a self-contained part (`ambient/analysis/`, `background/youtube/`). Ambient's `server/` and `worker/` sub-entries stay in place.
 
-### 2.2 Folder layout
+### 2.2 Feature layout
 
-Modules that outgrow the flat layout (more than 12 files, or a file near 400 lines) use folders. Today that is `background`, `dock` and `modal`:
+A module too large for one flat folder splits by feature. Today that is `dock`:
 
 ```
-modules/<name>/
-├── index.ts  module.tsx  constants.ts  context.tsx  motion.ts
-├── components/   one public component per file (plus small sub-components only it uses)
-├── hooks/        view-model hooks, one file per component
-├── model/        pure state and machine logic (no React)
-├── lib/          pure helpers (no React)
-└── types/        types split by area, plus index.ts
+modules/dock/
+├── index.ts  module.tsx  constants.ts  context.ts  provider.tsx
+├── hooks.ts  theme.ts  motion.ts  utils.ts
+├── types/      contracts split by area, plus index.ts
+├── stack/      the dock root, layout, height and focus
+├── card/       a card and its parts
+├── commands/   …one folder per feature
+└── surface/    with surface/runtime/ for the surface stack
 ```
 
-A module that already keeps a sub-feature in its own folder keeps it (`dock/routing`, `dock/runtime`, `dock/status`, `dock/surface`, `background/youtube`), and that folder follows the same `components/`, `hooks/`, `model/` split.
+Inside a feature folder, a component and the view-model hook only it uses share a file when together they stay readable (`surface/shell.tsx`); otherwise they sit side by side (`card/card.tsx` and `card/use-card.ts`). Files are named for what they hold, without repeating the folder (`card/header.tsx`, not `card/card-header.tsx`).
 
-No file under `src/` exceeds 400 lines; `npm run check:architecture` enforces it.
+### 2.3 Size and naming
+
+- File and folder names are kebab-case; hook files start with `use-`.
+- A name prefix shared by several files (`store-*.ts`) means they belong in a folder (`registry/`).
+- A file under about 40 lines joins its only user or its closest sibling instead of standing alone.
+- No file under `src/` exceeds 500 lines; `npm run check:architecture` enforces it.
+- Inside a file: imports, then constants, then code in reading order. A file with several concerns separates them with `// ---- Section ----` headers.
 
 ---
 
@@ -116,6 +125,8 @@ Asynchronous workflows, Server Actions, and data mutations must never throw unha
 - ❌ `if (!id) throw new Error("Invalid ID");`
 - ✅ `if (!id) return err("Invalid ID"); return ok({ success: true });`
 
+Errors that the framework catches, such as a user callback that throws, go through `report(scope, error)` before any fallback. An empty `catch` is only for browser APIs that may throw harmlessly, and it carries a comment that says why.
+
 ### Rule 7: Declarative Chrome (`usePage`)
 
 Consumer applications must never handcraft ad-hoc fixed headers, floating toolbars, or sticky navigation bars in individual page views. All route chrome is declared through `usePage()`:
@@ -156,8 +167,8 @@ It runs `format:check`, `lint`, `type-check`, `check:architecture`, `test`, `bui
 | **Prettier**            | `npm run format:check`       | One formatting for source, tests and docs.                                                                                                                                          |
 | **ESLint**              | `npm run lint`               | Type-aware rules, import order, public subpaths only, the React Compiler rules (`react-hooks/*` as errors).                                                                         |
 | **TypeScript**          | `npm run type-check`         | Strict types for `src`, `templates` and `tests/types`.                                                                                                                              |
-| **Architecture script** | `npm run check:architecture` | Four rules: no import cycles; layers only import downwards and foundation stays framework-free; modules meet only at declared public barrels (`uses`); files stay within 400 lines. |
-| **Node test runner**    | `npm test`                   | 740 tests over foundation, react, core and modules, run on the uncompiled source.                                                                                                   |
+| **Architecture script** | `npm run check:architecture` | Four rules: no import cycles; layers only import downwards and foundation stays framework-free; modules meet only at declared public barrels (`uses`); files stay within 500 lines. |
+| **Node test runner**    | `npm test`                   | The test suite over foundation, react, core and modules, run on the uncompiled source.                                                                                              |
 | **tsup + smoke tests**  | `npm run build`, `test:dist` | ESM bundles with the React Compiler, `.d.ts` output, and 13 smoke tests against `dist`.                                                                                             |
 
 ---
@@ -193,12 +204,12 @@ Memos that only feed render output or DOM event handlers are dropped.
 
 These functions are skipped by the compiler on purpose. Their memos stay hand-written and are marked `// kept: <fn> is a compiler exception`.
 
-| File                                                                          | Function                          | Reason                                                                                                                  |
-| :---------------------------------------------------------------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| `src/core/kernel/hooks.ts`                                                    | `useShallowStable`                | Reads and writes a ref during render to keep a shallow-equal value stable; a state-based version costs an extra render. |
-| `src/core/kernel/page-controller.tsx`                                         | `useModuleControllers`            | Calls each module's `page.use` hook in a loop; compiled, the loop is memoized and the hooks are skipped on re-render.   |
-| `src/modules/ambient/hooks.ts`                                                | `useStableObject`                 | Same ref-during-render pattern as `useShallowStable`.                                                                   |
-| `src/modules/background/youtube/hooks/use-youtube-background-player-model.ts` | `useYouTubeBackgroundPlayerModel` | Writes the latest props into `live.current` during render for imperative player callbacks.                              |
-| `src/modules/dock/runtime/hooks/use-dock-operation-state.ts`                  | `useDockOperationState`           | Reads the operations ref during render.                                                                                 |
+| File                                           | Function                          | Reason                                                                                                                  |
+| :--------------------------------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| `src/core/kernel/registry/hooks.ts`            | `useShallowStable`                | Reads and writes a ref during render to keep a shallow-equal value stable; a state-based version costs an extra render. |
+| `src/core/kernel/page.tsx`                     | `useModuleControllers`            | Calls each module's `page.use` hook in a loop; compiled, the loop is memoized and the hooks are skipped on re-render.   |
+| `src/modules/ambient/hooks.ts`                 | `useStableObject`                 | Same ref-during-render pattern as `useShallowStable`.                                                                   |
+| `src/modules/background/youtube/use-player.ts` | `useYouTubeBackgroundPlayerModel` | Writes the latest props into `live.current` during render for imperative player callbacks.                              |
+| `src/modules/dock/items/operations.ts`         | `useDockOperationState`           | Reads the operations ref during render.                                                                                 |
 
 Refactoring any of these is optional work; when one compiles, re-check its memos against the rule above.

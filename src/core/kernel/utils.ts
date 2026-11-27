@@ -5,7 +5,14 @@ import {
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_RANK,
 } from "./constants";
-import type { RegistryMetadata } from "./types";
+import type { RegistryMetadata } from "./types/registry";
+
+/** The trimmed string, or null for empty strings and non-strings. */
+const trimmedString = (value: unknown): string | null =>
+  typeof value === "string" ? value.trim() || null : null;
+
+const sourceOf = (options: Record<string, unknown>): string =>
+  typeof options.source === "string" ? options.source : DEFAULT_SOURCE;
 
 /**
  * Safe own-property check that works on objects without a prototype.
@@ -47,13 +54,7 @@ export function resolveRegisterInput(
     };
   }
   if (isObject(sourceOrOptions)) {
-    return {
-      source:
-        typeof sourceOrOptions.source === "string"
-          ? sourceOrOptions.source
-          : DEFAULT_SOURCE,
-      options: sourceOrOptions,
-    };
+    return { source: sourceOf(sourceOrOptions), options: sourceOrOptions };
   }
   return {
     source: DEFAULT_SOURCE,
@@ -64,9 +65,7 @@ export function resolveRegisterInput(
 export function resolveScope(
   options: RegistryMetadata | null | undefined,
 ): string {
-  return typeof options?.scope === "string" && options.scope.trim()
-    ? options.scope.trim()
-    : DEFAULT_REGISTRY_SCOPE;
+  return trimmedString(options?.scope) ?? DEFAULT_REGISTRY_SCOPE;
 }
 
 export function resolveUnregisterInput(sourceOrOptions: unknown): {
@@ -80,15 +79,8 @@ export function resolveUnregisterInput(sourceOrOptions: unknown): {
   if (isObject(sourceOrOptions)) {
     return {
       instanceId: resolveInstanceId(sourceOrOptions),
-      scope:
-        typeof sourceOrOptions.scope === "string" &&
-        sourceOrOptions.scope.trim()
-          ? sourceOrOptions.scope.trim()
-          : null,
-      source:
-        typeof sourceOrOptions.source === "string"
-          ? sourceOrOptions.source
-          : DEFAULT_SOURCE,
+      scope: trimmedString(sourceOrOptions.scope),
+      source: sourceOf(sourceOrOptions),
     };
   }
   return { instanceId: null, scope: null, source: DEFAULT_SOURCE };
@@ -101,21 +93,12 @@ export function mergeModuleConfigs<T extends object>(
   const source = base as Record<string, unknown>;
   const changes = patch as Record<string, unknown>;
   const result: Record<string, unknown> = { ...source };
-  Object.keys(changes).forEach((key) => {
+  for (const [key, patchVal] of Object.entries(changes)) {
     const baseVal = source[key];
-    const patchVal = changes[key];
-    if (
-      baseVal &&
-      typeof baseVal === "object" &&
-      !Array.isArray(baseVal) &&
-      patchVal &&
-      typeof patchVal === "object" &&
-      !Array.isArray(patchVal)
-    ) {
-      result[key] = { ...baseVal, ...patchVal };
-    } else {
-      result[key] = patchVal;
-    }
-  });
+    result[key] =
+      isObject(baseVal) && isObject(patchVal)
+        ? { ...baseVal, ...patchVal }
+        : patchVal;
+  }
   return result as T;
 }

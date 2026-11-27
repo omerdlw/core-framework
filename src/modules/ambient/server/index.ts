@@ -1,4 +1,4 @@
-import { analyzeAmbientPixels } from "../analyze";
+import { analyzeAmbientPixels } from "../analysis/analyze";
 import { resolveAnalysis } from "../settings";
 import type {
   AmbientAnalysisOptions,
@@ -17,7 +17,7 @@ export {
   analyzeAmbientPixels,
   findContentBounds,
   fitSample,
-} from "../analyze";
+} from "../analysis/analyze";
 export { isPrivateAddress, isPrivateHostname } from "./address";
 export { configureAmbient, getAmbientSettings } from "../settings";
 export {
@@ -27,7 +27,7 @@ export {
   onColorFor,
   srgbToOklab,
   toneOf,
-} from "../oklab";
+} from "../analysis/oklab";
 export type * from "../types";
 
 /**
@@ -61,6 +61,8 @@ const MAX_REDIRECTS = 5;
 const REDIRECT_STATUS_MIN = 300;
 const REDIRECT_STATUS_MAX = 400;
 
+const SHARP = "sharp";
+
 /**
  * Whether a URL is plain http(s) without credentials and not on a private
  * hostname.
@@ -93,6 +95,7 @@ async function reachesOnlyPublic(
       : await (resolve ?? lookupAll)(host);
     return addresses.length > 0 && !addresses.some(isPrivateAddress);
   } catch {
+    // A host that does not resolve is never fetched.
     return false;
   }
 }
@@ -124,7 +127,6 @@ export class AmbientDecoderMissingError extends Error {
 }
 
 let sharpModule: Promise<SharpLike> | null = null;
-const SHARP = "sharp";
 
 function loadSharp(): Promise<SharpLike> {
   sharpModule ??= import(

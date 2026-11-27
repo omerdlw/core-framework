@@ -14,14 +14,14 @@ import {
   createSurfaceFlowSession,
   updateSurfaceFlowSession,
 } from "../definition";
+import type { SurfaceChoreography } from "./choreography";
 import {
   getRestorableSurfaceFlowSnapshot,
   type SurfaceRuntimeRefs,
   toSurfaceFlowState,
   updateSurfaceStackEntry,
-} from "../model/records";
-import { syncSurfaceFlowUrlState } from "../model/url";
-import type { SurfaceChoreography } from "./choreography";
+} from "./records";
+import { syncSurfaceFlowUrlState } from "./url";
 
 /** Builds the surface flow actions on top of `openSurface` and `closeSurface`. */
 export function createSurfaceFlows({

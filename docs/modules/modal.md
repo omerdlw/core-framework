@@ -210,21 +210,22 @@ Motion comes from the theme too (`motion: ModalMotion`, [theming §5](../theming
 
 ## 9. File map
 
-Folder layout ([README §4](./README.md#4-canonical-module-template)), under `src/modules/modal/`:
+Flat layout ([architecture §2.1](../architecture-and-rules.md#21-flat-layout-default)), under `src/modules/modal/`:
 
-| Path           | Responsibility                                                                                                                        |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| `index.ts`     | Public barrel.                                                                                                                        |
-| `types.ts`     | Positions, chrome, entries, state, actions, definitions, container props, theme slots.                                                |
-| `constants.ts` | `MODAL_POSITIONS`, `MODAL_CHROME`, mobile breakpoint, scroll-lock event, focusable selector, height-constraint pattern, `modalTheme`. |
-| `context.tsx`  | `ModalProvider`: stack, pending promises, actions, registry lookup.                                                                   |
-| `hooks.ts`     | `useModal*` hooks, `useModalRegistration`, and the view models (`useModalLayerModel`, container model).                               |
-| `motion.ts`    | `useModalMotion`, `getModalPositionMotion`, compositor hints. The values come from the app's modal theme.                             |
-| `module.tsx`   | `modalModule`, lazy renderer, page API, `defineModal`, kernel type augmentation.                                                      |
-| `components/`  | `Modal` (`overlay.tsx`), `ModalLayer`, `ModalContainer`, `ModalLayerSwitcher`, close button, slot row, header resolution.             |
-| `hooks/`       | Focus trap, scroll lock, mobile viewport.                                                                                             |
-| `model/`       | Pure logic: `createModalState`, entries, identity and labels, header checks, position and layout resolution.                          |
-| `lib/`         | Focus helpers and smooth scroll-lock dispatch (`dom.ts`), theme type alias (`theme.ts`).                                              |
+| File            | Responsibility                                                                                                                        |
+| :-------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `index.ts`      | Public barrel.                                                                                                                        |
+| `types.ts`      | Positions, chrome, entries, state, actions, definitions, container props, theme slots.                                                |
+| `constants.ts`  | `MODAL_POSITIONS`, `MODAL_CHROME`, mobile breakpoint, scroll-lock event, focusable selector, height-constraint pattern, `modalTheme`. |
+| `context.tsx`   | `ModalProvider`: stack, pending promises, actions, registry lookup.                                                                   |
+| `hooks.ts`      | `useModal*` hooks, `useModalRegistration`, the view models, focus trap, scroll lock and mobile viewport.                              |
+| `state.ts`      | `createModalState`, entries, identity and labels, header checks.                                                                      |
+| `layout.ts`     | Position and layout resolution.                                                                                                       |
+| `dom.ts`        | Focus helpers and smooth scroll-lock dispatch.                                                                                        |
+| `overlay.tsx`   | `Modal`, `ModalLayer` and the layer switcher.                                                                                         |
+| `container.tsx` | `ModalContainer`, header resolution, slot row, close button.                                                                          |
+| `motion.ts`     | `useModalMotion`, `getModalPositionMotion`, compositor hints. The values come from the app's modal theme.                             |
+| `module.tsx`    | `modalModule`, lazy renderer, page API, `defineModal`, kernel type augmentation.                                                      |
 
 ## 10. Dependencies
 

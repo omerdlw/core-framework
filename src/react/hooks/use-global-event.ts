@@ -4,7 +4,13 @@ import { useEffect, useEffectEvent, useRef } from "react";
 
 import { type FrameworkEventMap, globalEvents } from "@/foundation/events";
 
-import type { UseGlobalEventOptions } from "./types";
+/**
+ * Options for `useGlobalEvent`: debounce or throttle the handler.
+ */
+export interface UseGlobalEventOptions {
+  debounceMs?: number;
+  throttleMs?: number;
+}
 
 interface TimerRef {
   current: ReturnType<typeof setTimeout> | null;

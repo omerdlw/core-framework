@@ -34,13 +34,13 @@ const SETTINGS_KEY = Symbol.for("@omerdlw/base-framework/navigation/settings");
 type GlobalWithSettings = typeof globalThis & {
   [SETTINGS_KEY]?: NavigationSettings;
 };
-const scope = globalThis as GlobalWithSettings;
+const globalScope = globalThis as GlobalWithSettings;
 
 /**
  * Returns the current navigation settings.
  */
 export function getNavigationSettings(): NavigationSettings {
-  return (scope[SETTINGS_KEY] ??= createDefaults());
+  return (globalScope[SETTINGS_KEY] ??= createDefaults());
 }
 
 function mergeIntent(
@@ -73,8 +73,9 @@ export function configureNavigation(
 ): () => void {
   const previous = getNavigationSettings();
   const next = mergeNavigationSettings(previous, input);
-  scope[SETTINGS_KEY] = next;
+  globalScope[SETTINGS_KEY] = next;
   return () => {
-    if (scope[SETTINGS_KEY] === next) scope[SETTINGS_KEY] = previous;
+    if (globalScope[SETTINGS_KEY] === next)
+      globalScope[SETTINGS_KEY] = previous;
   };
 }

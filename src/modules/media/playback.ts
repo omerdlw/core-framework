@@ -8,7 +8,7 @@ const noop = () => {};
 export function toggleElement(element: HTMLMediaElement | null): void {
   if (!element) return;
   if (element.paused || element.ended) {
-    void Promise.resolve(element.play()).catch(noop);
+    safePlay(element);
   } else {
     element.pause();
   }
@@ -20,7 +20,9 @@ export function toggleElement(element: HTMLMediaElement | null): void {
 export function safePlay(element: HTMLMediaElement): void {
   try {
     void Promise.resolve(element.play()).catch(noop);
-  } catch {}
+  } catch {
+    // Some browsers throw synchronously instead of rejecting.
+  }
 }
 
 /**

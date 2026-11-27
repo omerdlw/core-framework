@@ -5,7 +5,10 @@ import { stripTrailingSlash } from "./string";
  */
 export const isBrowser: boolean = typeof window !== "undefined";
 
-let globalScrollLockCount = 0;
+// ---- Global scroll lock ----
+
+const LOCKED_OVERFLOW = "hidden";
+const LOCKED_OVERSCROLL = "none";
 
 interface ScrollStyles {
   bodyOverflow: string;
@@ -14,10 +17,9 @@ interface ScrollStyles {
   htmlOverscrollBehavior: string;
 }
 
+// Reference count of holders, and the inline styles to restore at zero.
+let globalScrollLockCount = 0;
 let globalScrollLockStyles: ScrollStyles | null = null;
-
-const LOCKED_OVERFLOW = "hidden";
-const LOCKED_OVERSCROLL = "none";
 
 function readScrollStyles(): ScrollStyles {
   return {
@@ -66,6 +68,8 @@ export function acquireGlobalScrollLock(): () => void {
     globalScrollLockStyles = null;
   };
 }
+
+// ---- Location ----
 
 /**
  * The public site URL from `NEXT_PUBLIC_SITE_URL` without a trailing slash,

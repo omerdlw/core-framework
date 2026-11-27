@@ -1,35 +1,46 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { createStore } from "@/foundation/utils";
 
+import { useDockCommandRegistry } from "./commands/registry";
 import { DockContext } from "./context";
-import { useDockRouteReset } from "./hooks/use-dock-route-reset";
-import { useDockHudRegistry } from "./hooks/use-hud-registry";
-import { createDockScheduler } from "./lib/helpers";
+import { useDockHudRegistry } from "./hud/hud";
+import { useDockOperationState } from "./items/operations";
 import { BreadcrumbProvider } from "./routing/breadcrumbs";
-import { useDockContinuity } from "./routing/continuity";
-import { createDockGuardRegistry } from "./routing/guards";
-import { useDockCommandRegistry } from "./runtime/commands";
-import { useDockExpansion } from "./runtime/hooks/use-dock-expansion";
-import { useDockOperationState } from "./runtime/hooks/use-dock-operation-state";
-import { useDockRouteBridge } from "./runtime/hooks/use-dock-route-bridge";
 import {
-  createDockLocalActions,
-  createSurfaceFlowReturns,
-  isSameDockState,
-} from "./runtime/provider-actions";
-import { SurfaceExtensionsProvider } from "./surface/components/surface-extensions-provider";
-import { SurfaceFlowProvider } from "./surface/components/surface-flow-provider";
-import { useSurfaceStack } from "./surface/stack";
+  type DockContinuityActions,
+  useDockContinuity,
+} from "./routing/continuity";
+import { createDockGuardRegistry } from "./routing/guards";
+import { isSamePath } from "./routing/paths";
+import { useDockRouteBridge, useDockRouteReset } from "./routing/route-bridge";
+import {
+  SurfaceExtensionsProvider,
+  SurfaceFlowProvider,
+} from "./surface/context";
+import { resolveSurfaceFlowReturn } from "./surface/helpers";
+import { useSurfaceStack } from "./surface/runtime/stack";
 import type {
   DockActions,
   DockContextValue,
   DockProviderProps,
+  DockRoutePolicy,
   DockState,
+  SurfaceFlowSession,
+  SurfaceResult,
+  SurfaceReturnHandshake,
 } from "./types";
+import { createDockScheduler } from "./utils";
 
 /** Owns dock state and actions and provides them, with surfaces and breadcrumbs, to its children. */
 export function DockProvider({
@@ -266,4 +277,136 @@ export function DockProvider({
       </SurfaceFlowProvider>
     </DockContext>
   );
+}
+
+function createExpansionActions(
+  setExpandedState: Dispatch<SetStateAction<boolean>>,
+) {
+  return {
+    collapse: () => setExpandedState(false),
+    expand: () => setExpandedState(true),
+    setExpanded: (nextValue: boolean | ((prev: boolean) => boolean)) =>
+      setExpandedState((prev) =>
+        Boolean(typeof nextValue === "function" ? nextValue(prev) : nextValue),
+      ),
+    toggle: () => setExpandedState((prev) => !prev),
+  };
+}
+
+function useDockExpansion() {
+  const [expanded, setExpandedState] = useState(false);
+  const [actions] = useState(() => createExpansionActions(setExpandedState));
+
+  return { actions, expanded };
+}
+
+function normalizeDockHeight(nextHeight: number): number {
+  return Number.isFinite(Number(nextHeight))
+    ? Math.max(0, Number(nextHeight))
+    : 0;
+}
+
+/** Dock height and route-reset handshake, built once per provider. */
+function createDockLocalActions(
+  setRawDockHeight: Dispatch<SetStateAction<number>>,
+) {
+  let dockHeight = 0;
+  let pendingRouteResetPolicy: DockRoutePolicy | null = null;
+
+  return {
+    clearPreparedRouteReset: () => {
+      pendingRouteResetPolicy = null;
+    },
+    prepareRouteReset: (routePolicy: DockRoutePolicy | null) => {
+      pendingRouteResetPolicy = routePolicy || null;
+    },
+    setDockHeight: (nextHeight: number) => {
+      const height = normalizeDockHeight(nextHeight);
+      if (dockHeight === height) return;
+      dockHeight = height;
+      setRawDockHeight(height);
+    },
+    /** Returns the prepared route policy and clears it. */
+    takeRouteResetPolicy: () => {
+      const routePolicy = pendingRouteResetPolicy;
+      pendingRouteResetPolicy = null;
+      return routePolicy;
+    },
+  };
+}
+
+interface DockRoute {
+  pathname: string | null;
+  router: { push: (href: string) => void };
+}
+
+/**
+ * Hands a settled surface flow's result back to the route it returns to,
+ * navigating there first when needed. Built once per provider; the provider
+ * pushes the current route in after each commit.
+ */
+function createSurfaceFlowReturns(
+  continuity: DockContinuityActions,
+  initialRoute: DockRoute,
+) {
+  let route = initialRoute;
+  let pending: SurfaceReturnHandshake | null = null;
+
+  return {
+    onSurfaceFlowSettled: ({
+      flow,
+      result: rawResult,
+    }: {
+      flow: SurfaceFlowSession;
+      result: SurfaceResult;
+    }) => {
+      const flowReturn = resolveSurfaceFlowReturn(flow, rawResult);
+      if (!flowReturn) return false;
+      const { data, handshake, status } = flowReturn;
+
+      const handoff = continuity.deliverReturn(handshake.pathname, {
+        data,
+        flowId: flow.flowId,
+        status,
+      });
+      if (!handoff) return false;
+
+      pending = handshake;
+      if (isSamePath(route.pathname, handshake.pathname)) {
+        pending = null;
+        continuity.restore(handshake.pathname, handshake);
+      } else {
+        route.router.push(handshake.pathname);
+      }
+      return true;
+    },
+    /** Restores a pending return once the route has reached its path. */
+    restorePending: (pathname: string | null) => {
+      const handshake = pending;
+      if (!handshake || !isSamePath(pathname, handshake.pathname)) return;
+      pending = null;
+      continuity.restore(handshake.pathname, handshake);
+    },
+    setRoute: (next: DockRoute) => {
+      route = next;
+    },
+  };
+}
+
+/**
+ * True when two dock states hold the same values. Arrays are compared by
+ * their items, since `hudEntries` is rebuilt from the entry map each time.
+ */
+function isSameDockState(current: DockState, next: DockState): boolean {
+  return (Object.keys(next) as (keyof DockState)[]).every((key) => {
+    const a = current[key];
+    const b = next[key];
+    if (Object.is(a, b)) return true;
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((item, index) => Object.is(item, b[index]))
+    );
+  });
 }

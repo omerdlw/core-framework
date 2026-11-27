@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useSyncExternalStore } from "react";
+import { type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { isImageIconSource } from "@/foundation/utils";
+import { useIsClient } from "@/react/hooks/use-client-value";
 import { Icon } from "@/react/ui/components/icon";
 
 import { HEADER_ICON_SIZE, ITEM_ICON_SIZE } from "./constants";
@@ -30,6 +31,11 @@ interface ContextMenuHeaderIconProps {
   classes: ContextMenuClasses;
   icon: ContextMenuIcon;
 }
+
+const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
+  pathname: "",
+  point: { x: 0, y: 0 },
+});
 
 /**
  * Icon of the menu header: an image when the icon is an image source, otherwise
@@ -96,7 +102,7 @@ interface ContextMenuItemProps {
   isActive: boolean;
   item: ContextMenuResolvedItem;
   onHover: () => void;
-  onSelect: (item: ContextMenuResolvedItem, event: React.MouseEvent) => void;
+  onSelect: (item: ContextMenuResolvedItem, event: MouseEvent) => void;
   setButtonRef: (node: HTMLButtonElement | null) => void;
 }
 
@@ -155,11 +161,6 @@ export function ContextMenuItem({
   );
 }
 
-const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
-  pathname: "",
-  point: { x: 0, y: 0 },
-});
-
 interface ContextMenuContentProps {
   config: ContextMenuConfig;
   items: ContextMenuResolvedItem[];
@@ -168,7 +169,7 @@ interface ContextMenuContentProps {
   position: ContextMenuPosition;
 }
 
-export function ContextMenuContent({
+function ContextMenuContent({
   config,
   items,
   menuContext,
@@ -258,19 +259,13 @@ export function ContextMenuContent({
   );
 }
 
-const emptySubscribe = () => () => {};
-
 /**
  * Renders the open menu in a portal on the document body.
  */
 export function ContextMenuRenderer() {
   const { closeMenu, config, context, isOpen, items, position } =
     useContextMenu();
-  const isMounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
+  const isMounted = useIsClient();
   if (!isMounted) return null;
 
   const menuContext = context ?? EMPTY_MENU_CONTEXT;

@@ -103,7 +103,7 @@ export interface Recipe<V = VariantMap> {
 export type RecipeProps<R> = R extends Recipe<infer V> ? SelectionOf<V> : never;
 
 const key = (value: unknown): string | null =>
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 3.2 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- any value is accepted; objects become "[object Object]"
   value === null || value === undefined ? null : String(value);
 
 function matches(
@@ -216,11 +216,10 @@ function appendClasses(value: Classes, out: string): string {
   }
   if (typeof value !== "object") return out;
   if (Array.isArray(value)) {
-    let next = out;
-    for (let index = 0; index < value.length; index += 1) {
-      next = appendClasses((value as readonly Classes[])[index], next);
-    }
-    return next;
+    return (value as readonly Classes[]).reduce<string>(
+      (next, item) => appendClasses(item, next),
+      out,
+    );
   }
   const record = value as Readonly<Record<string, unknown>>;
   let next = out;

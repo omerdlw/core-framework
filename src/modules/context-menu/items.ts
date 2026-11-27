@@ -45,7 +45,8 @@ export function resolveAsBoolean(
   if (typeof value === "function") {
     try {
       return Boolean((value as (context?: unknown) => unknown)(context));
-    } catch {
+    } catch (error) {
+      report("Context menu condition", error);
       return false;
     }
   }
@@ -68,7 +69,8 @@ export function resolveAsValue<T = unknown>(
     try {
       const resolved = (value as (context?: unknown) => T | undefined)(context);
       return resolved === undefined ? (fallback as T) : resolved;
-    } catch {
+    } catch (error) {
+      report("Context menu value", error);
       return fallback as T;
     }
   }

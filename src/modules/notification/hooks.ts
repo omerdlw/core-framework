@@ -1,16 +1,11 @@
 "use client";
 
-import {
-  type ReactNode,
-  use,
-  useCallback,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import { type ReactNode, use, useCallback, useMemo } from "react";
 
 import { EVENT_TYPES } from "@/foundation/events";
 import { toUserMessage } from "@/foundation/utils";
 import { useGlobalEvent, useRequiredContext, useStore } from "@/react/hooks";
+import { useIsClient } from "@/react/hooks/use-client-value";
 import { useTheme } from "@/react/theme";
 
 import {
@@ -248,8 +243,6 @@ export function useToast(defaultDuration?: number | null): ToastController {
   );
 }
 
-const emptySubscribe = () => () => {};
-
 interface NotifyRequest {
   message?: string;
   notify?: boolean;
@@ -283,11 +276,7 @@ export function NotificationListener(): null {
 export function useNotificationContainerModel() {
   const { notifications } = useNotificationState();
   const { dismissNotification } = useNotificationActions();
-  const isHydrated = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
+  const isHydrated = useIsClient();
   // Returns an entry of `notifications`, so its identity is already stable.
   const activeEntry = getActiveNotification(notifications);
 

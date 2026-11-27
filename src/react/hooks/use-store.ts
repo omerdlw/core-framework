@@ -4,13 +4,13 @@ import { useRef, useSyncExternalStore } from "react";
 
 import { type ExternalStore } from "@/foundation/utils";
 
-/**
- * Subscribes a component to an external store, optionally to a selected slice with a custom equality check.
- */
 // Module level so the default keeps one identity (and the compiler can lower
 // the parameter list).
 const selectWholeState = <T>(state: T) => state;
 
+/**
+ * Subscribes a component to an external store, optionally to a selected slice with a custom equality check.
+ */
 export function useStore<TState, TSlice = TState>(
   store: ExternalStore<TState>,
   // The default selector returns the whole state, so TSlice is TState.

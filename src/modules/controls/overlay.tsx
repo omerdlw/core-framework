@@ -1,10 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type CSSProperties, Fragment, useSyncExternalStore } from "react";
+import { type CSSProperties, Fragment } from "react";
 import { createPortal } from "react-dom";
 
 import { useRegistryEntries } from "@/core/kernel";
+import { usePortalTarget } from "@/react/hooks/use-client-value";
 import { useTheme } from "@/react/theme";
 
 import { controlsTheme } from "./constants";
@@ -12,17 +13,11 @@ import { resolveControlsPairs } from "./entries";
 import { useControlsLayout } from "./hooks";
 import { type ControlEntry, type ControlsSideProps } from "./types";
 
-const emptySubscribe = () => () => {};
-
 /**
  * Portal target, layout, resolved controls and theme for Controls.
  */
-export function useControlsModel() {
-  const portalTarget = useSyncExternalStore(
-    emptySubscribe,
-    () => (typeof document !== "undefined" ? document.body : null),
-    () => null,
-  );
+function useControlsModel() {
+  const portalTarget = usePortalTarget();
   const layout = useControlsLayout();
   const pathname = usePathname();
   const entries = useRegistryEntries<"controls", ControlEntry>("controls");

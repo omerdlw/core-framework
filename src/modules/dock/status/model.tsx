@@ -1,5 +1,7 @@
 "use client";
 
+import type { ComponentType, Dispatch, RefObject, SetStateAction } from "react";
+
 import { Icon } from "@/react/ui/components/icon";
 
 import {
@@ -8,22 +10,18 @@ import {
   STATUS_PRIORITY,
 } from "../constants";
 import { statusActionDefaults } from "../context";
-import { normalizeUpper } from "../lib/helpers";
 import type {
   DockIconSource,
   DockItem,
   DockSlotContent,
   DockStatusDescriptor,
   DockStatusTheme,
+  ErrorActionsProps,
+  GuardActionsProps,
   PersistedOverlayStatus,
   StatusState,
 } from "../types";
-import {
-  createRetryHandler,
-  type ErrorStatusOptions,
-  type GuardStatusOptions,
-  reloadPage,
-} from "./action-options";
+import { normalizeUpper } from "../utils";
 
 const CONNECTION_ICON_SIZE = 24;
 const STORAGE_PROBE_KEY = "__bf_storage_probe__";
@@ -33,14 +31,12 @@ const STATUS_TYPES_WITH_ACTIONS: ReadonlySet<string> = new Set([
   "GUARD",
 ]);
 
-export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
+export type StatusSetter = Dispatch<SetStateAction<StatusState>>;
 
 export type StatusUpdate =
   StatusState | ((current: StatusState) => StatusState);
 
-export type TimerRef = React.MutableRefObject<ReturnType<
-  typeof setTimeout
-> | null>;
+export type TimerRef = RefObject<ReturnType<typeof setTimeout> | null>;
 
 export function isErrorStatus(type: string): boolean {
   return ERROR_STATUS_TYPES.has(type);
@@ -264,7 +260,9 @@ function readSessionStorage(): Storage | null {
 export function clearPersistedOverlayStatus(): void {
   try {
     readSessionStorage()?.removeItem(OVERLAY_STATUS_STORAGE_KEY);
-  } catch {}
+  } catch {
+    // Storage may be unavailable (private mode or quota).
+  }
 }
 
 export function persistOverlayStatus(
@@ -286,7 +284,9 @@ export function persistOverlayStatus(
         type: status.type,
       }),
     );
-  } catch {}
+  } catch {
+    // Storage may be unavailable (private mode or quota).
+  }
 }
 
 export function restorePersistedOverlayStatus(): {
@@ -357,5 +357,49 @@ export function applyStatusOverlay(
     iconOverlay: null,
     action: showStatusActions ? statusState.action : null,
     actions: showStatusActions ? statusState.actions : null,
+  };
+}
+
+export interface ErrorStatusOptions {
+  type: string;
+  title: string;
+  description: string;
+  icon?: DockIconSource;
+  style?: DockStatusTheme;
+  onRetry?: () => void;
+  clearStatus?: () => void;
+  action?: ComponentType<ErrorActionsProps> | null;
+  errorAction?: ComponentType<ErrorActionsProps> | null;
+  retryLabel?: string;
+  refreshLabel?: string;
+  retryText?: string;
+  refreshText?: string;
+}
+
+export interface GuardStatusOptions {
+  action?: ComponentType<GuardActionsProps> | null;
+  guardAction?: ComponentType<GuardActionsProps> | null;
+  title?: string;
+  description?: string;
+  icon?: DockIconSource;
+  style?: DockStatusTheme;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  cancelLabel?: string;
+  confirmLabel?: string;
+  cancelText?: string;
+  confirmText?: string;
+  clearStatus?: () => void;
+}
+
+function reloadPage() {
+  window.location.reload();
+}
+
+function createRetryHandler(onRetry?: () => void, clearStatus?: () => void) {
+  if (typeof onRetry !== "function") return reloadPage;
+  return () => {
+    clearStatus?.();
+    onRetry();
   };
 }

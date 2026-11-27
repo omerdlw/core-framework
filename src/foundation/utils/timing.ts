@@ -17,10 +17,9 @@ export function debounce<T extends (...args: never[]) => void>(
     }, wait);
   }
   debounced.cancel = () => {
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-      timeoutId = null;
-    }
+    if (timeoutId === null) return;
+    clearTimeout(timeoutId);
+    timeoutId = null;
   };
   return debounced;
 }
@@ -34,24 +33,20 @@ export function throttle<T extends (...args: never[]) => void>(
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let lastRan = 0;
   let timerId: ReturnType<typeof setTimeout> | null = null;
-  const throttled: ((...args: Parameters<T>) => void) & {
-    cancel: () => void;
-  } = function (...args: Parameters<T>): void {
-    const now = Date.now();
-    if (now - lastRan >= limit) {
-      lastRan = now;
+  function throttled(...args: Parameters<T>): void {
+    const elapsed = Date.now() - lastRan;
+    if (elapsed >= limit) {
+      lastRan = Date.now();
       func(...args);
-    } else if (timerId === null) {
-      timerId = setTimeout(
-        () => {
-          lastRan = Date.now();
-          timerId = null;
-          func(...args);
-        },
-        limit - (now - lastRan),
-      );
+      return;
     }
-  };
+    if (timerId !== null) return;
+    timerId = setTimeout(() => {
+      lastRan = Date.now();
+      timerId = null;
+      func(...args);
+    }, limit - elapsed);
+  }
   throttled.cancel = () => {
     if (timerId === null) return;
     clearTimeout(timerId);

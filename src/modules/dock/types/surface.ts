@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode, Ref } from "react";
 
 import type {
   DockComponent,
@@ -252,7 +252,7 @@ export interface SurfaceViewModelOptions extends Partial<
 
 /** Props of the surface shell. */
 export interface DockSurfaceShellProps {
-  ref?: React.Ref<HTMLElement>;
+  ref?: Ref<HTMLElement>;
   title?: string;
   onClose?: (() => void) | null;
   onBack?: (() => void) | null;

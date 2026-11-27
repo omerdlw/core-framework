@@ -4,15 +4,6 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
-/**
- * Joins the truthy class names with spaces.
- */
-export function joinClassNames(
-  ...classes: (string | boolean | null | undefined)[]
-): string {
-  return classes.filter(Boolean).join(" ");
-}
-
 const SCROLL_LOCK_KEYS = new Set([
   "ArrowDown",
   "ArrowUp",
@@ -23,6 +14,15 @@ const SCROLL_LOCK_KEYS = new Set([
   " ",
   "Spacebar",
 ]);
+
+/**
+ * Joins the truthy class names with spaces.
+ */
+export function joinClassNames(
+  ...classes: (string | boolean | null | undefined)[]
+): string {
+  return classes.filter(Boolean).join(" ");
+}
 
 /**
  * Whether a key would scroll the page.
@@ -60,10 +60,8 @@ export function getNextActiveIndex(
   direction: 1 | -1,
 ): number {
   const count = items.length;
-  let start: number;
-  if (!(current < 0)) start = current + direction;
-  else if (direction === 1) start = 0;
-  else start = count - 1;
+  const fromEdge = direction === 1 ? 0 : count - 1;
+  const start = current >= 0 ? current + direction : fromEdge;
 
   for (let step = 0; step < count; step++) {
     const index = (((start + step * direction) % count) + count) % count;

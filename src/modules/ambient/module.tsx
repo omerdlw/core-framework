@@ -49,14 +49,14 @@ export function resolvePageAmbientTheme(
   return null;
 }
 
-export function selectPageAmbient(config: PageConfig): AmbientPageSlice {
+function selectPageAmbient(config: PageConfig): AmbientPageSlice {
   return {
     ambient: config.ambient,
     banner: firstString(config.dock?.banner, config.dock?.bannerUrl),
   };
 }
 
-export function useAmbientPage(
+function useAmbientPage(
   slice: AmbientPageSlice | null,
   page: PageModuleApi,
 ): AmbientPageApi {

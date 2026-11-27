@@ -1,6 +1,6 @@
-import { defineThemeSpec } from "@/react/theme";
+import { defineThemeSpec, type ResolvedTheme } from "@/react/theme";
 
-import { type BackgroundMotion, type BackgroundThemeSlot } from "./types";
+import type { BackgroundMotion, BackgroundThemeSlot } from "./types";
 
 /**
  * Theme spec for the background module: its slots and motion.
@@ -23,3 +23,5 @@ export const BACKGROUND_MEDIA_ID = "background";
 export const DEFAULT_AUDIBLE_VOLUME = 0.8;
 /** Volume (0-1) the YouTube iframe proxy restores when unmuted from silence. */
 export const PROXY_UNMUTE_VOLUME = 0.7;
+
+export type Theme = ResolvedTheme<BackgroundThemeSlot>;

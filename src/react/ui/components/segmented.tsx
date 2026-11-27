@@ -4,10 +4,9 @@ import { splitVariants } from "@/foundation/recipes/split";
 import type { SegmentedControlProps, SegmentedItem } from "@/react/ui/types";
 
 import { useUi } from "../provider";
-import { useSlidingPill } from "../utils";
 import { Button } from "./button";
 import { Icon } from "./icon";
-import { SlidingPill } from "./indicator";
+import { SlidingPill, useSlidingPill } from "./indicator";
 
 interface SegmentProps<K extends string> {
   active: boolean;

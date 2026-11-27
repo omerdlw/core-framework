@@ -268,29 +268,29 @@ A palette carries its `ground`; an `initialPalette` made for another ground than
 
 ## 8. File map
 
-| File                  | Responsibility                                                                                 |
-| :-------------------- | :--------------------------------------------------------------------------------------------- |
-| `index.ts`            | Public barrel export (client entry).                                                           |
-| `constants.ts`        | `ambientTheme` spec.                                                                           |
-| `types.ts`            | Palette, swatch, region, settings, config, descriptor, page contracts.                         |
-| `settings.ts`         | Defaults, `configureAmbient` (on `globalThis`), proxy resolution. Pure.                        |
-| `oklab.ts`            | OKLab/OKLCH math, gamut room (`maxChroma`), tones, WCAG contrast, `on` colours. Pure.          |
-| `quantize.ts`         | Deterministic weighted k-means. Pure.                                                          |
-| `analyze.ts`          | `analyzeAmbientPixels`: roles, ramps, regions, `page`, `presence`, from the parts below. Pure. |
-| `analyze-ground.ts`   | Per-ground lightness bands, the page tone and role readability. Pure.                          |
-| `analyze-bounds.ts`   | Letterbox cut (`findContentBounds`). Pure.                                                     |
-| `analyze-clusters.ts` | Binning and clustering of pixels. Pure.                                                        |
-| `analyze-measures.ts` | Thresholds, cluster reliability and colorfulness measures. Pure.                               |
-| `analyze-swatches.ts` | Role chroma and tone fitting, swatch building. Pure.                                           |
-| `pipeline.ts`         | fetch → `createImageBitmap` → canvas pixels → analysis; runs in a window or a worker.          |
-| `extractor.ts`        | Client cache, strategy, worker dispatch with main-thread fallback.                             |
-| `worker/index.ts`     | `serveAmbientWorker` (the `ambient/worker` entry).                                             |
-| `server/index.ts`     | `extractAmbientPalette`, sharp decoder, URL guard, server cache (the `ambient/server` entry).  |
-| `server/address.ts`   | Host normalization and private-address checks for the URL guard.                               |
-| `dom.ts`              | Target resolution, CSS variable maps, scoped style restoration.                                |
-| `hooks.ts`            | `useAmbientColor`, `useAmbientTheme`, `useAmbient`, `useStableObject`.                         |
-| `context.tsx`         | `AmbientContext` and `AmbientProvider` store.                                                  |
-| `module.tsx`          | `ambientModule`, `resolvePageAmbientTheme`, `defineAmbient`, kernel type augmentation.         |
+| File                   | Responsibility                                                                                 |
+| :--------------------- | :--------------------------------------------------------------------------------------------- |
+| `index.ts`             | Public barrel export (client entry).                                                           |
+| `constants.ts`         | `ambientTheme` spec.                                                                           |
+| `types.ts`             | Palette, swatch, region, settings, config, descriptor, page contracts.                         |
+| `settings.ts`          | Defaults, `configureAmbient` (on `globalThis`), proxy resolution. Pure.                        |
+| `analysis/analyze.ts`  | `analyzeAmbientPixels`: roles, ramps, regions, `page`, `presence`, from the parts below. Pure. |
+| `analysis/ground.ts`   | Per-ground lightness bands, the page tone and role readability. Pure.                          |
+| `analysis/bounds.ts`   | Letterbox cut (`findContentBounds`). Pure.                                                     |
+| `analysis/clusters.ts` | Binning and clustering of pixels. Pure.                                                        |
+| `analysis/measures.ts` | Thresholds, cluster reliability and colorfulness measures. Pure.                               |
+| `analysis/swatches.ts` | Role chroma and tone fitting, swatch building. Pure.                                           |
+| `analysis/oklab.ts`    | OKLab/OKLCH math, gamut room (`maxChroma`), tones, WCAG contrast, `on` colours. Pure.          |
+| `analysis/quantize.ts` | Deterministic weighted k-means. Pure.                                                          |
+| `pipeline.ts`          | fetch → `createImageBitmap` → canvas pixels → analysis; runs in a window or a worker.          |
+| `extractor.ts`         | Client cache, strategy, worker dispatch with main-thread fallback.                             |
+| `worker/index.ts`      | `serveAmbientWorker` (the `ambient/worker` entry).                                             |
+| `server/index.ts`      | `extractAmbientPalette`, sharp decoder, URL guard, server cache (the `ambient/server` entry).  |
+| `server/address.ts`    | Host normalization and private-address checks for the URL guard.                               |
+| `dom.ts`               | Target resolution, CSS variable maps, scoped style restoration.                                |
+| `hooks.ts`             | `useAmbientColor`, `useAmbientTheme`, `useAmbient`, `useStableObject`.                         |
+| `context.tsx`          | `AmbientContext` and `AmbientProvider` store.                                                  |
+| `module.tsx`           | `ambientModule`, `resolvePageAmbientTheme`, `defineAmbient`, kernel type augmentation.         |
 
 ## 9. Dependencies
 

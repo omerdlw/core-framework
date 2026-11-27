@@ -1,9 +1,18 @@
 "use client";
 
-import { createContext, use, useCallback, useEffect, useMemo } from "react";
+import {
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+import { getOrInsert } from "@/foundation/utils/collections";
 
 import type {
   DockSlotContent,
@@ -105,7 +114,7 @@ export function useSurfaceAction(action: DockSlotContent | undefined) {
 }
 
 /** Per-surface store of header actions, observable by subscription. */
-export class SurfaceHeaderActionStore {
+class SurfaceHeaderActionStore {
   private store = createStore<{
     actionsBySurface: Record<string, DockSlotContent>;
     version: number;
@@ -159,7 +168,7 @@ export class SurfaceHeaderActionStore {
 }
 
 /** Per-surface store of extensions, observable by subscription. */
-export class SurfaceExtensionsStore {
+class SurfaceExtensionsStore {
   private extensionsBySurface = new Map<
     string,
     Map<string, NormalizedSurfaceExtension>
@@ -223,11 +232,11 @@ export class SurfaceExtensionsStore {
     if (!normalized) return;
 
     const sId = toSurfaceKey(surfaceId);
-    let surfaceMap = this.extensionsBySurface.get(sId);
-    if (!surfaceMap) {
-      surfaceMap = new Map();
-      this.extensionsBySurface.set(sId, surfaceMap);
-    }
+    const surfaceMap = getOrInsert(
+      this.extensionsBySurface,
+      sId,
+      () => new Map(),
+    );
 
     const prev = surfaceMap.get(normalized.id);
     if (prev && isSameExtension(prev, normalized)) return;
@@ -273,3 +282,30 @@ export const SurfaceFlowContext = createContext<SurfaceFlowContextValue | null>(
 export const DockSurfaceHeaderRadiusContext = createContext<string | null>(
   null,
 );
+
+export function SurfaceExtensionsProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [value] = useState(() => ({
+    extensions: new SurfaceExtensionsStore(),
+    headerActions: new SurfaceHeaderActionStore(),
+  }));
+
+  return (
+    <SurfaceExtensionsContext value={value}>
+      {children}
+    </SurfaceExtensionsContext>
+  );
+}
+
+export function SurfaceFlowProvider({
+  children,
+  value,
+}: {
+  children?: ReactNode;
+  value: SurfaceFlowContextValue;
+}) {
+  return <SurfaceFlowContext value={value}>{children}</SurfaceFlowContext>;
+}

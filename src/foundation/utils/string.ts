@@ -1,9 +1,10 @@
+const IMAGE_SOURCE_PREFIXES = ["http://", "https://", "/", "data:image/"];
 /**
  * Stringifies and trims a value, returning null for nullish or blank input.
  */
 export function trimToNull(value: unknown): string | null {
   if (value === null || value === undefined) return null;
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- total coercion of an unknown value; objects stringify to "[object Object]" as before (behaviour kept in 3.2 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- any value is accepted; objects become "[object Object]"
   const trimmed = String(value).trim();
   return trimmed.length > 0 ? trimmed : null;
 }
@@ -25,8 +26,6 @@ export function normalizePath(path: unknown): string {
   if (trimmed === "/") return "/";
   return stripTrailingSlash(trimmed);
 }
-
-const IMAGE_SOURCE_PREFIXES = ["http://", "https://", "/", "data:image/"];
 
 /**
  * True when an icon value is an image source (URL, absolute path or data URI)

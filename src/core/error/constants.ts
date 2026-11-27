@@ -1,3 +1,5 @@
+import { defineThemeSpec } from "@/react/theme";
+
 /**
  * Default user-facing copy for the global, module and component error screens.
  */
@@ -40,3 +42,14 @@ export const ERROR_LISTENER_CONFIG = Object.freeze({
     /HTTP\s*404/i,
   ]),
 } as const);
+
+/**
+ * Styleable slots of the default error fallback screen.
+ */
+export type ErrorThemeSlot = "screen" | "icon" | "title" | "retryButton";
+
+/**
+ * Theme spec for the default error fallback; override its slots through the
+ * theme system.
+ */
+export const errorTheme = defineThemeSpec<ErrorThemeSlot>("error");

@@ -4,16 +4,14 @@ import { useEffect, useEffectEvent } from "react";
 
 import { isBrowser } from "@/foundation/utils";
 
-import { type UseHotkeyOptions } from "./types";
-
-function isEditableElement(target: EventTarget | null): boolean {
-  if (!target || typeof (target as HTMLElement).tagName !== "string") {
-    return false;
-  }
-  const element = target as HTMLElement;
-  const tagName = element.tagName.toLowerCase();
-  if (EDITABLE_TAGS.has(tagName)) return true;
-  return Boolean(element.isContentEditable);
+/**
+ * Options for `useHotkey`: whether it is active, whether it fires in form fields, and event handling.
+ */
+export interface UseHotkeyOptions {
+  enabled?: boolean;
+  enableOnFormTags?: boolean;
+  preventDefault?: boolean;
+  stopPropagation?: boolean;
 }
 
 const EDITABLE_TAGS = new Set(["input", "textarea", "select"]);
@@ -25,6 +23,16 @@ const SHIFT_ALIAS = "shift";
 const ESCAPE_ALIASES = ["esc", "escape"];
 const SPACE_KEY_NAMES = [" ", "spacebar"];
 const SPACE_ALIAS = "space";
+
+function isEditableElement(target: EventTarget | null): boolean {
+  if (!target || typeof (target as HTMLElement).tagName !== "string") {
+    return false;
+  }
+  const element = target as HTMLElement;
+  const tagName = element.tagName.toLowerCase();
+  if (EDITABLE_TAGS.has(tagName)) return true;
+  return Boolean(element.isContentEditable);
+}
 
 interface ParsedCombo {
   key: string;

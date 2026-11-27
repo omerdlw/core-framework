@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType } from "react";
+import type { ComponentType, RefObject } from "react";
 
 import {
   EVENT_TYPES,
@@ -14,13 +14,12 @@ import {
   DOCK_EVENTS,
   OVERLAY_STATUS_CLEAR_DURATION,
 } from "../constants";
-import { normalizeUpper } from "../lib/helpers";
 import type {
   QueuedApiError,
   ScheduleStatusClearOptions,
   StatusState,
 } from "../types";
-import type { StatusSetter, StatusUpdate, TimerRef } from "./model";
+import { normalizeUpper } from "../utils";
 import {
   clearPersistedOverlayStatus,
   createErrorStatus,
@@ -28,6 +27,9 @@ import {
   createOverlayStatus,
   getStatusTheme,
   persistOverlayStatus,
+  type StatusSetter,
+  type StatusUpdate,
+  type TimerRef,
 } from "./model";
 
 const DEFAULT_STATUS_TYPE = "STATUS";
@@ -44,7 +46,7 @@ export function subscribeToApiErrorStatusEvents({
   clearTimer,
   updateStatus,
 }: {
-  apiErrorQueueRef: React.MutableRefObject<QueuedApiError[]>;
+  apiErrorQueueRef: RefObject<QueuedApiError[]>;
   batchTimerRef: TimerRef;
   clearStatus: () => void;
   clearTimer: (ref: TimerRef) => void;
@@ -213,7 +215,7 @@ export function subscribeToNotFoundStatusEvents({
   setStatus,
   updateStatus,
 }: {
-  notFoundActionRef: React.RefObject<ComponentType | null>;
+  notFoundActionRef: RefObject<ComponentType | null>;
   setStatus: StatusSetter;
   updateStatus: (status: StatusUpdate) => void;
 }) {
