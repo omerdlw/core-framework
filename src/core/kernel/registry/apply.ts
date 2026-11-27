@@ -18,6 +18,8 @@ import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
 
 type CleanupScope = Map<string, RegistryCleanupTimer>;
 
+const NO_CLEANUP = () => {};
+
 function isPersistentLifecycle(lifecycle: unknown): boolean {
   return lifecycle === REGISTRY_LIFECYCLES.PERSISTENT;
 }
@@ -30,6 +32,8 @@ function runRegistrationBatch(
     ? context.batch(executor)
     : executor(context);
 }
+
+// ---- Cleanup timers ----
 
 function createEntryCleanupKey(
   type: string,
@@ -83,6 +87,8 @@ function scheduleCleanup(
   scope.set(cleanupKey, lifecycle);
 }
 
+// ---- Collecting registrations ----
+
 type ModuleRegistration = RegistrationEntry & {
   cleanupKey: string;
   type: string;
@@ -113,7 +119,7 @@ function collectModuleRegistrations(
   context: RegistryApplyContext,
 ): ModuleRegistration[] {
   const definition = coreModule.registry;
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- page.entries is called unbound as toEntries(payload, context); the module contract is a plain function that must not rely on this (pre-existing unbound call)
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- entries is a plain function by contract and never uses `this`
   const toEntries = coreModule.page?.entries;
   if (!definition || !toEntries || slice == null || slice === false) return [];
 
@@ -190,6 +196,8 @@ function collectRegistrations(
   });
 }
 
+// ---- Apply and teardown ----
+
 function hasCleanupDelay(delayMs: number | null): delayMs is number {
   return typeof delayMs === "number" && delayMs > 0;
 }
@@ -237,8 +245,6 @@ function createTeardown(
     });
   };
 }
-
-const NO_CLEANUP = () => {};
 
 /**
  * Registers a page config's module slices into the registry and returns a

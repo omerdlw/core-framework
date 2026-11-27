@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, type ReactNode, use, useState } from "react";
+import { type ReactNode, use, useState } from "react";
 
 import { createStore, type ExternalStore, report } from "@/foundation/utils";
 import { useStore } from "@/react/hooks";
@@ -25,6 +25,8 @@ import {
   PassthroughBoundary,
   sortModules,
 } from "./installed";
+
+const NO_MODULE_STORE: ExternalStore<unknown> = createStore<unknown>(undefined);
 
 /**
  * Declares a module with full type inference.
@@ -67,6 +69,8 @@ function createModuleHost(
     modules: Object.freeze(sorted),
   };
 }
+
+// ---- Host ----
 
 export interface ModuleHostProps {
   boundary?: BoundaryComponent;
@@ -133,6 +137,8 @@ export function ModuleHost({
   );
 }
 
+// ---- Hooks ----
+
 /**
  * Returns a module's runtime, or null when it is not installed.
  */
@@ -185,8 +191,6 @@ export function definePeer<K extends ModuleId>(
   };
 }
 
-const NO_MODULE_STORE: ExternalStore<unknown> = createStore<unknown>(undefined);
-
 /**
  * Selects state from a module's store, returning the fallback when the module
  * is not installed.
@@ -215,7 +219,7 @@ interface ModuleBoundaryProps {
  */
 export function ModuleBoundary({ children, name }: ModuleBoundaryProps) {
   const Boundary = use(ModuleHostContext)?.Boundary ?? PassthroughBoundary;
-  return createElement(Boundary, { name }, children);
+  return <Boundary name={name}>{children}</Boundary>;
 }
 
 /**

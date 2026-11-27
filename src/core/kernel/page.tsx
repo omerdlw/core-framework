@@ -36,6 +36,32 @@ interface ChildrenProps {
 }
 
 const EMPTY_OBJECT: PageConfig = Object.freeze({});
+const noopHook = () => {};
+const emptySubscribe = () => () => {};
+const getNullSnapshot = () => null;
+const PassthroughProvider = ({ children }: ChildrenProps) => children;
+
+const PageControllerContext = getOrCreateGlobalContext<PageController | null>(
+  "PageControllerContext",
+  null,
+);
+
+const PageControllerStoreContext =
+  getOrCreateGlobalContext<PageControllerStore>(
+    "PageControllerStoreContext",
+    // Pages outside any PageControllerProvider share one standalone store.
+    createPageControllerStore(),
+  );
+
+const FALLBACK_PAGE_CONTROLLER: PageController = Object.freeze({
+  Provider: PassthroughProvider,
+  config: EMPTY_OBJECT,
+  modules: Object.freeze({}),
+  reset: noopHook,
+  set: noopHook,
+});
+
+// ---- Controller stores ----
 
 function createPageControllerStore(): PageControllerStore {
   const listeners = new Set<() => void>();
@@ -119,21 +145,7 @@ function createControllerScope(): {
   };
 }
 
-const fallbackStandaloneStore = createPageControllerStore();
-
-const noopHook = () => {};
-const PassthroughProvider = ({ children }: ChildrenProps) => children;
-
-const PageControllerContext = getOrCreateGlobalContext<PageController | null>(
-  "PageControllerContext",
-  null,
-);
-
-const PageControllerStoreContext =
-  getOrCreateGlobalContext<PageControllerStore>(
-    "PageControllerStoreContext",
-    fallbackStandaloneStore,
-  );
+// ---- Provider and hooks ----
 
 /**
  * Provides the page controller store that tracks mounted pages.
@@ -148,17 +160,6 @@ export function PageControllerProvider({ children }: ChildrenProps) {
     </PageControllerStoreContext>
   );
 }
-
-const emptySubscribe = () => () => {};
-const getNullSnapshot = () => null;
-
-const FALLBACK_PAGE_CONTROLLER: PageController = Object.freeze({
-  Provider: PassthroughProvider,
-  config: EMPTY_OBJECT,
-  modules: Object.freeze({}),
-  reset: noopHook,
-  set: noopHook,
-});
 
 /**
  * Returns the current page's controller, or an inert fallback outside any page.
