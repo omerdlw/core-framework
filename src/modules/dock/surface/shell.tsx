@@ -155,10 +155,6 @@ export function DockSurfaceShell({
 }
 
 /**
- * State and handlers for a surface shell: focus trap, swipe-to-dismiss drag
- * and body motion variants.
- */
-/**
  * Hands the node to a forwarded callback or object ref. Module level: the
  * compiler does not allow writing to a prop inside the hook.
  */
@@ -170,6 +166,10 @@ function forwardRef(
   else if (ref) (ref as { current: HTMLElement | null }).current = node;
 }
 
+/**
+ * State and handlers for a surface shell: focus trap, swipe-to-dismiss drag
+ * and body motion variants.
+ */
 export function useDockSurfaceShellModel({
   ref,
   onClose = null,

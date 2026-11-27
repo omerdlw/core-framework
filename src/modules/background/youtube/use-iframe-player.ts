@@ -2,7 +2,6 @@
 
 import {
   type Dispatch,
-  type MutableRefObject,
   type RefObject,
   type SetStateAction,
   useEffect,
@@ -80,7 +79,7 @@ export function useYouTubeIframePlayer({
   isLoop: boolean;
   isMuted: boolean;
   isPlaying: boolean;
-  live: MutableRefObject<YouTubeLiveState>;
+  live: RefObject<YouTubeLiveState>;
   playbackRate: number;
   setIsBuffering: Dispatch<SetStateAction<boolean>>;
   setIsFrameReady: Dispatch<SetStateAction<boolean>>;

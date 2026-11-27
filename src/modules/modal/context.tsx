@@ -42,10 +42,6 @@ interface PendingModal {
 }
 
 /**
- * Owns the modal stack and resolves each `openModal` promise when its modal closes.
- * Optionally mounts a renderer next to its children.
- */
-/**
  * Runs a modal's onClose and reports its failure, sync or async. Module level:
  * the compiler cannot lower optional chaining inside a try block.
  */
@@ -63,6 +59,10 @@ function runOnClose(
   }
 }
 
+/**
+ * Owns the modal stack and resolves each `openModal` promise when its modal closes.
+ * Optionally mounts a renderer next to its children.
+ */
 export function ModalProvider({
   children,
   modalRenderer: ModalRenderer = null,

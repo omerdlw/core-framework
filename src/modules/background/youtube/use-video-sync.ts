@@ -1,6 +1,6 @@
 "use client";
 
-import { type MutableRefObject, type RefObject, useEffect } from "react";
+import { type RefObject, useEffect } from "react";
 
 import { applyVideoPlaybackState } from "../playback";
 import type { BackgroundActions } from "../types";
@@ -8,10 +8,6 @@ import { AUDIO_SYNC_EVENTS, setElementMuted } from "./audio";
 
 const AUDIO_SYNC_INTERVAL_MS = 1000;
 
-/**
- * Keeps the native video element and its companion audio in sync: registers the
- * element, mirrors audio on media events, and applies play/rate/mute props.
- */
 /**
  * Pauses the video and its companion audio; a detached element may throw.
  * Module level: the compiler cannot lower optional chaining inside a try
@@ -29,6 +25,10 @@ function pauseQuietly(
   }
 }
 
+/**
+ * Keeps the native video element and its companion audio in sync: registers the
+ * element, mirrors audio on media events, and applies play/rate/mute props.
+ */
 export function useYouTubeVideoSync({
   audioRef,
   isMuted,
@@ -46,7 +46,7 @@ export function useYouTubeVideoSync({
   isMuted: boolean;
   isPlaying: boolean;
   playbackRate: number;
-  retryTimerIdsRef: MutableRefObject<Set<number>>;
+  retryTimerIdsRef: RefObject<Set<number>>;
   setVideoElement: BackgroundActions["setVideoElement"];
   setVideoPlaying: BackgroundActions["setVideoPlaying"];
   syncCompanionAudio: (forceSeek?: boolean) => void;

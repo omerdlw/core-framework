@@ -1,9 +1,4 @@
-import type {
-  Dispatch,
-  MutableRefObject,
-  RefObject,
-  SetStateAction,
-} from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 
 import type { BackgroundActions } from "../types";
 import { setElementMuted, unlockAudioOnGesture } from "./audio";
@@ -20,10 +15,10 @@ const MAX_AUDIO_LOAD_RETRIES = 1;
 /** Everything the native `<video>` event handlers read or update. */
 export interface VideoEventContext {
   audioRef: RefObject<HTMLAudioElement | null>;
-  errorRetryCountRef: MutableRefObject<number>;
+  errorRetryCountRef: RefObject<number>;
   handleEnded: () => void;
-  hasLoadedVideoRef: MutableRefObject<boolean>;
-  live: MutableRefObject<YouTubeLiveState>;
+  hasLoadedVideoRef: RefObject<boolean>;
+  live: RefObject<YouTubeLiveState>;
   playWithFallback: (
     video: HTMLVideoElement,
     forceSeek: boolean,
@@ -48,9 +43,9 @@ export type VideoEndedContext = Pick<
 
 /** Context for the companion-audio error handler, which is memoized separately. */
 export interface AudioErrorContext {
-  audioErrorRetryCountRef: MutableRefObject<number>;
+  audioErrorRetryCountRef: RefObject<number>;
   audioRef: RefObject<HTMLAudioElement | null>;
-  live: MutableRefObject<YouTubeLiveState>;
+  live: RefObject<YouTubeLiveState>;
   scheduleRetry: (callback: () => void, delay: number) => void;
   setUseIframeFallback: Dispatch<SetStateAction<boolean>>;
   videoRef: RefObject<HTMLVideoElement | null>;
