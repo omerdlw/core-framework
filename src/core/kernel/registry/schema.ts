@@ -7,7 +7,7 @@ import {
   REGISTRY_METADATA_KEY_SET,
   REGISTRY_METADATA_KEYS,
   REGISTRY_VALIDATION_MODES,
-} from "./constants";
+} from "../constants";
 import type {
   NormalizedRegistryMetadata,
   RegistryDefinitions,
@@ -15,8 +15,8 @@ import type {
   RegistryMetadata,
   RegistryValidationMode,
   ValidationResult,
-} from "./types";
-import { getValidString, parseFiniteNumber } from "./utils";
+} from "../types/registry";
+import { getValidString, parseFiniteNumber } from "../utils";
 
 function resolveLifecycle(
   metadata: RegistryMetadata | null | undefined,

@@ -1,6 +1,6 @@
 import { report } from "@/foundation/utils";
 
-import type { RegistryOperation, RegistryState } from "./types";
+import type { RegistryOperation, RegistryState } from "../types/registry";
 
 type KeyListeners = Map<string | null, Set<() => void>>;
 

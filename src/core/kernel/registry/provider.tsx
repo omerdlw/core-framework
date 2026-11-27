@@ -5,13 +5,13 @@ import { type ReactNode, useState, useSyncExternalStore } from "react";
 import { getOrCreateGlobalContext } from "@/react/context";
 import { useRequiredContext } from "@/react/hooks";
 
-import { createRegistryStore } from "./store";
-import { type InitialRegistryEntries } from "./store-entries";
 import type {
   RegistryDefinitions,
   RegistrySchema,
   RegistryStore,
-} from "./types";
+} from "../types/registry";
+import type { InitialRegistryEntries } from "./registration";
+import { createRegistryStore } from "./store";
 
 type RegistryValueOf<K extends string> = K extends keyof RegistrySchema
   ? RegistrySchema[K]

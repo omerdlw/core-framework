@@ -5,10 +5,7 @@ import { useId, useLayoutEffect, useRef, useState } from "react";
 
 import { isObject, shallowEqual } from "@/foundation/utils";
 
-import { applyRegistryConfig } from "./handlers";
-import { createModulePayload, useInstalledModules } from "./installed";
-import { useRegistryActions } from "./provider";
-import { stabilizeRegistryValue } from "./stabilize";
+import { createModulePayload, useInstalledModules } from "../host/installed";
 import type {
   AnyCoreModule,
   PageConfig,
@@ -18,7 +15,10 @@ import type {
   RegistryQueue,
   RegistrySourceOrOptions,
   StableFunctionEntry,
-} from "./types";
+} from "../types/registry";
+import { applyRegistryConfig } from "./apply";
+import { useRegistryActions } from "./provider";
+import { stabilizeRegistryValue } from "./stabilize";
 
 function withInstanceId(
   instanceId: string,

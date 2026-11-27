@@ -198,7 +198,7 @@ export type {
   RegistryTransactionRef,
   RegistryTransactionQueue,
   RegistryStore,
-} from "./types-store";
+} from "./store";
 export type {
   PageOptions,
   PageConfig,
@@ -206,7 +206,7 @@ export type {
   RegistrationEntry,
   StableFunctionEntry,
   PageControllerStore,
-} from "./types-page";
+} from "./page";
 export type {
   CoreModules,
   ModuleId,
@@ -219,4 +219,4 @@ export type {
   ModuleRuntimeOf,
   ModuleStateOf,
   PageModules,
-} from "./types-modules";
+} from "./modules";

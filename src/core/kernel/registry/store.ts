@@ -1,23 +1,4 @@
-import { DEFAULT_SOURCE } from "./constants";
-import {
-  createRegistryOperations,
-  createUnregisterOperation,
-} from "./operations";
-import { createRecordKey } from "./operations-records";
-import { createRegistryTransaction } from "./runtime";
-import { createBatchQueue } from "./store-batch";
-import {
-  createInitialState,
-  type InitialRegistryEntries,
-  normalizeInitialEntries,
-} from "./store-entries";
-import { createNoopHandle, createRegistrationHandle } from "./store-handles";
-import { prepareRegisterOperation } from "./store-registration";
-import { createSnapshotReaders } from "./store-snapshots";
-import {
-  collectChangedKeys,
-  createListenerRegistry,
-} from "./store-subscriptions";
+import { DEFAULT_SOURCE } from "../constants";
 import type {
   RegisterOperation,
   RegistrationHandle,
@@ -29,7 +10,24 @@ import type {
   RegistryState,
   RegistryStore,
   RegistryTransactionQueue,
-} from "./types";
+} from "../types/registry";
+import {
+  createRegistryOperations,
+  createUnregisterOperation,
+  type RegistryOperations,
+} from "./operations";
+import { createRecordKey } from "./records";
+import {
+  createInitialState,
+  createNoopHandle,
+  createRegistrationHandle,
+  type InitialRegistryEntries,
+  normalizeInitialEntries,
+  prepareRegisterOperation,
+} from "./registration";
+import { createSnapshotReaders } from "./snapshots";
+import { collectChangedKeys, createListenerRegistry } from "./subscriptions";
+import { createRegistryTransaction } from "./transaction";
 
 const NO_DEFINITIONS: RegistryDefinitions = new Map();
 
@@ -184,4 +182,60 @@ export function createRegistryStore(
     unregister,
   } as RegistryStore;
   return store;
+}
+
+interface BatchQueueInit {
+  definitions: RegistryDefinitions;
+  getStore: () => RegistryStore;
+  nextSequence: () => number;
+  operations: RegistryOperation[];
+  ops: RegistryOperations;
+  timestamp: number;
+}
+
+/**
+ * Creates the queue handed to a batch executor. It records operations instead
+ * of applying them, so the store can commit them together.
+ */
+export function createBatchQueue({
+  definitions,
+  getStore,
+  nextSequence,
+  operations,
+  ops,
+  timestamp,
+}: BatchQueueInit): RegistryQueue {
+  return {
+    register: (
+      type: string,
+      key: string,
+      item: unknown,
+      sourceOrOptions: RegistrySourceOrOptions = DEFAULT_SOURCE,
+      optionsArg: RegistryMetadata = {},
+    ): RegistrationHandle => {
+      const prepared = prepareRegisterOperation(
+        ops,
+        definitions,
+        type,
+        key,
+        item,
+        sourceOrOptions,
+        optionsArg,
+        timestamp,
+        nextSequence(),
+      );
+      if ("rejected" in prepared) return prepared.rejected;
+
+      operations.push(prepared.operation);
+      return createRegistrationHandle(getStore(), prepared.operation);
+    },
+    unregister: (
+      type: string,
+      key: string,
+      sourceOrOptions: RegistrySourceOrOptions = DEFAULT_SOURCE,
+    ): void => {
+      if (!ops.isValidRegistryTarget(type, key)) return;
+      operations.push(createUnregisterOperation(type, key, sourceOrOptions));
+    },
+  };
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useRegistry } from "./hooks";
+import { useRegistry } from "../registry/hooks";
+import { pickRegistryMetadata } from "../registry/schema";
+import type { ModuleId, PageConfig, RegistryMetadata } from "../types/registry";
 import { useInstalledModules } from "./installed";
-import { pickRegistryMetadata } from "./schema";
-import type { ModuleId, PageConfig, RegistryMetadata } from "./types";
 
 /**
  * Registers a value for an installed module for as long as the component is

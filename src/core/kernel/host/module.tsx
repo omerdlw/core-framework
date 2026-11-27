@@ -5,6 +5,17 @@ import { createElement, type ReactNode, use, useState } from "react";
 import { createStore, type ExternalStore, report } from "@/foundation/utils";
 import { useStore } from "@/react/hooks";
 
+import { PageControllerProvider } from "../page";
+import { RegistryProvider } from "../registry/provider";
+import type {
+  AnyCoreModule,
+  AppRegistryEntry,
+  CoreModule,
+  CoreModules,
+  ModuleId,
+  ModuleRuntimeOf,
+  ModuleStateOf,
+} from "../types/registry";
 import {
   type BoundaryComponent,
   createModuleRegistryDefinitions,
@@ -14,17 +25,6 @@ import {
   PassthroughBoundary,
   sortModules,
 } from "./installed";
-import { PageControllerProvider } from "./page-controller";
-import { RegistryProvider } from "./provider";
-import type {
-  AnyCoreModule,
-  AppRegistryEntry,
-  CoreModule,
-  CoreModules,
-  ModuleId,
-  ModuleRuntimeOf,
-  ModuleStateOf,
-} from "./types";
 
 /**
  * Declares a module with full type inference.

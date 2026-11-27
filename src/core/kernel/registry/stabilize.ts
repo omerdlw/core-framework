@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 
-import type { AnyFunction, StableFunctionEntry } from "./types";
+import type { AnyFunction, StableFunctionEntry } from "../types/registry";
 
 const MAX_STABILIZATION_DEPTH = 64;
 

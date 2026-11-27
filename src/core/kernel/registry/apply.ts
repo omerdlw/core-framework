@@ -4,8 +4,7 @@ import {
   DEFAULT_SOURCE,
   REGISTRY_LIFECYCLES,
   REGISTRY_VALIDATION_MODES,
-} from "./constants";
-import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
+} from "../constants";
 import type {
   AnyCoreModule,
   PageConfig,
@@ -14,7 +13,8 @@ import type {
   RegistryCleanupTimer,
   RegistryMetadata,
   RegistryQueue,
-} from "./types";
+} from "../types/registry";
+import { normalizeRegistryMetadata, validateRegistryMetadata } from "./schema";
 
 type CleanupScope = Map<string, RegistryCleanupTimer>;
 

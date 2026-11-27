@@ -1,22 +1,22 @@
 "use client";
 
-export * from "./types";
+export * from "./types/registry";
 
 export { REGISTRY_SOURCES } from "./constants";
 
 export { getOrCreateGlobalContext } from "@/react/context";
 export { hasOwnProperty } from "./utils";
 
-export { createRegistryOperations } from "./operations";
+export { createRegistryOperations } from "./registry/operations";
 
 export {
   RegistryProvider,
   useRegistryEntries,
   useRegistryValue,
-} from "./provider";
+} from "./registry/provider";
 
-export { createRegistryStore } from "./store";
-export { createModuleRegistryDefinitions, sortModules } from "./installed";
+export { createRegistryStore } from "./registry/store";
+export { createModuleRegistryDefinitions, sortModules } from "./host/installed";
 
 export {
   ModuleHost,
@@ -26,18 +26,14 @@ export {
   useIsModuleInstalled,
   ModuleBoundary,
   useModuleState,
-} from "./module";
+} from "./host/module";
 
-export { applyRegistryConfig } from "./handlers";
+export { applyRegistryConfig } from "./registry/apply";
 
-export { createRegistryApplyContext } from "./hooks";
+export { createRegistryApplyContext } from "./registry/hooks";
 
-export { useModuleRegistration } from "./adapters";
+export { useModuleRegistration } from "./host/registration";
 
-export {
-  PageControllerProvider,
-  usePage,
-  usePageController,
-} from "./page-controller";
+export { PageControllerProvider, usePage, usePageController } from "./page";
 
-export { Compose, type ProviderEntry } from "./compose";
+export { Compose, type ProviderEntry } from "./host/compose";

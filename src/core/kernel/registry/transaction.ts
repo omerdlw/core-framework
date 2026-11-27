@@ -6,7 +6,7 @@ import type {
   RegistryTransactionQueue,
   RegistryTransactionRef,
   RegistryTransactionResult,
-} from "./types";
+} from "../types/registry";
 
 interface QueuedOperation {
   key: string;

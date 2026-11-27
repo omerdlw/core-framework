@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 
-import type { AnyFunction, RegistryLifecycle, RegistryMetadata } from "./types";
-import type { PageModules } from "./types-modules";
+import type { PageModules } from "./modules";
+import type {
+  AnyFunction,
+  RegistryLifecycle,
+  RegistryMetadata,
+} from "./registry";
 
 /**
  * Options for usePage(): registry metadata applied to the whole page.

@@ -1,11 +1,11 @@
+import type { AnyCoreModule } from "./modules";
 import type {
   RegisterOperation,
   RegistrationHandle,
   RegistryMetadata,
   RegistrySchema,
   RegistrySourceOrOptions,
-} from "./types";
-import type { AnyCoreModule } from "./types-modules";
+} from "./registry";
 
 export type RegistryTypeKey = keyof RegistrySchema & string;
 

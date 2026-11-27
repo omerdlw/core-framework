@@ -9,9 +9,8 @@ import {
   Compose,
   composeProviders,
   createProviderEntry,
-} from "../../src/core/kernel/compose.ts";
-import { applyRegistryConfig as applyPayload } from "../../src/core/kernel/handlers.ts";
-import { createRegistryApplyContext as createRegistryApplyContext__4 } from "../../src/core/kernel/hooks.ts";
+} from "../../src/core/kernel/host/compose.ts";
+import { createModulePayload } from "../../src/core/kernel/host/installed.ts";
 import {
   applyRegistryConfig,
   createModuleRegistryDefinitions,
@@ -28,13 +27,14 @@ import {
   usePageController,
   useRegistryValue,
 } from "../../src/core/kernel/index.ts";
-import { createModulePayload } from "../../src/core/kernel/installed.ts";
+import { applyRegistryConfig as applyPayload } from "../../src/core/kernel/registry/apply.ts";
+import { createRegistryApplyContext as createRegistryApplyContext__4 } from "../../src/core/kernel/registry/hooks.ts";
 import {
   createRegisterOperation,
   createUnregisterOperation,
-} from "../../src/core/kernel/operations.ts";
-import { createRecordKey } from "../../src/core/kernel/operations-records.ts";
-import { useRegistryActions } from "../../src/core/kernel/provider.tsx";
+} from "../../src/core/kernel/registry/operations.ts";
+import { useRegistryActions } from "../../src/core/kernel/registry/provider.tsx";
+import { createRecordKey } from "../../src/core/kernel/registry/records.ts";
 import { createStore } from "../../src/foundation/utils/store.ts";
 import { AmbientProvider } from "../../src/modules/ambient/context.tsx";
 import {

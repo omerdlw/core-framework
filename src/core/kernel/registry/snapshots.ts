@@ -1,5 +1,5 @@
-import type { MaybeEntry } from "./operations-records";
-import type { RegistryState } from "./types";
+import type { RegistryState } from "../types/registry";
+import type { MaybeEntry } from "./records";
 
 type ResolveValue = (
   type: string,

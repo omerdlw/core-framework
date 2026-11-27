@@ -2,8 +2,8 @@ import type { ComponentType, Context, ReactNode } from "react";
 
 import type { ExternalStore } from "@/foundation/utils";
 
-import type { RegistryDefinition } from "./types";
-import type { PageConfig } from "./types-page";
+import type { PageConfig } from "./page";
+import type { RegistryDefinition } from "./registry";
 
 /**
  * Maps module ids to their module types. Augment it to register your own

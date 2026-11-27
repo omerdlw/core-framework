@@ -4,14 +4,14 @@ import {
   DEFAULT_REGISTRY_SCOPE,
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_PRIORITY,
-} from "./constants";
+} from "../constants";
 import type {
   RegistryDefinitions,
   RegistryEntryRecords,
   RegistryState,
   SourceRecord,
-} from "./types";
-import { getSourceRank, hasOwnProperty } from "./utils";
+} from "../types/registry";
+import { getSourceRank, hasOwnProperty } from "../utils";
 
 export type MaybeEntry = RegistryEntryRecords | null | undefined;
 

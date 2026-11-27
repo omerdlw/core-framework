@@ -5,7 +5,7 @@ import {
   DEFAULT_SOURCE,
   REGISTRY_SOURCE_RANK,
 } from "./constants";
-import type { RegistryMetadata } from "./types";
+import type { RegistryMetadata } from "./types/registry";
 
 /**
  * Safe own-property check that works on objects without a prototype.

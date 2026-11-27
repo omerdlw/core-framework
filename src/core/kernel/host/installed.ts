@@ -11,7 +11,7 @@ import type {
   RegistryDefinition,
   RegistryDefinitions,
   RegistryMetadata,
-} from "./types";
+} from "../types/registry";
 
 export type BoundaryComponent = ComponentType<{
   children?: ReactNode;

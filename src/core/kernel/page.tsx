@@ -17,9 +17,9 @@ import {
 import { report } from "@/foundation/utils";
 import { getOrCreateGlobalContext } from "@/react/context";
 
-import { useRegistry, useShallowStable } from "./hooks";
-import { selectModuleSlice, useInstalledModules } from "./installed";
-import { pickRegistryMetadata } from "./schema";
+import { selectModuleSlice, useInstalledModules } from "./host/installed";
+import { useRegistry, useShallowStable } from "./registry/hooks";
+import { pickRegistryMetadata } from "./registry/schema";
 import type {
   AnyCoreModule,
   PageConfig,
@@ -28,7 +28,7 @@ import type {
   PageModuleApi,
   PageModules,
   PageOptions,
-} from "./types";
+} from "./types/registry";
 import { mergeModuleConfigs } from "./utils";
 
 interface ChildrenProps {
