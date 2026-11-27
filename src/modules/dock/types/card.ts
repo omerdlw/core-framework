@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode, SyntheticEvent } from "react";
+import type { ComponentType, ReactNode, Ref, SyntheticEvent } from "react";
 
 import type { RegistryMetadata } from "@/core/kernel";
 import type { createScheduler, ExternalStore } from "@/foundation/utils";
@@ -327,7 +327,7 @@ export interface DockCardHeaderProps {
 
 /** Props of a single dock card. */
 export interface DockCardItemProps {
-  ref?: React.Ref<HTMLDivElement>;
+  ref?: Ref<HTMLDivElement>;
   activeItem?: DockItem | null;
   onContentHeightChange?: ((height: number) => void) | null;
   isStackHovered?: boolean;

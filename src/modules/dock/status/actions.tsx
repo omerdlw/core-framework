@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { type MouseEvent } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
@@ -23,7 +24,7 @@ function ActionButton({ children, onPress }: ActionButtonProps) {
   return (
     <Button
       type="button"
-      onClick={(e: React.MouseEvent) => {
+      onClick={(e: MouseEvent) => {
         e.stopPropagation();
         onPress();
       }}

@@ -29,8 +29,8 @@ import type { DockItem } from "../types";
 import {
   applyAttentionToItem,
   type ResolveActiveItemOptions,
+  resolveDockAttention,
 } from "./attention";
-import { resolveDockAttention } from "./attention";
 import {
   buildDockItems,
   type DockBaseMatch,

@@ -6,7 +6,13 @@ import {
   useMotionValue,
   useSpring,
 } from "motion/react";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { clamp } from "@/foundation/utils";
@@ -191,7 +197,7 @@ function useDockMediaScrubberModel(_props: {
 
     seekToTime(fraction * duration);
   };
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
     const keyTargets: Record<string, number> = {
       ArrowLeft: currentTime - SCRUBBER_KEY_STEP_SECONDS,
       ArrowRight: currentTime + SCRUBBER_KEY_STEP_SECONDS,
@@ -204,7 +210,7 @@ function useDockMediaScrubberModel(_props: {
     event.stopPropagation();
     seekToTime(keyTargets[event.key]);
   };
-  const handleMouseMove = (event: React.MouseEvent) => {
+  const handleMouseMove = (event: MouseEvent) => {
     if (!scrubberRef.current || !duration) return;
     const rect = scrubberRef.current.getBoundingClientRect();
     const clientX = event.clientX ?? 0;

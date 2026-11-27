@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useSyncExternalStore } from "react";
+import { type MouseEvent, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 import { isImageIconSource } from "@/foundation/utils";
@@ -96,7 +96,7 @@ interface ContextMenuItemProps {
   isActive: boolean;
   item: ContextMenuResolvedItem;
   onHover: () => void;
-  onSelect: (item: ContextMenuResolvedItem, event: React.MouseEvent) => void;
+  onSelect: (item: ContextMenuResolvedItem, event: MouseEvent) => void;
   setButtonRef: (node: HTMLButtonElement | null) => void;
 }
 

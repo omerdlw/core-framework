@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType } from "react";
+import type { ComponentType, RefObject } from "react";
 
 import {
   EVENT_TYPES,
@@ -46,7 +46,7 @@ export function subscribeToApiErrorStatusEvents({
   clearTimer,
   updateStatus,
 }: {
-  apiErrorQueueRef: React.MutableRefObject<QueuedApiError[]>;
+  apiErrorQueueRef: RefObject<QueuedApiError[]>;
   batchTimerRef: TimerRef;
   clearStatus: () => void;
   clearTimer: (ref: TimerRef) => void;
@@ -215,7 +215,7 @@ export function subscribeToNotFoundStatusEvents({
   setStatus,
   updateStatus,
 }: {
-  notFoundActionRef: React.RefObject<ComponentType | null>;
+  notFoundActionRef: RefObject<ComponentType | null>;
   setStatus: StatusSetter;
   updateStatus: (status: StatusUpdate) => void;
 }) {

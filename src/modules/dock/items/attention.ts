@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
-import { DOCK_ATTENTION_KIND } from "../constants";
 import {
+  DOCK_ATTENTION_KIND,
   DOCK_ATTENTION_PRIORITY,
   DOCK_ATTENTION_PRIORITY_OFFSET_MAX,
   DOCK_HUD_PRIORITY,
@@ -11,12 +11,14 @@ import { applyStatusOverlay } from "../status/model";
 import { applySurfaceToDockItem } from "../surface/view-model";
 import type {
   DockAttention,
+  DockHudDescriptor,
   DockItem,
+  DockOperation,
+  DockScene,
   DockStatusDescriptor,
   SurfaceState,
   SurfaceViewModelOptions,
 } from "../types";
-import type { DockHudDescriptor, DockOperation, DockScene } from "../types";
 
 /**
  * Applies the item the dock is currently paying attention to (surface,

@@ -64,7 +64,5 @@ export function calculateRemainingMinDuration(
   now = Date.now(),
 ): number {
   if (startTime === null || minDuration <= 0) return 0;
-  const elapsed = now - startTime;
-  const remaining = minDuration - elapsed;
-  return remaining > 0 ? remaining : 0;
+  return Math.max(0, minDuration - (now - startTime));
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { type ReactNode, use, useMemo } from "react";
 
 import { type RegistryMetadata, useModuleRegistration } from "@/core/kernel";
 import {
@@ -102,7 +102,7 @@ export function useOptionalLoadingActions(): LoadingActions {
  * Skeleton, visibility and theme for LoadingOverlay.
  */
 export function useLoadingOverlayModel(): {
-  skeleton: React.ReactNode | null;
+  skeleton: ReactNode | null;
   isVisible: boolean;
   theme: LoadingTheme;
 } {

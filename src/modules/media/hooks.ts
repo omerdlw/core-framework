@@ -6,13 +6,19 @@ import { useRequiredContext, useStore } from "@/react/hooks";
 
 import { INERT_MEDIA_ACTIONS, MAX_VOLUME, MIN_VOLUME } from "./constants";
 import { MediaContext, NOOP_MEDIA_STORE } from "./context";
-import { toggleElement } from "./playback";
+import { safePlay, toggleElement } from "./playback";
 import {
   type MediaActions,
   type MediaHandle,
   type MediaOptions,
   type MediaState,
 } from "./types";
+
+/** Audio events after which `isPlaying` must be re-read. */
+const PLAYBACK_EVENTS = ["play", "playing", "pause", "ended"] as const;
+
+const clampVolume = (volume: number) =>
+  Math.min(MAX_VOLUME, Math.max(MIN_VOLUME, volume));
 
 /**
  * Subscribes to the media state.
@@ -63,11 +69,7 @@ export function useOptionalMediaActions(): MediaActions {
   return ctx?.actions ?? INERT_MEDIA_ACTIONS;
 }
 
-/** Audio events after which `isPlaying` must be re-read. */
-const PLAYBACK_EVENTS = ["play", "playing", "pause", "ended"] as const;
-
-const clampVolume = (volume: number) =>
-  Math.min(MAX_VOLUME, Math.max(MIN_VOLUME, volume));
+// ---- Audio sources ----
 
 function createAudio(src: string, initial: MediaOptions): HTMLAudioElement {
   const audio = new Audio();
@@ -127,7 +129,7 @@ export function useMedia(options: MediaOptions): MediaHandle {
     );
 
     if (!initial.follow && initial.autoplay !== false) {
-      void Promise.resolve(audio.play()).catch(() => {});
+      safePlay(audio);
     }
 
     return () => {
@@ -153,7 +155,7 @@ export function useMedia(options: MediaOptions): MediaHandle {
   // stable identity: part of the public hook contract
   const play = useCallback(() => {
     const audio = audioRef.current;
-    if (audio) void Promise.resolve(audio.play()).catch(() => {});
+    if (audio) safePlay(audio);
   }, []);
   // stable identity: part of the public hook contract
   const pause = useCallback(() => audioRef.current?.pause(), []);

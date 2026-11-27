@@ -8,7 +8,7 @@ import {
   useMotionValue,
   useTransform,
 } from "motion/react";
-import { useCallback, useMemo, useRef } from "react";
+import { type PointerEvent, useCallback, useMemo, useRef } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
@@ -227,7 +227,7 @@ export function useDockSurfaceShellModel({
     typeof onClose === "function" &&
     isFullyOpen,
   );
-  const handleSurfacePointerDown = (event: React.PointerEvent<HTMLElement>) => {
+  const handleSurfacePointerDown = (event: PointerEvent<HTMLElement>) => {
     if (!canDragDismiss) return;
     const target = event.target as HTMLElement | null;
     if (target?.closest?.(SURFACE_DRAG_IGNORE_SELECTOR)) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType } from "react";
+import type { ComponentType, Dispatch, RefObject, SetStateAction } from "react";
 
 import { Icon } from "@/react/ui/components/icon";
 
@@ -31,14 +31,12 @@ const STATUS_TYPES_WITH_ACTIONS: ReadonlySet<string> = new Set([
   "GUARD",
 ]);
 
-export type StatusSetter = React.Dispatch<React.SetStateAction<StatusState>>;
+export type StatusSetter = Dispatch<SetStateAction<StatusState>>;
 
 export type StatusUpdate =
   StatusState | ((current: StatusState) => StatusState);
 
-export type TimerRef = React.MutableRefObject<ReturnType<
-  typeof setTimeout
-> | null>;
+export type TimerRef = RefObject<ReturnType<typeof setTimeout> | null>;
 
 export function isErrorStatus(type: string): boolean {
   return ERROR_STATUS_TYPES.has(type);

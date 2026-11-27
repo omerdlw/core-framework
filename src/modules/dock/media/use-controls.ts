@@ -1,7 +1,13 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useDockMedia, useDockMediaActions } from "../context";
 import {
@@ -176,7 +182,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     setIsMuted(nextMuted);
   };
   const handleVolumePointerDown = (
-    event: React.PointerEvent<HTMLDivElement>,
+    event: ReactPointerEvent<HTMLDivElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -222,7 +228,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
 
     volumeDragCleanupRef.current = removePointerListeners;
   };
-  const handleToggleMute = (event: React.MouseEvent) => {
+  const handleToggleMute = (event: MouseEvent) => {
     event.stopPropagation();
     if (!audibleElement) return;
 
@@ -272,7 +278,7 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
     setElementTime(videoElement, getSkipForwardTime(current, duration));
   };
 
-  const handleVolumeKeyDown = (event: React.KeyboardEvent) => {
+  const handleVolumeKeyDown = (event: KeyboardEvent) => {
     if (!audibleElement) return;
     if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
       event.preventDefault();

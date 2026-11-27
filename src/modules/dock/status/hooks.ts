@@ -1,7 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type ComponentType, useEffect, useRef, useState } from "react";
+import {
+  type ComponentType,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { STATUS_CLEAR_DURATION } from "../constants";
 import type {
@@ -41,7 +47,7 @@ function usePersistedOverlayStatusRestoration({
 }: {
   scheduleStatusClear: (options?: ScheduleStatusClearOptions) => void;
   setStatus: StatusSetter;
-  skipPersistedStatusCleanupRef: React.MutableRefObject<boolean>;
+  skipPersistedStatusCleanupRef: RefObject<boolean>;
 }) {
   useEffect(() => {
     const persistedStatus = restorePersistedOverlayStatus();
@@ -59,7 +65,7 @@ function usePersistedOverlayStatusCleanup({
   skipPersistedStatusCleanupRef,
   status,
 }: {
-  skipPersistedStatusCleanupRef: React.MutableRefObject<boolean>;
+  skipPersistedStatusCleanupRef: RefObject<boolean>;
   status: StatusState;
 }) {
   useEffect(() => {
@@ -79,7 +85,7 @@ function useRouteErrorStatusCleanup({
 }: {
   dispatchOfflineEvent: () => void;
   pathname: string | null;
-  previousPathRef: React.MutableRefObject<string | null>;
+  previousPathRef: RefObject<string | null>;
   setStatus: StatusSetter;
 }) {
   useEffect(() => {

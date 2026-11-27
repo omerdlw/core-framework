@@ -6,6 +6,7 @@ import {
   type ComponentType,
   createElement,
   isValidElement,
+  type MouseEvent,
   type ReactElement,
   type ReactNode,
   use,
@@ -150,7 +151,7 @@ export function DockSurfaceControls({
               >
                 <Button
                   type="button"
-                  onClick={(e: React.MouseEvent) => {
+                  onClick={(e: MouseEvent) => {
                     e.stopPropagation();
                     resolvedBack();
                   }}
@@ -180,7 +181,7 @@ export function DockSurfaceControls({
               >
                 <Button
                   type="button"
-                  onClick={(e: React.MouseEvent) => {
+                  onClick={(e: MouseEvent) => {
                     e.stopPropagation();
                     resolvedClose();
                   }}

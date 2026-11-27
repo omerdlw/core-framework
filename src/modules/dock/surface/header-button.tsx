@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, use } from "react";
+import { type MouseEvent, type ReactNode, use } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 import { Button } from "@/react/ui/components/button";
@@ -49,7 +49,7 @@ export function DockSurfaceHeaderButton({
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
-  onClick?: (event: React.MouseEvent) => void;
+  onClick?: (event: MouseEvent) => void;
   ariaLabel?: string;
   icon?: DockIconSource;
 }) {
@@ -67,7 +67,7 @@ export function DockSurfaceHeaderButton({
   return (
     <Button
       type="button"
-      onClick={(e: React.MouseEvent) => {
+      onClick={(e: MouseEvent) => {
         e.stopPropagation();
         onClick?.(e);
       }}
@@ -94,7 +94,7 @@ function useDockSurfaceHeaderButtonModel(_props: {
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
-  onClick?: (event: React.MouseEvent) => void;
+  onClick?: (event: MouseEvent) => void;
   ariaLabel?: string;
   icon?: DockIconSource;
 }) {
