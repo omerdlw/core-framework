@@ -64,11 +64,11 @@ Every `definePeer`/`useModuleState`/`useModule` call needs the **peer id as a st
 
 ## 4. Canonical module template
 
-Modules use one of two layouts. Both are described in full in [architecture-and-rules §2](../architecture-and-rules.md#2-canonical-module-file-pattern). A slot that does not apply is omitted, never created empty. `npm run check:architecture` enforces the layers, module isolation and the 400-line file limit.
+Modules use one of two layouts. Both are described in full in [architecture-and-rules §2](../architecture-and-rules.md#2-canonical-module-file-pattern). A slot that does not apply is omitted, never created empty. `npm run check:architecture` enforces the layers, module isolation and the 500-line file limit.
 
-**Flat layout** (default): `index.ts`, `module.tsx`, `types.ts` and `constants.ts` are required; `context.tsx` (one context), `state.ts`, `hooks.ts`, `overlay.tsx`, `motion.ts` and `utils.ts` are optional, plus topic files for a cohesive concern.
+**Flat layout** (default): `index.ts`, `module.tsx`, `types.ts` and `constants.ts` are required; `context.tsx` (one context), `state.ts`, `hooks.ts`, `overlay.tsx`, `motion.ts` and `utils.ts` are optional, plus topic files and folders for a cohesive concern.
 
-**Folder layout** (`background`, `dock`, `modal`): `components/` (one public component per file), `hooks/` (one view-model file per component), `model/` (pure state, no React), `lib/` (pure helpers, no React) and `types/` (split by area, with an `index.ts`), next to `index.ts`, `module.tsx`, `constants.ts`, `context.tsx` and `motion.ts`.
+**Feature layout** (`dock`): one folder per feature (`stack/`, `card/`, `commands/`, `media/`, `hud/`, `items/`, `routing/`, `status/`, `surface/`), each holding that feature's components, view-model hooks and logic, next to `index.ts`, `module.tsx`, `constants.ts`, `context.ts`, `provider.tsx` and `motion.ts`.
 
 Rules of thumb:
 
@@ -78,18 +78,18 @@ Rules of thumb:
 
 ### 4.1 File matrix (current)
 
-| Module       | Layout |  `context`   | `hooks`  | `state`  |   `overlay`   | `motion` | Extras                                                                            |
-| :----------- | :----: | :----------: | :------: | :------: | :-----------: | :------: | :-------------------------------------------------------------------------------- |
-| ambient      |  flat  |      ✅      |    ✅    |    —     |       —       |    —     | `analyze*.ts`, `extractor.ts`, `pipeline.ts`, `settings.ts`, `server/`, `worker/` |
-| background   | folder |      ✅      | `hooks/` | `model/` | `components/` |    ✅    | `youtube/`, `lib/`                                                                |
-| context-menu |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    ✅    | `resolver.ts`, `items.ts`, `dom.ts`                                               |
-| controls     |  flat  |      —       |    ✅    |    —     |      ✅       |    —     | `entries.ts`, `layout.ts`                                                         |
-| dock         | folder | `context.ts` | `hooks/` | `model/` | `components/` |    ✅    | `provider.tsx`, `hud.ts`, `routing/`, `runtime/`, `status/`, `surface/`, `lib/`   |
-| loading      |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    —     |                                                                                   |
-| media        |  flat  |      ✅      |    ✅    |    —     |      ✅       |    —     | `playback.ts`, `session.ts`                                                       |
-| modal        | folder |      ✅      | `hooks/` | `model/` | `components/` |    ✅    | `lib/`                                                                            |
-| navigation   |  flat  |      ✅      |    ✅    |    —     |       —       |    —     | `listeners.ts`; the navigator machine lives in `src/core/navigation/`             |
-| notification |  flat  |      ✅      |    ✅    |    ✅    |      ✅       |    ✅    |                                                                                   |
+| Module       | Layout  |  `context`   | `hooks` | `state` | `overlay` | `motion` | Extras                                                                          |
+| :----------- | :-----: | :----------: | :-----: | :-----: | :-------: | :------: | :------------------------------------------------------------------------------ |
+| ambient      |  flat   |      ✅      |   ✅    |    —    |     —     |    —     | `analysis/`, `extractor.ts`, `pipeline.ts`, `settings.ts`, `server/`, `worker/` |
+| background   |  flat   |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    | `visual.ts`, `playback.ts`, `native-video.tsx`, `youtube/`                      |
+| context-menu |  flat   |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    | `resolver.ts`, `items.ts`, `dom.ts`                                             |
+| controls     |  flat   |      —       |   ✅    |    —    |    ✅     |    —     | `entries.ts`, `layout.ts`                                                       |
+| dock         | feature | `context.ts` |   ✅    |    —    |     —     |    ✅    | `provider.tsx`, `theme.ts`, feature folders                                     |
+| loading      |  flat   |      ✅      |   ✅    |   ✅    |    ✅     |    —     |                                                                                 |
+| media        |  flat   |      ✅      |   ✅    |    —    |    ✅     |    —     | `playback.ts`, `session.ts`                                                     |
+| modal        |  flat   |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    | `container.tsx`, `layout.ts`, `dom.ts`                                          |
+| navigation   |  flat   |      ✅      |   ✅    |    —    |     —     |    —     | `listeners.ts`; the navigator machine lives in `src/core/navigation/`           |
+| notification |  flat   |      ✅      |   ✅    |   ✅    |    ✅     |    ✅    |                                                                                 |
 
 ### 4.2 Why some optional slots are absent
 

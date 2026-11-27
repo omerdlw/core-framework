@@ -133,7 +133,6 @@
   "files": [
     "dist",
     "docs",
-    "!docs/superpowers",
     "templates",
     "README.md",
     "MIGRATION.md",

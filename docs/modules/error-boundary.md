@@ -145,12 +145,11 @@ Raw `Error.message` values (database, SDK, vendor wording) never reach the UI. `
 | :------------- | :-------------------------------------------------------------------------------------------------------- |
 | `index.ts`     | Public barrel.                                                                                            |
 | `types.ts`     | Report, context, environment, reporter options, boundary props, Sentry scope.                             |
-| `constants.ts` | Messages, listener config (limits, ignore patterns), dedupe limits.                                       |
+| `constants.ts` | Messages, listener config (limits, ignore patterns), dedupe limits, `errorTheme` spec.                    |
 | `utils.ts`     | Fingerprinting, report creation, environment capture, error normalization and ignore rules.               |
 | `boundary.tsx` | `ErrorBoundaryCore`, default fallback, `GlobalError`, `ModuleError`, `ComponentError`: the module's view. |
 | `listener.ts`  | `GlobalErrorListener`.                                                                                    |
 | `reporter.ts`  | `ErrorReporter` (sampling, dedupe, handlers) and sink factories.                                          |
-| `theme.ts`     | `errorTheme` spec.                                                                                        |
 
 `builder.ts`, `provider.tsx`, `view.tsx` and `motion.ts` are intentionally absent ([README](./README.md#42-why-some-optional-slots-are-absent)).
 

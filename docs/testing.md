@@ -10,7 +10,7 @@
 
 | Command                                                                                                      | Purpose                                                                                           |
 | :----------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| `npm test`                                                                                                   | Runs the full 740-test suite (`tests/**/*.test.ts`) on the uncompiled source.                     |
+| `npm test`                                                                                                   | Runs the full test suite (`tests/**/*.test.ts`) on the uncompiled source.                         |
 | `npm run type-check`                                                                                         | Full TypeScript compiler validation (`tsc --noEmit`).                                             |
 | `npm run check:architecture`                                                                                 | Static AST validation checking for 0 circular dependencies and verified `uses` peer declarations. |
 | `node --import ./tests/support/register.mjs --test tests/core/kernel.test.ts`                                | Run a single test file.                                                                           |

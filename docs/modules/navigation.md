@@ -198,20 +198,20 @@ The dock lists `navigation` in `uses`. When the module is installed, dock naviga
 
 The module lives in `src/modules/navigation/`. The navigator machine it shares with the dock lives in `src/core/navigation/`, so a module that does not install `navigation` (the dock's own navigator) can still use it.
 
-| Path                              | Responsibility                                                                         |
-| :-------------------------------- | :------------------------------------------------------------------------------------- |
-| `modules/navigation/index.ts`     | Public barrel; re-exports the core types and `createNavigator`.                        |
-| `modules/navigation/listeners.ts` | `watchHistory` (popstate hold and replay), `watchIntent` (hover/press/focus).          |
-| `modules/navigation/context.tsx`  | `NavigationContext`, `NavigationProvider`, inert actions and store.                    |
-| `modules/navigation/hooks.ts`     | Public hooks.                                                                          |
-| `modules/navigation/module.tsx`   | `navigationModule`, event and kernel type augmentation.                                |
-| `core/navigation/types.ts`        | Trip, state, options, actions, settings contracts; the `NavigationPayload` to augment. |
-| `core/navigation/constants.ts`    | Statuses, phases, reasons, sources, event names, default timings.                      |
-| `core/navigation/utils.ts`        | Href and location-key helpers, the link lookup for intent.                             |
-| `core/navigation/state.ts`        | Pure trip factory and settling.                                                        |
-| `core/navigation/settings.ts`     | `configureNavigation`, `getNavigationSettings` (on `globalThis`).                      |
-| `core/navigation/navigator.ts`    | `createNavigator`: the state machine, arrivals.                                        |
-| `core/navigation/navigator-*.ts`  | Its parts: defaults, holds, patience timer, payload, prefetch warm cache.              |
+| Path                                                                   | Responsibility                                                                         |
+| :--------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| `modules/navigation/index.ts`                                          | Public barrel; re-exports the core types and `createNavigator`.                        |
+| `modules/navigation/listeners.ts`                                      | `watchHistory` (popstate hold and replay), `watchIntent` (hover/press/focus).          |
+| `modules/navigation/context.tsx`                                       | `NavigationContext`, `NavigationProvider`, inert actions and store.                    |
+| `modules/navigation/hooks.ts`                                          | Public hooks.                                                                          |
+| `modules/navigation/module.tsx`                                        | `navigationModule`, event and kernel type augmentation.                                |
+| `core/navigation/types.ts`                                             | Trip, state, options, actions, settings contracts; the `NavigationPayload` to augment. |
+| `core/navigation/constants.ts`                                         | Statuses, phases, reasons, sources, event names, default timings.                      |
+| `core/navigation/utils.ts`                                             | Href and location-key helpers, the link lookup for intent, event and paint helpers.    |
+| `core/navigation/state.ts`                                             | Pure trip factory and settling.                                                        |
+| `core/navigation/settings.ts`                                          | `configureNavigation`, `getNavigationSettings` (on `globalThis`).                      |
+| `core/navigation/navigator.ts`                                         | `createNavigator`: the state machine, arrivals.                                        |
+| `core/navigation/holds.ts`, `patience.ts`, `payload.ts`, `prefetch.ts` | Its parts: holds, patience timer, payload, prefetch warm cache.                        |
 
 ## 10. Dependencies
 

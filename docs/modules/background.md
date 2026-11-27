@@ -174,24 +174,29 @@ All classes come from `backgroundTheme` (`src/config/background.module.theme.ts`
 
 ## 11. File map
 
-Folder layout ([README §4](./README.md#4-canonical-module-template)), under `src/modules/background/`:
+Flat layout ([architecture §2.1](../architecture-and-rules.md#21-flat-layout-default)) with the YouTube player in its own folder, under `src/modules/background/`:
 
-| Path                  | Responsibility                                                                                                                    |
-| :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`            | Public barrel.                                                                                                                    |
-| `types.ts`            | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots.                         |
-| `constants.ts`        | Registry key, media id, `backgroundTheme` spec, and domain constants.                                                             |
-| `context.tsx`         | `BackgroundProvider`: store, actions and the `media` module bridge.                                                               |
-| `hooks.ts`            | `useBackground*` hooks and `useBackgroundRegistration`.                                                                           |
-| `motion.ts`           | `useBackgroundMotion`, how a page's `animation` merges over the app's motion, the exit fallback, CSS duration/easing helpers.     |
-| `module.tsx`          | `backgroundModule`, `selectPageBackground`, `defineBackground`, kernel type augmentation.                                         |
-| `components/`         | `BackgroundOverlay` (`overlay.tsx`), `NativeVideo`, and the solid, noise, edge-gradient and background-gradient layers.           |
-| `hooks/`              | View models: overlay, motion, native video, media-source registration.                                                            |
-| `model/`              | Pure logic: state (`DEFAULT_BACKGROUND`, normalize, merge, compute), scoped overrides, visual styles, video frame, playback sync. |
-| `lib/theme.ts`        | Theme type alias.                                                                                                                 |
-| `youtube/components/` | `YouTubeBackgroundPlayer` (dual-stream player).                                                                                   |
-| `youtube/hooks/`      | Player view model, stream sources, iframe player fallback, companion audio sync.                                                  |
-| `youtube/lib/`        | URL parsing and stream/thumbnail URLs, iframe API and engine, iframe proxy, audio sync, timing, video event handlers.             |
+| Path                                                               | Responsibility                                                                                                |
+| :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| `index.ts`                                                         | Public barrel.                                                                                                |
+| `types.ts`                                                         | `BackgroundState`, `VideoOptions`, actions, computed state, YouTube controller/player types, theme slots.     |
+| `constants.ts`                                                     | Registry key, media id, `backgroundTheme` spec, and domain constants.                                         |
+| `context.tsx`                                                      | `BackgroundProvider`: store, actions and the `media` module bridge.                                           |
+| `hooks.ts`                                                         | `useBackground*` hooks, `useBackgroundRegistration`, the overlay and motion view models.                      |
+| `state.ts`                                                         | `DEFAULT_BACKGROUND`, normalize, merge, compute, scoped overrides.                                            |
+| `visual.ts`                                                        | Visual styles, gradients, edge masks, video frame.                                                            |
+| `playback.ts`                                                      | Video playback, mute and loop sync.                                                                           |
+| `overlay.tsx`                                                      | `BackgroundOverlay` and the solid, noise, edge-gradient and background-gradient layers.                       |
+| `native-video.tsx`                                                 | `NativeVideo` and its view model.                                                                             |
+| `motion.ts`                                                        | `useBackgroundMotion`, how a page's `animation` merges over the app's motion, the exit fallback, CSS helpers. |
+| `module.tsx`                                                       | `backgroundModule`, `selectPageBackground`, `defineBackground`, kernel type augmentation.                     |
+| `youtube/player.tsx`                                               | `YouTubeBackgroundPlayer` (dual-stream player).                                                               |
+| `youtube/use-player.ts`                                            | Player view model and stream sources.                                                                         |
+| `youtube/use-iframe-player.ts`                                     | Iframe player fallback and its engine.                                                                        |
+| `youtube/use-video-sync.ts`                                        | Companion audio sync.                                                                                         |
+| `youtube/iframe.ts`                                                | Iframe API loading and the iframe proxy.                                                                      |
+| `youtube/parse.ts`                                                 | URL parsing, stream and thumbnail URLs.                                                                       |
+| `youtube/audio.ts`, `youtube/video-events.ts`, `youtube/timing.ts` | Audio sync, video event handlers, retry and end timing.                                                       |
 
 ## 12. Dependencies
 
