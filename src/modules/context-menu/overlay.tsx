@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { type MouseEvent, useSyncExternalStore } from "react";
+import { type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { isImageIconSource } from "@/foundation/utils";
+import { useIsClient } from "@/react/hooks/use-client-value";
 import { Icon } from "@/react/ui/components/icon";
 
 import { HEADER_ICON_SIZE, ITEM_ICON_SIZE } from "./constants";
@@ -258,19 +259,13 @@ function ContextMenuContent({
   );
 }
 
-const emptySubscribe = () => () => {};
-
 /**
  * Renders the open menu in a portal on the document body.
  */
 export function ContextMenuRenderer() {
   const { closeMenu, config, context, isOpen, items, position } =
     useContextMenu();
-  const isMounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
+  const isMounted = useIsClient();
   if (!isMounted) return null;
 
   const menuContext = context ?? EMPTY_MENU_CONTEXT;

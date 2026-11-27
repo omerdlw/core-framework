@@ -6,8 +6,9 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
+
+import { usePortalTarget } from "@/react/hooks/use-client-value";
 
 import {
   DOCK_HEIGHT_BUFFER,
@@ -217,16 +218,10 @@ export function useElementHeight(
   }, [dependencyKey, elementRef, shouldMeasure]);
 }
 
-const emptySubscribe = () => () => {};
-
 export function useDockViewport(activeItem: DockItem | null = null) {
   const targetWidth = getTargetItemWidth(activeItem);
   const [, setViewportRevision] = useState(0);
-  const portalTarget = useSyncExternalStore(
-    emptySubscribe,
-    () => (typeof document !== "undefined" ? document.body : null),
-    () => null,
-  );
+  const portalTarget = usePortalTarget();
 
   const { deck } = useDockMotion();
   const stackWidth = getDockCardWidth({

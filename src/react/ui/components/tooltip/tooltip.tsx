@@ -10,10 +10,10 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 
+import { useIsClient } from "@/react/hooks/use-client-value";
 import type { TooltipProps } from "@/react/ui/types";
 
 import { useUi } from "../../provider";
@@ -31,9 +31,6 @@ export { TooltipProvider } from "./group";
 
 const EXIT_FALLBACK_SLACK_MS = 50;
 
-const subscribeNothing = () => () => {};
-const onClient = () => true;
-const onServer = () => false;
 const noop = () => {};
 
 const WRAPPER_STYLE = {
@@ -93,7 +90,7 @@ export function Tooltip({
   const { parts } = useUi();
   const { delayDuration, group, skipDelayDuration } = use(TooltipGroupContext);
   const contentId = useId();
-  const isClient = useSyncExternalStore(subscribeNothing, onClient, onServer);
+  const isClient = useIsClient();
 
   const [uncontrolledOpen, setUncontrolledOpen] = useState(
     defaultOpen ?? false,

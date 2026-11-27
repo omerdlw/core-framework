@@ -13,7 +13,6 @@ import {
   useId,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -23,6 +22,10 @@ import {
   useEscapeKey,
   useScrollLock,
 } from "@/react/hooks";
+import {
+  useClientValue,
+  usePortalTarget,
+} from "@/react/hooks/use-client-value";
 import type { Anchor, SelectOption, SelectProps } from "@/react/ui/types";
 
 import { useUi, useUiMotion } from "../../provider";
@@ -39,16 +42,10 @@ const ARROW_KEYS = ["ArrowDown", "ArrowUp"];
 const SELECT_KEYS = ["Enter", " "];
 const NON_IDENTIFIER_CHARS = /[^a-zA-Z0-9_-]/g;
 
-// Snapshot readers for useSyncExternalStore: browser-only values that never change.
-const noSubscribe = () => () => {};
-const readHost = () => document.body;
-const noHost = () => null;
-
 const canAnchor = () =>
   typeof CSS !== "undefined" &&
   typeof CSS.supports === "function" &&
   CSS.supports("anchor-name", "--a");
-const cannotAnchor = () => false;
 
 /**
  * A single-choice dropdown with keyboard support.
@@ -90,10 +87,10 @@ export function Select<T extends string = string>({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const host = useSyncExternalStore(noSubscribe, readHost, noHost);
+  const host = usePortalTarget();
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const floating = placement === "popover" && host !== null && anchor !== null;
-  const anchored = useSyncExternalStore(noSubscribe, canAnchor, cannotAnchor);
+  const anchored = useClientValue(canAnchor, false);
   const anchorName = `--select-${generatedId.replace(NON_IDENTIFIER_CHARS, "")}`;
 
   const place = () => {

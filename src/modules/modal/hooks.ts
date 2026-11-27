@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 
 import {
@@ -17,6 +16,7 @@ import {
 } from "@/core/kernel";
 import { acquireGlobalScrollLock } from "@/foundation/utils";
 import { useRequiredContext, useStore } from "@/react/hooks";
+import { useIsClient } from "@/react/hooks/use-client-value";
 import { useTheme } from "@/react/theme";
 
 import {
@@ -127,8 +127,6 @@ export function useModal(
     (ModalState & ModalActions) | ModalHookBinding;
 }
 
-const emptySubscribe = () => () => {};
-
 /**
  * View model of one modal layer: resolved position, component and chrome, plus
  * focus handling while it is on top.
@@ -201,11 +199,7 @@ export function useModalModel() {
   );
   const topModalEntry = visibleModalStack[visibleModalStack.length - 1] || null;
   const isModalVisible = Boolean(isOpen && topModalEntry);
-  const mounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
+  const mounted = useIsClient();
   const isMobileViewport = useMobileViewport();
   const [isTopExitSettling, setIsTopExitSettling] = useState(false);
   const previousTopModalIdRef = useRef<number | null>(null);
