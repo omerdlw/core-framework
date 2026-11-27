@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, use, useCallback, useEffect, useMemo } from "react";
+import {
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
@@ -273,3 +281,30 @@ export const SurfaceFlowContext = createContext<SurfaceFlowContextValue | null>(
 export const DockSurfaceHeaderRadiusContext = createContext<string | null>(
   null,
 );
+
+export function SurfaceExtensionsProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [value] = useState(() => ({
+    extensions: new SurfaceExtensionsStore(),
+    headerActions: new SurfaceHeaderActionStore(),
+  }));
+
+  return (
+    <SurfaceExtensionsContext value={value}>
+      {children}
+    </SurfaceExtensionsContext>
+  );
+}
+
+export function SurfaceFlowProvider({
+  children,
+  value,
+}: {
+  children?: ReactNode;
+  value: SurfaceFlowContextValue;
+}) {
+  return <SurfaceFlowContext value={value}>{children}</SurfaceFlowContext>;
+}

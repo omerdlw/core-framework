@@ -1,10 +1,9 @@
 import { isPlainObject } from "@/foundation/utils";
 
-import { DOCK_SURFACE_PHASE } from "../constants";
 import {
-  resolveComponentType,
-  resolveRenderableContent,
-} from "../lib/element-helpers";
+  DEFAULT_SURFACE_DESCRIPTION_MAX_LINES,
+  DOCK_SURFACE_PHASE,
+} from "../constants";
 import type {
   ActiveSurfaceStep,
   DockItem,
@@ -14,8 +13,8 @@ import type {
   SurfaceStep,
   SurfaceViewModelOptions,
 } from "../types";
-import { DEFAULT_SURFACE_DESCRIPTION_MAX_LINES } from "./constants";
-import { normalizeExtensions } from "./model/normalize";
+import { resolveComponentType, resolveRenderableContent } from "../utils";
+import { normalizeExtensions } from "./normalize";
 
 function resolveSurfaceAction(
   item: Pick<DockItem, "action"> | null,

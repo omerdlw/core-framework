@@ -23,7 +23,7 @@ import type {
   DockComponentProps,
   DockIconSource,
 } from "../types";
-import { formatSlugTitle } from "./model/policy";
+import { formatSlugTitle } from "./policy";
 
 const ROOT_BREADCRUMB_ID = "home";
 const ROOT_BREADCRUMB_TITLE = "Home";

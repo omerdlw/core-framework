@@ -2,8 +2,7 @@ import "../support/dom.ts";
 
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, mock, test } from "node:test";
-import { act, createElement as h } from "react";
-import { createElement as hh } from "react";
+import { act, createElement as h, createElement as hh } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
@@ -17,15 +16,13 @@ import {
 } from "../../src/foundation/events/index.ts";
 import { USER_MESSAGES } from "../../src/foundation/utils/index.ts";
 import {
+  DOCK_ATTENTION_KIND,
   DOCK_OPERATION_EVENTS,
   DOCK_OPERATION_MAX_ENTRIES,
-} from "../../src/modules/dock/constants.ts";
-import { OVERLAY_STATUS_STORAGE_KEY } from "../../src/modules/dock/constants.ts";
-import {
-  DOCK_ATTENTION_KIND,
   DOCK_PENDING_ROUTE_HOLD_MS,
+  OVERLAY_STATUS_STORAGE_KEY,
 } from "../../src/modules/dock/constants.ts";
-import { useDockConfig } from "../../src/modules/dock/hooks/use-dock-config.ts";
+import { useDockConfig } from "../../src/modules/dock/hooks.ts";
 import {
   useDockActions,
   useDockContextActions,
@@ -35,63 +32,21 @@ import {
   useDockState,
 } from "../../src/modules/dock/index.ts";
 import {
-  isEditableDockTarget,
-  isInteractiveTarget,
-  shouldRestoreDockFocus,
-} from "../../src/modules/dock/lib/dom.ts";
+  buildDockItems,
+  isNotFoundItem,
+  resolveBaseActiveItemMatch,
+  selectPendingRouteItem,
+} from "../../src/modules/dock/items/build.ts";
 import {
-  isHudDescriptor,
-  isValidComponentType,
-  resolveComponentType,
-  resolveRenderableContent,
-  toSearchableText,
-} from "../../src/modules/dock/lib/element-helpers.ts";
-import {
-  createDockScheduler,
-  formatMediaTime,
-  normalizeUpper,
-} from "../../src/modules/dock/lib/helpers.ts";
-import { toObject } from "../../src/modules/dock/lib/helpers.ts";
-import { isValidBannerUrl } from "../../src/modules/dock/lib/styles.ts";
-import {
-  getImageIconStyle,
-  getLineClampStyle,
-  resolveDockActionClass,
-  splitStyle,
-} from "../../src/modules/dock/lib/styles.ts";
-import {
-  getContainerHeight,
-  getDockCardWidth,
-  getItemMeasurementKey,
-  getRouteMeasurementKey,
-  publishDockHeightCssVar,
-} from "../../src/modules/dock/model/layout.ts";
-import {
-  getDockLocationKey,
-  getDockRoutePathname,
-  isPathPrefix,
-  isSafeInternalHref,
-  isSamePath,
-} from "../../src/modules/dock/model/paths.ts";
+  resolveActiveItem,
+  usePendingRouteHold,
+} from "../../src/modules/dock/items/display.ts";
 import {
   createDockOperation,
   createDockOperationState,
   dockOperationReducer,
   resolveActiveDockOperation,
-} from "../../src/modules/dock/model/state.ts";
-import { DockProvider } from "../../src/modules/dock/provider.tsx";
-import { createDockGuardRegistry } from "../../src/modules/dock/routing/guards.ts";
-import {
-  resolveActiveItem,
-  usePendingRouteHold,
-} from "../../src/modules/dock/runtime/display.ts";
-import { useDockLayout } from "../../src/modules/dock/runtime/hooks/use-dock-layout.ts";
-import {
-  buildDockItems,
-  isNotFoundItem,
-  resolveBaseActiveItemMatch,
-  selectPendingRouteItem,
-} from "../../src/modules/dock/runtime/model/items.ts";
+} from "../../src/modules/dock/items/operations.ts";
 import {
   findDockItemIndex,
   getItemKey,
@@ -101,7 +56,29 @@ import {
   replaceActiveItem,
   resolveActiveIndex,
   resolveDockHeaderKey,
-} from "../../src/modules/dock/runtime/pipeline.ts";
+} from "../../src/modules/dock/items/pipeline.ts";
+import { DockProvider } from "../../src/modules/dock/provider.tsx";
+import { createDockGuardRegistry } from "../../src/modules/dock/routing/guards.ts";
+import {
+  getDockLocationKey,
+  getDockRoutePathname,
+  isPathPrefix,
+  isSafeInternalHref,
+  isSamePath,
+} from "../../src/modules/dock/routing/paths.ts";
+import {
+  isEditableDockTarget,
+  isInteractiveTarget,
+  shouldRestoreDockFocus,
+} from "../../src/modules/dock/stack/focus.ts";
+import {
+  getContainerHeight,
+  getDockCardWidth,
+  getItemMeasurementKey,
+  getRouteMeasurementKey,
+  publishDockHeightCssVar,
+  useDockLayout,
+} from "../../src/modules/dock/stack/layout.ts";
 import {
   subscribeToApiErrorStatusEvents,
   subscribeToApplicationErrorStatusEvents,
@@ -134,16 +111,34 @@ import {
   normalizeSurfaceFlowSnapshot,
   resolveSurfaceFlowReturnHandshake,
 } from "../../src/modules/dock/surface/helpers.ts";
+import { normalizeExtensions } from "../../src/modules/dock/surface/normalize.ts";
 import {
   runSurfaceTransition,
   transitionSurface,
-} from "../../src/modules/dock/surface/machine.ts";
-import { normalizeExtensions } from "../../src/modules/dock/surface/model/normalize.ts";
+} from "../../src/modules/dock/surface/runtime/machine.ts";
 import {
   createSurfaceTransitionState,
   SURFACE_TRANSITION_EFFECTS as EFFECT,
   SURFACE_TRANSITION_EVENTS as EVENT,
-} from "../../src/modules/dock/surface/model/transition-state.ts";
+} from "../../src/modules/dock/surface/runtime/transition.ts";
+import {
+  getImageIconStyle,
+  getLineClampStyle,
+  isValidBannerUrl,
+  resolveDockActionClass,
+  splitStyle,
+} from "../../src/modules/dock/theme.ts";
+import {
+  createDockScheduler,
+  formatMediaTime,
+  isHudDescriptor,
+  isValidComponentType,
+  normalizeUpper,
+  resolveComponentType,
+  resolveRenderableContent,
+  toObject,
+  toSearchableText,
+} from "../../src/modules/dock/utils.ts";
 import { dockMotion } from "../support/motion/dock.ts";
 
 describe("dock context", () => {
@@ -2545,7 +2540,7 @@ describe("surface card facing the page", () => {
 
   test("the card shows the surface only between the page's leaving and return", async () => {
     const { isSurfaceLayerShown } =
-      await import("../../src/modules/dock/lib/card.ts");
+      await import("../../src/modules/dock/card/model.ts");
     const { DOCK_SURFACE_PHASE } =
       await import("../../src/modules/dock/constants.ts");
     const shows = (surfacePhase: string) =>
@@ -2671,7 +2666,7 @@ describe("publishDockHeightCssVar", () => {
 describe("dock cards: front card", () => {
   test("the front card keeps one key across pages", async () => {
     const { createDockCardProps } =
-      await import("../../src/modules/dock/runtime/model/cards.ts");
+      await import("../../src/modules/dock/stack/cards.ts");
     const noop = () => {};
     const keysFor = (front: string) =>
       createDockCardProps({

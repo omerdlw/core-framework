@@ -1,0 +1,73 @@
+"use client";
+
+import { useCallback, useEffect, useRef } from "react";
+
+import { DOCK_HUD_RENDER_MODE } from "../constants";
+import type { DockHudDescriptor } from "../types";
+import { isValidComponentType } from "../utils";
+
+export function DockHudView({
+  clearHud,
+  hud,
+  pathname,
+}: {
+  clearHud?: ((id?: string) => void) | null;
+  hud: DockHudDescriptor | null;
+  pathname?: string | null;
+}) {
+  const { dismiss } = useDockHudViewModel({ clearHud, hud, pathname });
+  if (!hud?.isActive) return null;
+  if (
+    hud.renderMode === DOCK_HUD_RENDER_MODE.COMPONENT &&
+    isValidComponentType(hud.component)
+  ) {
+    const Component = hud.component;
+    return <Component {...hud.props} onDismiss={dismiss} />;
+  }
+  return hud.content ?? null;
+}
+
+export function useDockHudViewModel({
+  clearHud,
+  hud,
+  pathname,
+}: {
+  clearHud?: ((id?: string) => void) | null;
+  hud: DockHudDescriptor | null;
+  pathname?: string | null;
+}) {
+  const previousPathRef = useRef(pathname);
+  // stable identity: part of the public hook contract
+  // (HUD components receive it as onDismiss)
+  const dismiss = useCallback(() => {
+    hud?.onDismiss?.();
+    if (hud?.id) clearHud?.(hud.id);
+  }, [clearHud, hud]);
+  useEffect(() => {
+    if (previousPathRef.current === pathname) return;
+    previousPathRef.current = pathname;
+    if (hud?.isActive && hud.dismissOnNavigate && hud.id) clearHud?.(hud.id);
+  }, [clearHud, hud?.dismissOnNavigate, hud?.id, hud?.isActive, pathname]);
+  useEffect(() => {
+    if (!hud?.isActive || !hud?.dismissOnEscape) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      dismiss();
+    };
+    window.addEventListener("keydown", onKeyDown, {
+      capture: true,
+    });
+    return () =>
+      window.removeEventListener("keydown", onKeyDown, {
+        capture: true,
+      });
+  }, [dismiss, hud?.dismissOnEscape, hud?.isActive]);
+  useEffect(() => {
+    if (!hud?.isActive || !hud?.autoDismissMs) return;
+    const timer = setTimeout(dismiss, hud.autoDismissMs);
+    return () => clearTimeout(timer);
+  }, [dismiss, hud?.autoDismissMs, hud?.isActive]);
+
+  return { dismiss };
+}

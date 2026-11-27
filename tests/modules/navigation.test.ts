@@ -20,9 +20,9 @@ import {
   locationKeyOf,
   pathOf,
 } from "../../src/core/navigation/utils.ts";
-import { createDockScheduler } from "../../src/modules/dock/lib/helpers.ts";
 import { DockProvider } from "../../src/modules/dock/provider.tsx";
 import { useDockNavigation } from "../../src/modules/dock/routing/navigation.ts";
+import { createDockScheduler } from "../../src/modules/dock/utils.ts";
 import { INERT_NAVIGATION_ACTIONS } from "../../src/modules/navigation/context.tsx";
 import {
   useArrival,

@@ -3,8 +3,8 @@ import type { TargetAndTransition, Transition } from "motion/react";
 import { cssTransition, gpuTransform } from "@/foundation/utils";
 import { useModuleMotion, useOptionalModuleMotion } from "@/react/theme";
 
+import { isDockCardPeeking } from "./card/model";
 import { DOCK_SURFACE_PHASE, dockTheme } from "./constants";
-import { isDockCardPeeking } from "./lib/card-item";
 import type {
   DockMotion,
   DockSurfacePhaseKey,

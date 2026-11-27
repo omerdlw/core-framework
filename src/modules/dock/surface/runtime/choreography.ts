@@ -1,17 +1,23 @@
+import type { Dispatch, SetStateAction } from "react";
+
 import { DOCK_SURFACE_PHASE } from "../../constants";
 import type {
+  DockScheduledTaskId,
+  DockScheduler,
+  DockSurfaceTimings,
+  SurfaceFlowSession,
   SurfaceId,
+  SurfaceLifecycleState,
   SurfaceResult,
   SurfaceStackEntry,
   SurfaceTransitionEvent,
 } from "../../types";
-import { runSurfaceTransition } from "../machine";
-import { createSurfaceState } from "../model/records";
+import { runSurfaceTransition } from "./machine";
+import { createSurfaceState, type SurfaceRuntimeRefs } from "./records";
 import {
   createSurfaceTransitionState,
   SURFACE_TRANSITION_EFFECTS,
-} from "../model/transition-state";
-import type { SurfaceRuntimeContext } from "./context";
+} from "./transition";
 
 /**
  * Drives the surface open/close transitions and keeps the stack, phase and
@@ -118,3 +124,30 @@ export function createSurfaceChoreography(
 }
 
 export type SurfaceChoreography = ReturnType<typeof createSurfaceChoreography>;
+
+/** Inputs that may change between renders; the stack hook keeps them current. */
+export interface SurfaceRuntimeLive {
+  onSurfaceFlowSettled:
+    | ((settled: {
+        flow: SurfaceFlowSession;
+        result: SurfaceResult;
+      }) => boolean)
+    | null;
+  setExpanded: (expanded: boolean) => void;
+  setSearchQuery: (query: string) => void;
+  timings: DockSurfaceTimings;
+}
+
+/** Shared state of one surface stack runtime, built once per provider. */
+export interface SurfaceRuntimeContext {
+  focusRestoreFrame: { current: DockScheduledTaskId | null };
+  live: SurfaceRuntimeLive;
+  refs: SurfaceRuntimeRefs;
+  scheduler: DockScheduler;
+  setSurfaceLifecycleState: Dispatch<SetStateAction<SurfaceLifecycleState>>;
+  setSurfacePhase: Dispatch<SetStateAction<string>>;
+  setSurfaceState: Dispatch<
+    SetStateAction<ReturnType<typeof createSurfaceState>>
+  >;
+  surfacePhase: { current: string };
+}

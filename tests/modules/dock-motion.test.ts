@@ -8,12 +8,11 @@ import {
   defineMotion,
   retimeModuleMotion,
 } from "../../src/foundation/utils/tempo.ts";
-import { DockCardBanner } from "../../src/modules/dock/components/card-banner.tsx";
+import { DockCardBanner } from "../../src/modules/dock/card/banner.tsx";
 import {
   DOCK_SURFACE_PHASE,
   dockTheme,
 } from "../../src/modules/dock/constants.ts";
-import { getDockItemCardProps } from "../../src/modules/dock/lib/styles.ts";
 import {
   getDockCardDelay,
   getDockItemAnimateValues,
@@ -24,7 +23,8 @@ import {
   getDockStackTransformTransition,
   getDockStackTransition,
 } from "../../src/modules/dock/motion.ts";
-import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/hooks/use-surface-shell-model.ts";
+import { useDockSurfaceShellModel } from "../../src/modules/dock/surface/shell.tsx";
+import { getDockItemCardProps } from "../../src/modules/dock/theme.ts";
 import type { DockMotion } from "../../src/modules/dock/types/index.ts";
 import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 import { dockMotion } from "../support/motion/dock.ts";

@@ -7,15 +7,17 @@ import { act, createElement as h, useState } from "react";
 import { RegistryProvider } from "../../src/core/kernel/index.ts";
 import { dockTheme } from "../../src/modules/dock/constants.ts";
 import { DockProvider } from "../../src/modules/dock/provider.tsx";
-import { BreadcrumbProvider } from "../../src/modules/dock/routing/breadcrumbs.tsx";
-import { useRegisterBreadcrumbOverride } from "../../src/modules/dock/routing/breadcrumbs.tsx";
-import { useDock } from "../../src/modules/dock/runtime/hooks/use-dock.ts";
+import {
+  BreadcrumbProvider,
+  useRegisterBreadcrumbOverride,
+} from "../../src/modules/dock/routing/breadcrumbs.tsx";
+import { useDock } from "../../src/modules/dock/stack/use-dock.ts";
 import {
   SurfaceExtensionsContext,
   SurfaceFlowContext,
 } from "../../src/modules/dock/surface/context.tsx";
-import { useDockSurfaceControlsModel } from "../../src/modules/dock/surface/hooks/use-surface-controls-model.ts";
-import { useSurfaceFlow } from "../../src/modules/dock/surface/hooks/use-surface-flow.tsx";
+import { useDockSurfaceControlsModel } from "../../src/modules/dock/surface/controls.tsx";
+import { useSurfaceFlow } from "../../src/modules/dock/surface/use-flow.tsx";
 import { defineTheme, ThemeProvider } from "../../src/react/theme/index.tsx";
 import { dockMotion } from "../support/motion/dock.ts";
 import { registryDefinitions } from "../support/registry.ts";
