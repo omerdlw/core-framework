@@ -1,3 +1,5 @@
+import { report } from "@/foundation/utils";
+
 /** Schedules a guarded retry and tracks its timer id so it can be cancelled. */
 export function scheduleRetryTimer(
   timerIds: Set<number>,
@@ -8,7 +10,9 @@ export function scheduleRetryTimer(
     timerIds.delete(timerId);
     try {
       callback();
-    } catch {}
+    } catch (error) {
+      report("Background playback retry", error, "warn");
+    }
   }, delay);
   timerIds.add(timerId);
 }

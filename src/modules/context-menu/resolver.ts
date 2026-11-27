@@ -1,4 +1,4 @@
-import { isObject, toArray } from "@/foundation/utils";
+import { isObject, report, toArray } from "@/foundation/utils";
 
 import {
   CURRENT_PAGE_KEY,
@@ -156,12 +156,16 @@ function buildMenuContext(
   try {
     const payload = config.resolvePayload?.(event, context);
     if (payload !== undefined) context.payload = payload;
-  } catch {}
+  } catch (error) {
+    report("Context menu resolvePayload", error);
+  }
 
   try {
     const extra = config.resolveContext?.(event, context);
     if (isObject(extra)) context = { ...context, ...extra };
-  } catch {}
+  } catch (error) {
+    report("Context menu resolveContext", error);
+  }
 
   return context;
 }
