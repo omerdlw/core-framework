@@ -89,8 +89,11 @@ export function DockCommandBar({
       <AnimatePresence mode="popLayout" onExitComplete={handleExitComplete}>
         {actions.map((action, index) => (
           <motion.div
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- action.icon is a ReactNode; an element icon without action.key stringifies to "[object Object]" and yields a non-unique key (pre-existing)
-            key={`${action.key || action.icon || `dock-action-${index}`}`}
+            key={
+              action.key ||
+              (typeof action.icon === "string" ? action.icon : null) ||
+              `dock-action-${index}`
+            }
             variants={dockMotion.variants.commandBar}
             style={{ ...DOCK_COMPOSITOR_STYLE, willChange: "transform" }}
             custom={index}

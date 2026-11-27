@@ -57,6 +57,15 @@ export const DEFAULT_COLOR = "currentColor";
 
 const WIDTH_CLASS = /^(w-|max-w-|min-w-)/;
 
+/** Edge fade, in percent of the width, per unit of gradient strength. */
+const FADE_PERCENT_PER_STRENGTH = 7.5;
+const MIN_FADE_PERCENT = 12;
+const MAX_FADE_PERCENT = 48;
+/** Edge fade used when the video has a custom width but no gradient strength. */
+const WIDTH_FADE_PERCENT = 20;
+/** Overlay opacity per unit of gradient strength. */
+const OPACITY_PER_STRENGTH = 0.22;
+
 /**
  * Splits class names into the object-fit/position styles, the width class and the rest.
  */
@@ -124,6 +133,9 @@ export const generateEdgeGradient = (
   return `linear-gradient(${to}, color-mix(in srgb, ${color} 95%, transparent) 0%, color-mix(in srgb, ${color} 70%, transparent) 25%, color-mix(in srgb, ${color} 35%, transparent) 55%, color-mix(in srgb, ${color} 10%, transparent) 80%, transparent 100%)`;
 };
 
+/**
+ * Splits a media style into the plain CSS and the two gradient strengths.
+ */
 export function getVisualStyle(currentStyle: BackgroundMediaStyle = {}) {
   const {
     className: _className,
@@ -138,6 +150,19 @@ export function getVisualStyle(currentStyle: BackgroundMediaStyle = {}) {
   };
 }
 
+const fadePercentFor = (strength: number) =>
+  Math.min(
+    MAX_FADE_PERCENT,
+    Math.max(MIN_FADE_PERCENT, strength * FADE_PERCENT_PER_STRENGTH),
+  );
+
+const opacityFor = (strength: number) =>
+  strength > 0 ? Math.min(1, strength * OPACITY_PER_STRENGTH) : 0;
+
+/**
+ * Edge fade widths and overlay opacities from gradient strengths; an explicit
+ * `fadeEdges` value overrides the widths.
+ */
 export function resolveGradientSettings({
   fadeEdges = null,
   hasWidth = false,
@@ -149,14 +174,10 @@ export function resolveGradientSettings({
   leftGradient?: number;
   rightGradient?: number;
 }) {
-  let leftPercent = 0;
-  let rightPercent = 0;
-  if (leftGradient > 0)
-    leftPercent = Math.min(48, Math.max(12, leftGradient * 7.5));
-  else if (hasWidth && fadeEdges !== false) leftPercent = 20;
-  if (rightGradient > 0)
-    rightPercent = Math.min(48, Math.max(12, rightGradient * 7.5));
-  else if (hasWidth && fadeEdges !== false) rightPercent = 20;
+  const widthFade = hasWidth && fadeEdges !== false ? WIDTH_FADE_PERCENT : 0;
+  let leftPercent = leftGradient > 0 ? fadePercentFor(leftGradient) : widthFade;
+  let rightPercent =
+    rightGradient > 0 ? fadePercentFor(rightGradient) : widthFade;
   if (typeof fadeEdges === "number") {
     leftPercent = fadeEdges;
     rightPercent = fadeEdges;
@@ -178,14 +199,11 @@ export function resolveGradientSettings({
     leftPercent = 0;
     rightPercent = 0;
   }
-  const leftOpacity = leftGradient > 0 ? Math.min(1, leftGradient * 0.22) : 0;
-  const rightOpacity =
-    rightGradient > 0 ? Math.min(1, rightGradient * 0.22) : 0;
   return {
     enabled: leftPercent > 0 || rightPercent > 0,
-    leftOpacity,
+    leftOpacity: opacityFor(leftGradient),
     leftPercent,
-    rightOpacity,
+    rightOpacity: opacityFor(rightGradient),
     rightPercent,
   };
 }
@@ -200,6 +218,10 @@ function formatSmoothstepStop(
   return `color-mix(in srgb, ${color} ${Math.round(strength * 100)}%, transparent) ${position}`;
 }
 
+/**
+ * Gradient stops that ease a color in (or out) over the first (or last)
+ * `percent` of the width.
+ */
 export function generateSmoothstepStops(
   percent: number,
   direction: "in" | "out" = "in",

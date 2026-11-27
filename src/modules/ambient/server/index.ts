@@ -93,6 +93,7 @@ async function reachesOnlyPublic(
       : await (resolve ?? lookupAll)(host);
     return addresses.length > 0 && !addresses.some(isPrivateAddress);
   } catch {
+    // A host that does not resolve is never fetched.
     return false;
   }
 }

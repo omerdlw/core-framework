@@ -1,4 +1,4 @@
-import { normalizePath } from "@/foundation/utils";
+import { normalizePath, report } from "@/foundation/utils";
 
 import {
   isInlineActionPathMatch,
@@ -47,7 +47,7 @@ export function resolveDockHeaderKey({
   const titlePart = link?.title || link?.name || "";
   const descPart = description || "";
   const iconPart = showVideoIcon ? "video" : link?.icon || "no-icon";
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- link.icon may be a React element, which stringifies to "[object Object]" in this signature key (pre-existing)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- an element icon becomes "[object Object]", so element icons count as one
   return `${statusPart}:${iconPart}:${titlePart}:${descPart}`;
 }
 
@@ -98,7 +98,8 @@ function shouldKeepAncestorItem(
   if (typeof policy === "function") {
     try {
       return Boolean(policy(activePath, item));
-    } catch {
+    } catch (error) {
+      report("Dock item policy", error);
       return false;
     }
   }
