@@ -1,5 +1,7 @@
 import type { ErrorInfo } from "react";
 
+import { isBrowser } from "@/foundation/utils";
+
 import { DEFAULT_DEDUPE_WINDOW, ERROR_LISTENER_CONFIG } from "./constants";
 import type {
   BrowserEnvironment,
@@ -7,7 +9,6 @@ import type {
   ErrorReport,
 } from "./types";
 
-const IS_BROWSER = typeof window !== "undefined";
 const HAS_NAVIGATOR = typeof navigator !== "undefined";
 
 const FINGERPRINT_MESSAGE_LENGTH = 100;
@@ -32,7 +33,7 @@ interface ReportOptions {
  * Current location pathname, or null outside a browser.
  */
 export const getRuntimePath = (): string | null =>
-  IS_BROWSER ? window.location.pathname : null;
+  isBrowser ? window.location.pathname : null;
 
 /**
  * Current user agent string, or null outside a browser.
@@ -85,12 +86,12 @@ export function getBrowserEnvironment(
   route?: string | null,
 ): BrowserEnvironment {
   return {
-    route: route || (IS_BROWSER ? window.location.pathname : null),
-    userAgent: HAS_NAVIGATOR ? navigator.userAgent : null,
+    route: route || getRuntimePath(),
+    userAgent: getUserAgent(),
     platform: HAS_NAVIGATOR ? navigator.platform : null,
     language: HAS_NAVIGATOR ? navigator.language : null,
     online: HAS_NAVIGATOR ? navigator.onLine : true,
-    url: IS_BROWSER ? window.location.href : null,
+    url: isBrowser ? window.location.href : null,
   };
 }
 
@@ -108,7 +109,7 @@ export function fingerprint(
 
   // Thrown values are untyped; read message/name defensively.
   const errObj = error as { message?: string; name?: string } | null;
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; a thrown non-Error object stringifies to "[object Object]" as before (behaviour kept in 3.2 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; a thrown plain object becomes "[object Object]"
   const errorMessage = (errObj?.message || String(error || "")).slice(
     0,
     FINGERPRINT_MESSAGE_LENGTH,
@@ -158,7 +159,7 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message.trim();
 
   const errObj = error as { message?: string; toString?: () => string };
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; the last fallback stringifies an object without message/toString to "[object Object]" as before (behaviour kept in 3.2 restructure)
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- error is unknown; the last fallback may yield "[object Object]"
   return String(errObj?.message || errObj?.toString?.() || error).trim();
 }
 

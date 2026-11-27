@@ -54,7 +54,9 @@ function applyPlayerState(
     if (isMuted) player.mute?.();
     else player.unMute?.();
     if (playbackRate) player.setPlaybackRate?.(playbackRate);
-  } catch {}
+  } catch {
+    // The player may be torn down between calls; the next sync retries.
+  }
 }
 
 export function useYouTubeIframePlayer({

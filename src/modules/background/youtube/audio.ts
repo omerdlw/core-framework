@@ -90,5 +90,7 @@ export function syncCompanionAudioElements({
     }
 
     if (audio.paused) audio.play().catch(() => {});
-  } catch {}
+  } catch {
+    // The audio element may be detached mid-sync; the next tick retries.
+  }
 }

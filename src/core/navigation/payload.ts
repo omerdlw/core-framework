@@ -6,6 +6,7 @@ import type {
   NavigationPayloadValue,
 } from "./types";
 
+/** Registry of values merged into every trip's payload; function values are read lazily. */
 export function createPayloadProviders() {
   const providers: { key: string; value: unknown }[] = [];
 

@@ -342,7 +342,9 @@ function openPageSurface(
       if (isObject(entry) && (entry.component || entry.id || entry.render)) {
         return openSurface(entry as Parameters<typeof openSurface>[0]);
       }
-    } catch {}
+    } catch {
+      // A target that throws is not a surface factory.
+    }
     return openSurface(
       createInlineSurfaceEntry({ component: target, props }) as Parameters<
         typeof openSurface

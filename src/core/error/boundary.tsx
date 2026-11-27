@@ -36,7 +36,6 @@ interface DefaultErrorFallbackProps {
   error: Error | null;
   message?: string;
   resetError: () => void;
-  title?: string;
 }
 
 function DefaultErrorFallback({
@@ -127,8 +126,7 @@ export class ErrorBoundaryCore extends React.Component<
     }
 
     try {
-      const reporter = getErrorReporter();
-      reporter?.captureError?.(error, context);
+      getErrorReporter().captureError(error, context);
     } catch (reportingError) {
       report("ErrorBoundary reporting", reportingError, "warn");
     }
@@ -146,7 +144,7 @@ export class ErrorBoundaryCore extends React.Component<
   override render(): ReactNode {
     if (!this.state.hasError) return this.props.children;
 
-    const { fallback, message, title } = this.props;
+    const { fallback, message } = this.props;
     const { error } = this.state;
 
     if (typeof fallback === "function") {
@@ -162,7 +160,6 @@ export class ErrorBoundaryCore extends React.Component<
         error={error}
         message={message}
         resetError={this.resetError}
-        title={title}
       />
     );
   }

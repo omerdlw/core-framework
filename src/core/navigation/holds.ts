@@ -54,6 +54,7 @@ function waitForHolds(
   });
 }
 
+/** Registry of holds that may delay a trip before it routes. */
 export function createNavigationHolds(settings: typeof getNavigationSettings) {
   let nextHoldId = 0;
   const holds = new Map<number, HoldEntry>();

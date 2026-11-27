@@ -24,7 +24,9 @@ function pauseQuietly(
   try {
     video.pause();
     audio?.pause();
-  } catch {}
+  } catch {
+    // Elements that are already detached have nothing to pause.
+  }
 }
 
 export function useYouTubeVideoSync({

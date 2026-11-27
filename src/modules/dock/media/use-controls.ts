@@ -39,7 +39,9 @@ function setElementTime(element: HTMLMediaElement, time: number) {
 function capturePointer(target: Element, pointerId: number) {
   try {
     target.setPointerCapture?.(pointerId);
-  } catch {}
+  } catch {
+    // Capture fails for pointers that are already released.
+  }
 }
 
 export function useDockMediaControlsModel(_props: { className?: string }) {
@@ -254,7 +256,9 @@ export function useDockMediaControlsModel(_props: { className?: string }) {
       } else if (document.pictureInPictureEnabled) {
         await (videoElement as HTMLVideoElement).requestPictureInPicture();
       }
-    } catch {}
+    } catch {
+      // The browser may refuse picture-in-picture; the button stays as it is.
+    }
   };
   const handleSkipBackward = () => {
     if (!videoElement) return;

@@ -16,8 +16,7 @@ import { getErrorMessage, shouldIgnoreError } from "./utils";
  */
 function captureGlobalError(error: unknown, source: string) {
   try {
-    const reporter = getErrorReporter();
-    reporter?.captureError?.(error, { globalListener: true, source });
+    getErrorReporter().captureError(error, { globalListener: true, source });
   } catch (reportingError) {
     report("GlobalError reporting", reportingError, "warn");
   }
@@ -61,7 +60,9 @@ export function GlobalErrorListener(): null {
     const removeSink = setReportSink((scope, error, level) => {
       try {
         getErrorReporter().captureError(error, { level, scope });
-      } catch {}
+      } catch {
+        // A failing reporter must not throw back into report().
+      }
     });
     const onError = (event: ErrorEvent) =>
       handleError(event.error || event.message, "window.onerror");

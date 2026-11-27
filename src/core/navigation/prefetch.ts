@@ -14,6 +14,7 @@ interface PrefetcherOptions {
   settings: typeof getNavigationSettings;
 }
 
+/** Router prefetching with a per-location TTL, plus intent listeners. */
 export function createPrefetcher({
   getRouter,
   now,
@@ -48,9 +49,7 @@ export function createPrefetcher({
     try {
       router.prefetch(href, {
         kind: kind ?? settings().prefetchKind,
-        onInvalidate: () => {
-          if (warmed.get(key) !== undefined) warmed.delete(key);
-        },
+        onInvalidate: () => warmed.delete(key),
       });
       return true;
     } catch (error) {

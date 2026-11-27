@@ -1,3 +1,5 @@
+import { isBrowser } from "@/foundation/utils";
+
 import {
   DEFAULT_DEDUPE_WINDOW,
   MAX_CONTEXT,
@@ -16,14 +18,15 @@ import {
 } from "./utils";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
-const IS_BROWSER = typeof window !== "undefined";
+
+interface SentryApi {
+  captureException: (error: unknown) => void;
+  withScope: (callback: (scope: SentryScope) => void) => void;
+}
 
 declare global {
   interface Window {
-    Sentry?: {
-      captureException: (error: unknown) => void;
-      withScope: (callback: (scope: SentryScope) => void) => void;
-    };
+    Sentry?: SentryApi;
   }
 }
 
@@ -94,6 +97,29 @@ class ErrorReporter {
     return outgoing;
   }
 
+  captureMessage(
+    message: string,
+    level = "info",
+    context: Record<string, unknown> = {},
+  ): ErrorReport | undefined {
+    const error = new Error(message);
+    error.name = "Message";
+    return this.captureError(error, { ...context, level });
+  }
+
+  ensureDefaultHandlers(): void {
+    if (this.handlers.length || !isBrowser) return;
+
+    this.handlers.push(createConsoleHandler());
+
+    if (window.Sentry) {
+      const sentryHandler = createSentryHandler(window.Sentry);
+      if (sentryHandler.name === "sentry") {
+        this.handlers.push(sentryHandler);
+      }
+    }
+  }
+
   /** Records a fingerprint for the dedupe window; false when already seen. */
   private remember(dedupeKey: string): boolean {
     if (this.seen.has(dedupeKey)) return false;
@@ -124,31 +150,10 @@ class ErrorReporter {
     this.handlers.forEach((handler) => {
       try {
         handler.handle(report);
-      } catch {}
-    });
-  }
-
-  captureMessage(
-    message: string,
-    level = "info",
-    context: Record<string, unknown> = {},
-  ): ErrorReport | undefined {
-    const error = new Error(message);
-    error.name = "Message";
-    return this.captureError(error, { ...context, level });
-  }
-
-  ensureDefaultHandlers(): void {
-    if (this.handlers.length || !IS_BROWSER) return;
-
-    this.handlers.push(createConsoleHandler());
-
-    if (window.Sentry) {
-      const sentryHandler = createSentryHandler(window.Sentry);
-      if (sentryHandler.name === "sentry") {
-        this.handlers.push(sentryHandler);
+      } catch {
+        // One failing handler must not stop the others.
       }
-    }
+    });
   }
 }
 
@@ -157,7 +162,7 @@ type GlobalWithReporter = typeof globalThis & {
   [GLOBAL_REPORTER_KEY]?: ErrorReporter;
 };
 
-const _global = globalThis as GlobalWithReporter;
+const globalScope = globalThis as GlobalWithReporter;
 
 /**
  * Returns the shared error reporter, creating it with the given options on
@@ -166,7 +171,7 @@ const _global = globalThis as GlobalWithReporter;
 export function getErrorReporter(
   options: ErrorReporterOptions = {},
 ): ErrorReporter {
-  return (_global[GLOBAL_REPORTER_KEY] ??= new ErrorReporter(options));
+  return (globalScope[GLOBAL_REPORTER_KEY] ??= new ErrorReporter(options));
 }
 
 /**
@@ -185,11 +190,6 @@ export function createConsoleHandler(): ErrorReporterHandler {
       });
     },
   };
-}
-
-interface SentryApi {
-  captureException: (err: Error) => void;
-  withScope: (cb: (scope: SentryScope) => void) => void;
 }
 
 function isSentryApi(value: unknown): value is SentryApi {

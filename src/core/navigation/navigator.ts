@@ -67,7 +67,7 @@ export function createNavigator(options: NavigatorOptions = {}): Navigator {
   let router: NavigationRouter | null = options.router ?? null;
 
   const store = createStore<NavigationState>(
-    createNavigationState(locationKeyOf(readLocation() ?? "") || ""),
+    createNavigationState(locationKeyOf(readLocation() ?? "")),
     { freezeSnapshots: false },
   );
 

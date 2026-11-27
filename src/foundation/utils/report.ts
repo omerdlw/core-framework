@@ -33,7 +33,9 @@ export function report(
     try {
       sink(scope, error, level);
       return;
-    } catch {}
+    } catch {
+      // A failing sink falls back to the console below.
+    }
   }
 
   if (process.env.NODE_ENV === "production" && typeof window !== "undefined") {

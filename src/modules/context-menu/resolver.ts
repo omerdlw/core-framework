@@ -112,7 +112,9 @@ function getTargetScore(
       if (matched) {
         minDepth = Math.min(minDepth, getElementDepth(targetElement, matched));
       }
-    } catch {}
+    } catch {
+      // An invalid selector simply does not match.
+    }
   }
   return minDepth === Infinity
     ? null

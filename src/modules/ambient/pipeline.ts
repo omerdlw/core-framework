@@ -37,14 +37,18 @@ export async function fetchImageBlob(
       try {
         const blob = await read(src, { cache: "reload" });
         if (blob) return blob;
-      } catch {}
+      } catch {
+        // Still refused: try the proxy next.
+      }
     }
   }
 
   if (proxyUrl) {
     try {
       return await read(proxyUrl);
-    } catch {}
+    } catch {
+      // The proxy failed too: there is nothing to analyse.
+    }
   }
   return null;
 }

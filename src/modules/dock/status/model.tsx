@@ -262,7 +262,9 @@ function readSessionStorage(): Storage | null {
 export function clearPersistedOverlayStatus(): void {
   try {
     readSessionStorage()?.removeItem(OVERLAY_STATUS_STORAGE_KEY);
-  } catch {}
+  } catch {
+    // Storage may be unavailable (private mode or quota).
+  }
 }
 
 export function persistOverlayStatus(
@@ -284,7 +286,9 @@ export function persistOverlayStatus(
         type: status.type,
       }),
     );
-  } catch {}
+  } catch {
+    // Storage may be unavailable (private mode or quota).
+  }
 }
 
 export function restorePersistedOverlayStatus(): {
