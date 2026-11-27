@@ -36,7 +36,7 @@ export {
 
 export { GlobalErrorListener } from "./listener";
 
-export { errorTheme } from "./theme";
-export type { ErrorThemeSlot } from "./theme";
+export { errorTheme } from "./constants";
+export type { ErrorThemeSlot } from "./constants";
 
 export type * from "./types";

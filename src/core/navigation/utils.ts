@@ -1,3 +1,4 @@
+import { globalEvents } from "@/foundation/events";
 import { normalizePath } from "@/foundation/utils";
 
 /**
@@ -46,3 +47,16 @@ export function internalLinkOf(target: EventTarget | null): Element | null {
   const link = target.closest("a[href]");
   return link && isSafeInternalHref(link.getAttribute("href")) ? link : null;
 }
+
+const NO_DELAY_MS = 0;
+
+export type Timer = ReturnType<typeof setTimeout>;
+
+export const emitGlobal = (event: string, payload: Record<string, unknown>) =>
+  globalEvents.emit(event, payload);
+
+export const afterPaint = (callback: () => void) => {
+  if (typeof requestAnimationFrame === "function")
+    requestAnimationFrame(() => callback());
+  else setTimeout(callback, NO_DELAY_MS);
+};

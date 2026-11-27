@@ -7,11 +7,10 @@ import {
   NAVIGATION_SOURCE,
   NAVIGATION_STATUS,
 } from "./constants";
-import { afterPaint, emitGlobal } from "./navigator-defaults";
-import { createNavigationHolds } from "./navigator-holds";
-import { createPatienceTimer } from "./navigator-patience";
-import { createPayloadProviders } from "./navigator-payload";
-import { createPrefetcher } from "./navigator-prefetch";
+import { createNavigationHolds } from "./holds";
+import { createPatienceTimer } from "./patience";
+import { createPayloadProviders } from "./payload";
+import { createPrefetcher } from "./prefetch";
 import { getNavigationSettings } from "./settings";
 import {
   createNavigationState,
@@ -34,6 +33,8 @@ import type {
   NavigatorOptions,
 } from "./types";
 import {
+  afterPaint,
+  emitGlobal,
   isSafeInternalHref,
   isSameLocation,
   isSamePathname,

@@ -9,9 +9,8 @@ import { useTheme } from "@/react/theme";
 import { Button } from "@/react/ui/components/button";
 import { Icon } from "@/react/ui/components/icon";
 
-import { ERROR_MESSAGES } from "./constants";
+import { ERROR_MESSAGES, errorTheme } from "./constants";
 import { getErrorReporter } from "./reporter";
-import { errorTheme } from "./theme";
 import type {
   ComponentErrorProps,
   ErrorBoundaryCoreProps,

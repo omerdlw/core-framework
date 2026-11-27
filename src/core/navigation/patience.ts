@@ -1,5 +1,5 @@
-import type { Timer } from "./navigator-defaults";
 import type { getNavigationSettings } from "./settings";
+import type { Timer } from "./utils";
 
 interface PatienceTimerOptions {
   onTimeout: (id: number) => void;
