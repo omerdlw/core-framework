@@ -1,5 +1,8 @@
 import { report } from "@/foundation/utils";
 
+/** Smallest distance from the end at which the iframe player is stopped, in seconds. */
+const IFRAME_MIN_END_MARGIN = 0.4;
+
 /** Schedules a guarded retry and tracks its timer id so it can be cancelled. */
 export function scheduleRetryTimer(
   timerIds: Set<number>,
@@ -23,9 +26,6 @@ function resolveEffectiveEnd(endTime: number, corp: number, duration: number) {
   if (corp > 0 && duration > 0) return duration - corp;
   return 0;
 }
-
-/** Smallest distance from the end at which the iframe player is stopped, in seconds. */
-const IFRAME_MIN_END_MARGIN = 0.4;
 
 /** Like `resolveEffectiveEnd`, but for the iframe player, which needs a margin. */
 export function resolveIframeSafetyEnd(

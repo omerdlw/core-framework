@@ -4,15 +4,6 @@ import {
   type ContextMenuResolvedItem,
 } from "./types";
 
-/**
- * Joins the truthy class names with spaces.
- */
-export function joinClassNames(
-  ...classes: (string | boolean | null | undefined)[]
-): string {
-  return classes.filter(Boolean).join(" ");
-}
-
 const SCROLL_LOCK_KEYS = new Set([
   "ArrowDown",
   "ArrowUp",
@@ -23,6 +14,15 @@ const SCROLL_LOCK_KEYS = new Set([
   " ",
   "Spacebar",
 ]);
+
+/**
+ * Joins the truthy class names with spaces.
+ */
+export function joinClassNames(
+  ...classes: (string | boolean | null | undefined)[]
+): string {
+  return classes.filter(Boolean).join(" ");
+}
 
 /**
  * Whether a key would scroll the page.

@@ -26,6 +26,10 @@ export interface ErrorResult<E = string> {
  */
 export type Result<T, E = string> = SuccessResult<T> | ErrorResult<E>;
 
+const VALIDATION_ERROR_CODE = "VALIDATION_ERROR";
+const INVALID_INPUT_MESSAGE = "Invalid input";
+const VALIDATION_FAILED_MESSAGE = "Validation failed";
+
 /**
  * Creates a success result.
  */
@@ -163,10 +167,6 @@ export interface SafeActionOptions<TArgs extends unknown[], E = string> {
     ...args: TArgs
   ) => Result<unknown, E> | string | boolean | null | undefined;
 }
-
-const VALIDATION_ERROR_CODE = "VALIDATION_ERROR";
-const INVALID_INPUT_MESSAGE = "Invalid input";
-const VALIDATION_FAILED_MESSAGE = "Validation failed";
 
 /**
  * Wraps a handler so validation failures and thrown errors become results.

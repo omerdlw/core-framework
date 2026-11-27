@@ -21,6 +21,8 @@ import { applyRegistryConfig } from "./apply";
 import { useRegistryActions } from "./provider";
 import { stabilizeRegistryValue } from "./stabilize";
 
+const NO_METADATA: RegistryMetadata = Object.freeze({});
+
 /** Register arguments with the instance id added to whichever argument holds the options. */
 function withInstanceId(
   instanceId: string,
@@ -82,8 +84,6 @@ interface AppliedConfig {
   context: RegistryApplyContext;
   inputs: RegistryInputs;
 }
-
-const NO_METADATA: RegistryMetadata = Object.freeze({});
 
 function sameContextInputs(a: RegistryInputs, b: RegistryInputs): boolean {
   return (

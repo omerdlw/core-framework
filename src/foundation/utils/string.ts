@@ -1,3 +1,4 @@
+const IMAGE_SOURCE_PREFIXES = ["http://", "https://", "/", "data:image/"];
 /**
  * Stringifies and trims a value, returning null for nullish or blank input.
  */
@@ -25,8 +26,6 @@ export function normalizePath(path: unknown): string {
   if (trimmed === "/") return "/";
   return stripTrailingSlash(trimmed);
 }
-
-const IMAGE_SOURCE_PREFIXES = ["http://", "https://", "/", "data:image/"];
 
 /**
  * True when an icon value is an image source (URL, absolute path or data URI)

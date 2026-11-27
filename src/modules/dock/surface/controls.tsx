@@ -27,6 +27,9 @@ import {
 } from "./context";
 import { applyControlRadius, getControlRadiusClass } from "./header-button";
 
+// Stable subscribe for when no store is mounted.
+const NOOP_SUBSCRIBE = () => () => {};
+
 export function DockSurfaceControls({
   activeItem = null,
   hasExtensions = false,
@@ -200,9 +203,6 @@ export function DockSurfaceControls({
     </AnimatePresence>
   );
 }
-
-// Stable subscribe for when no store is mounted.
-const NOOP_SUBSCRIBE = () => () => {};
 
 export function useDockSurfaceControlsModel({
   activeItem = null,

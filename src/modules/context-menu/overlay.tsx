@@ -32,6 +32,11 @@ interface ContextMenuHeaderIconProps {
   icon: ContextMenuIcon;
 }
 
+const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
+  pathname: "",
+  point: { x: 0, y: 0 },
+});
+
 /**
  * Icon of the menu header: an image when the icon is an image source, otherwise
  * an icon name or a custom node.
@@ -155,11 +160,6 @@ export function ContextMenuItem({
     </motion.button>
   );
 }
-
-const EMPTY_MENU_CONTEXT: ContextMenuContextValue = Object.freeze({
-  pathname: "",
-  point: { x: 0, y: 0 },
-});
 
 interface ContextMenuContentProps {
   config: ContextMenuConfig;

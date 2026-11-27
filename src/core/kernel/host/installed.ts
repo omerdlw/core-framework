@@ -33,6 +33,8 @@ export const PassthroughBoundary: BoundaryComponent = ({ children }) =>
 export const ModuleHostContext =
   getOrCreateGlobalContext<ModuleHostValue | null>("ModuleHostContext", null);
 
+const MODULE_ID_PATTERN = /^[a-z][a-zA-Z0-9]*$/;
+
 export function selectModuleSlice(
   coreModule: AnyCoreModule,
   config: PageConfig,
@@ -66,8 +68,6 @@ export function createModulePayload(
     },
   };
 }
-
-const MODULE_ID_PATTERN = /^[a-z][a-zA-Z0-9]*$/;
 
 /**
  * Validates module ids and orders modules so each comes after the modules it

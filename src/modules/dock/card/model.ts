@@ -13,6 +13,12 @@ import type {
   DockVisualStyleInput,
 } from "../types";
 
+const PAGE_FACING_SURFACE_PHASES: ReadonlySet<string> = new Set([
+  DOCK_SURFACE_PHASE.DISMISSING_ACTION,
+  DOCK_SURFACE_PHASE.COLLAPSING_BODY,
+  DOCK_SURFACE_PHASE.RESTORING_HEADER,
+]);
+
 /** Layers an item's own style over a status style, section by section. */
 export function mergeStatusStyle(
   itemStyle: DockVisualStyleInput | null | undefined,
@@ -199,12 +205,6 @@ export function isDockCardPeeking({
     !isSurfaceActive,
   );
 }
-
-const PAGE_FACING_SURFACE_PHASES: ReadonlySet<string> = new Set([
-  DOCK_SURFACE_PHASE.DISMISSING_ACTION,
-  DOCK_SURFACE_PHASE.COLLAPSING_BODY,
-  DOCK_SURFACE_PHASE.RESTORING_HEADER,
-]);
 
 export function isSurfaceLayerShown(
   item: Pick<DockItem, "isSurface" | "surfacePhase"> | null | undefined,

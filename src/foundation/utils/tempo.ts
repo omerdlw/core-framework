@@ -47,6 +47,17 @@ export type MotionTokens<T extends MotionTokensInput = MotionTokensInput> =
 
 export const NEUTRAL_TEMPO = 1;
 
+const TIME_KEYS = [
+  "duration",
+  "delay",
+  "delayChildren",
+  "staggerChildren",
+  "repeatDelay",
+  "visualDuration",
+] as const;
+
+const INSTANT = Object.freeze({ type: "tween" as const, duration: 0 });
+
 /**
  * Validates and freezes motion tokens, applying defaults for tempo and policy.
  */
@@ -72,17 +83,6 @@ export interface MotionClock {
   readonly reduced: boolean;
   readonly still?: Readonly<Record<string, unknown>>;
 }
-
-const TIME_KEYS = [
-  "duration",
-  "delay",
-  "delayChildren",
-  "staggerChildren",
-  "repeatDelay",
-  "visualDuration",
-] as const;
-
-const INSTANT = Object.freeze({ type: "tween" as const, duration: 0 });
 
 const stillOf = (clock: MotionClock): Record<string, unknown> =>
   clock.still ?? INSTANT;

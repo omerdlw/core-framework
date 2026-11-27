@@ -8,6 +8,8 @@ const ROOT_PATH = "/";
 const NOT_FOUND_PATH = "not-found";
 const NOT_FOUND_TYPE = "NOT_FOUND";
 
+const NO_PREFIX_LENGTH = -1;
+
 /** True for the dock item that represents the not-found page. */
 export function isNotFoundItem(item: DockItem | null | undefined): boolean {
   return (
@@ -65,8 +67,6 @@ export interface DockBaseMatch {
   item: DockItem | null;
   isFallback: boolean;
 }
-
-const NO_PREFIX_LENGTH = -1;
 
 function findItemByPath(items: DockItem[], normalizedPathname: string) {
   return items.find(

@@ -10,6 +10,9 @@ import { isValidComponentType } from "../utils";
 import { SurfaceExtensionsContext } from "./context";
 import { normalizeSurfaceExtension } from "./helpers";
 
+// Stable subscribe for when no store is mounted.
+const NOOP_SUBSCRIBE = () => () => {};
+
 function renderExtensionContent(ext: NormalizedSurfaceExtension) {
   const Component = ext.component;
   if (!Component) return ext.content;
@@ -118,9 +121,6 @@ export function DockSurfaceExtensionsBar({
     </div>
   );
 }
-
-// Stable subscribe for when no store is mounted.
-const NOOP_SUBSCRIBE = () => () => {};
 
 function useDockSurfaceExtensionsBarModel({
   activeItem,

@@ -23,6 +23,8 @@ import {
   resolveDockReturnHandoffs,
 } from "./continuity-state";
 
+const FOCUS_KEY_ATTRIBUTE = "data-dock-focus-key";
+
 function createContinuityActions(
   dispatch: Dispatch<DockContinuityAction>,
   initial: { maxEntries: number; state: DockContinuityState },
@@ -135,8 +137,6 @@ export function useDockContinuity({
     returnHandoffs: state.returnHandoffs,
   };
 }
-
-const FOCUS_KEY_ATTRIBUTE = "data-dock-focus-key";
 
 function escapeFocusKey(key: string) {
   return typeof CSS !== "undefined" && CSS.escape

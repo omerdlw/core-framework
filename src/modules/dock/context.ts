@@ -32,6 +32,33 @@ export const DockContext = getOrCreateGlobalContext<DockContextValue | null>(
   null,
 );
 
+export const EMPTY_DOCK_STATE: DockState = Object.freeze({
+  activeItem: null,
+  activeOperation: null,
+  activeSurfaceEntry: null,
+  activeSurfaceId: null,
+  compact: false,
+  contextActions: [],
+  dockContinuity: [],
+  dockHeight: 0,
+  dockReturnHandoffs: [],
+  expanded: false,
+  hud: null,
+  hudEntries: [],
+  isHudActive: false,
+  isSurfaceOpen: false,
+  locationKey: "",
+  operations: [],
+  pathname: "",
+  searchQuery: "",
+  selectionMode: null,
+  surfaceLifecycle: "",
+  surfacePhase: "",
+  surfaceStack: [],
+});
+
+const NOOP_DOCK_STORE = createStore<DockState>(EMPTY_DOCK_STATE);
+
 /** Subscribes to the whole dock state. Must be used under `DockProvider`. */
 export function useDockState(): DockState {
   const { store } = useRequiredContext(
@@ -66,33 +93,6 @@ export function useDockHeight() {
   const dockHeight = useDockSelector((state) => state.dockHeight);
   return { dockHeight, padding: { paddingBottom: `${dockHeight}px` } };
 }
-
-export const EMPTY_DOCK_STATE: DockState = Object.freeze({
-  activeItem: null,
-  activeOperation: null,
-  activeSurfaceEntry: null,
-  activeSurfaceId: null,
-  compact: false,
-  contextActions: [],
-  dockContinuity: [],
-  dockHeight: 0,
-  dockReturnHandoffs: [],
-  expanded: false,
-  hud: null,
-  hudEntries: [],
-  isHudActive: false,
-  isSurfaceOpen: false,
-  locationKey: "",
-  operations: [],
-  pathname: "",
-  searchQuery: "",
-  selectionMode: null,
-  surfaceLifecycle: "",
-  surfacePhase: "",
-  surfaceStack: [],
-});
-
-const NOOP_DOCK_STORE = createStore<DockState>(EMPTY_DOCK_STATE);
 
 /** Like `useDockState` (or a selector), but returns an empty state outside `DockProvider`. */
 export function useOptionalDockState(): DockState;

@@ -21,6 +21,8 @@ import {
 
 export type DockHudEntries = Record<string, DockHudDescriptor>;
 
+const DEFAULT_COMPONENT_HUD_ID = "component-hud";
+
 function normalizePriority(value: unknown): number {
   const priority = Number(value);
   return Number.isFinite(priority) ? priority : DOCK_HUD_PRIORITY.DEFAULT;
@@ -131,8 +133,6 @@ export function getActiveDockHud(
 ): DockHudDescriptor | null {
   return resolveActiveHud([...Object.values(entries), selectionMode]);
 }
-
-const DEFAULT_COMPONENT_HUD_ID = "component-hud";
 
 type DismissHandler = DockHudDescriptor["onDismiss"];
 

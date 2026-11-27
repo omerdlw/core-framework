@@ -2,6 +2,9 @@ import type { YouTubeProxyController, YouTubeUrlConfig } from "../types";
 
 const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
 
+const YOUTUBE_HOST_PATH =
+  /^(?:www\.|m\.|music\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)\//i;
+
 function parseYouTubeTimeParam(value?: string | number | null): number {
   if (value === undefined || value === null || value === "") return 0;
   if (typeof value === "number") {
@@ -27,9 +30,6 @@ function parseYouTubeTimeParam(value?: string | number | null): number {
 
   return 0;
 }
-
-const YOUTUBE_HOST_PATH =
-  /^(?:www\.|m\.|music\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)\//i;
 
 function toUrl(input: string, { youtubeOnly = false } = {}): URL | null {
   let candidate: string | null = null;

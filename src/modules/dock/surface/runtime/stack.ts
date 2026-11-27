@@ -34,6 +34,8 @@ import { IS_BROWSER, isSurfaceUrlOutOfSync } from "./url";
 
 type SurfaceState = ReturnType<typeof createSurfaceState>;
 
+const RESTORE_FOCUS_LABEL = "surface:restore-focus";
+
 /**
  * Builds the surface stack runtime once per provider: the runtime refs and
  * the actions that open, close and navigate surfaces. Behaviour lives in the
@@ -228,8 +230,6 @@ export function useSurfaceStack({
     surfaceState: { ...surfaceState, surfacePhase, surfaceLifecycle },
   };
 }
-
-const RESTORE_FOCUS_LABEL = "surface:restore-focus";
 
 /**
  * Builds the close finalizer: releases a closed surface's resources, settles

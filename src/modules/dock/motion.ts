@@ -12,18 +12,6 @@ import type {
   DockSurfaceTimings,
 } from "./types";
 
-function staggerDelay(
-  index: number,
-  { base, cap, exponent = 1 }: { base: number; cap: number; exponent?: number },
-): number {
-  return Math.min(cap, base * Math.pow(Math.max(0, index), exponent));
-}
-
-/** Returns the dock motion tokens (transitions, variants and deck settings) from the active theme. */
-export function useDockMotion(): DockMotion {
-  return useModuleMotion(dockTheme);
-}
-
 const IMMEDIATE_SURFACE_TIMINGS: DockSurfaceTimings = Object.freeze({
   anticipation: 0,
   collapseBody: 0,
@@ -31,12 +19,6 @@ const IMMEDIATE_SURFACE_TIMINGS: DockSurfaceTimings = Object.freeze({
   expandBody: 0,
   restoreHeader: 0,
 });
-
-export function useDockSurfaceTimings(): DockSurfaceTimings {
-  return (
-    useOptionalModuleMotion(dockTheme)?.timings ?? IMMEDIATE_SURFACE_TIMINGS
-  );
-}
 
 export const DOCK_COMPOSITOR_STYLE = Object.freeze({
   willChange: "transform, opacity",
@@ -55,6 +37,35 @@ export const DOCK_SURFACE_DRAG_CONSTRAINTS = Object.freeze({
   top: 0,
   bottom: 0,
 } as const);
+
+const SURFACE_PHASE_KEYS: Readonly<Record<string, DockSurfacePhaseKey>> =
+  Object.freeze({
+    [DOCK_SURFACE_PHASE.IDLE]: "idle",
+    [DOCK_SURFACE_PHASE.DISMISSING_ACTION]: "dismissAction",
+    [DOCK_SURFACE_PHASE.EXPANDING_BODY]: "expandBody",
+    [DOCK_SURFACE_PHASE.OPEN]: "open",
+    [DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION]: "anticipation",
+    [DOCK_SURFACE_PHASE.COLLAPSING_BODY]: "collapseBody",
+    [DOCK_SURFACE_PHASE.RESTORING_HEADER]: "restoreHeader",
+  });
+
+function staggerDelay(
+  index: number,
+  { base, cap, exponent = 1 }: { base: number; cap: number; exponent?: number },
+): number {
+  return Math.min(cap, base * Math.pow(Math.max(0, index), exponent));
+}
+
+/** Returns the dock motion tokens (transitions, variants and deck settings) from the active theme. */
+export function useDockMotion(): DockMotion {
+  return useModuleMotion(dockTheme);
+}
+
+export function useDockSurfaceTimings(): DockSurfaceTimings {
+  return (
+    useOptionalModuleMotion(dockTheme)?.timings ?? IMMEDIATE_SURFACE_TIMINGS
+  );
+}
 
 function toGpuTransform(
   y: unknown = 0,
@@ -133,17 +144,6 @@ export function getDockMediaVolumeThumbPositionTransition(
     ? "none"
     : cssTransition("left", motion.transitions.mediaVolume);
 }
-
-const SURFACE_PHASE_KEYS: Readonly<Record<string, DockSurfacePhaseKey>> =
-  Object.freeze({
-    [DOCK_SURFACE_PHASE.IDLE]: "idle",
-    [DOCK_SURFACE_PHASE.DISMISSING_ACTION]: "dismissAction",
-    [DOCK_SURFACE_PHASE.EXPANDING_BODY]: "expandBody",
-    [DOCK_SURFACE_PHASE.OPEN]: "open",
-    [DOCK_SURFACE_PHASE.CLOSING_ANTICIPATION]: "anticipation",
-    [DOCK_SURFACE_PHASE.COLLAPSING_BODY]: "collapseBody",
-    [DOCK_SURFACE_PHASE.RESTORING_HEADER]: "restoreHeader",
-  });
 
 export function getDockPhaseMotion(
   motion: DockMotion,

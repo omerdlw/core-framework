@@ -29,6 +29,8 @@ const ROOT_BREADCRUMB_ID = "home";
 const ROOT_BREADCRUMB_TITLE = "Home";
 const DEFAULT_BREADCRUMB_ID = "breadcrumb";
 
+const EMPTY_BREADCRUMB_CONFIG: BreadcrumbConfig = {};
+
 function formatPath(path: string | null): string {
   return normalizePath(path) || "/";
 }
@@ -156,8 +158,6 @@ function withoutBreadcrumbOverride(
   const { [normalizedPath]: _, ...nextOverrides } = currentOverrides;
   return nextOverrides;
 }
-
-const EMPTY_BREADCRUMB_CONFIG: BreadcrumbConfig = {};
 
 const BreadcrumbContext = createContext<BreadcrumbContextValue | null>(null);
 

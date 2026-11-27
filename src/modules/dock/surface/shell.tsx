@@ -38,6 +38,10 @@ const VISUALLY_HIDDEN = {
   width: 1,
 } as const;
 
+/** Elements that keep their own pointer handling and must not start a drag. */
+const SURFACE_DRAG_IGNORE_SELECTOR =
+  'input, textarea, select, [role="slider"], [data-no-surface-drag], [data-lenis-prevent]';
+
 export function DockSurfaceShell({
   ref,
   title = "",
@@ -271,10 +275,6 @@ export function useDockSurfaceShellModel({
     surfaceItemValue,
   };
 }
-
-/** Elements that keep their own pointer handling and must not start a drag. */
-const SURFACE_DRAG_IGNORE_SELECTOR =
-  'input, textarea, select, [role="slider"], [data-no-surface-drag], [data-lenis-prevent]';
 
 /** True when a drag ended far or fast enough to dismiss the surface. */
 function isSwipeDismissGesture(

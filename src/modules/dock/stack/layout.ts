@@ -25,13 +25,15 @@ const DESKTOP_VIEWPORT_GUTTER = 32;
 const MOBILE_VIEWPORT_GUTTER = 16;
 const DOCK_HEIGHT_CSS_VAR = "--dock-h";
 
+const DEFAULT_CARD_PADDING = DOCK_CARD_LAYOUT.chromeHeight / 2;
+
+const NOT_FOUND_INDEX = -1;
+
 /** Tallest height the dock may take, leaving a margin inside the viewport. */
 function getViewportMaxHeight(): number {
   if (typeof window === "undefined") return Infinity;
   return window.innerHeight - VIEWPORT_MARGIN;
 }
-
-const DEFAULT_CARD_PADDING = DOCK_CARD_LAYOUT.chromeHeight / 2;
 
 /**
  * The card's vertical padding (one side) in px: the theme's `deck.padding`,
@@ -199,8 +201,6 @@ export function getRouteMeasurementKey(
 ): string {
   return `${pathname || ""}:${key}`;
 }
-
-const NOT_FOUND_INDEX = -1;
 
 function resolveDisplayActiveIndex(
   activeIndexForDisplay: number,

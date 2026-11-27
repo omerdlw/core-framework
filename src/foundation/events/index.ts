@@ -50,6 +50,8 @@ export interface FrameworkEventMap {
   };
 }
 
+const GLOBAL_EVENTS_KEY = Symbol.for("__base_framework_global_events__");
+
 /**
  * A small typed publish/subscribe emitter. A throwing listener is reported and
  * does not stop the others.
@@ -148,7 +150,6 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
   }
 }
 
-const GLOBAL_EVENTS_KEY = Symbol.for("__base_framework_global_events__");
 type GlobalWithEvents = typeof globalThis & {
   [GLOBAL_EVENTS_KEY]?: EventEmitter<FrameworkEventMap>;
 };

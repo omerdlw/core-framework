@@ -37,6 +37,8 @@ export interface SurfaceRuntimeRefs {
   stackRef: { current: SurfaceStackEntry[] };
 }
 
+export const EMPTY_SURFACE_STACK: GeneralSurfaceHandle["surfaceStack"] = [];
+
 export function createSurfaceMaps(): Omit<SurfaceRuntimeRefs, "stackRef"> {
   return { flowIndex: new Map(), payloads: new Map(), records: new Map() };
 }
@@ -245,5 +247,3 @@ export function createSurfaceLifecycleState(): SurfaceLifecycleState {
     surfaceLifecycle: DOCK_LIFECYCLE.IDLE,
   };
 }
-
-export const EMPTY_SURFACE_STACK: GeneralSurfaceHandle["surfaceStack"] = [];

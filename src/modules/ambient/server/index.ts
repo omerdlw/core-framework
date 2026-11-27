@@ -61,6 +61,8 @@ const MAX_REDIRECTS = 5;
 const REDIRECT_STATUS_MIN = 300;
 const REDIRECT_STATUS_MAX = 400;
 
+const SHARP = "sharp";
+
 /**
  * Whether a URL is plain http(s) without credentials and not on a private
  * hostname.
@@ -125,7 +127,6 @@ export class AmbientDecoderMissingError extends Error {
 }
 
 let sharpModule: Promise<SharpLike> | null = null;
-const SHARP = "sharp";
 
 function loadSharp(): Promise<SharpLike> {
   sharpModule ??= import(

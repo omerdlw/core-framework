@@ -8,6 +8,8 @@ import {
 } from "../constants";
 import type { DockActions, DockItem } from "../types";
 
+const NO_FOCUSED_INDEX = -1;
+
 export function blurActiveElement(): void {
   if (typeof document === "undefined") return;
   const activeElement = document.activeElement as HTMLElement | null;
@@ -78,8 +80,6 @@ export function shouldRestoreDockFocus(result: unknown): boolean {
     )
   );
 }
-
-const NO_FOCUSED_INDEX = -1;
 
 export function useDockKeyboard({
   expanded,
