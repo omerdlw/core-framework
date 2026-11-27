@@ -23,13 +23,6 @@ export interface ComposeProps {
   providers: readonly ProviderEntry[];
 }
 
-export function createProviderEntry<P extends object>(
-  component: ProviderComponent<P>,
-  props: P,
-): readonly [ProviderComponent<P>, P] {
-  return [component, props] as const;
-}
-
 /**
  * Nests the given providers around its children, first entry outermost.
  */
@@ -46,18 +39,4 @@ export function Compose({ providers, children }: ComposeProps): JSX.Element {
     },
     createElement(Fragment, null, children),
   );
-}
-
-export function composeProviders(
-  providers: readonly ProviderEntry[],
-): (props: { children?: ReactNode }) => JSX.Element {
-  function ComposedProviders({
-    children,
-  }: {
-    children?: ReactNode;
-  }): JSX.Element {
-    return Compose({ providers, children });
-  }
-  ComposedProviders.displayName = "ComposedProviders";
-  return ComposedProviders;
 }

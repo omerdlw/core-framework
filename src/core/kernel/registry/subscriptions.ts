@@ -1,4 +1,5 @@
 import { report } from "@/foundation/utils";
+import { getOrInsert } from "@/foundation/utils/collections";
 
 import type { RegistryOperation, RegistryState } from "../types/registry";
 
@@ -20,17 +21,8 @@ function getOrCreateKeyListeners(
   type: string,
   key: string | null,
 ): Set<() => void> {
-  let listeners = listenersByType.get(type);
-  if (!listeners) {
-    listeners = new Map();
-    listenersByType.set(type, listeners);
-  }
-  let keyListeners = listeners.get(key);
-  if (!keyListeners) {
-    keyListeners = new Set();
-    listeners.set(key, keyListeners);
-  }
-  return keyListeners;
+  const listeners = getOrInsert(listenersByType, type, () => new Map());
+  return getOrInsert(listeners, key, () => new Set());
 }
 
 /** Groups the keys touched by the operations under their registry type. */
@@ -41,11 +33,11 @@ export function collectChangedKeys(
   const changedKeysByType = new Map<string, Set<string>>();
   for (const operation of operations) {
     if (!isValidTarget(operation?.type, operation?.key)) continue;
-    let keys = changedKeysByType.get(operation.type);
-    if (!keys) {
-      keys = new Set();
-      changedKeysByType.set(operation.type, keys);
-    }
+    const keys = getOrInsert(
+      changedKeysByType,
+      operation.type,
+      () => new Set(),
+    );
     keys.add(operation.key);
   }
   return changedKeysByType;

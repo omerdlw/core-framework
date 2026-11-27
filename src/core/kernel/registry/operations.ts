@@ -1,4 +1,5 @@
 import { isObject } from "@/foundation/utils";
+import { getOrInsert } from "@/foundation/utils/collections";
 
 import type {
   RegisterOperation,
@@ -333,11 +334,7 @@ function createResolverCacheFor(
       return resolveEntryValueFor(definitions, type, entry, scope);
     }
 
-    let typeCache = entryCache.get(entry);
-    if (!typeCache) {
-      typeCache = new Map();
-      entryCache.set(entry, typeCache);
-    }
+    const typeCache = getOrInsert(entryCache, entry, () => new Map());
 
     const cacheKey = scope || "default";
 

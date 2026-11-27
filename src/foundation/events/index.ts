@@ -1,5 +1,7 @@
 import { report } from "@/foundation/utils/report";
 
+import { getOrInsert } from "../utils/collections";
+
 const DEFAULT_DEBOUNCE_MS = 100;
 
 /**
@@ -65,11 +67,7 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
     if (typeof event !== "string" || !event || typeof callback !== "function") {
       return () => {};
     }
-    let listeners = this.events.get(event);
-    if (!listeners) {
-      listeners = new Set();
-      this.events.set(event, listeners);
-    }
+    const listeners = getOrInsert(this.events, event, () => new Set());
     listeners.add(callback);
 
     return () => {

@@ -2,6 +2,7 @@
 
 import { type ReactNode, useState, useSyncExternalStore } from "react";
 
+import { getOrInsert } from "@/foundation/utils/collections";
 import { getOrCreateGlobalContext } from "@/react/context";
 import { useRequiredContext } from "@/react/hooks";
 
@@ -47,11 +48,7 @@ function keyedSubscription(
   id: string,
   create: () => KeyedSubscription,
 ): KeyedSubscription {
-  let byId = keyedSubscriptions.get(subscription);
-  if (!byId) {
-    byId = new Map();
-    keyedSubscriptions.set(subscription, byId);
-  }
+  const byId = getOrInsert(keyedSubscriptions, subscription, () => new Map());
   let entry = byId.get(id);
   if (!entry) {
     entry = create();

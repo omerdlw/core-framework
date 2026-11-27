@@ -12,6 +12,7 @@ import {
 
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore } from "@/foundation/utils";
+import { getOrInsert } from "@/foundation/utils/collections";
 
 import type {
   DockSlotContent,
@@ -231,11 +232,11 @@ class SurfaceExtensionsStore {
     if (!normalized) return;
 
     const sId = toSurfaceKey(surfaceId);
-    let surfaceMap = this.extensionsBySurface.get(sId);
-    if (!surfaceMap) {
-      surfaceMap = new Map();
-      this.extensionsBySurface.set(sId, surfaceMap);
-    }
+    const surfaceMap = getOrInsert(
+      this.extensionsBySurface,
+      sId,
+      () => new Map(),
+    );
 
     const prev = surfaceMap.get(normalized.id);
     if (prev && isSameExtension(prev, normalized)) return;

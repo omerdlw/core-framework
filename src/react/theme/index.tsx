@@ -3,6 +3,7 @@
 import { MotionConfig, useReducedMotion } from "motion/react";
 import { type CSSProperties, type ReactNode, use, useMemo } from "react";
 
+import { getOrInsert } from "@/foundation/utils/collections";
 import {
   defineMotion,
   type MotionClock,
@@ -181,11 +182,10 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
   readonly reduced: boolean;
 } {
   const state = use(MotionContext);
-  let tokens = motionTokens.get(state);
-  if (!tokens) {
-    tokens = { ...state.tokens, reduced: state.reduced };
-    motionTokens.set(state, tokens);
-  }
+  const tokens = getOrInsert(motionTokens, state, () => ({
+    ...state.tokens,
+    reduced: state.reduced,
+  }));
   return tokens as T & { readonly reduced: boolean };
 }
 
@@ -193,15 +193,8 @@ export function useMotionTokens<T extends MotionTokens = MotionTokens>(): T & {
 const resolvedMotion = new WeakMap<MotionState, WeakMap<object, unknown>>();
 
 function resolveModuleMotion(state: MotionState, motion: object): unknown {
-  let byConfig = resolvedMotion.get(state);
-  if (!byConfig) {
-    byConfig = new WeakMap();
-    resolvedMotion.set(state, byConfig);
-  }
-  if (!byConfig.has(motion)) {
-    byConfig.set(motion, retimeModuleMotion(motion, state));
-  }
-  return byConfig.get(motion);
+  const byConfig = getOrInsert(resolvedMotion, state, () => new WeakMap());
+  return getOrInsert(byConfig, motion, () => retimeModuleMotion(motion, state));
 }
 
 /**

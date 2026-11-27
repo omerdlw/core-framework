@@ -1,3 +1,5 @@
+import { getOrInsert } from "@/foundation/utils/collections";
+
 import type { RegistryState } from "../types/registry";
 import type { MaybeEntry } from "./records";
 
@@ -39,11 +41,7 @@ export function createSnapshotReaders(
     scope: string | null = null,
   ): unknown => {
     const entry = getState()[type]?.[key];
-    let snapshots = valueSnapshots.get(type);
-    if (!snapshots) {
-      snapshots = new Map();
-      valueSnapshots.set(type, snapshots);
-    }
+    const snapshots = getOrInsert(valueSnapshots, type, () => new Map());
 
     const cacheKey =
       scope === null ? key : `${scope}${SCOPE_KEY_SEPARATOR}${key}`;

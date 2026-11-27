@@ -8,6 +8,7 @@ import {
   type Ui,
   type UiMotion,
 } from "@/foundation/recipes/define";
+import { getOrInsert } from "@/foundation/utils/collections";
 import { retimeModuleMotion } from "@/foundation/utils/tempo";
 import { getOrCreateGlobalContext } from "@/react/context";
 import { useMotionTokens } from "@/react/theme";
@@ -50,15 +51,9 @@ const retimed = new WeakMap<
 export function useUiMotion(): UiMotion & { readonly reduced: boolean } {
   const { motion } = useUi();
   const tokens = useMotionTokens();
-  let byTokens = retimed.get(motion);
-  if (!byTokens) {
-    byTokens = new WeakMap();
-    retimed.set(motion, byTokens);
-  }
-  let value = byTokens.get(tokens);
-  if (!value) {
-    value = { ...retimeModuleMotion(motion, tokens), reduced: tokens.reduced };
-    byTokens.set(tokens, value);
-  }
-  return value;
+  const byTokens = getOrInsert(retimed, motion, () => new WeakMap());
+  return getOrInsert(byTokens, tokens, () => ({
+    ...retimeModuleMotion(motion, tokens),
+    reduced: tokens.reduced,
+  }));
 }

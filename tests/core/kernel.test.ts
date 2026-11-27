@@ -5,11 +5,7 @@ import { afterEach, beforeEach, describe, mock, test } from "node:test";
 import { act, createContext, createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import {
-  Compose,
-  composeProviders,
-  createProviderEntry,
-} from "../../src/core/kernel/host/compose.ts";
+import { Compose } from "../../src/core/kernel/host/compose.ts";
 import { createModulePayload } from "../../src/core/kernel/host/installed.ts";
 import {
   applyRegistryConfig,
@@ -106,7 +102,7 @@ describe("compose", () => {
     const tree = Compose({
       providers: [
         OuterProvider,
-        createProviderEntry(MiddleProvider as any, { mode: "strict" }),
+        [MiddleProvider as any, { mode: "strict" }],
         InnerProvider,
       ],
       children: "LeafContent",
@@ -123,21 +119,6 @@ describe("compose", () => {
 
     const leafFragment = inner.props.children;
     assert.equal(leafFragment.props.children, "LeafContent");
-  });
-
-  test("composeProviders returns a reusable component with ComposedProviders displayName", () => {
-    const AppProviders = composeProviders([
-      OuterProvider,
-      [MiddleProvider, { mode: "custom" }],
-    ]);
-
-    assert.equal((AppProviders as any).displayName, "ComposedProviders");
-
-    const tree = AppProviders({ children: "AppBody" });
-    assert.equal(tree.type, OuterProvider);
-    assert.equal(tree.props.children.type, MiddleProvider);
-    assert.equal(tree.props.children.props.mode, "custom");
-    assert.equal(tree.props.children.props.children.props.children, "AppBody");
   });
 
   test("Compose handles empty providers array gracefully", () => {
