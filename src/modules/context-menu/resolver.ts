@@ -71,7 +71,8 @@ function isPathAllowed(
   if (typeof config.pathMatcher === "function") {
     try {
       return Boolean(config.pathMatcher(pathname));
-    } catch {
+    } catch (error) {
+      report("Context menu pathMatcher", error);
       return false;
     }
   }
@@ -196,6 +197,7 @@ function resolveEventTarget(event: MouseEvent): Element | null {
       .find((element) => !isMenuOverlayTarget(element));
     return underneath || initialTarget;
   } catch {
+    // elementsFromPoint is missing in some test DOMs; keep the event target.
     return initialTarget;
   }
 }
@@ -212,7 +214,8 @@ function passesWhen(
   if (typeof config.when !== "function") return config.when !== false;
   try {
     return Boolean(config.when(event, info));
-  } catch {
+  } catch (error) {
+    report("Context menu when", error);
     return false;
   }
 }
