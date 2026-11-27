@@ -1,26 +1,83 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { createElement } from "react";
+import { createPortal } from "react-dom";
 
 import { ModuleBoundary } from "@/core/kernel";
 import { cn } from "@/foundation/recipes/cn";
+import { Button } from "@/react/ui/components/button";
 
-import { MODAL_POSITIONS } from "../constants";
-import { useModalLayerModel } from "../hooks";
-import { type Theme } from "../lib/theme";
-import { getModalLayout, getModalPosition } from "../model/layout";
+import { MODAL_POSITIONS, type Theme } from "./constants";
+import { useModalLayerModel, useModalModel } from "./hooks";
+import { getModalLayout, getModalPosition } from "./layout";
 import {
   getModalPositionMotion,
   MODAL_COMPOSITOR_STYLE,
   useModalMotion,
-} from "../motion";
-import {
-  type ModalComponent,
-  type ModalEntry,
-  type ModalPosition,
-} from "../types";
-import { ModalLayerSwitcher } from "./modal-layer-switcher";
+} from "./motion";
+import { getModalLabel } from "./state";
+import type { ModalComponent, ModalEntry, ModalPosition } from "./types";
+
+/**
+ * Renders the open modal stack, with backdrop, in a portal on the document body.
+ * Mounted once by the modal module as the app overlay.
+ */
+export function Modal() {
+  const {
+    closeModal,
+    registry,
+    visibleModalStack,
+    topModalEntry,
+    isModalVisible,
+    mounted,
+    isMobileViewport,
+    isTopExitSettling,
+    setIsTopExitSettling,
+    theme,
+  } = useModalModel();
+  const modalMotion = useModalMotion();
+  if (!mounted) return null;
+  return createPortal(
+    <>
+      <AnimatePresence>
+        {isModalVisible && (
+          <motion.div
+            key="global-modal-backdrop"
+            variants={modalMotion.backdrop}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className={theme.slots.backdrop}
+            style={theme.styles.backdrop}
+            onClick={() => {
+              if (!isTopExitSettling) closeModal(null, topModalEntry.id);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence onExitComplete={() => setIsTopExitSettling(false)}>
+        {visibleModalStack.map((entry: ModalEntry, index: number) => (
+          <ModalLayer
+            key={entry.id}
+            entry={entry}
+            stackIndex={index}
+            isTopModal={
+              index === visibleModalStack.length - 1 && !isTopExitSettling
+            }
+            isMobileViewport={isMobileViewport}
+            closeModal={closeModal}
+            registry={registry}
+            modalStack={visibleModalStack}
+            theme={theme}
+          />
+        ))}
+      </AnimatePresence>
+    </>,
+    document.body,
+  );
+}
 
 interface ModalLayerProps {
   closeModal: (result?: unknown, targetModalId?: number | null) => void;
@@ -173,6 +230,43 @@ export function ModalLayer({
           />
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+export function ModalLayerSwitcher({
+  currentEntry,
+  onSwitchToPrevious,
+  previousEntry,
+  theme,
+}: {
+  currentEntry: ModalEntry;
+  onSwitchToPrevious: () => void;
+  previousEntry: ModalEntry;
+  theme: Theme;
+}) {
+  return (
+    <div className={theme.slots.switcher}>
+      <Button
+        type="button"
+        onClick={onSwitchToPrevious}
+        className={theme.slots.switcherButton}
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M7.5 2.5L4 6l3.5 3.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {getModalLabel(previousEntry.modalType)}
+      </Button>
+      <span className={theme.slots.switcherDivider}>/</span>
+      <span className={theme.slots.switcherCurrent}>
+        {getModalLabel(currentEntry.modalType)}
+      </span>
     </div>
   );
 }

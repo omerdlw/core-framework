@@ -1,4 +1,4 @@
-import { FOCUSABLE_SELECTOR, SMOOTH_SCROLL_LOCK_EVENT } from "../constants";
+import { FOCUSABLE_SELECTOR, SMOOTH_SCROLL_LOCK_EVENT } from "./constants";
 
 /**
  * Tells the smooth-scroll integration that a modal locked or unlocked scrolling.

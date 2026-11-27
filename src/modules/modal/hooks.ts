@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  type RefObject,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -13,30 +15,39 @@ import {
   useModuleRegistration,
   useRegistryEntries,
 } from "@/core/kernel";
+import { acquireGlobalScrollLock } from "@/foundation/utils";
 import { useRequiredContext, useStore } from "@/react/hooks";
 import { useTheme } from "@/react/theme";
 
-import { MODAL_CHROME, MODAL_POSITIONS, modalTheme } from "./constants";
-import { ModalContext } from "./context";
-import { useMobileViewport } from "./hooks/use-mobile-viewport";
-import { useModalFocusTrap } from "./hooks/use-modal-focus-trap";
-import { useModalScrollLock } from "./hooks/use-modal-scroll-lock";
-import { getModalIdentity } from "./model/identity";
 import {
+  MODAL_BREAKPOINTS,
+  MODAL_CHROME,
+  MODAL_POSITIONS,
+  modalTheme,
+} from "./constants";
+import { ModalContext } from "./context";
+import {
+  dispatchSmoothScrollLock,
+  getFocusableElements,
+  trapFocus,
+} from "./dom";
+import {
+  getViewportIsMobile,
   isSidePosition,
   isVerticalEdgePosition,
   resolveActivePosition,
-} from "./model/layout";
-import {
-  type ModalActions,
-  type ModalComponent,
-  type ModalEntry,
-  type ModalHookBinding,
-  type ModalHookControls,
-  type ModalInput,
-  type ModalOpenFn,
-  type ModalPageConfig,
-  type ModalState,
+} from "./layout";
+import { getModalIdentity } from "./state";
+import type {
+  ModalActions,
+  ModalComponent,
+  ModalEntry,
+  ModalHookBinding,
+  ModalHookControls,
+  ModalInput,
+  ModalOpenFn,
+  ModalPageConfig,
+  ModalState,
 } from "./types";
 
 /**
@@ -229,4 +240,83 @@ export function useModalModel() {
     setIsTopExitSettling,
     theme: useTheme(modalTheme),
   };
+}
+
+/** Whether the viewport is in the mobile range; follows resizes. */
+export function useMobileViewport() {
+  const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+
+    const mediaQuery = window.matchMedia(
+      `(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`,
+    );
+    const handleViewportChange = (e: MediaQueryListEvent) =>
+      setIsMobileViewport(e.matches);
+
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
+  }, []);
+
+  return isMobileViewport;
+}
+
+/**
+ * While the modal is on top: focuses its first control, closes it on Escape,
+ * keeps Tab inside it, and gives focus back when it goes away.
+ */
+export function useModalFocusTrap({
+  closeModal,
+  entryId,
+  isTopModal,
+  modalRef,
+}: {
+  closeModal: (result?: unknown, targetModalId?: number | null) => void;
+  entryId: number;
+  isTopModal: boolean;
+  modalRef: RefObject<HTMLDivElement | null>;
+}) {
+  useEffect(() => {
+    if (!isTopModal || !modalRef.current) return;
+    const previouslyFocusedElement =
+      document.activeElement as HTMLElement | null;
+    const initialElements = getFocusableElements(modalRef.current);
+    if (initialElements.length > 0) initialElements[0].focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeModal(null, entryId);
+      else trapFocus(event, modalRef.current);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocusedElement?.isConnected)
+        previouslyFocusedElement.focus();
+    };
+  }, [closeModal, entryId, isTopModal, modalRef]);
+}
+
+/** Locks page scrolling while a modal is visible and always releases it on unmount. */
+export function useModalScrollLock(isModalVisible: boolean) {
+  const releaseScrollLockRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    if (isModalVisible) {
+      if (!releaseScrollLockRef.current)
+        releaseScrollLockRef.current = acquireGlobalScrollLock();
+    } else if (releaseScrollLockRef.current) {
+      releaseScrollLockRef.current();
+      releaseScrollLockRef.current = null;
+    }
+    dispatchSmoothScrollLock(isModalVisible);
+  }, [isModalVisible]);
+  useEffect(() => {
+    return () => {
+      releaseScrollLockRef.current?.();
+      releaseScrollLockRef.current = null;
+      dispatchSmoothScrollLock(false);
+    };
+  }, []);
 }

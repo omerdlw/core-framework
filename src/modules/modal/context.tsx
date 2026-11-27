@@ -5,15 +5,19 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { getOrCreateGlobalContext } from "@/core/kernel";
 import { createStore, type ExternalStore, report } from "@/foundation/utils";
 
-import { createModalEntry, isSameModal } from "./model/entry";
-import { getModalIdentity } from "./model/identity";
-import { createModalState, INITIAL_MODAL_STATE } from "./model/state";
 import {
-  type ModalActions,
-  type ModalEntry,
-  type ModalOptions,
-  type ModalProviderProps,
-  type ModalState,
+  createModalEntry,
+  createModalState,
+  getModalIdentity,
+  INITIAL_MODAL_STATE,
+  isSameModal,
+} from "./state";
+import type {
+  ModalActions,
+  ModalEntry,
+  ModalOptions,
+  ModalProviderProps,
+  ModalState,
 } from "./types";
 
 /**

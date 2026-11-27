@@ -1,6 +1,6 @@
-import { defineThemeSpec } from "@/react/theme";
+import { defineThemeSpec, type ResolvedTheme } from "@/react/theme";
 
-import { type ModalMotion, type ModalThemeSlot } from "./types";
+import type { ModalMotion, ModalThemeSlot } from "./types";
 
 /**
  * The positions a modal can take on screen.
@@ -42,3 +42,5 @@ export const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
  * Theme spec for the modal module: its slots and motion.
  */
 export const modalTheme = defineThemeSpec<ModalThemeSlot, ModalMotion>("modal");
+
+export type Theme = ResolvedTheme<ModalThemeSlot>;

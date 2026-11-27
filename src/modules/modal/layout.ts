@@ -4,12 +4,12 @@ import {
   HEIGHT_CONSTRAINT_PATTERN,
   MODAL_BREAKPOINTS,
   MODAL_POSITIONS,
-} from "../constants";
-import {
-  type ModalLayout,
-  type ModalPosition,
-  type ResponsiveModalPosition,
-} from "../types";
+} from "./constants";
+import type {
+  ModalLayout,
+  ModalPosition,
+  ResponsiveModalPosition,
+} from "./types";
 
 /**
  * Whether a class name already sets a height or max-height.
