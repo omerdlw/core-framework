@@ -6,12 +6,12 @@ export { UiProvider, useUi, useUiMotion } from "./provider";
 export {
   FRAME_SELECTOR,
   glideTarget,
-  initialsOf,
   rackClip,
   readScroll,
   useDragScroll,
-  useSlidingPill,
-} from "./utils";
+} from "./components/carousel";
+export { useSlidingPill } from "./components/indicator";
+export { initialsOf } from "./components/avatar";
 
 export { Avatar } from "./components/avatar";
 export { Button } from "./components/button";
@@ -29,7 +29,7 @@ export {
 export { Input, Textarea } from "./components/input";
 export { Loader, Spinner } from "./components/loader";
 export { SegmentedControl } from "./components/segmented";
-export { Select } from "./components/select";
+export { Select } from "./components/select/select";
 export { SkeletonBlock, SkeletonLines } from "./components/skeleton";
 export { Switch } from "./components/switch";
-export { Tooltip, TooltipProvider } from "./components/tooltip";
+export { Tooltip, TooltipProvider } from "./components/tooltip/tooltip";

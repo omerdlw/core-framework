@@ -9,11 +9,11 @@ import {
   useId,
   useState,
 } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import type { PillBox, Tracker } from "@/react/ui/types";
 
 import { useUi, useUiMotion } from "../provider";
-import { HIGHLIGHT_STYLE, INSTANT, PILL_BOX_STYLE, PILL_STYLE } from "../utils";
 
 interface SlidingHighlightProps {
   className?: string;
@@ -129,4 +129,69 @@ export function useHighlight(key: string, className?: string) {
 export function useHighlightReset() {
   const tracker = use(HighlightContext);
   return { onPointerEnter: () => tracker?.hover(null) };
+}
+
+export const INSTANT = { duration: 0 } as const;
+
+export const HIGHLIGHT_STYLE = {
+  inset: 0,
+  pointerEvents: "none",
+  position: "absolute",
+} as const;
+
+export const PILL_STYLE = {
+  left: 0,
+  pointerEvents: "none",
+  position: "absolute",
+} as const;
+
+export const PILL_BOX_STYLE = { ...PILL_STYLE, top: 0 } as const;
+
+function measureBox(chosen: HTMLElement, wrapping: boolean): PillBox {
+  return wrapping
+    ? {
+        height: chosen.offsetHeight,
+        width: chosen.offsetWidth,
+        x: chosen.offsetLeft,
+        y: chosen.offsetTop,
+      }
+    : { width: chosen.offsetWidth, x: chosen.offsetLeft };
+}
+
+function sameBox(a: PillBox, b: PillBox): boolean {
+  return (
+    a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height
+  );
+}
+
+/**
+ * Measures the element matching `selector` inside a list so a pill can slide to it.
+ * Remeasures when `key` changes.
+ */
+export function useSlidingPill<T extends HTMLElement>(
+  selector: string,
+  key: unknown,
+  { wrapping = false }: { wrapping?: boolean } = {},
+) {
+  const ref = useRef<T>(null);
+  const [box, setBox] = useState<PillBox | null>(null);
+
+  useLayoutEffect(() => {
+    const list = ref.current;
+    if (!list) return;
+    const measure = () => {
+      const chosen = list.querySelector<HTMLElement>(selector);
+      if (!chosen) return;
+      const next = measureBox(chosen, wrapping);
+      setBox((prev) => (prev && sameBox(prev, next) ? prev : next));
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    for (const child of list.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, [key, selector, wrapping]);
+
+  return { box, ref };
 }

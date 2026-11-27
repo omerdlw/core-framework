@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 
-import { Tooltip } from "@/react/ui/components/tooltip";
+import { Tooltip } from "@/react/ui/components/tooltip/tooltip";
 
 import { useDockCommandBarModel } from "../hooks/use-command-bar-model";
 import { useDockTheme } from "../hooks/use-dock-theme";

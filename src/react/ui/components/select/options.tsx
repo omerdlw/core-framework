@@ -3,9 +3,9 @@ import type { CSSProperties } from "react";
 
 import type { Anchor, SelectClassNames, SelectOption } from "@/react/ui/types";
 
-import { useUi } from "../provider";
-import { Icon } from "./icon";
-import { SlidingHighlight } from "./indicator";
+import { useUi } from "../../provider";
+import { Icon } from "../icon";
+import { SlidingHighlight } from "../indicator";
 
 export type MenuStyle = CSSProperties & Record<string, unknown>;
 

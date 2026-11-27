@@ -16,18 +16,18 @@ import { createPortal } from "react-dom";
 
 import type { TooltipProps } from "@/react/ui/types";
 
-import { useUi } from "../provider";
+import { useUi } from "../../provider";
 import {
   groupClosed,
   groupOpened,
   type LiveHandlers,
   type OpenKind,
   TooltipGroupContext,
-} from "./tooltip-group";
-import { placeTooltip } from "./tooltip-placement";
-import { Slot, type TriggerProps } from "./tooltip-slot";
+} from "./group";
+import { placeTooltip } from "./placement";
+import { Slot, type TriggerProps } from "./slot";
 
-export { TooltipProvider } from "./tooltip-group";
+export { TooltipProvider } from "./group";
 
 const EXIT_FALLBACK_SLACK_MS = 50;
 

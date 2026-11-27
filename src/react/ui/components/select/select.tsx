@@ -25,21 +25,14 @@ import {
 } from "@/react/hooks";
 import type { Anchor, SelectOption, SelectProps } from "@/react/ui/types";
 
-import { useUi, useUiMotion } from "../provider";
-import {
-  canAnchor,
-  cannotAnchor,
-  noHost,
-  noSubscribe,
-  readHost,
-} from "../utils";
-import { Icon } from "./icon";
+import { useUi, useUiMotion } from "../../provider";
+import { Icon } from "../icon";
 import {
   menuPlacementStyle,
   type MenuStyle,
   SelectOptionRow,
   stepHighlight,
-} from "./select-parts";
+} from "./options";
 
 const NO_HIGHLIGHT = -1;
 const ARROW_KEYS = ["ArrowDown", "ArrowUp"];
@@ -317,3 +310,16 @@ export function Select<T extends string = string>({
     </div>
   );
 }
+
+export const noSubscribe = () => () => {};
+
+export const readHost = () => document.body;
+
+export const noHost = () => null;
+
+export const canAnchor = () =>
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("anchor-name", "--a");
+
+export const cannotAnchor = () => false;

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { act, createElement as h, createRef, useState } from "react";
 
-import { placeTooltip } from "../../src/react/ui/components/tooltip-placement.ts";
+import { placeTooltip } from "../../src/react/ui/components/tooltip/placement.ts";
 import { Tooltip, TooltipProvider } from "../../src/react/ui/index.ts";
 import { render } from "../support/render.ts";
 

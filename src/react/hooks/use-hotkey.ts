@@ -4,7 +4,15 @@ import { useEffect, useEffectEvent } from "react";
 
 import { isBrowser } from "@/foundation/utils";
 
-import { type UseHotkeyOptions } from "./types";
+/**
+ * Options for `useHotkey`: whether it is active, whether it fires in form fields, and event handling.
+ */
+export interface UseHotkeyOptions {
+  enabled?: boolean;
+  enableOnFormTags?: boolean;
+  preventDefault?: boolean;
+  stopPropagation?: boolean;
+}
 
 function isEditableElement(target: EventTarget | null): boolean {
   if (!target || typeof (target as HTMLElement).tagName !== "string") {

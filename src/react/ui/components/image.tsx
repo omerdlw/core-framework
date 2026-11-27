@@ -7,7 +7,6 @@ import { trimToNull } from "@/foundation/utils";
 import type { ImageProps } from "@/react/ui/types";
 
 import { useUi } from "../provider";
-import { watchDistance } from "../utils";
 
 /**
  * An image with loading and failure states and an optional fallback node.
@@ -117,4 +116,24 @@ export function Image({
       />
     </div>
   );
+}
+
+let farSight: IntersectionObserver | null = null;
+
+const FAR_ROOT_MARGIN = "50% 25%";
+
+export function watchDistance(frame: HTMLElement): () => void {
+  if (typeof IntersectionObserver === "undefined") {
+    frame.removeAttribute("data-far");
+    return () => {};
+  }
+  farSight ??= new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries)
+        entry.target.toggleAttribute("data-far", !entry.isIntersecting);
+    },
+    { rootMargin: FAR_ROOT_MARGIN },
+  );
+  farSight.observe(frame);
+  return () => farSight?.unobserve(frame);
 }

@@ -9,4 +9,6 @@ export { useControllableState } from "./use-controllable-state";
 export { useHotkey, useEscapeKey } from "./use-hotkey";
 export { SCROLL_LOCK, useScrollLock } from "./use-scroll-lock";
 
-export type * from "./types";
+export type { UseControllableStateOptions } from "./use-controllable-state";
+export type { UseGlobalEventOptions } from "./use-global-event";
+export type { UseHotkeyOptions } from "./use-hotkey";
