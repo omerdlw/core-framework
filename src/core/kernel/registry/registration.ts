@@ -1,6 +1,6 @@
 import { isValidElement } from "react";
 
-import { report } from "@/foundation/utils";
+import { isPlainObject, report } from "@/foundation/utils";
 
 import { REGISTRY_SOURCES, REGISTRY_VALIDATION_MODES } from "../constants";
 import type {
@@ -13,9 +13,16 @@ import type {
   RegistryState,
   RegistryStore,
 } from "../types/registry";
+import { hasOwnProperty } from "../utils";
 import { createRegisterOperation, type RegistryOperations } from "./operations";
 import { validateRegistryMetadata, validateRegistryValue } from "./schema";
 
+const DEFAULT_VALIDATION = REGISTRY_VALIDATION_MODES.WARN;
+const NOOP_HANDLE: RegistrationHandle = createNoopHandle();
+
+// ---- Values and validation ----
+
+/** Deep-copies plain objects and arrays; elements and class instances are kept as they are. */
 function cloneRegistryValue<T>(
   value: T,
   seen = new WeakMap<object, unknown>(),
@@ -24,12 +31,7 @@ function cloneRegistryValue<T>(
     return value;
   }
 
-  const prototype: unknown = Object.getPrototypeOf(value);
-  const isPlainObject =
-    !Array.isArray(value) &&
-    (prototype === Object.prototype || prototype === null);
-
-  if (!Array.isArray(value) && !isPlainObject) return value;
+  if (!Array.isArray(value) && !isPlainObject(value)) return value;
   if (seen.has(value)) return seen.get(value) as T;
 
   const source = value as Record<string, unknown>;
@@ -37,7 +39,7 @@ function cloneRegistryValue<T>(
   seen.set(value, clone);
 
   for (const key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
+    if (hasOwnProperty(source, key)) {
       clone[key] = cloneRegistryValue(source[key], seen);
     }
   }
@@ -128,7 +130,7 @@ export function prepareRegisterOperation(
   };
 }
 
-const DEFAULT_VALIDATION = REGISTRY_VALIDATION_MODES.WARN;
+// ---- Handles ----
 
 export function createNoopHandle(
   status: RegistrationHandle["status"] = "rejected",
@@ -151,14 +153,8 @@ export function createNoopHandle(
   return handle;
 }
 
-const NOOP_HANDLE: RegistrationHandle = createNoopHandle();
-
 function isNoopHandle(handle: RegistrationHandle | null | undefined): boolean {
-  return (
-    handle === NOOP_HANDLE ||
-    handle?.status === "rejected" ||
-    handle?.status === "ignored"
-  );
+  return handle?.status === "rejected" || handle?.status === "ignored";
 }
 
 export function createRegistrationHandle(
@@ -221,6 +217,8 @@ export function createRegistrationHandle(
 
   return handle;
 }
+
+// ---- Initial state ----
 
 export type InitialRegistryEntries = readonly AppRegistryEntry[];
 

@@ -6,9 +6,14 @@ import {
   type ReactNode,
 } from "react";
 
+import { isObject } from "@/foundation/utils";
+
 import type { AnyFunction, StableFunctionEntry } from "../types/registry";
+import { hasOwnProperty } from "../utils";
 
 const MAX_STABILIZATION_DEPTH = 64;
+/** A function at `config.<slice>.<key>` of a component slice is a component. */
+const DIRECT_COMPONENT_PATH = /^config\.([^.[]+)\.[^.[]+$/;
 
 function createStableFunctionEntry(fn: AnyFunction): StableFunctionEntry {
   const entry: StableFunctionEntry = {
@@ -25,8 +30,6 @@ export interface StabilizeScope {
   functionEntries: Map<string, StableFunctionEntry>;
   usedPaths: Set<string>;
 }
-
-const DIRECT_COMPONENT_PATH = /^config\.([^.[]+)\.[^.[]+$/;
 
 function isDirectRegistryComponentPath(
   path: string,
@@ -51,12 +54,7 @@ function isReactNodeLike(value: unknown): boolean {
 function isStabilizableObject(
   value: unknown,
 ): value is Record<string, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    !isValidElement(value)
-  );
+  return isObject(value) && !isValidElement(value);
 }
 
 function hasSameObjectKeys(
@@ -72,9 +70,7 @@ function hasSameObjectKeys(
   const previousKeys = Object.keys(previousValue);
   const nextKeys = Object.keys(nextValue);
   if (previousKeys.length !== nextKeys.length) return false;
-  return nextKeys.every((key) =>
-    Object.prototype.hasOwnProperty.call(previousValue, key),
-  );
+  return nextKeys.every((key) => hasOwnProperty(previousValue, key));
 }
 
 interface StabilizeState {

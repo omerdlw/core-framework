@@ -18,6 +18,10 @@ import type {
 } from "../types/registry";
 import { getValidString, parseFiniteNumber } from "../utils";
 
+function isValidationMode(value: unknown): value is RegistryValidationMode {
+  return Object.values<unknown>(REGISTRY_VALIDATION_MODES).includes(value);
+}
+
 function resolveLifecycle(
   metadata: RegistryMetadata | null | undefined,
   fallback: RegistryLifecycle | null,
@@ -59,7 +63,7 @@ function checkEnums(metadata: Record<string, unknown>, issues: string[]): void {
   const lifecycle = metadata.lifecycle ?? metadata.cleanup;
   if (
     lifecycle !== undefined &&
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- lifecycle comes from unvalidated metadata; an object stringifies to "[object Object]" and fails the membership check, which is the intended rejection
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- unvalidated input; an object becomes "[object Object]" and is rejected
     !REGISTRY_LIFECYCLE_VALUES.has(String(lifecycle))
   ) {
     issues.push(
@@ -69,15 +73,15 @@ function checkEnums(metadata: Record<string, unknown>, issues: string[]): void {
 
   if (
     metadata.validation !== undefined &&
-    !Object.values<unknown>(REGISTRY_VALIDATION_MODES).includes(
-      metadata.validation,
-    )
+    !isValidationMode(metadata.validation)
   ) {
     issues.push(
       `validation must be one of: ${Object.values(REGISTRY_VALIDATION_MODES).join(", ")}`,
     );
   }
 }
+
+// ---- Validation ----
 
 export function validateRegistryMetadata(metadata: unknown): ValidationResult {
   if (metadata === undefined || metadata === null)
@@ -167,6 +171,8 @@ export function validateRegistryValue(
   return { issues, valid: issues.length === 0 };
 }
 
+// ---- Normalization ----
+
 interface NormalizeDefaults {
   defaultCleanupDelayMs?: number | null;
   defaultLifecycle?: RegistryLifecycle | null;
@@ -232,10 +238,6 @@ export function normalizeRegistryMetadata(
     ...(scope && { scope }),
     ...(validation && { validation }),
   };
-}
-
-function isValidationMode(value: unknown): value is RegistryValidationMode {
-  return Object.values<unknown>(REGISTRY_VALIDATION_MODES).includes(value);
 }
 
 export function pickRegistryMetadata(options: unknown): RegistryMetadata {

@@ -49,12 +49,7 @@ function keyedSubscription(
   create: () => KeyedSubscription,
 ): KeyedSubscription {
   const byId = getOrInsert(keyedSubscriptions, subscription, () => new Map());
-  let entry = byId.get(id);
-  if (!entry) {
-    entry = create();
-    byId.set(id, entry);
-  }
-  return entry;
+  return getOrInsert(byId, id, create);
 }
 
 function createRegistryContextValue(

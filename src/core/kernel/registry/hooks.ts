@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useId, useLayoutEffect, useRef, useState } from "react";
 
 import { isObject, shallowEqual } from "@/foundation/utils";
+import { getOrInsert } from "@/foundation/utils/collections";
 
 import { createModulePayload, useInstalledModules } from "../host/installed";
 import type {
@@ -20,33 +21,20 @@ import { applyRegistryConfig } from "./apply";
 import { useRegistryActions } from "./provider";
 import { stabilizeRegistryValue } from "./stabilize";
 
+/** Register arguments with the instance id added to whichever argument holds the options. */
 function withInstanceId(
   instanceId: string,
   sourceOrOptions: RegistrySourceOrOptions | undefined,
   optionsArg?: RegistryMetadata,
-): {
-  optionsArg: RegistryMetadata | undefined;
-  sourceOrOptions: RegistrySourceOrOptions;
-} {
+): [RegistrySourceOrOptions, RegistryMetadata | undefined] {
+  const options = isObject(optionsArg) ? optionsArg : {};
   if (typeof sourceOrOptions === "string") {
-    return {
-      optionsArg: { ...(isObject(optionsArg) ? optionsArg : {}), instanceId },
-      sourceOrOptions,
-    };
+    return [sourceOrOptions, { ...options, instanceId }];
   }
   if (isObject(sourceOrOptions)) {
-    return {
-      optionsArg,
-      sourceOrOptions: { ...sourceOrOptions, instanceId },
-    };
+    return [{ ...sourceOrOptions, instanceId }, optionsArg];
   }
-  return {
-    optionsArg: undefined,
-    sourceOrOptions: {
-      ...(isObject(optionsArg) ? optionsArg : {}),
-      instanceId,
-    },
-  };
+  return [{ ...options, instanceId }, undefined];
 }
 
 function withInstanceIdForUnregister(
@@ -60,15 +48,6 @@ function withInstanceIdForUnregister(
     return { ...sourceOrOptions, instanceId };
   }
   return { instanceId };
-}
-
-function resolveRegisterArgsWithInstance(
-  instanceId: string,
-  sourceOrOptions: RegistrySourceOrOptions | undefined,
-  optionsArg?: RegistryMetadata,
-): [RegistrySourceOrOptions, RegistryMetadata | undefined] {
-  const input = withInstanceId(instanceId, sourceOrOptions, optionsArg);
-  return [input.sourceOrOptions, input.optionsArg];
 }
 
 export function useShallowStable<T extends object>(value: T): T {
@@ -136,16 +115,18 @@ const componentSlicesByModules = new WeakMap<
 function componentSliceIds(
   modules: readonly AnyCoreModule[],
 ): ReadonlySet<string> {
-  let ids = componentSlicesByModules.get(modules);
-  if (!ids) {
-    ids = new Set(
-      modules
-        .filter((coreModule) => coreModule.registry?.valueKind === "component")
-        .map((coreModule) => coreModule.id),
-    );
-    componentSlicesByModules.set(modules, ids);
-  }
-  return ids;
+  return getOrInsert(
+    componentSlicesByModules,
+    modules,
+    () =>
+      new Set(
+        modules
+          .filter(
+            (coreModule) => coreModule.registry?.valueKind === "component",
+          )
+          .map((coreModule) => coreModule.id),
+      ),
+  );
 }
 
 function useAppliedRegistryConfig(inputs: RegistryInputs): void {
@@ -215,11 +196,7 @@ function stampQueue(queue: RegistryQueue, instanceId: string): RegistryQueue {
         type,
         key,
         item,
-        ...resolveRegisterArgsWithInstance(
-          instanceId,
-          sourceOrOptions,
-          optionsArg,
-        ),
+        ...withInstanceId(instanceId, sourceOrOptions, optionsArg),
       ),
     unregister: (
       type: string,

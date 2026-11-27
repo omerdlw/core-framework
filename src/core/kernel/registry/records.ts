@@ -13,6 +13,10 @@ import type {
 } from "../types/registry";
 import { getSourceRank, hasOwnProperty } from "../utils";
 
+// NUL never appears in sources, instance ids or scopes, so joining on it is
+// unambiguous and avoids JSON.stringify on every register and lookup.
+const SEP = "\u0000";
+
 export type MaybeEntry = RegistryEntryRecords | null | undefined;
 
 export function createInitialRegistriesFor(
@@ -50,10 +54,6 @@ export function buildSourceRecord({
     scope,
   };
 }
-
-// NUL never appears in sources, instance ids or scopes, so joining on it is
-// unambiguous and avoids JSON.stringify on every register and lookup.
-const SEP = "\u0000";
 
 export function createRecordKey(
   source: string,

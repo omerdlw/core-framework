@@ -12,6 +12,7 @@ import type {
   UnregisterOperation,
 } from "../types/registry";
 import {
+  hasOwnProperty,
   resolveInstanceId,
   resolveRegisterInput,
   resolveScope,
@@ -34,6 +35,8 @@ import {
   toSourceRecord,
 } from "./records";
 import { validateRegistryKey } from "./schema";
+
+// ---- Operation builders ----
 
 export function createRegisterOperation(
   type: string,
@@ -83,6 +86,8 @@ export function createUnregisterOperation(
     key: typeof key === "string" ? key.trim() : key,
   };
 }
+
+// ---- Applying operations ----
 
 function isValidRegistryTargetFor(
   definitions: RegistryDefinitions,
@@ -164,6 +169,8 @@ function hasOperationEffectFor(
   }
   return false;
 }
+
+// ---- Batches ----
 
 /**
  * Copy-on-write view of a registry state for applying many operations: each
@@ -250,34 +257,7 @@ function resolveEffectiveOperationsFor(
   return { effectiveOperations, nextState: draft.state };
 }
 
-/**
- * Creates the pure operations (apply, resolve, validate targets) for a set of
- * registry definitions.
- */
-export function createRegistryOperations(definitions: RegistryDefinitions) {
-  return Object.freeze({
-    applyOperation: (state: RegistryState, operation: RegistryOperation) =>
-      applyOperationFor(definitions, state, operation),
-    createInitialRegistries: () => createInitialRegistriesFor(definitions),
-    createResolverCache: () => createResolverCacheFor(definitions),
-    hasOperationEffect: (state: RegistryState, operation: RegistryOperation) =>
-      hasOperationEffectFor(definitions, state, operation),
-    isRegistryType: (type: string) => definitions.get(type) !== undefined,
-    isValidRegistryTarget: (type: string, key: unknown) =>
-      isValidRegistryTargetFor(definitions, type, key),
-    resolveEffectiveOperations: (
-      state: RegistryState,
-      operations: RegistryOperation[],
-    ) => resolveEffectiveOperationsFor(definitions, state, operations),
-    resolveEntryValue: (
-      type: string,
-      entry: MaybeEntry,
-      scope: string | null = null,
-    ) => resolveEntryValueFor(definitions, type, entry, scope),
-  });
-}
-
-export type RegistryOperations = ReturnType<typeof createRegistryOperations>;
+// ---- Value resolution ----
 
 function resolveEntryValueFor(
   definitions: RegistryDefinitions,
@@ -289,7 +269,7 @@ function resolveEntryValueFor(
 
   const activeRecords: SourceRecord[] = [];
   for (const recordKey in entry) {
-    if (!Object.prototype.hasOwnProperty.call(entry, recordKey)) continue;
+    if (!hasOwnProperty(entry, recordKey)) continue;
     const record = toSourceRecord(entry[recordKey], recordKey);
     if (record !== null && (scope === null || record.scope === scope)) {
       activeRecords.push(record);
@@ -298,7 +278,7 @@ function resolveEntryValueFor(
 
   if (activeRecords.length === 0) return undefined;
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- definition.merge is called unbound as merge(values); the registry-definition contract is a plain function that must not rely on this (pre-existing unbound call)
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- merge is a plain function by contract and never uses `this`
   const merge = definitions.get(type)?.merge;
   if (activeRecords.length === 1) {
     const [only] = activeRecords;
@@ -335,7 +315,6 @@ function createResolverCacheFor(
     }
 
     const typeCache = getOrInsert(entryCache, entry, () => new Map());
-
     const cacheKey = scope || "default";
 
     if (typeCache.has(cacheKey)) return typeCache.get(cacheKey);
@@ -345,3 +324,34 @@ function createResolverCacheFor(
     return value;
   };
 }
+
+// ---- Factory ----
+
+/**
+ * Creates the pure operations (apply, resolve, validate targets) for a set of
+ * registry definitions.
+ */
+export function createRegistryOperations(definitions: RegistryDefinitions) {
+  return Object.freeze({
+    applyOperation: (state: RegistryState, operation: RegistryOperation) =>
+      applyOperationFor(definitions, state, operation),
+    createInitialRegistries: () => createInitialRegistriesFor(definitions),
+    createResolverCache: () => createResolverCacheFor(definitions),
+    hasOperationEffect: (state: RegistryState, operation: RegistryOperation) =>
+      hasOperationEffectFor(definitions, state, operation),
+    isRegistryType: (type: string) => definitions.get(type) !== undefined,
+    isValidRegistryTarget: (type: string, key: unknown) =>
+      isValidRegistryTargetFor(definitions, type, key),
+    resolveEffectiveOperations: (
+      state: RegistryState,
+      operations: RegistryOperation[],
+    ) => resolveEffectiveOperationsFor(definitions, state, operations),
+    resolveEntryValue: (
+      type: string,
+      entry: MaybeEntry,
+      scope: string | null = null,
+    ) => resolveEntryValueFor(definitions, type, entry, scope),
+  });
+}
+
+export type RegistryOperations = ReturnType<typeof createRegistryOperations>;
