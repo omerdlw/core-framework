@@ -74,6 +74,7 @@ Inside a feature folder, a component and the view-model hook only it uses share 
 - A name prefix shared by several files (`store-*.ts`) means they belong in a folder (`registry/`).
 - A file under about 40 lines joins its only user or its closest sibling instead of standing alone.
 - No file under `src/` exceeds 500 lines; `npm run check:architecture` enforces it.
+- Inside a file: imports, then constants, then code in reading order. A file with several concerns separates them with `// ---- Section ----` headers.
 
 ---
 
@@ -123,6 +124,8 @@ Asynchronous workflows, Server Actions, and data mutations must never throw unha
 
 - ❌ `if (!id) throw new Error("Invalid ID");`
 - ✅ `if (!id) return err("Invalid ID"); return ok({ success: true });`
+
+Errors that the framework catches, such as a user callback that throws, go through `report(scope, error)` before any fallback. An empty `catch` is only for browser APIs that may throw harmlessly, and it carries a comment that says why.
 
 ### Rule 7: Declarative Chrome (`usePage`)
 
