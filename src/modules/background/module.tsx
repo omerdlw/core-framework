@@ -4,16 +4,16 @@ import { useMemo } from "react";
 
 import { defineModule, type PageModuleApi } from "@/core/kernel";
 
-import { BackgroundOverlay } from "./components/overlay";
 import { BACKGROUND_REGISTRY_KEY } from "./constants";
 import { BackgroundContext, BackgroundProvider } from "./context";
 import { useBackground, useBackgroundActions } from "./hooks";
-import { normalizeBackgroundInput } from "./model/state";
-import {
-  type BackgroundPageApi,
-  type BackgroundPageConfig,
-  type BackgroundState,
-  type DefinedBackground,
+import { BackgroundOverlay } from "./overlay";
+import { normalizeBackgroundInput } from "./state";
+import type {
+  BackgroundPageApi,
+  BackgroundPageConfig,
+  BackgroundState,
+  DefinedBackground,
 } from "./types";
 
 /**

@@ -1,33 +1,34 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 import { getOrCreateGlobalContext, useRegistryValue } from "@/core/kernel";
 import { createStore, type ExternalStore } from "@/foundation/utils";
+import { useOptionalMediaActions } from "@/modules/media";
 import { useStore } from "@/react/hooks";
 
-import { BACKGROUND_REGISTRY_KEY } from "./constants";
-import { useBackgroundMediaSource } from "./hooks/use-background-media-source";
-import { applyOverrideUpdate, type BackgroundInputs } from "./model/override";
+import { BACKGROUND_MEDIA_ID, BACKGROUND_REGISTRY_KEY } from "./constants";
 import {
   isElementPlaying,
   syncVideoLoopDirect,
   syncVideoMutedDirect,
   triggerVideoPlaybackDirect,
-} from "./model/playback";
+} from "./playback";
 import {
+  applyOverrideUpdate,
+  type BackgroundInputs,
   computeBackgroundState,
   normalizeBackgroundInput,
   resolveBackgroundState,
-} from "./model/state";
-import {
-  type BackgroundActions,
-  type BackgroundContextValue,
-  type BackgroundProviderProps,
-  type BackgroundState,
-  type BackgroundStateComputed,
-  type ScopedOverride,
+} from "./state";
+import type {
+  BackgroundActions,
+  BackgroundContextValue,
+  BackgroundProviderProps,
+  BackgroundState,
+  BackgroundStateComputed,
+  ScopedOverride,
 } from "./types";
 
 /**
@@ -208,4 +209,33 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   useBackgroundMediaSource(state, actions);
 
   return <BackgroundContext value={value}>{children}</BackgroundContext>;
+}
+
+/** Publishes the background video to the media module, and withdraws it. */
+export function useBackgroundMediaSource(
+  state: BackgroundStateComputed,
+  actions: BackgroundActions,
+) {
+  const media = useOptionalMediaActions();
+  const { isPlaying, isVideo, videoElement } = state;
+  const isLoop = Boolean(state.videoOptions?.loop);
+  useEffect(() => {
+    if (!isVideo) {
+      media.removeSource(BACKGROUND_MEDIA_ID);
+      return;
+    }
+    media.upsertSource({
+      controls: {
+        setMuted: actions.setVideoMuted,
+        toggle: actions.toggleVideo,
+        toggleLoop: actions.toggleLoop,
+      },
+      element: videoElement ?? null,
+      id: BACKGROUND_MEDIA_ID,
+      isPlaying,
+      kind: "video",
+      loop: isLoop,
+    });
+  }, [actions, isLoop, isPlaying, isVideo, media, videoElement]);
+  useEffect(() => () => media.removeSource(BACKGROUND_MEDIA_ID), [media]);
 }

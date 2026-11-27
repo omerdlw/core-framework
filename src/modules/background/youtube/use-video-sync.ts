@@ -2,9 +2,9 @@
 
 import { type MutableRefObject, type RefObject, useEffect } from "react";
 
-import { applyVideoPlaybackState } from "../../model/playback";
-import { type BackgroundActions } from "../../types";
-import { AUDIO_SYNC_EVENTS, setElementMuted } from "../lib/audio";
+import { applyVideoPlaybackState } from "../playback";
+import type { BackgroundActions } from "../types";
+import { AUDIO_SYNC_EVENTS, setElementMuted } from "./audio";
 
 const AUDIO_SYNC_INTERVAL_MS = 1000;
 

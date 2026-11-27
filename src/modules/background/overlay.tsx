@@ -1,19 +1,22 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import type { CSSProperties } from "react";
 
 import { cn } from "@/foundation/recipes/cn";
 
+import type { Theme } from "./constants";
 import {
   type BackgroundOverlayModel,
   useBackgroundOverlayModel,
-} from "../hooks/use-background-overlay-model";
-import { YouTubeBackgroundPlayer } from "../youtube/components/player";
-import { BackgroundGradients } from "./background-gradients";
-import { EdgeGradient } from "./edge-gradient";
+} from "./hooks";
 import { NativeVideo } from "./native-video";
-import { NoiseOverlay } from "./noise-overlay";
-import { SolidOverlay } from "./solid-overlay";
+import {
+  DEFAULT_COLOR,
+  generateBaseGradient,
+  generateEdgeGradient,
+} from "./visual";
+import { YouTubeBackgroundPlayer } from "./youtube/player";
 
 interface OverlayLayerProps {
   model: BackgroundOverlayModel;
@@ -253,5 +256,116 @@ export function BackgroundOverlay() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+export function BackgroundGradients({
+  count = 0,
+  direction,
+  color = DEFAULT_COLOR,
+  theme,
+}: {
+  theme: Theme;
+  count?: number;
+  direction: "left" | "right";
+  color?: string;
+}) {
+  if (!count || count <= 0) return null;
+  const opacity = Math.min(1, Math.max(0.2, count * 0.25));
+  return (
+    <div
+      data-side={direction}
+      className={theme.slots.gradient}
+      style={{
+        ...theme.styles.gradient,
+        opacity,
+        background: generateBaseGradient(direction, color),
+      }}
+    />
+  );
+}
+
+export function EdgeGradient({
+  direction,
+  percent = 0,
+  opacity = 0,
+  color,
+  theme,
+}: {
+  theme: Theme;
+  direction: "left" | "right";
+  percent?: number;
+  opacity?: number;
+  color?: string;
+}) {
+  if (opacity <= 0) return null;
+  return (
+    <div
+      data-side={direction}
+      className={theme.slots.edge}
+      style={{
+        width: `${Math.max(30, percent * 1.15)}%`,
+        opacity,
+        background: generateEdgeGradient(direction, color || DEFAULT_COLOR),
+      }}
+    />
+  );
+}
+
+export function NoiseOverlay({
+  opacity,
+  blendMode,
+  inlineStyle,
+  maskImage,
+  isFixed,
+  theme,
+}: {
+  theme: Theme;
+  opacity?: number;
+  blendMode?: string;
+  inlineStyle?: CSSProperties;
+  maskImage?: string;
+  isFixed?: boolean;
+}) {
+  return (
+    <div
+      data-position={isFixed ? "fixed" : "absolute"}
+      className={theme.slots.noise}
+      style={{
+        ...theme.styles.noise,
+        ...(typeof opacity === "number" ? { opacity } : {}),
+        ...(typeof blendMode === "string" && blendMode.trim()
+          ? { mixBlendMode: blendMode as CSSProperties["mixBlendMode"] }
+          : {}),
+        ...(maskImage ? { maskImage, WebkitMaskImage: maskImage } : {}),
+        ...inlineStyle,
+      }}
+    />
+  );
+}
+
+export function SolidOverlay({
+  opacity = 0,
+  color,
+  transitionStyle,
+  maskImage,
+  theme,
+}: {
+  theme: Theme;
+  opacity?: number;
+  color?: string;
+  transitionStyle?: CSSProperties;
+  maskImage?: string;
+}) {
+  return (
+    <div
+      className={theme.slots.solid}
+      style={{
+        opacity,
+        backgroundColor: color,
+        ...(maskImage ? { maskImage, WebkitMaskImage: maskImage } : {}),
+        ...transitionStyle,
+      }}
+    />
   );
 }

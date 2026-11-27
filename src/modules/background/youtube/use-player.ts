@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { type YouTubeBackgroundPlayerProps } from "../../types";
-import { syncCompanionAudioElements } from "../lib/audio";
-import { scheduleRetryTimer } from "../lib/timing";
+import type { YouTubeBackgroundPlayerProps } from "../types";
+import { syncCompanionAudioElements } from "./audio";
+import { getYouTubeStreamUrl, getYouTubeThumbnailUrl } from "./parse";
+import { scheduleRetryTimer } from "./timing";
+import { useYouTubeIframePlayer } from "./use-iframe-player";
+import { useYouTubeVideoSync } from "./use-video-sync";
 import {
   endVideoPlayback,
   handleCompanionAudioError,
@@ -19,10 +22,7 @@ import {
   onTimeUpdate,
   playWithMutedFallback,
   type VideoEventContext,
-} from "../lib/video-events";
-import { useYouTubeIframePlayer } from "./use-youtube-iframe-player";
-import { useYouTubeStreamSources } from "./use-youtube-stream-sources";
-import { useYouTubeVideoSync } from "./use-youtube-video-sync";
+} from "./video-events";
 
 export function useYouTubeBackgroundPlayerModel({
   codec = "auto",
@@ -216,4 +216,28 @@ export function useYouTubeBackgroundPlayerModel({
     isCovered,
     showSpinnerOverlay,
   };
+}
+
+/** Resolves the proxied video and audio stream URLs and the optional poster. */
+export function useYouTubeStreamSources({
+  codec,
+  posterUrl,
+  quality,
+  showPoster,
+  videoId,
+}: Pick<
+  YouTubeBackgroundPlayerProps,
+  "codec" | "posterUrl" | "quality" | "showPoster" | "videoId"
+>) {
+  const videoStreamUrl = getYouTubeStreamUrl(videoId, {
+    codec,
+    quality,
+    stream: "video",
+  });
+  const audioStreamUrl = getYouTubeStreamUrl(videoId, { stream: "audio" });
+  const resolvedPoster = showPoster
+    ? posterUrl || getYouTubeThumbnailUrl(videoId, true)
+    : null;
+
+  return { audioStreamUrl, resolvedPoster, videoStreamUrl };
 }

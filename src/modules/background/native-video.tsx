@@ -4,9 +4,54 @@ import { type CSSProperties, useEffect, useRef } from "react";
 
 import { report } from "@/foundation/utils";
 
-import { applyVideoPlaybackState } from "../model/playback";
-import { type BackgroundActions } from "../types";
-import { isWithinCorp } from "../youtube/lib/timing";
+import { applyVideoPlaybackState } from "./playback";
+import type { BackgroundActions } from "./types";
+import { isWithinCorp } from "./youtube/timing";
+
+/** A plain `<video>` background that plays, loops and reports its element. */
+export function NativeVideo({
+  corp,
+  isLoop,
+  isMuted,
+  isPlaying,
+  playbackRate,
+  setVideoElement,
+  setVideoPlaying,
+  shouldAutoPlay,
+  src,
+  style,
+  className,
+}: NativeVideoProps) {
+  const { videoRef, handleEnded, handleTimeUpdate, handleLoadedData } =
+    useNativeVideoModel({
+      corp,
+      isLoop,
+      isMuted,
+      isPlaying,
+      playbackRate,
+      setVideoElement,
+      setVideoPlaying,
+      shouldAutoPlay,
+      src,
+      style,
+      className,
+    });
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      className={className}
+      preload="auto"
+      muted={isMuted}
+      loop={isLoop}
+      playsInline
+      style={style}
+      onTimeUpdate={handleTimeUpdate}
+      onEnded={handleEnded}
+      onLoadedData={handleLoadedData}
+    />
+  );
+}
 
 export interface NativeVideoProps {
   className: string;

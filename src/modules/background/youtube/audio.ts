@@ -1,4 +1,4 @@
-import { DEFAULT_AUDIBLE_VOLUME } from "../../constants";
+import { DEFAULT_AUDIBLE_VOLUME } from "../constants";
 
 /** Minimum gap between two forced companion-audio seeks, in milliseconds. */
 const AUDIO_SEEK_COOLDOWN_MS = 1500;

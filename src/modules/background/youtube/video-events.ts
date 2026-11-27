@@ -1,13 +1,13 @@
-import {
-  type Dispatch,
-  type MutableRefObject,
-  type RefObject,
-  type SetStateAction,
+import type {
+  Dispatch,
+  MutableRefObject,
+  RefObject,
+  SetStateAction,
 } from "react";
 
-import { type BackgroundActions } from "../../types";
+import type { BackgroundActions } from "../types";
 import { setElementMuted, unlockAudioOnGesture } from "./audio";
-import { type YouTubeLiveState } from "./iframe";
+import type { YouTubeLiveState } from "./iframe";
 import { hasPassedEnd } from "./timing";
 
 const HAVE_CURRENT_DATA = 2;

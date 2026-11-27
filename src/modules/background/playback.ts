@@ -1,4 +1,4 @@
-import { DEFAULT_AUDIBLE_VOLUME } from "../constants";
+import { DEFAULT_AUDIBLE_VOLUME } from "./constants";
 
 /**
  * Applies the configured play state and playback rate to a video element,
