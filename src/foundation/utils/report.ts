@@ -17,7 +17,7 @@ type GlobalWithSink = typeof globalThis & {
   [GLOBAL_SINK_KEY]?: ReportSink | null;
 };
 
-const _global = globalThis as GlobalWithSink;
+const globalScope = globalThis as GlobalWithSink;
 
 /**
  * Reports a non-fatal error to the installed sink, or to the console
@@ -28,7 +28,7 @@ export function report(
   error: unknown,
   level: ReportLevel = "error",
 ): void {
-  const sink = _global[GLOBAL_SINK_KEY];
+  const sink = globalScope[GLOBAL_SINK_KEY];
   if (sink) {
     try {
       sink(scope, error, level);
@@ -46,8 +46,9 @@ export function report(
  * Installs the global report sink and returns a function that removes it.
  */
 export function setReportSink(next: ReportSink): () => void {
-  _global[GLOBAL_SINK_KEY] = next;
+  globalScope[GLOBAL_SINK_KEY] = next;
   return () => {
-    if (_global[GLOBAL_SINK_KEY] === next) _global[GLOBAL_SINK_KEY] = null;
+    if (globalScope[GLOBAL_SINK_KEY] === next)
+      globalScope[GLOBAL_SINK_KEY] = null;
   };
 }

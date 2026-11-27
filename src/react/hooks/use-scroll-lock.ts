@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 /**
  * The attribute set on the root element while page scrolling is locked.
  */

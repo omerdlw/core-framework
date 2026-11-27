@@ -1,5 +1,7 @@
 import { report } from "./report";
+
 const DEFAULT_SCHEDULER_FRAME_MS = 16;
+const DEFAULT_TASK_LABEL = "scheduled-task";
 
 const EMPTY_SCHEDULER_TASKS: readonly ScheduledTaskSnapshot[] = Object.freeze(
   [],
@@ -59,8 +61,6 @@ interface TaskRecord {
   label: string;
   nativeId: ScheduleHandle;
 }
-
-const DEFAULT_TASK_LABEL = "scheduled-task";
 
 function createDefaultCancelFrame(): (id: ScheduleHandle) => void {
   return typeof window !== "undefined" &&

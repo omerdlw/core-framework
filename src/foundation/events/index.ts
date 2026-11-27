@@ -1,4 +1,7 @@
 import { report } from "@/foundation/utils/report";
+
+const DEFAULT_DEBOUNCE_MS = 100;
+
 /**
  * A function that receives an event payload.
  */
@@ -45,8 +48,6 @@ export interface FrameworkEventMap {
   };
 }
 
-const DEFAULT_DEBOUNCE_MS = 100;
-
 /**
  * A small typed publish/subscribe emitter. A throwing listener is reported and
  * does not stop the others.
@@ -64,9 +65,12 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
     if (typeof event !== "string" || !event || typeof callback !== "function") {
       return () => {};
     }
-    const listeners = this.events.get(event) || new Set<EventListener<never>>();
+    let listeners = this.events.get(event);
+    if (!listeners) {
+      listeners = new Set();
+      this.events.set(event, listeners);
+    }
     listeners.add(callback);
-    this.events.set(event, listeners);
 
     return () => {
       listeners.delete(callback);
@@ -84,8 +88,8 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
   emit(event: string, payload?: unknown): void {
     const listeners = this.events.get(event);
     if (!listeners || listeners.size === 0) return;
-    const snapshot = Array.from(listeners);
-    for (const callback of snapshot) {
+    // A snapshot, so listeners that unsubscribe while being called are safe.
+    for (const callback of [...listeners]) {
       try {
         (callback as EventListener<unknown>)(payload);
       } catch (error) {
@@ -117,18 +121,14 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
   }
 
   cancelDebounced(event?: string): void {
-    if (event) {
-      const timer = this.debounceTimers.get(event);
-      if (timer) {
-        clearTimeout(timer);
-        this.debounceTimers.delete(event);
-      }
-    } else {
-      for (const timer of this.debounceTimers.values()) {
-        clearTimeout(timer);
-      }
+    if (!event) {
+      this.debounceTimers.forEach((timer) => clearTimeout(timer));
       this.debounceTimers.clear();
+      return;
     }
+    const timer = this.debounceTimers.get(event);
+    if (timer) clearTimeout(timer);
+    this.debounceTimers.delete(event);
   }
 
   unsubscribeAll(event?: string): void {
@@ -142,7 +142,7 @@ export class EventEmitter<TEvents extends object = FrameworkEventMap> {
   }
 
   getListenerCount(event: string): number {
-    return this.events.get(event)?.size || 0;
+    return this.events.get(event)?.size ?? 0;
   }
 
   getAllEvents(): string[] {
@@ -155,10 +155,11 @@ type GlobalWithEvents = typeof globalThis & {
   [GLOBAL_EVENTS_KEY]?: EventEmitter<FrameworkEventMap>;
 };
 
-const _global = globalThis as GlobalWithEvents;
+const globalScope = globalThis as GlobalWithEvents;
+
 /**
  * The shared emitter used by the framework, one per runtime.
  */
 export const globalEvents: EventEmitter<FrameworkEventMap> =
-  _global[GLOBAL_EVENTS_KEY] ??
-  (_global[GLOBAL_EVENTS_KEY] = new EventEmitter<FrameworkEventMap>());
+  globalScope[GLOBAL_EVENTS_KEY] ??
+  (globalScope[GLOBAL_EVENTS_KEY] = new EventEmitter<FrameworkEventMap>());

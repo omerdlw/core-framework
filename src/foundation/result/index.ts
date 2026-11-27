@@ -44,14 +44,12 @@ export function err<E = string>(error: E, code?: string): ErrorResult<E> {
  * True when a value has the shape of a `Result`.
  */
 export function isResult(value: unknown): value is Result<unknown, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "success" in value &&
-    typeof value.success === "boolean" &&
-    (("data" in value && (value as { success: boolean }).success === true) ||
-      ("error" in value && (value as { success: boolean }).success === false))
-  );
+  if (typeof value !== "object" || value === null || !("success" in value)) {
+    return false;
+  }
+  return value.success === true
+    ? "data" in value
+    : value.success === false && "error" in value;
 }
 
 /**
@@ -76,15 +74,9 @@ export function isErr<T, E = string>(
  * Returns the data of a success, or throws the error of a failure.
  */
 export function unwrap<T, E = string>(result: Result<T, E>): T {
-  if (result.success) {
-    return result.data;
-  }
-  if (result.error instanceof Error) {
-    throw result.error;
-  }
-  throw new Error(
-    typeof result.error === "string" ? result.error : String(result.error),
-  );
+  if (result.success) return result.data;
+  if (result.error instanceof Error) throw result.error;
+  throw new Error(String(result.error));
 }
 
 /**

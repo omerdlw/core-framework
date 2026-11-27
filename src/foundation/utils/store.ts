@@ -1,4 +1,5 @@
 import { report } from "./report";
+
 /**
  * A minimal store compatible with `useSyncExternalStore`.
  */
